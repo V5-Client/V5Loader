@@ -156,7 +156,7 @@ internal object CTCommand : Initializer {
         &c/ct console [language] &7- &oOpens the ChatTriggers console.
         &c/ct simulate <message> &7- &oSimulates a received chat message.
         &c/ct dump &7- &oDumps previous chat messages into chat.
-        &c/ct settings &7- &oOpens the ChatTriggers settings.
+        &c/ct config &7- &oOpens the ChatTriggers settings.
         &c/ct migrate <input> [output]&7 - &oMigrate a module from version 2.X to 3.X 
         &c/ct &7- &oDisplays this help dialog.
         &b&m${ChatLib.getChatBreak()}
