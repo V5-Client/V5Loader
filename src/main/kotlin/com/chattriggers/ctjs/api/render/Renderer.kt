@@ -579,11 +579,11 @@ object Renderer {
 
         RenderSystem.setShaderTexture(0, image.getTexture()?.glTexture)
 
-        begin(DrawMode.QUADS, VertexFormat.POSITION_TEXTURE)
-        pos(x, y + height, 0f).tex(0f, 1f)
-        pos(x + width, y + height, 0f).tex(1f, 1f)
-        pos(x + width, y, 0f).tex(1f, 0f)
-        pos(x, y, 0f).tex(0f, 0f)
+        begin(DrawMode.QUADS, VertexFormat.POSITION_TEXTURE_COLOR, snippet = RenderSnippet.POSITION_TEX_COLOR_SNIPPET)
+        pos(x, y + height, 0f).tex(0f, 1f).color(colorized!!)
+        pos(x + width, y + height, 0f).tex(1f, 1f).color(colorized!!)
+        pos(x + width, y, 0f).tex(1f, 0f).color(colorized!!)
+        pos(x, y, 0f).tex(0f, 0f).color(colorized!!)
         draw()
     }
 
