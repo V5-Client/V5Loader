@@ -458,6 +458,8 @@ class TextComponent private constructor(
         private fun Style.formatCodes() = buildString {
             append("§r")
 
+            color?.let(colorToFormatChar::get)?.run(::append)
+
             when {
                 isBold -> append("§l")
                 isItalic -> append("§o")
@@ -465,8 +467,6 @@ class TextComponent private constructor(
                 isStrikethrough -> append("§m")
                 isObfuscated -> append("§k")
             }
-
-            color?.let(colorToFormatChar::get)?.run(::append)
         }
 
         private fun makeClickEvent(clickEvent: Any?): ClickEvent? {
