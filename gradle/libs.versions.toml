@@ -1,10 +1,10 @@
 [versions]
 # Library versions
-minecraft = "1.21.5"
-yarn = "1.21.5+build.1"
+minecraft = "1.21.6"
+yarn = "1.21.6+build.1"
 
-loader = "0.16.12"
-fabric-api = "0.119.6+1.21.5"
+loader = "0.17.2"
+fabric-api = "0.128.2+1.21.6"
 fabric-kotlin = "1.13.2+kotlin.2.1.20"
 
 mapping-io = "0.6.1"
@@ -14,11 +14,11 @@ textarea = "3.2.0"
 serialization = "1.5.1"
 koffee = "315bc11234"
 
-universalcraft = "412"
-elementa = "708"
-vigilance = "306"
+universalcraft = "427"
+elementa = "710"
+vigilance = "312"
 
-modmenu = "14.0.0-rc.2"
+modmenu = "15.0.0"
 devauth = "1.2.1"
 dokka = "1.9.20"
 
@@ -43,7 +43,7 @@ textarea = { module = "com.fifesoft:rsyntaxtextarea", version.ref = "textarea" }
 serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 koffee = { module = "com.github.ChatTriggers:koffee", version.ref = "koffee" }
 
-universalcraft = { module = "gg.essential:universalcraft-1.21.5-fabric", version.ref = "universalcraft" }
+universalcraft = { module = "gg.essential:universalcraft-1.21.6-fabric", version.ref = "universalcraft" }
 elementa = { module = "gg.essential:elementa", version.ref = "elementa" }
 vigilance = { module = "gg.essential:vigilance", version.ref = "vigilance" }
 
