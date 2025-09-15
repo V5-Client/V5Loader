@@ -1783,14 +1783,7 @@ public final class com/chattriggers/ctjs/api/render/Renderer$DrawMode$Companion 
 
 public final class com/chattriggers/ctjs/api/render/Renderer$RenderSnippet : java/lang/Enum {
 	public static final field ENTITY_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
-	public static final field FOG_NO_COLOR_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
-	public static final field FOG_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
 	public static final field GUI_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
-	public static final field MATRICES_COLOR_FOG_LIGHT_DIR_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
-	public static final field MATRICES_COLOR_FOG_OFFSET_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
-	public static final field MATRICES_COLOR_FOG_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
-	public static final field MATRICES_COLOR_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
-	public static final field MATRICES_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
 	public static final field PARTICLE_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
 	public static final field POSITION_COLOR_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
 	public static final field POSITION_TEX_COLOR_SNIPPET Lcom/chattriggers/ctjs/api/render/Renderer$RenderSnippet;
