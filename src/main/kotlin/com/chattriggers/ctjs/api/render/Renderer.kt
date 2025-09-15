@@ -25,10 +25,10 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gl.RenderPipelines
 import net.minecraft.client.network.AbstractClientPlayerEntity
-import net.minecraft.client.render.DiffuseLighting
 import net.minecraft.client.render.VertexFormats
 import net.minecraft.client.render.entity.EntityRendererFactory
 import net.minecraft.client.util.math.MatrixStack
+import org.joml.Matrix3x2fStack
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.mozilla.javascript.NativeObject
@@ -281,12 +281,14 @@ object Renderer {
         colorized = fixAlpha(getColor(red, green, blue, alpha))
         val color = Color(colorized!!.toInt(), true)
 
-        RenderSystem.setShaderColor(
-            color.red / 255f,
-            color.green / 255f,
-            color.blue / 255f,
-            color.alpha / 255f
-        )
+        // TODO: mc added a new weirder implementation for this
+        //  we might have to build a new dynamic system (pain)
+        // RenderSystem.setShaderColor(
+        //     color.red / 255f,
+        //     color.green / 255f,
+        //     color.blue / 255f,
+        //     color.alpha / 255f
+        // )
     }
 
     @JvmStatic
@@ -577,7 +579,7 @@ object Renderer {
 
         scale(1f, 1f, 50f)
 
-        RenderSystem.setShaderTexture(0, image.getTexture()?.glTexture)
+        RenderSystem.setShaderTexture(0, image.getTexture()?.glTextureView)
 
         begin(DrawMode.QUADS, VertexFormat.POSITION_TEXTURE_COLOR, snippet = RenderSnippet.POSITION_TEX_COLOR_SNIPPET)
         pos(x, y + height, 0f).tex(0f, 1f).color(colorized!!)
@@ -678,7 +680,8 @@ object Renderer {
         )
 
         matrixStack.multiply(flipModelRotation)
-        DiffuseLighting.enableGuiShaderLighting()
+        // TODO: find out a way to get Diffuse instance and call setType
+        // DiffuseLighting.enableGuiShaderLighting()
 
         val entityRenderDispatcher = MinecraftClient.getInstance().entityRenderDispatcher
 
@@ -728,7 +731,8 @@ object Renderer {
         vertexConsumers.draw()
         entityRenderDispatcher.setRenderShadows(true)
         matrixStack.pop()
-        DiffuseLighting.enableGuiDepthLighting()
+        // TODO: find out a way to get Diffuse instance and call setType
+        // DiffuseLighting.enableGuiDepthLighting()
         matrixStack.pop()
 
         entity.bodyYaw = oldBodyYaw
@@ -797,13 +801,13 @@ object Renderer {
     }
 
     enum class RenderSnippet(val mcSnippet: Snippet) {
-        MATRICES_SNIPPET(RenderPipelines.MATRICES_SNIPPET),
-        FOG_NO_COLOR_SNIPPET(RenderPipelines.FOG_NO_COLOR_SNIPPET),
-        FOG_SNIPPET(RenderPipelines.FOG_SNIPPET),
-        MATRICES_COLOR_SNIPPET(RenderPipelines.MATRICES_COLOR_SNIPPET),
-        MATRICES_COLOR_FOG_SNIPPET(RenderPipelines.MATRICES_COLOR_FOG_SNIPPET),
-        MATRICES_COLOR_FOG_OFFSET_SNIPPET(RenderPipelines.MATRICES_COLOR_FOG_OFFSET_SNIPPET),
-        MATRICES_COLOR_FOG_LIGHT_DIR_SNIPPET(RenderPipelines.MATRICES_COLOR_FOG_LIGHT_DIR_SNIPPET),
+//        MATRICES_SNIPPET(RenderPipelines.MATRICES_SNIPPET),
+//        FOG_NO_COLOR_SNIPPET(RenderPipelines.FOG_NO_COLOR_SNIPPET),
+//        FOG_SNIPPET(RenderPipelines.FOG_SNIPPET),
+//        MATRICES_COLOR_SNIPPET(RenderPipelines.MATRICES_COLOR_SNIPPET),
+//        MATRICES_COLOR_FOG_SNIPPET(RenderPipelines.MATRICES_COLOR_FOG_SNIPPET),
+//        MATRICES_COLOR_FOG_OFFSET_SNIPPET(RenderPipelines.MATRICES_COLOR_FOG_OFFSET_SNIPPET),
+//        MATRICES_COLOR_FOG_LIGHT_DIR_SNIPPET(RenderPipelines.MATRICES_COLOR_FOG_LIGHT_DIR_SNIPPET),
         TERRAIN_SNIPPET(RenderPipelines.TERRAIN_SNIPPET),
         ENTITY_SNIPPET(RenderPipelines.ENTITY_SNIPPET),
         RENDERTYPE_BEACON_BEAM_SNIPPET(RenderPipelines.RENDERTYPE_BEACON_BEAM_SNIPPET),
@@ -825,6 +829,6 @@ object Renderer {
 
         fun getHeight(): Int = UMinecraft.getMinecraft().window.scaledHeight
 
-        fun getScale(): Double = UMinecraft.getMinecraft().window.scaleFactor
+        fun getScale(): Double = UMinecraft.getMinecraft().window.scaleFactor.toDouble()
     }
 }

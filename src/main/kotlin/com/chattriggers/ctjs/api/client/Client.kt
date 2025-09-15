@@ -26,6 +26,7 @@ import net.minecraft.client.network.ServerInfo
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 import net.minecraft.network.packet.Packet
+import net.minecraft.text.Text
 import kotlin.math.roundToInt
 
 object Client {
@@ -75,8 +76,7 @@ object Client {
     @JvmStatic
     fun disconnect() {
         scheduleTask {
-            World.toMC()?.disconnect()
-            getMinecraft().disconnect()
+            World.toMC()?.disconnect(Text.empty())
 
             getMinecraft().setScreen(
                 when {

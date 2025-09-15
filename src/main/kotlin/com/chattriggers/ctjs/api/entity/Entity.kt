@@ -215,7 +215,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
     @JvmOverloads
     fun getEyePosition(partialTicks: Float = Renderer.partialTicks) = mcValue.eyePos
 
-    fun canBeCollidedWith() = mcValue.isCollidable
+    fun canBeCollidedWith() = mcValue.isCollidable(null)
 
     fun canBePushed() = mcValue.isPushable
 
@@ -229,7 +229,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
 
     fun isBurning(): Boolean = mcValue.isOnFire
 
-    fun getWorld() = mcValue.entityWorld
+    fun getWorld() = mcValue.world
 
     fun getChunk(): Chunk = Chunk(getWorld().getWorldChunk(mcValue.blockPos))
 

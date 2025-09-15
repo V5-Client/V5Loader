@@ -2,6 +2,7 @@ package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.api.world.Scoreboard;
 import com.chattriggers.ctjs.internal.engine.CTEvents;
+import gg.essential.universal.UMatrixStack;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.render.RenderTickCounter;
@@ -24,11 +25,11 @@ public class InGameHudMixin {
         method = "render",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/LayeredDrawer;render(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/render/RenderTickCounter;)V",
+            target = "Lnet/minecraft/client/gui/hud/InGameHud;renderMainHud(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/render/RenderTickCounter;)V",
             shift = At.Shift.AFTER
         )
     )
     private void injectRenderOverlay(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        CTEvents.RENDER_OVERLAY.invoker().render(context.getMatrices(), tickCounter.getDynamicDeltaTicks());
+        CTEvents.RENDER_OVERLAY.invoker().render(new UMatrixStack(context.getMatrices()).toMC(), tickCounter.getDynamicDeltaTicks());
     }
 }

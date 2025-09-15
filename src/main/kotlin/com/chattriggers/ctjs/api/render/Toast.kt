@@ -7,10 +7,11 @@ import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.getOrNull
 import com.chattriggers.ctjs.internal.utils.toIdentifier
 import com.mojang.blaze3d.systems.RenderSystem
+import gg.essential.universal.UMatrixStack
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gl.RenderPipelines
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.RenderLayers
 import net.minecraft.client.toast.ToastManager
 import net.minecraft.util.Identifier
 import org.mozilla.javascript.*
@@ -108,7 +109,7 @@ class Toast(config: NativeObject) : Toast {
 
     override fun draw(context: DrawContext, textRenderer: TextRenderer, startTime: Long) {
         if (customRenderFunction != null) {
-            Renderer.withMatrix(context.matrices) {
+            Renderer.withMatrix(UMatrixStack(context.matrices).toMC()) {
                 try {
                     JSLoader.invoke(customRenderFunction!!, emptyArray(), thisObj = jsReceiver!!)
                 } catch (e: Throwable) {
@@ -120,14 +121,14 @@ class Toast(config: NativeObject) : Toast {
             }
         } else {
             backgroundBacker?.let {
-                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
-                context.drawGuiTexture(RenderLayer::getGuiTextured, it, 0, 0, width, height)
+                // RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
+                context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, it, 0, 0, width, height)
             }
 
             iconBacker?.let { it: Identifier ->
-                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
+                // RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
                 val iconSize = height - ICON_PADDING * 2
-                context.drawGuiTexture(RenderLayer::getGuiTextured, it, ICON_PADDING,ICON_PADDING, iconSize,iconSize)
+                context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, it, ICON_PADDING,ICON_PADDING, iconSize,iconSize)
             }
 
             val textX = if (icon == null) ICON_PADDING else height

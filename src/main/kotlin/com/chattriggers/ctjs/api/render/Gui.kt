@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ButtonWidget
+import net.minecraft.item.Item
 
 class Gui @JvmOverloads constructor(
     title: TextComponent = TextComponent(""),
@@ -487,7 +488,9 @@ class Gui @JvmOverloads constructor(
      * @param text the contents of the tooltip
      */
     fun setTooltip(text: TextComponent) = apply {
-        setTooltip(Tooltip.wrapLines(Client.getMinecraft(), text))
+        // TODO: find a way to implement this properly since
+        //  mc removed the Screen#setTooltip
+        // setTooltip(Tooltip.wrapLines(Client.getMinecraft(), text))
     }
 
     /**
