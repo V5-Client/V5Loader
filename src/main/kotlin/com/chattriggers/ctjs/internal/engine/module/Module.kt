@@ -4,6 +4,7 @@ import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.api.render.Text
 import com.fasterxml.jackson.core.Version
+import net.minecraft.client.gui.DrawContext
 import java.io.File
 
 class Module(val name: String, var metadata: ModuleMetadata, val folder: File) {
@@ -12,49 +13,51 @@ class Module(val name: String, var metadata: ModuleMetadata, val folder: File) {
 
     private val gui = object {
         var collapsed = true
-        var x = 0f
-        var y = 0f
+        var x = 0
+        var y = 0
         var description = Text(metadata.description ?: "No description provided in the metadata")
     }
 
-    fun draw(x: Float, y: Float, width: Float): Float {
+    fun draw(ctx: DrawContext, x: Int, y: Int, width: Int): Int {
         gui.x = x
         gui.y = y
 
-        Renderer.pushMatrix()
-        Renderer.drawRect(
-            0xaa000000,
-            x, y, width, 13f
-        )
-        Renderer.drawStringWithShadow(
+        ctx.matrices.pushMatrix()
+
+        ctx.fill(x, y, x + width, y + 13, 0xaa000000.toInt())
+        ctx.drawTextWithShadow(
+            Renderer.getFontRenderer(),
             metadata.name ?: name,
-            x + 3, y + 3
+            x + 3, y + 3, -1
         )
 
         return if (gui.collapsed) {
-            Renderer.translate(x + width - 5, y + 8)
-            Renderer.rotate(180f)
-            Renderer.drawString("^", 0f, 0f)
-
-            Renderer.popMatrix()
-            15f
+            ctx.matrices.pushMatrix()
+            ctx.matrices.translate(x + width - 5f, y + 8f)
+            ctx.matrices.rotate(Math.PI.toFloat())
+            ctx.drawText(Renderer.getFontRenderer(), "^", 0, 0, -1, false)
+            ctx.matrices.popMatrix()
+            16
         } else {
-            gui.description.setMaxWidth(width.toInt() - 5)
+            gui.description.setMaxWidth(width - 5)
 
-            Renderer.drawRect(0x50000000, x, y + 13, width, gui.description.getHeight() + 12)
-            Renderer.drawString("^", x + width - 10, y + 5)
+            ctx.fill(x, y + 13, x + width, y + (gui.description.getHeight().toInt() + 25), 0x50000000)
+            ctx.drawText(Renderer.getFontRenderer(), "^", x + width - 10, y + 5, -1, false)
 
-            gui.description.draw(x + 3, y + 15)
+            gui.description.draw(ctx, x + 3, y + 15)
 
             if (metadata.version != null) {
-                Renderer.drawStringWithShadow(
+                ctx.drawTextWithShadow(
+                    Renderer.getFontRenderer(),
                     ChatLib.addColor("&8v${metadata.version}"),
                     x + width - Renderer.getStringWidth(ChatLib.addColor("&8v${metadata.version}")),
-                    y + gui.description.getHeight() + 15
+                    y + gui.description.getHeight().toInt() + 15,
+                    -1
                 )
             }
 
-            Renderer.drawStringWithShadow(
+            ctx.drawTextWithShadow(
+                Renderer.getFontRenderer(),
                 ChatLib.addColor(
                     if (metadata.isRequired && requiredBy.isNotEmpty()) {
                         "&8required by $requiredBy"
@@ -62,11 +65,13 @@ class Module(val name: String, var metadata: ModuleMetadata, val folder: File) {
                         "&4[delete]"
                     }
                 ),
-                x + 3, y + gui.description.getHeight() + 15
+                x + 3,
+                y + gui.description.getHeight().toInt() + 15,
+                -1
             )
 
-            Renderer.popMatrix()
-            gui.description.getHeight() + 27
+            ctx.matrices.popMatrix()
+            gui.description.getHeight().toInt() + 27
         }
     }
 
