@@ -4,10 +4,10 @@ import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.api.render.Text
-import gg.essential.universal.UMatrixStack
-import gg.essential.universal.UScreen
+import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.Screen
 
-object ModulesGui : UScreen(unlocalizedName = "Modules") {
+object ModulesGui : Screen(net.minecraft.text.Text.literal("Modules")) {
     private val window = object {
         val title = Text("Modules").setScale(2f).setShadow(true)
         val exit = Text(ChatLib.addColor("&cx")).setScale(2f)
@@ -15,8 +15,8 @@ object ModulesGui : UScreen(unlocalizedName = "Modules") {
         var scroll = 0f
     }
 
-    override fun onDrawScreen(matrixStack: UMatrixStack, mouseX: Int, mouseY: Int, partialTicks: Float) {
-        super.onDrawScreen(matrixStack, mouseX, mouseY, partialTicks)
+    override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, deltaTicks: Float) {
+        super.render(context, mouseX, mouseY, deltaTicks)
 
         Renderer.pushMatrix()
 
@@ -54,31 +54,39 @@ object ModulesGui : UScreen(unlocalizedName = "Modules") {
         Renderer.popMatrix()
     }
 
-    override fun onMouseClicked(mouseX: Double, mouseY: Double, mouseButton: Int) {
-        super.onMouseClicked(mouseX, mouseY, mouseButton)
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        super.mouseClicked(mouseX, mouseY, button)
 
         var width = Renderer.screen.getWidth() - 100f
         if (width > 500) width = 500f
 
         if (mouseX > Renderer.screen.getWidth() - 20 && mouseY > Renderer.screen.getHeight() - 20) {
             window.scroll = 0f
-            return
+            return false
         }
 
         if (mouseX > Renderer.screen.getWidth() / 2f + width / 2f - 25 && mouseX < Renderer.screen.getWidth() / 2f + width / 2f
             && mouseY > window.scroll + 95 && mouseY < window.scroll + 120
         ) {
             Player.toMC()?.closeScreen()
-            return
+            return false
         }
 
         ModuleManager.cachedModules.toList().forEach {
             it.click(mouseX, mouseY, width)
         }
+
+        return false
     }
 
-    override fun onMouseScrolled(delta: Double) {
-        super.onMouseScrolled(delta)
+    override fun mouseScrolled(
+        mouseX: Double,
+        mouseY: Double,
+        horizontalAmount: Double,
+        delta: Double
+    ): Boolean {
+        super.mouseScrolled(mouseX, mouseY, horizontalAmount, delta)
         window.scroll += delta.toFloat()
+        return false
     }
 }
