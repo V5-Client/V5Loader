@@ -1469,30 +1469,30 @@ public final class com/chattriggers/ctjs/api/render/Display {
 	public final fun addLine (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Display;
 	public final fun addLines ([Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Display;
 	public final fun clearLines ()Lcom/chattriggers/ctjs/api/render/Display;
-	public final fun draw ()V
+	public final fun draw (Lnet/minecraft/client/gui/DrawContext;)V
 	public final fun getAlign ()Lcom/chattriggers/ctjs/api/render/Text$Align;
 	public final fun getBackground ()Lcom/chattriggers/ctjs/api/render/Display$Background;
 	public final fun getBackgroundColor ()J
-	public final fun getHeight ()F
+	public final fun getHeight ()I
 	public final fun getLine (I)Lcom/chattriggers/ctjs/api/render/Text;
 	public final fun getLines ()Ljava/util/List;
-	public final fun getMinWidth ()F
+	public final fun getMinWidth ()I
 	public final fun getOrder ()Lcom/chattriggers/ctjs/api/render/Display$Order;
 	public final fun getTextColor ()J
-	public final fun getWidth ()F
-	public final fun getX ()F
-	public final fun getY ()F
+	public final fun getWidth ()I
+	public final fun getX ()I
+	public final fun getY ()I
 	public final fun removeLine (I)Lcom/chattriggers/ctjs/api/render/Display;
 	public final fun setAlign (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Display;
 	public final fun setBackground (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Display;
 	public final fun setBackgroundColor (J)Lcom/chattriggers/ctjs/api/render/Display;
 	public final fun setLine (ILjava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Display;
 	public final fun setLines (Ljava/util/List;)Lcom/chattriggers/ctjs/api/render/Display;
-	public final fun setMinWidth (F)Lcom/chattriggers/ctjs/api/render/Display;
+	public final fun setMinWidth (I)Lcom/chattriggers/ctjs/api/render/Display;
 	public final fun setOrder (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Display;
 	public final fun setTextColor (J)Lcom/chattriggers/ctjs/api/render/Display;
-	public final fun setX (F)Lcom/chattriggers/ctjs/api/render/Display;
-	public final fun setY (F)Lcom/chattriggers/ctjs/api/render/Display;
+	public final fun setX (I)Lcom/chattriggers/ctjs/api/render/Display;
+	public final fun setY (I)Lcom/chattriggers/ctjs/api/render/Display;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1905,7 +1905,7 @@ public final class com/chattriggers/ctjs/api/render/Text {
 	public final fun getScale ()F
 	public final fun getShadow ()Z
 	public final fun getString ()Ljava/lang/String;
-	public final fun getWidth ()F
+	public final fun getWidth ()I
 	public final fun getX ()I
 	public final fun getY ()I
 	public final fun setAlign (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Text;
