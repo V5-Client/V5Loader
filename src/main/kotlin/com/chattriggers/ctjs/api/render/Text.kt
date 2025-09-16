@@ -2,13 +2,14 @@ package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.internal.utils.getOption
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Style
 import org.mozilla.javascript.NativeObject
 
 class Text {
     private lateinit var string: String
-    private var x: Float = 0f
-    private var y: Float = 0f
+    private var x: Int = 0
+    private var y: Int = 0
 
     private val lines = mutableListOf<String>()
 
@@ -25,7 +26,7 @@ class Text {
     private var scale = 1f
 
     @JvmOverloads
-    constructor(string: String, x: Float = 0f, y: Float = 0f) {
+    constructor(string: String, x: Int = 0, y: Int = 0) {
         setString(string)
         setX(x)
         setY(y)
@@ -39,8 +40,8 @@ class Text {
         setAlign(config.getOption("align", Align.LEFT))
         setBackground(config.getOption("background", false).toBoolean())
         setBackgroundColor(config.getOption("backgroundColor", 0x00000000).toLong())
-        setX(config.getOption("x", 0f).toFloat())
-        setY(config.getOption("y", 0f).toFloat())
+        setX(config.getOption("x", 0).toInt())
+        setY(config.getOption("y", 0).toInt())
         setMaxLines((config.getOption("maxLines", Int.MAX_VALUE)).toDouble().toInt())
         setScale(config.getOption("scale", 1f).toFloat())
         setMaxWidth(config.getOption("maxWidth", 0).toInt())
@@ -96,13 +97,13 @@ class Text {
         this.backgroundColor = backgroundColor
     }
 
-    fun getX(): Float = x
+    fun getX(): Int = x
 
-    fun setX(x: Float) = apply { this.x = x }
+    fun setX(x: Int) = apply { this.x = x }
 
-    fun getY(): Float = y
+    fun getY(): Int = y
 
-    fun setY(y: Float) = apply { this.y = y }
+    fun setY(y: Int) = apply { this.y = y }
 
     /**
      * Gets the width of the text
@@ -146,15 +147,14 @@ class Text {
     }
 
     @JvmOverloads
-    fun draw(x: Float? = null, y: Float? = null) = apply {
-        draw(x, y, null, null)
+    fun draw(ctx: DrawContext, x: Int? = null, y: Int? = null) = apply {
+        draw(ctx, x, y, null, null)
     }
 
-    internal fun draw(x: Float? = null, y: Float? = null, backgroundX: Float? = null, backgroundWidth: Float? = null) =
+    internal fun draw(ctx: DrawContext, x: Int? = null, y: Int? = null, backgroundX: Int? = null, backgroundWidth: Int? = null) =
         apply {
-            Renderer.pushMatrix()
-            Renderer.enableBlend()
-            Renderer.scale(scale, scale, scale)
+            ctx.matrices.pushMatrix()
+            ctx.matrices.scale(scale, scale)
 
             var longestLine = lines.maxOf { Renderer.getStringWidth(it) * scale }
             if (maxWidth != 0)
@@ -169,23 +169,26 @@ class Text {
                 else -> x ?: this.x
             }
 
-            if (background)
-                Renderer.drawRect(
-                    backgroundColor,
-                    backgroundX ?: xHolder,
+            if (background) {
+                val ox = (backgroundX ?: xHolder) as Int
+
+                ctx.fill(
+                    ox,
                     yHolder,
-                    backgroundWidth ?: width,
-                    getHeight()
+                    ox + (backgroundWidth ?: width) as Int,
+                    yHolder + getHeight().toInt(),
+                    backgroundColor.toInt()
                 )
+            }
 
             for (i in 0 until maxLines) {
                 if (i >= lines.size) break
-                Renderer.drawString(lines[i], xHolder, yHolder, color, shadow)
-                yHolder += scale * 10
+                ctx.drawText(Renderer.getFontRenderer(), lines[i], xHolder as Int, yHolder, color.toInt(), shadow)
+                yHolder += (scale * 10).toInt()
             }
-            Renderer.disableBlend()
-            Renderer.popMatrix()
+            ctx.matrices.popMatrix()
         }
+
     private fun updateFormatting() {
         string =
             if (formatted) ChatLib.addColor(string)
