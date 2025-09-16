@@ -1,14 +1,15 @@
 package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.internal.utils.getOption
+import net.minecraft.client.gui.DrawContext
 import org.mozilla.javascript.NativeObject
 import java.util.concurrent.CopyOnWriteArrayList
 
 class Display() {
     private var lines = CopyOnWriteArrayList<Text>()
 
-    private var x = 0f
-    private var y = 0f
+    private var x = 0
+    private var y = 0
     private var order = Order.NORMAL
 
     private var backgroundColor: Long = 0x50000000
@@ -16,9 +17,9 @@ class Display() {
     private var background = Background.NONE
     private var align = Text.Align.LEFT
 
-    private var minWidth = 0f
-    private var width = 0f
-    private var height = 0f
+    private var minWidth = 0
+    private var width = 0
+    private var height = 0
 
     constructor(config: NativeObject?) : this() {
         setBackgroundColor(config.getOption("backgroundColor", 0x50000000).toLong())
@@ -26,9 +27,9 @@ class Display() {
         setBackground(config.getOption("background", Background.NONE))
         setAlign(config.getOption("align", Text.Align.LEFT))
         setOrder(config.getOption("order", Order.NORMAL))
-        setX(config.getOption("x", 0f).toFloat())
-        setY(config.getOption("y", 0f).toFloat())
-        setMinWidth(config.getOption("minWidth", 0f).toFloat())
+        setX(config.getOption("x", 0).toInt())
+        setY(config.getOption("y", 0).toInt())
+        setMinWidth(config.getOption("minWidth", 0).toInt())
     }
 
     fun getTextColor(): Long = textColor
@@ -118,25 +119,25 @@ class Display() {
         lines.clear()
     }
 
-    fun getX(): Float = x
+    fun getX(): Int = x
 
-    fun setX(x: Float) = apply { this.x = x }
+    fun setX(x: Int) = apply { this.x = x }
 
-    fun getY(): Float = y
+    fun getY(): Int = y
 
-    fun setY(y: Float) = apply { this.y = y }
+    fun setY(y: Int) = apply { this.y = y }
 
-    fun getWidth(): Float = width
+    fun getWidth(): Int = width
 
-    fun getHeight(): Float = height
+    fun getHeight(): Int = height
 
-    fun getMinWidth(): Float = minWidth
+    fun getMinWidth(): Int = minWidth
 
-    fun setMinWidth(minWidth: Float) = apply {
+    fun setMinWidth(minWidth: Int) = apply {
         this.minWidth = minWidth
     }
 
-    fun draw() {
+    fun draw(ctx: DrawContext) {
         width = lines.maxOfOrNull { it.getWidth() }?.coerceAtLeast(minWidth) ?: minWidth
 
         val textBackgroundWidth = when (background) {
@@ -145,7 +146,7 @@ class Display() {
             Background.NONE -> null
         }
 
-        var currentHeight = 0f
+        var currentHeight = 0
 
         val linesX = when (align) {
             Text.Align.CENTER -> x + width / 2
@@ -167,10 +168,9 @@ class Display() {
             it
                 .setColor(textColor)
                 .setAlign(align)
-            // TODO: fix me
-//                .draw(linesX, y + currentHeight, x, textBackgroundWidth)
+                .draw(ctx, linesX, y + currentHeight, x, textBackgroundWidth)
 
-            currentHeight += it.getHeight()
+            currentHeight += it.getHeight().toInt()
         }
 
         height = currentHeight
