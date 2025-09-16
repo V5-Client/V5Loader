@@ -1,10 +1,10 @@
 [versions]
 # Library versions
-minecraft = "1.21.7"
-yarn = "1.21.7+build.8"
+minecraft = "1.21.8"
+yarn = "1.21.8+build.1"
 
 loader = "0.17.2"
-fabric-api = "0.129.0+1.21.7"
+fabric-api = "0.133.4+1.21.8"
 fabric-kotlin = "1.13.2+kotlin.2.1.20"
 
 mapping-io = "0.6.1"
