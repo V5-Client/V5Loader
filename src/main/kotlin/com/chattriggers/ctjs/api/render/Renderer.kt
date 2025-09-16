@@ -277,19 +277,8 @@ object Renderer {
 
     @JvmStatic
     @JvmOverloads
-    fun colorize(red: Int, green: Int, blue: Int, alpha: Int = 255) = apply {
-        colorized = fixAlpha(getColor(red, green, blue, alpha))
-        val color = Color(colorized!!.toInt(), true)
-
-        // TODO: mc added a new weirder implementation for this
-        //  we might have to build a new dynamic system (pain)
-        // RenderSystem.setShaderColor(
-        //     color.red / 255f,
-        //     color.green / 255f,
-        //     color.blue / 255f,
-        //     color.alpha / 255f
-        // )
-    }
+    @Deprecated("There is no longer an easy way to change the color globally, you need to find out each color you do.")
+    fun colorize(red: Int, green: Int, blue: Int, alpha: Int = 255) = apply {}
 
     @JvmStatic
     fun fixAlpha(color: Long): Long {
@@ -801,13 +790,6 @@ object Renderer {
     }
 
     enum class RenderSnippet(val mcSnippet: Snippet) {
-//        MATRICES_SNIPPET(RenderPipelines.MATRICES_SNIPPET),
-//        FOG_NO_COLOR_SNIPPET(RenderPipelines.FOG_NO_COLOR_SNIPPET),
-//        FOG_SNIPPET(RenderPipelines.FOG_SNIPPET),
-//        MATRICES_COLOR_SNIPPET(RenderPipelines.MATRICES_COLOR_SNIPPET),
-//        MATRICES_COLOR_FOG_SNIPPET(RenderPipelines.MATRICES_COLOR_FOG_SNIPPET),
-//        MATRICES_COLOR_FOG_OFFSET_SNIPPET(RenderPipelines.MATRICES_COLOR_FOG_OFFSET_SNIPPET),
-//        MATRICES_COLOR_FOG_LIGHT_DIR_SNIPPET(RenderPipelines.MATRICES_COLOR_FOG_LIGHT_DIR_SNIPPET),
         TERRAIN_SNIPPET(RenderPipelines.TERRAIN_SNIPPET),
         ENTITY_SNIPPET(RenderPipelines.ENTITY_SNIPPET),
         RENDERTYPE_BEACON_BEAM_SNIPPET(RenderPipelines.RENDERTYPE_BEACON_BEAM_SNIPPET),
