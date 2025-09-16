@@ -167,7 +167,8 @@ class Display() {
             it
                 .setColor(textColor)
                 .setAlign(align)
-                .draw(linesX, y + currentHeight, x, textBackgroundWidth)
+            // TODO: fix me
+//                .draw(linesX, y + currentHeight, x, textBackgroundWidth)
 
             currentHeight += it.getHeight()
         }

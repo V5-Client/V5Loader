@@ -124,9 +124,9 @@ object ClientListener : Initializer {
             TriggerType.STEP.triggerAll()
         }
 
-        CTEvents.RENDER_OVERLAY.register { stack, partialTicks ->
+        CTEvents.RENDER_OVERLAY.register { ctx, stack, partialTicks ->
             Renderer.withMatrix(stack, partialTicks) {
-                TriggerType.RENDER_OVERLAY.triggerAll()
+                TriggerType.RENDER_OVERLAY.triggerAll(ctx)
             }
         }
 

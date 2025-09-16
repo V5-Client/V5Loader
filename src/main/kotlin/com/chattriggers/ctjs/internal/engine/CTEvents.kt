@@ -19,6 +19,7 @@ import com.mojang.brigadier.CommandDispatcher
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.event.Event
 import net.fabricmc.fabric.api.event.EventFactory
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.util.math.MatrixStack
@@ -47,7 +48,7 @@ internal object CTEvents {
     }
 
     fun interface RenderOverlayCallback {
-        fun render(matrixStack: MatrixStack, partialTicks: Float)
+        fun render(context: DrawContext, matrixStack: MatrixStack, partialTicks: Float)
     }
 
     fun interface PacketReceivedCallback {
@@ -85,8 +86,8 @@ internal object CTEvents {
 
     @JvmField
     val RENDER_OVERLAY = make<RenderOverlayCallback> { listeners ->
-        RenderOverlayCallback { stack, partialTicks ->
-            listeners.forEach { it.render(stack, partialTicks) }
+        RenderOverlayCallback { ctx, stack, partialTicks ->
+            listeners.forEach { it.render(ctx, stack, partialTicks) }
         }
     }
 

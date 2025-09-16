@@ -1884,14 +1884,14 @@ public final class com/chattriggers/ctjs/api/render/Shape {
 
 public final class com/chattriggers/ctjs/api/render/Text {
 	public fun <init> (Ljava/lang/String;)V
-	public fun <init> (Ljava/lang/String;F)V
-	public fun <init> (Ljava/lang/String;FF)V
-	public synthetic fun <init> (Ljava/lang/String;FFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;I)V
+	public fun <init> (Ljava/lang/String;II)V
+	public synthetic fun <init> (Ljava/lang/String;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ljava/lang/String;Lorg/mozilla/javascript/NativeObject;)V
-	public final fun draw ()Lcom/chattriggers/ctjs/api/render/Text;
-	public final fun draw (Ljava/lang/Float;)Lcom/chattriggers/ctjs/api/render/Text;
-	public final fun draw (Ljava/lang/Float;Ljava/lang/Float;)Lcom/chattriggers/ctjs/api/render/Text;
-	public static synthetic fun draw$default (Lcom/chattriggers/ctjs/api/render/Text;Ljava/lang/Float;Ljava/lang/Float;ILjava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Text;
+	public final fun draw (Lnet/minecraft/client/gui/DrawContext;)Lcom/chattriggers/ctjs/api/render/Text;
+	public final fun draw (Lnet/minecraft/client/gui/DrawContext;Ljava/lang/Integer;)Lcom/chattriggers/ctjs/api/render/Text;
+	public final fun draw (Lnet/minecraft/client/gui/DrawContext;Ljava/lang/Integer;Ljava/lang/Integer;)Lcom/chattriggers/ctjs/api/render/Text;
+	public static synthetic fun draw$default (Lcom/chattriggers/ctjs/api/render/Text;Lnet/minecraft/client/gui/DrawContext;Ljava/lang/Integer;Ljava/lang/Integer;ILjava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Text;
 	public final fun exceedsMaxLines ()Z
 	public final fun getAlign ()Lcom/chattriggers/ctjs/api/render/Text$Align;
 	public final fun getBackground ()Z
@@ -1906,8 +1906,8 @@ public final class com/chattriggers/ctjs/api/render/Text {
 	public final fun getShadow ()Z
 	public final fun getString ()Ljava/lang/String;
 	public final fun getWidth ()F
-	public final fun getX ()F
-	public final fun getY ()F
+	public final fun getX ()I
+	public final fun getY ()I
 	public final fun setAlign (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Text;
 	public final fun setBackground (Z)Lcom/chattriggers/ctjs/api/render/Text;
 	public final fun setBackgroundColor (J)Lcom/chattriggers/ctjs/api/render/Text;
@@ -1918,8 +1918,8 @@ public final class com/chattriggers/ctjs/api/render/Text {
 	public final fun setScale (F)Lcom/chattriggers/ctjs/api/render/Text;
 	public final fun setShadow (Z)Lcom/chattriggers/ctjs/api/render/Text;
 	public final fun setString (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/render/Text;
-	public final fun setX (F)Lcom/chattriggers/ctjs/api/render/Text;
-	public final fun setY (F)Lcom/chattriggers/ctjs/api/render/Text;
+	public final fun setX (I)Lcom/chattriggers/ctjs/api/render/Text;
+	public final fun setY (I)Lcom/chattriggers/ctjs/api/render/Text;
 	public fun toString ()Ljava/lang/String;
 }
 

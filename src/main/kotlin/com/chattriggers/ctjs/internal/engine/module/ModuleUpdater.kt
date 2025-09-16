@@ -26,7 +26,7 @@ object ModuleUpdater : Initializer {
     override fun init() {
         ClientPlayConnectionEvents.JOIN.register { _, _, _ -> shouldReportChangelog = true }
 
-        CTEvents.RENDER_OVERLAY.register { _, _ ->
+        CTEvents.RENDER_OVERLAY.register { _, _, _ ->
             if (shouldReportChangelog) {
                 changelogs.forEach(::reportChangelog)
                 changelogs.clear()

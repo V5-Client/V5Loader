@@ -5,7 +5,7 @@
     "version": "$version",
     "description": "A framework for Minecraft that allows for live scripting and client modification using JavaScript",
     "authors": ["Ecolsson", "FalseHonesty", "kerbybit"],
-    "contributors": ["Squagward", "Debuggings", "DJtheRedstoner"],
+    "contributors": ["Squagward", "Debuggings", "DJtheRedstoner", "srockw", "DocilElm"],
     "icon": "assets/ctjs/logo.png",
     "license": ["MIT"],
     "contact": {

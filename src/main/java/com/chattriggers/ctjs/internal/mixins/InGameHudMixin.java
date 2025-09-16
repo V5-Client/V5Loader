@@ -22,14 +22,10 @@ public class InGameHudMixin {
     }
 
     @Inject(
-        method = "render",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/hud/InGameHud;renderMainHud(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/render/RenderTickCounter;)V",
-            shift = At.Shift.AFTER
-        )
+        method = "renderBossBarHud",
+        at = @At("TAIL")
     )
     private void injectRenderOverlay(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        CTEvents.RENDER_OVERLAY.invoker().render(new UMatrixStack(context.getMatrices()).toMC(), tickCounter.getDynamicDeltaTicks());
+        CTEvents.RENDER_OVERLAY.invoker().render(context, new UMatrixStack(context.getMatrices()).toMC(), tickCounter.getDynamicDeltaTicks());
     }
 }
