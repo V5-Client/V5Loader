@@ -916,11 +916,8 @@ public class com/chattriggers/ctjs/api/entity/LivingEntity : com/chattriggers/ct
 public final class com/chattriggers/ctjs/api/entity/Particle : com/chattriggers/ctjs/api/CTWrapper {
 	public fun <init> (Lnet/minecraft/client/particle/Particle;)V
 	public final fun getAge ()I
-	public final fun getAlpha ()F
-	public final fun getBlue ()F
-	public final fun getColor ()Ljava/awt/Color;
+	public final fun getColor ()Lkotlin/jvm/functions/Function0;
 	public final fun getDead ()Z
-	public final fun getGreen ()F
 	public final fun getLastX ()D
 	public final fun getLastY ()D
 	public final fun getLastZ ()D
@@ -929,7 +926,6 @@ public final class com/chattriggers/ctjs/api/entity/Particle : com/chattriggers/
 	public final fun getMotionX ()D
 	public final fun getMotionY ()D
 	public final fun getMotionZ ()D
-	public final fun getRed ()F
 	public final fun getRenderX ()D
 	public final fun getRenderY ()D
 	public final fun getRenderZ ()D
@@ -940,14 +936,11 @@ public final class com/chattriggers/ctjs/api/entity/Particle : com/chattriggers/
 	public final fun scale (F)Lcom/chattriggers/ctjs/api/entity/Particle;
 	public final fun setAge (I)V
 	public final fun setAlpha (F)Lcom/chattriggers/ctjs/api/entity/Particle;
-	public final fun setAlpha (F)V
-	public final fun setBlue (F)V
 	public final fun setColor (FFF)Lcom/chattriggers/ctjs/api/entity/Particle;
 	public final fun setColor (FFFF)Lcom/chattriggers/ctjs/api/entity/Particle;
 	public final fun setColor (J)Lcom/chattriggers/ctjs/api/entity/Particle;
 	public final fun setColor (Ljava/awt/Color;)Lcom/chattriggers/ctjs/api/entity/Particle;
 	public final fun setDead (Z)V
-	public final fun setGreen (F)V
 	public final fun setLastX (D)V
 	public final fun setLastY (D)V
 	public final fun setLastZ (D)V
@@ -955,7 +948,6 @@ public final class com/chattriggers/ctjs/api/entity/Particle : com/chattriggers/
 	public final fun setMotionX (D)V
 	public final fun setMotionY (D)V
 	public final fun setMotionZ (D)V
-	public final fun setRed (F)V
 	public final fun setX (D)V
 	public final fun setY (D)V
 	public final fun setZ (D)V

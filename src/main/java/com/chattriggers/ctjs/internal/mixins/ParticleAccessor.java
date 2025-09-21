@@ -43,30 +43,6 @@ public interface ParticleAccessor {
     void setVelocityZ(double value);
 
     @Accessor
-    float getRed();
-
-    @Accessor
-    void setRed(float value);
-
-    @Accessor
-    float getGreen();
-
-    @Accessor
-    void setGreen(float value);
-
-    @Accessor
-    float getBlue();
-
-    @Accessor
-    void setBlue(float value);
-
-    @Accessor
-    float getAlpha();
-
-    @Accessor
-    void setAlpha(float value);
-
-    @Accessor
     int getAge();
 
     @Accessor

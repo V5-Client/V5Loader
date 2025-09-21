@@ -199,7 +199,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
 
     fun isWet() = mcValue.isTouchingWaterOrRain
 
-    fun getDimension() = mcValue.world.dimensionEntry.key.let { key ->
+    fun getDimension() = mcValue.entityWorld.dimensionEntry.key.let { key ->
         DimensionType.entries.first { it.toMC() == key }
     }
 
@@ -229,7 +229,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
 
     fun isBurning(): Boolean = mcValue.isOnFire
 
-    fun getWorld() = mcValue.world
+    fun getWorld() = mcValue.entityWorld
 
     fun getChunk(): Chunk = Chunk(getWorld().getWorldChunk(mcValue.blockPos))
 

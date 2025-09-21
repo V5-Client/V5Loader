@@ -1,21 +1,26 @@
 package com.chattriggers.ctjs.api.render
 
 import net.minecraft.client.network.AbstractClientPlayerEntity
-import net.minecraft.client.render.VertexConsumerProvider
+import net.minecraft.client.render.command.OrderedRenderCommandQueue
 import net.minecraft.client.render.entity.EntityRendererFactory
 import net.minecraft.client.render.entity.PlayerEntityRenderer
 import net.minecraft.client.render.entity.feature.*
-import net.minecraft.client.render.entity.model.ArmorEntityModel
+import net.minecraft.client.render.entity.model.EntityModelLayer
 import net.minecraft.client.render.entity.model.EntityModelLayers
-import net.minecraft.client.render.entity.model.LoadedEntityModels
+import net.minecraft.client.render.entity.model.EquipmentModelData
+import net.minecraft.client.render.entity.model.PlayerEntityModel
 import net.minecraft.client.render.entity.state.PlayerEntityRenderState
+import net.minecraft.client.render.state.CameraRenderState
 import net.minecraft.client.util.math.MatrixStack
-import net.minecraft.text.Text
 
 internal class CTPlayerRenderer(
     private val ctx: EntityRendererFactory.Context,
     private val slim: Boolean,
-) : PlayerEntityRenderer(ctx, slim) {
+) : PlayerEntityRenderer<AbstractClientPlayerEntity>(ctx, slim) {
+    private val PLAYER_SLIM: EquipmentModelData<EntityModelLayers>
+        @Suppress("UNCHECKED_CAST")
+        get() = EntityModelLayers::class.java.getField("PLAYER_SLIM").get(null) as EquipmentModelData<EntityModelLayers>
+
     var showArmor = true
         set(value) {
             field = value
@@ -79,29 +84,30 @@ internal class CTPlayerRenderer(
         reset()
     }
 
-
     override fun renderLabelIfPresent(
-        playerEntityRenderState: PlayerEntityRenderState,
-        text: Text,
-        matrixStack: MatrixStack,
-        vertexConsumerProvider: VertexConsumerProvider,
-        i: Int
+        playerEntityRenderState: PlayerEntityRenderState?,
+        matrixStack: MatrixStack?,
+        orderedRenderCommandQueue: OrderedRenderCommandQueue?,
+        cameraRenderState: CameraRenderState?
     ) {
         if (showNametag)
-            super.renderLabelIfPresent(playerEntityRenderState, text, matrixStack, vertexConsumerProvider, i)
+            super.renderLabelIfPresent(playerEntityRenderState, matrixStack, orderedRenderCommandQueue, cameraRenderState)
     }
 
     private fun reset() {
         features.clear()
 
-        val entityModels = ctx.modelManager.entityModelsSupplier.get()
+        val entityModels = ctx.blockRenderManager.models.modelManager.entityModelsSupplier.get()
 
         if (showArmor) {
+            val layer = if (slim) PLAYER_SLIM else EntityModelLayers.PLAYER_EQUIPMENT
             addFeature(
                 ArmorFeatureRenderer(
                     this,
-                    ArmorEntityModel(ctx.getPart(if (slim) EntityModelLayers.PLAYER_SLIM_INNER_ARMOR else EntityModelLayers.PLAYER_INNER_ARMOR)),
-                    ArmorEntityModel(ctx.getPart(if (slim) EntityModelLayers.PLAYER_SLIM_OUTER_ARMOR else EntityModelLayers.PLAYER_OUTER_ARMOR)),
+                    EquipmentModelData.mapToEntityModel(
+                        layer as EquipmentModelData<EntityModelLayer>,
+                        ctx.entityModels
+                    ) { PlayerEntityModel(it, slim) },
                     ctx.equipmentRenderer
                 )
             )
@@ -114,7 +120,7 @@ internal class CTPlayerRenderer(
         if (showCape)
             addFeature(CapeFeatureRenderer(this, entityModels, ctx.equipmentModelLoader))
         if (showArmor)
-            addFeature(HeadFeatureRenderer(this, entityModels))
+            addFeature(HeadFeatureRenderer(this, entityModels, ctx.playerSkinCache))
         if (showElytra)
             addFeature(ElytraFeatureRenderer(this, entityModels, ctx.equipmentRenderer))
         if (showParrot)

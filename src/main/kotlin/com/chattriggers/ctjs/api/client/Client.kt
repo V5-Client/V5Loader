@@ -27,6 +27,7 @@ import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 import net.minecraft.network.packet.Packet
 import net.minecraft.text.Text
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 object Client {
@@ -47,7 +48,7 @@ object Client {
      * @return The Minecraft object
      */
     @JvmStatic
-    fun getMinecraft(): MinecraftClient = UMinecraft.getMinecraft()
+    fun getMinecraft(): MinecraftClient = MinecraftClient.getInstance()
 
     /**
      * Gets Minecraft's NetHandlerPlayClient object
@@ -164,10 +165,10 @@ object Client {
     fun getSystemTime(): Long = (System.nanoTime() - referenceSystemTime) / 1_000_000
 
     @JvmStatic
-    fun getMouseX() = UMouse.Scaled.x
+    fun getMouseX() = getMinecraft().mouse.x * getMinecraft().window.scaledWidth / max(1, getMinecraft().window.scaledWidth)
 
     @JvmStatic
-    fun getMouseY() = UMouse.Scaled.y
+    fun getMouseY() = getMinecraft().mouse.y * getMinecraft().window.scaledHeight / max(1, getMinecraft().window.scaledHeight)
 
     @JvmStatic
     fun isInGui(): Boolean = currentGui.get() != null
@@ -195,7 +196,7 @@ object Client {
         if (isInChat()) {
             val chatGui = getMinecraft().currentScreen as ChatScreen
             chatGui.asMixin<ChatScreenAccessor>().chatField.text = message
-        } else currentGui.set(ChatScreen(message))
+        } else currentGui.set(ChatScreen(message, false))
     }
 
     @JvmStatic
@@ -282,7 +283,7 @@ object Client {
         return KeyBind.getKeyBinds()
             .find { it.getDescription() == description }
             ?: getMinecraft().options.allKeys
-                .find { it.translationKey == description }
+                .find { it.boundKeyTranslationKey == description }
                 ?.let(::KeyBind)
     }
 

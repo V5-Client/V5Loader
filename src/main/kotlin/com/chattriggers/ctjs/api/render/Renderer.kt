@@ -8,8 +8,6 @@ import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.vec.Vec3f
 import com.chattriggers.ctjs.engine.LogType
 import com.chattriggers.ctjs.engine.printToConsole
-import com.chattriggers.ctjs.internal.mixins.EntityRenderDispatcherAccessor
-import com.chattriggers.ctjs.internal.utils.asMixin
 import com.chattriggers.ctjs.internal.utils.getOrDefault
 import com.chattriggers.ctjs.internal.utils.toRadians
 import com.mojang.blaze3d.pipeline.RenderPipeline.Snippet
@@ -28,7 +26,6 @@ import net.minecraft.client.network.AbstractClientPlayerEntity
 import net.minecraft.client.render.VertexFormats
 import net.minecraft.client.render.entity.EntityRendererFactory
 import net.minecraft.client.util.math.MatrixStack
-import org.joml.Matrix3x2fStack
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.mozilla.javascript.NativeObject
@@ -676,13 +673,13 @@ object Renderer {
 
         if (pitchModelRotation != null) {
             pitchModelRotation.conjugate()
-            entityRenderDispatcher.rotation = pitchModelRotation
+            entityRenderDispatcher.camera?.rotation?.set(pitchModelRotation)
         }
 
-        entityRenderDispatcher.setRenderShadows(false)
+        // entityRenderDispatcher.setRenderShadows(false)
         val vertexConsumers = MinecraftClient.getInstance().bufferBuilders.entityVertexConsumers
 
-        val light = 0xf000f0
+        // val light = 0xf000f0
 
         val entityRenderer = if (slim) slimCTRenderPlayer else normalCTRenderPlayer
         entityRenderer.setOptions(
@@ -709,16 +706,17 @@ object Renderer {
         matrixStack.push()
         matrixStack.translate(d, e, f)
 
-        entityRenderer.render(playerEntityRenderState, matrixStack.toMC(), vertexConsumers, light)
-        if (entity.doesRenderOnFire()) {
-            entityRenderDispatcher.asMixin<EntityRenderDispatcherAccessor>()
-                .invokerRenderFire(matrixStack.toMC(), vertexConsumers, playerEntityRenderState, Quaternionf())
-        }
+        entityRenderer.render(
+            playerEntityRenderState,
+            matrixStack.toMC(),
+            Client.getMinecraft().gameRenderer.entityRenderCommandQueue,
+            Client.getMinecraft().gameRenderer.entityRenderStates.cameraRenderState
+        )
 
         matrixStack.pop()
 
         vertexConsumers.draw()
-        entityRenderDispatcher.setRenderShadows(true)
+        // entityRenderDispatcher.setRenderShadows(true)
         matrixStack.pop()
         // TODO: find out a way to get Diffuse instance and call setType
         // DiffuseLighting.enableGuiDepthLighting()

@@ -4,6 +4,7 @@ import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.api.render.Text
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 
@@ -49,8 +50,10 @@ object ModulesGui : Screen(net.minecraft.text.Text.literal("Modules")) {
         ctx.matrices.popMatrix()
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        super.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(click: Click, double: Boolean): Boolean {
+        super.mouseClicked(click, double)
+        val mouseX = click.x
+        val mouseY = click.y
 
         var width = Renderer.screen.getWidth() - 100f
         if (width > 500) width = 500f

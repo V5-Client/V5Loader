@@ -7,7 +7,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.PlayerScreenHandler;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,7 +29,7 @@ public abstract class PlayerScreenHandlerMixin {
     private void injectOnClosed(PlayerEntity player, CallbackInfo ci) {
         // dropping items for player's crafting slots. needs a whole injection point due to there
         // being an extra if to make sure it only calls dropInventory server-side
-        if (player.getWorld().isClient) {
+        if (player.getEntityWorld().isClient()) {
             var craftingInput = this.getCraftingInput();
             for (int i = 0; i < craftingInput.size(); i++) {
                 ItemStack stack = craftingInput.getStack(i);

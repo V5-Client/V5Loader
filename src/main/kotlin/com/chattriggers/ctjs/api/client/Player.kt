@@ -25,7 +25,7 @@ import java.util.*
 
 object Player {
     @JvmStatic
-    fun toMC() = UMinecraft.getMinecraft().player
+    fun toMC() = Client.getMinecraft().player
 
     @JvmField
     val armor = ArmorWrapper()

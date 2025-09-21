@@ -383,11 +383,13 @@ class TextComponent private constructor(
     private class PartContent(val text: String, val style_: Style) : TextContent {
         override fun <T : Any?> visit(visitor: StringVisitable.Visitor<T>): Optional<T> = visitor.accept(text)
 
+        override fun getCodec(): MapCodec<out TextContent> = CODEC
+
         override fun <T> visit(visitor: StringVisitable.StyledVisitor<T>, style: Style): Optional<T> {
             return visitor.accept(this.style_.withParent(style), text)
         }
 
-        override fun getType(): TextContent.Type<*> = TextContent.Type(CODEC, "${CTJS.MOD_ID}_part")
+        // override fun getType(): TextContent.Type<*> = TextContent.Type(CODEC, "${CTJS.MOD_ID}_part")
 
         companion object {
             private val CODEC: MapCodec<PartContent> = RecordCodecBuilder.mapCodec { builder ->
@@ -447,11 +449,13 @@ class TextComponent private constructor(
                     }
                 )
                 .withFont(
-                    when (val font = obj["font"]) {
-                        null -> null
-                        is CharSequence -> font.toString().toIdentifier()
-                        else -> error("Expected \"font\" key to be a String")
-                    }
+                    StyleSpriteSource.Font(
+                        when (val font = obj["font"]) {
+                            null -> null
+                            is CharSequence -> font.toString().toIdentifier()
+                            else -> error("Expected \"font\" key to be a String")
+                        }
+                    )
                 )
         }
 

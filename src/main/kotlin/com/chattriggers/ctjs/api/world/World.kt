@@ -19,6 +19,7 @@ import com.chattriggers.ctjs.internal.utils.asMixin
 import com.chattriggers.ctjs.internal.utils.toIdentifier
 import gg.essential.universal.UMinecraft
 import net.minecraft.block.BlockState
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.world.ClientWorld
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -39,7 +40,7 @@ import kotlin.math.roundToInt
 
 object World {
     @JvmStatic
-    fun toMC() = UMinecraft.getMinecraft().world
+    fun toMC() = MinecraftClient.getInstance().world
 
     @JvmField
     val spawn = SpawnWrapper()
@@ -278,21 +279,21 @@ object World {
          *
          * @return the spawn x location.
          */
-        fun getX(): Int = toMC()!!.spawnPos.x
+        fun getX(): Int = toMC()!!.spawnPoint.pos.x
 
         /**
          * Gets the spawn y location.
          *
          * @return the spawn y location.
          */
-        fun getY(): Int = toMC()!!.spawnPos.y
+        fun getY(): Int = toMC()!!.spawnPoint.pos.y
 
         /**
          * Gets the spawn z location.
          *
          * @return the spawn z location.
          */
-        fun getZ(): Int = toMC()!!.spawnPos.z
+        fun getZ(): Int = toMC()!!.spawnPoint.pos.z
     }
 
     class ParticleWrapper {

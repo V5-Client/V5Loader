@@ -101,9 +101,9 @@ object ClientListener : Initializer {
                 }
             }
 
-            ScreenKeyboardEvents.allowKeyPress(screen).register { _, key, scancode, _ ->
+            ScreenKeyboardEvents.allowKeyPress(screen).register { _, input ->
                 val event = CancellableEvent()
-                TriggerType.GUI_KEY.triggerAll(GLFW.glfwGetKeyName(key, scancode), key, screen, event)
+                TriggerType.GUI_KEY.triggerAll(GLFW.glfwGetKeyName(input.key, input.scancode), input.key, screen, event)
                 !event.isCancelled()
             }
         }
@@ -143,7 +143,7 @@ object ClientListener : Initializer {
         }
 
         AttackBlockCallback.EVENT.register { player, _, _, pos, direction ->
-            if (!player.world.isClient) return@register ActionResult.PASS
+            if (!player.entityWorld.isClient) return@register ActionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -156,7 +156,7 @@ object ClientListener : Initializer {
         }
 
         AttackEntityCallback.EVENT.register { player, _, _, entity, _ ->
-            if (!player.world.isClient) return@register ActionResult.PASS
+            if (!player.entityWorld.isClient) return@register ActionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -178,7 +178,7 @@ object ClientListener : Initializer {
         }
 
         UseBlockCallback.EVENT.register { player, _, hand, hitResult ->
-            if (!player.world.isClient) return@register ActionResult.PASS
+            if (!player.entityWorld.isClient) return@register ActionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -191,7 +191,7 @@ object ClientListener : Initializer {
         }
 
         UseEntityCallback.EVENT.register { player, _, hand, entity, _ ->
-            if (!player.world.isClient) return@register ActionResult.PASS
+            if (!player.entityWorld.isClient) return@register ActionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -204,7 +204,7 @@ object ClientListener : Initializer {
         }
 
         UseItemCallback.EVENT.register { player, _, hand ->
-            if (!player.world.isClient) return@register ActionResult.PASS
+            if (!player.entityWorld.isClient) return@register ActionResult.PASS
             val event = CancellableEvent()
 
             val stack = player.getStackInHand(hand)

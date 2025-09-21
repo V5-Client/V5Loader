@@ -11,7 +11,7 @@ object WorldListener : Initializer {
     override fun init() {
         WorldRenderEvents.BLOCK_OUTLINE.register { _, ctx ->
             val event = CancellableEvent()
-            TriggerType.BLOCK_HIGHLIGHT.triggerAll(BlockPos(ctx.blockPos()), event)
+            TriggerType.BLOCK_HIGHLIGHT.triggerAll(BlockPos(ctx.pos), event)
             !event.isCancelled()
         }
 

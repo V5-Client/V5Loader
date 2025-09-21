@@ -7,7 +7,6 @@ import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.entity.Team
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.internal.mixins.ClientPlayNetworkHandlerAccessor
-import com.chattriggers.ctjs.internal.mixins.MinecraftClientAccessor
 import com.chattriggers.ctjs.internal.mixins.PlayerListEntryAccessor
 import com.chattriggers.ctjs.internal.mixins.PlayerListHudAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
@@ -19,9 +18,10 @@ import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.scoreboard.ScoreboardDisplaySlot
 import net.minecraft.scoreboard.ScoreboardObjective
 import net.minecraft.text.Text
-import net.minecraft.util.ApiServices
+import net.minecraft.util.Util
 import net.minecraft.world.GameMode
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 object TabList {
     private var needsUpdate = true
@@ -215,25 +215,27 @@ object TabList {
         }
 
         val mc = Client.getMinecraft()
-        val apiServices =
-            ApiServices.create(mc.asMixin<MinecraftClientAccessor>().authenticationService, mc.runDirectory)
-        apiServices.userCache.setExecutor(mc)
+        // TODO: is it necessary to actually create a new one ?
+        val apiServices = mc.apiServices
 
-        apiServices.userCache.findByNameAsync(username).thenAcceptAsync {
-            if (it.isPresent) {
-                val result = apiServices.sessionService.fetchProfile(it.get().id, true) ?: return@thenAcceptAsync
+        val findName = CompletableFuture.supplyAsync ({
+            apiServices.nameToIdCache.findByName(username)
+        }, Util.getMainWorkerExecutor().named("getProfile"))
 
-                val entry = PlayerListEntry(result.profile, true)
-                entry.displayName = name
+        findName.thenAcceptAsync {
+            if (!it.isPresent) return@thenAcceptAsync
 
-                listedPlayerListEntries += entry
-                playerListEntries[result.profile.id] = entry
+            val result = apiServices.sessionService.fetchProfile(it.get().id, true) ?: return@thenAcceptAsync
+            val entry = PlayerListEntry(result.profile, true)
+            entry.displayName = name
 
-                listedPlayerListEntries -= fakeEntry
-                playerListEntries.remove(uuid)
+            listedPlayerListEntries += entry
+            playerListEntries[result.profile.id] = entry
 
-                updateNames()
-            }
+            listedPlayerListEntries -= fakeEntry
+            playerListEntries.remove(uuid)
+
+            updateNames()
         }
     }
 

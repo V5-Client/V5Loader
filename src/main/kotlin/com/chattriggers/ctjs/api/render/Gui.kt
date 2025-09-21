@@ -218,8 +218,9 @@ class Gui @JvmOverloads constructor(
     override fun initScreen(width: Int, height: Int) {
         super.initScreen(width, height)
 
-        ScreenMouseEvents.afterMouseScroll(this).register { _, x, y, _, dy ->
+        ScreenMouseEvents.afterMouseScroll(this).register { _, x, y, _, dy, _ ->
             onScroll?.trigger(arrayOf(x, y, dy))
+            false
         }
 
         buttons.values.forEach(::addDrawableChild)

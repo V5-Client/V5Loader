@@ -136,6 +136,7 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
         Renderer.pushMatrix()
         Renderer.translate(x + 8, y + 8, 150 + z)
         try {
+            val orderedRender = Client.getMinecraft().gameRenderer.entityRenderCommandQueue
             val vertexConsumers = Client.getMinecraft().bufferBuilders.entityVertexConsumers
             Renderer.scale(16.0f, -16.0f, 16.0f)
             if (!itemRenderState.isSideLit)
@@ -143,7 +144,7 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
                 // TODO: find out a way to get Diffuse instance and call setType
                 // DiffuseLighting.disableGuiDepthLighting()
 
-            itemRenderState.render(Renderer.matrixStack.toMC(), vertexConsumers, 15728880, OverlayTexture.DEFAULT_UV)
+            itemRenderState.render(Renderer.matrixStack.toMC(), orderedRender, 15728880, OverlayTexture.DEFAULT_UV, 0)
 
             Renderer.disableDepth()
             vertexConsumers.draw()

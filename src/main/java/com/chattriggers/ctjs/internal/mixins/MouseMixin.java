@@ -5,18 +5,18 @@ import com.chattriggers.ctjs.internal.listeners.MouseListener;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Mouse;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.MouseInput;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(Mouse.class)
 public class MouseMixin {
     @Shadow
-    private int activeButton;
+    private MouseInput activeButton;
 
     @Inject(
         method = "onMouseButton",
@@ -26,8 +26,8 @@ public class MouseMixin {
             opcode = Opcodes.GETFIELD
         )
     )
-    private void injectOnMouseButton(long window, int button, int action, int mods, CallbackInfo ci) {
-        MouseListener.onRawMouseInput(button, action);
+    private void injectOnMouseButton(long window, MouseInput input, int action, CallbackInfo ci) {
+        MouseListener.onRawMouseInput(input.button(), action);
     }
 
     @Inject(
@@ -46,7 +46,7 @@ public class MouseMixin {
         method = "tick",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screen/Screen;mouseDragged(DDIDD)Z"
+            target = "Lnet/minecraft/client/gui/screen/Screen;mouseDragged(Lnet/minecraft/client/gui/Click;DD)Z"
         ),
         cancellable = true
     )
@@ -59,7 +59,7 @@ public class MouseMixin {
         @Local(ordinal = 3) double g)
     {
         if (screen != null) {
-            CTEvents.GUI_MOUSE_DRAG.invoker().process(f, g, d, e, activeButton, screen, ci);
+            CTEvents.GUI_MOUSE_DRAG.invoker().process(f, g, d, e, activeButton.button(), screen, ci);
         }
     }
 }
