@@ -47,7 +47,7 @@ universalcraft = { module = "gg.essential:universalcraft-1.21.6-fabric", version
 elementa = { module = "gg.essential:elementa", version.ref = "elementa" }
 vigilance = { module = "gg.essential:vigilance", version.ref = "vigilance" }
 
-modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
+#modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
 devauth = { module = "me.djtheredstoner:DevAuth-fabric", version.ref = "devauth" }
 versioning = { module = "org.jetbrains.dokka:versioning-plugin", version.ref = "dokka" }
 

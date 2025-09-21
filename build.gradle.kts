@@ -46,7 +46,7 @@ dependencies {
         include(this)
     }
 
-    modApi(libs.modmenu)
+//    modApi(libs.modmenu)
     modRuntimeOnly(libs.devauth)
     dokkaPlugin(libs.versioning)
 
