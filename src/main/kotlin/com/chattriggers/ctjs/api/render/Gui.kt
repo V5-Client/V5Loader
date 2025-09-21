@@ -11,9 +11,7 @@ import gg.essential.universal.UMatrixStack
 import gg.essential.universal.UScreen
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.item.Item
 
 class Gui @JvmOverloads constructor(
     title: TextComponent = TextComponent(""),

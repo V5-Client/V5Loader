@@ -1,5 +1,6 @@
 package com.chattriggers.ctjs.internal.listeners
 
+import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.entity.BlockEntity
 import com.chattriggers.ctjs.api.entity.Entity
 import com.chattriggers.ctjs.api.entity.PlayerInteraction
@@ -19,7 +20,6 @@ import com.chattriggers.ctjs.internal.engine.JSContextFactory
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
 import gg.essential.universal.UMatrixStack
-import gg.essential.universal.UMinecraft
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents
@@ -56,7 +56,7 @@ object ClientListener : Initializer {
             synchronized(tasks) {
                 tasks.removeAll {
                     if (it.delay-- <= 0) {
-                        UMinecraft.getMinecraft().submit(it.callback)
+                        Client.getMinecraft().submit(it.callback)
                         true
                     } else false
                 }

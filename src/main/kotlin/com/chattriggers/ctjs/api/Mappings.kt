@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.transformer.ClassInfo
 import org.spongepowered.asm.service.MixinService
 import java.io.ByteArrayInputStream
 import java.net.URI
-import java.net.URL
 import java.nio.file.Files
 import java.util.zip.ZipFile
 

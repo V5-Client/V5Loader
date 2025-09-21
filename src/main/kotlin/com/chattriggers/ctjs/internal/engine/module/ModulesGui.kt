@@ -29,8 +29,10 @@ object ModulesGui : Screen(net.minecraft.text.Text.literal("Modules")) {
         if (-window.scroll < 0) window.scroll = 0f
 
         if (-window.scroll > 0) {
-            Renderer.drawRect(0xaa000000, Renderer.screen.getWidth() - 20f, Renderer.screen.getHeight() - 20f, 20f, 20f)
-            Renderer.drawString("^", Renderer.screen.getWidth() - 12f, Renderer.screen.getHeight() - 12f)
+            val rx = Renderer.screen.getWidth() - 20
+            val ry = Renderer.screen.getHeight() - 20
+            ctx.fill(rx, ry, rx + 20, ry + 20, 0xaa000000.toInt())
+            ctx.drawText(Renderer.getFontRenderer(), "^", Renderer.screen.getWidth() - 12, Renderer.screen.getHeight() - 12, -1, false)
         }
 
         val ox = middle - width / 2

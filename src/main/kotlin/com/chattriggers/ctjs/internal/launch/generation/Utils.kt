@@ -2,11 +2,9 @@ package com.chattriggers.ctjs.internal.launch.generation
 
 import com.chattriggers.ctjs.api.Mappings
 import com.chattriggers.ctjs.internal.launch.*
-import com.chattriggers.ctjs.internal.utils.descriptor
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.lib.accesswidener.AccessWidenerReader
-import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.spongepowered.asm.mixin.transformer.ClassInfo

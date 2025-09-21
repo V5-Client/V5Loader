@@ -17,7 +17,6 @@ import com.chattriggers.ctjs.internal.mixins.ClientChunkMapAccessor
 import com.chattriggers.ctjs.internal.mixins.ClientWorldAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import com.chattriggers.ctjs.internal.utils.toIdentifier
-import gg.essential.universal.UMinecraft
 import net.minecraft.block.BlockState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.world.ClientWorld

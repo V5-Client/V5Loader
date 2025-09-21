@@ -21,7 +21,6 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.loader.api.FabricLoader
 import java.io.File
 import java.net.URI
-import java.net.URL
 import java.net.URLConnection
 import java.security.MessageDigest
 import java.util.*

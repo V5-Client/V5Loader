@@ -9,8 +9,6 @@ import com.chattriggers.ctjs.internal.mixins.HandledScreenAccessor
 import com.chattriggers.ctjs.internal.mixins.KeyBindingAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import gg.essential.universal.UKeyboard
-import gg.essential.universal.UMinecraft
-import gg.essential.universal.UMouse
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.hud.ChatHud
 import net.minecraft.client.gui.hud.PlayerListHud

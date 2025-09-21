@@ -5,7 +5,6 @@ import com.chattriggers.ctjs.internal.launch.At
 import com.chattriggers.ctjs.internal.launch.ModifyArg
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import org.objectweb.asm.tree.MethodNode
-import kotlin.math.sign
 import org.spongepowered.asm.mixin.injection.ModifyArg as SPModifyArg
 
 internal class ModifyArgGenerator(

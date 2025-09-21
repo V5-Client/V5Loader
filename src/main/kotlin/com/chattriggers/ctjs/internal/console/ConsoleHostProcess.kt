@@ -7,12 +7,12 @@ import com.chattriggers.ctjs.engine.LogType
 import com.chattriggers.ctjs.internal.engine.CTEvents
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
-import gg.essential.universal.UDesktop
 import kotlinx.serialization.json.Json
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
 import net.minecraft.util.Identifier
+import net.minecraft.util.Util
 import org.lwjgl.glfw.GLFW
 import java.awt.Color
 import java.io.BufferedReader
@@ -81,7 +81,7 @@ object ConsoleHostProcess : Initializer {
 
         val urlObjects = (Thread.currentThread().contextClassLoader.parent as URLClassLoader).urLs
         val urls = urlObjects.joinToString(File.pathSeparator) {
-            val str = if (UDesktop.isWindows) it.toString().replace("file:/", "") else it.toString()
+            val str = if (Util.getOperatingSystem().equals(Util.OperatingSystem.WINDOWS)) it.toString().replace("file:/", "") else it.toString()
             URLDecoder.decode(str, Charset.defaultCharset())
         }
 

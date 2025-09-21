@@ -1,6 +1,5 @@
 package com.chattriggers.ctjs.internal.console
 
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.awt.Color
 import java.io.*

@@ -1,7 +1,6 @@
 package com.chattriggers.ctjs.internal.launch
 
 import com.chattriggers.ctjs.internal.engine.JSLoader
-import com.chattriggers.ctjs.internal.launch.generation.InjectorGenerator
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type

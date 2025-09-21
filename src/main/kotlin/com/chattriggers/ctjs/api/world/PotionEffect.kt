@@ -1,7 +1,6 @@
 package com.chattriggers.ctjs.api.world
 
 import com.chattriggers.ctjs.api.message.TextComponent
-import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.registry.Registries
 

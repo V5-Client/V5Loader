@@ -12,7 +12,6 @@ import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.LiteralCommandNode
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.minecraft.command.CommandSource
 import org.mozilla.javascript.Function
 import org.mozilla.javascript.NativeObject

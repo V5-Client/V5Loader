@@ -4,7 +4,6 @@ import com.chattriggers.ctjs.api.CTWrapper
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.entity.Entity
-import com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.api.world.World
@@ -12,10 +11,8 @@ import com.chattriggers.ctjs.api.world.block.Block
 import com.chattriggers.ctjs.api.world.block.BlockPos
 import com.chattriggers.ctjs.internal.Skippable
 import com.chattriggers.ctjs.internal.TooltipOverridable
-import com.chattriggers.ctjs.MCNbtCompound
 import com.chattriggers.ctjs.internal.utils.asMixin
 import net.minecraft.block.pattern.CachedBlockPosition
-import net.minecraft.client.render.DiffuseLighting
 import net.minecraft.client.render.OverlayTexture
 import net.minecraft.client.render.item.ItemRenderState
 import net.minecraft.component.DataComponentTypes

@@ -18,8 +18,6 @@ import gg.essential.elementa.dsl.component3
 import gg.essential.elementa.dsl.component4
 import gg.essential.universal.UGraphics
 import gg.essential.universal.UMatrixStack
-import gg.essential.universal.UMinecraft
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gl.RenderPipelines
 import net.minecraft.client.network.AbstractClientPlayerEntity
@@ -134,10 +132,10 @@ object Renderer {
     }
 
     @JvmStatic
-    fun getFontRenderer() = UMinecraft.getFontRenderer()
+    fun getFontRenderer() = Client.getMinecraft().textRenderer
 
     @JvmStatic
-    fun getRenderManager() = UMinecraft.getMinecraft().worldRenderer
+    fun getRenderManager() = Client.getMinecraft().worldRenderer
 
     @JvmStatic
     fun getStringWidth(text: String) = getFontRenderer().getWidth(ChatLib.addColor(text))
@@ -669,7 +667,7 @@ object Renderer {
         // TODO: find out a way to get Diffuse instance and call setType
         // DiffuseLighting.enableGuiShaderLighting()
 
-        val entityRenderDispatcher = MinecraftClient.getInstance().entityRenderDispatcher
+        val entityRenderDispatcher = Client.getMinecraft().entityRenderDispatcher
 
         if (pitchModelRotation != null) {
             pitchModelRotation.conjugate()
@@ -677,7 +675,7 @@ object Renderer {
         }
 
         // entityRenderDispatcher.setRenderShadows(false)
-        val vertexConsumers = MinecraftClient.getInstance().bufferBuilders.entityVertexConsumers
+        val vertexConsumers = Client.getMinecraft().bufferBuilders.entityVertexConsumers
 
         // val light = 0xf000f0
 
@@ -805,10 +803,10 @@ object Renderer {
     }
 
     class ScreenWrapper {
-        fun getWidth(): Int = UMinecraft.getMinecraft().window.scaledWidth
+        fun getWidth(): Int = Client.getMinecraft().window.scaledWidth
 
-        fun getHeight(): Int = UMinecraft.getMinecraft().window.scaledHeight
+        fun getHeight(): Int = Client.getMinecraft().window.scaledHeight
 
-        fun getScale(): Double = UMinecraft.getMinecraft().window.scaleFactor.toDouble()
+        fun getScale(): Double = Client.getMinecraft().window.scaleFactor.toDouble()
     }
 }

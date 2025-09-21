@@ -13,7 +13,6 @@ import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.api.world.block.BlockFace
 import com.chattriggers.ctjs.api.world.block.BlockPos
 import gg.essential.universal.UMath
-import gg.essential.universal.UMinecraft
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
@@ -127,7 +126,7 @@ object Player {
      * @return the player's username
      */
     @JvmStatic
-    fun getName(): String = UMinecraft.getMinecraft().session.username
+    fun getName(): String = Client.getMinecraft().session.username
 
     /**
      * Gets the Java UUID object of the player.
@@ -136,7 +135,7 @@ object Player {
      * @return the player's uuid
      */
     @JvmStatic
-    fun getUUID(): UUID = UMinecraft.getMinecraft().gameProfile.id
+    fun getUUID(): UUID = Client.getMinecraft().gameProfile.id
 
     @JvmStatic
     fun getHP(): Float = toMC()?.health ?: 0f

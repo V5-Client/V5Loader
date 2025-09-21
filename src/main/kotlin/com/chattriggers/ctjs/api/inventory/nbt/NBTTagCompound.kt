@@ -5,7 +5,6 @@ import com.chattriggers.ctjs.MCNbtBase
 import com.chattriggers.ctjs.MCNbtCompound
 import com.chattriggers.ctjs.internal.utils.asMixin
 import net.minecraft.nbt.NbtByteArray
-import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtIntArray
 import net.minecraft.nbt.NbtLongArray
 import org.mozilla.javascript.NativeObject

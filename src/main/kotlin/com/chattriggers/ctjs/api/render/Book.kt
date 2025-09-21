@@ -5,7 +5,6 @@ import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.internal.mixins.BookScreenAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import net.minecraft.client.gui.screen.ingame.BookScreen
-import net.minecraft.text.StringVisitable
 
 class Book {
     private var screen: BookScreen? = null

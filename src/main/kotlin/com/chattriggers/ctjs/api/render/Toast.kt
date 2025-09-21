@@ -6,12 +6,10 @@ import com.chattriggers.ctjs.engine.printTraceToConsole
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.getOrNull
 import com.chattriggers.ctjs.internal.utils.toIdentifier
-import com.mojang.blaze3d.systems.RenderSystem
 import gg.essential.universal.UMatrixStack
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gl.RenderPipelines
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.toast.ToastManager
 import net.minecraft.util.Identifier
 import org.mozilla.javascript.*

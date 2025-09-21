@@ -1,6 +1,5 @@
 package com.chattriggers.ctjs.api.message
 
-import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.MCEntity
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.Player
@@ -11,7 +10,6 @@ import com.chattriggers.ctjs.internal.utils.toIdentifier
 import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import gg.essential.universal.UChat
 import net.minecraft.item.ItemStack
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket
 import net.minecraft.text.*

@@ -10,7 +10,6 @@ import com.chattriggers.ctjs.internal.mixins.sound.SoundSystemAccessor
 import com.chattriggers.ctjs.MCAttenuationType
 import com.chattriggers.ctjs.MCSound
 import com.chattriggers.ctjs.internal.utils.asMixin
-import gg.essential.universal.UMinecraft
 import net.minecraft.client.sound.MovingSoundInstance
 import net.minecraft.client.sound.Sound.RegistrationType
 import net.minecraft.client.sound.WeightedSoundSet
@@ -72,7 +71,7 @@ class Sound(private val config: NativeObject) {
 
         CTJS.sounds.add(this)
 
-        val soundManagerAccessor = UMinecraft.getMinecraft().soundManager.asMixin<SoundManagerAccessor>()
+        val soundManagerAccessor = Client.getMinecraft().soundManager.asMixin<SoundManagerAccessor>()
         val soundFile = File(CTJS.assetsDir, source)
         if (soundFile.exists()) {
             isCustom = true
@@ -121,7 +120,7 @@ class Sound(private val config: NativeObject) {
     fun destroy() {
         stop()
         if (isCustom) {
-            val soundManagerAccessor = UMinecraft.getMinecraft().soundManager.asMixin<SoundManagerAccessor>()
+            val soundManagerAccessor = Client.getMinecraft().soundManager.asMixin<SoundManagerAccessor>()
             soundManagerAccessor.sounds.remove(identifier)
             soundManagerAccessor.soundResources.remove(identifier)
         }
