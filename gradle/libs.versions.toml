@@ -1,10 +1,10 @@
 [versions]
 # Library versions
-minecraft = "1.21.9-pre2"
-yarn = "1.21.9-pre2+build.2"
+minecraft = "1.21.9-rc1"
+yarn = "1.21.9-rc1+build.2"
 
 loader = "0.17.2"
-fabric-api = "0.133.10+1.21.9"
+fabric-api = "0.133.14+1.21.9"
 fabric-kotlin = "1.13.2+kotlin.2.1.20"
 
 mapping-io = "0.6.1"
@@ -14,7 +14,7 @@ textarea = "3.2.0"
 serialization = "1.5.1"
 koffee = "315bc11234"
 
-universalcraft = "427"
+universalcraft = "430"
 elementa = "710"
 vigilance = "312"
 
@@ -24,7 +24,7 @@ dokka = "1.9.20"
 
 # Plugin Versions
 kotlin = "2.1.20"
-loom = "1.12.0-alpha.16"
+loom = "1.12.0-alpha.21"
 validator = "0.17.0"
 ksp = "2.1.20-1.0.32"
 
