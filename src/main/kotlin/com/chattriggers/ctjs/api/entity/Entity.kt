@@ -17,11 +17,11 @@ import java.util.*
 import kotlin.math.sqrt
 
 open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
-    fun getX() = mcValue.pos.x
+    fun getX() = mcValue.entityPos.x
 
-    fun getY() = mcValue.pos.y
+    fun getY() = mcValue.entityPos.y
 
-    fun getZ() = mcValue.pos.z
+    fun getZ() = mcValue.entityPos.z
 
     fun getPos() = BlockPos(getX(), getY(), getZ())
 
