@@ -51,6 +51,8 @@ class KeyBind {
             if (keyCategory !in KeyBindingAccessor.Category.getCategoryList()) {
                 uniqueCategories[category] = 0
             }
+            // fixme: java.lang.NullPointerException
+            //        at knot//com.chattriggers.ctjs.api.client.KeyBind.<init>(KeyBind.kt:54)
             uniqueCategories[category] = uniqueCategories[category]!! + 1
             keyBinding = KeyBinding(description, keyCode, keyCategory)
 
