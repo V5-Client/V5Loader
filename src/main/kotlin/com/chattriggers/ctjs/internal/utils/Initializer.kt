@@ -9,7 +9,6 @@ import com.chattriggers.ctjs.internal.console.ConsoleHostProcess
 import com.chattriggers.ctjs.internal.engine.module.ModuleUpdater
 import com.chattriggers.ctjs.internal.listeners.ClientListener
 import com.chattriggers.ctjs.internal.listeners.MouseListener
-import com.chattriggers.ctjs.internal.listeners.WorldListener
 
 internal interface Initializer {
     fun init()
@@ -24,8 +23,7 @@ internal interface Initializer {
             KeyBind,
             ModuleUpdater,
             MouseListener,
-            StaticCommand,
-            WorldListener,
+            StaticCommand
         )
     }
 }
