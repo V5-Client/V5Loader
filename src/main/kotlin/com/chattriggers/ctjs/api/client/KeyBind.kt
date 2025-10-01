@@ -46,13 +46,12 @@ class KeyBind {
             }
             keyBinding = possibleDuplicate
         } else {
-            val keyCategory = KeyBinding.Category.create(Identifier.of(category))
+            val categoryList = KeyBindingAccessor.Category.getCategoryList()
 
-            if (keyCategory !in KeyBindingAccessor.Category.getCategoryList()) {
+            if (!categoryList.stream().anyMatch { it.id.path.equals(category) }) {
                 uniqueCategories[category] = 0
             }
-            // fixme: java.lang.NullPointerException
-            //        at knot//com.chattriggers.ctjs.api.client.KeyBind.<init>(KeyBind.kt:54)
+            val keyCategory = KeyBinding.Category.create(Identifier.of(category))
             uniqueCategories[category] = uniqueCategories[category]!! + 1
             keyBinding = KeyBinding(description, keyCode, keyCategory)
 
@@ -204,7 +203,7 @@ class KeyBind {
         }
 
         internal fun getCategoryName(category: KeyBinding.Category): String {
-            return category.id.toTranslationKey("key.category")
+            return category.id.path
         }
 
         private fun removeKeyBinding(keyBinding: KeyBinding) {
@@ -215,14 +214,14 @@ class KeyBind {
                 )
             )
             val category = keyBinding.category
+            val categoryName = getCategoryName(category)
 
-            if (getCategoryName(category) in uniqueCategories) {
-                val categoryName = getCategoryName(category)
+            if (categoryName in uniqueCategories) {
                 uniqueCategories[categoryName] = uniqueCategories[categoryName]!! - 1
 
                 if (uniqueCategories[categoryName] == 0) {
                     uniqueCategories.remove(categoryName)
-                    KeyBindingAccessor.Category.getCategoryList().remove(category)
+                    KeyBindingAccessor.Category.getCategoryList().removeIf { it.id.equals(category.id) }
                 }
             }
         }
@@ -244,8 +243,7 @@ class KeyBind {
                 )
             )
 
-            val categoryList = KeyBindingAccessor.Category.getCategoryList()
-            categoryList.add(keyBinding.category)
+            KeyBindingAccessor.Category.getCategoryList().add(keyBinding.category)
 
             return keyBinding
         }
