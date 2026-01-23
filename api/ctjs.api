@@ -46,6 +46,7 @@ public final class com/chattriggers/ctjs/api/Config : gg/essential/vigilance/Vig
 	public static final fun getModuleChangelog ()Z
 	public static final fun getModuleImportHelp ()Z
 	public static final fun getOpenConsoleOnError ()Z
+	public static final fun getSendStatistics ()Z
 	public static final fun getShowUpdatesInChat ()Z
 	public static final fun setAutoUpdateModules (Z)V
 	public static final fun setClearConsoleOnLoad (Z)V
@@ -60,6 +61,7 @@ public final class com/chattriggers/ctjs/api/Config : gg/essential/vigilance/Vig
 	public static final fun setModuleChangelog (Z)V
 	public static final fun setModuleImportHelp (Z)V
 	public static final fun setOpenConsoleOnError (Z)V
+	public static final fun setSendStatistics (Z)V
 	public static final fun setShowUpdatesInChat (Z)V
 }
 
