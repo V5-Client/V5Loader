@@ -45,7 +45,16 @@ object Config : Vigilant(File(CTJS.configLocation, "ChatTriggers.toml"), sorting
         category = "General",
         description = "Check for and download module updates every time CT loads",
     )
-    var autoUpdateModules = true
+    var autoUpdateModules = false
+
+    @JvmStatic
+    @Property(
+        PropertyType.SWITCH,
+        name = "Send Statistics",
+        category = "General",
+        description = "Sends statistics data to the ChatTriggers servers (only sends player uuid hash and current mod version)"
+    )
+    var sendStatistics = false
 
     @JvmStatic
     @Property(
