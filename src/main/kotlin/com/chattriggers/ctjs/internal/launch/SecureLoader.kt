@@ -92,7 +92,8 @@ object SecureLoader {
 
                 if (entryName.endsWith(".js") || entryName.endsWith(".json")) {
                     val content = String(zipStream.readAllBytes(), StandardCharsets.UTF_8)
-                    JSLoader.virtualFiles[virtualPath] = content
+
+                    JSLoader.addVirtualFile(virtualPath, content)
                     fileCount++
 
                     if (entryName == "metadata.json" || entryName.endsWith("/metadata.json")) {

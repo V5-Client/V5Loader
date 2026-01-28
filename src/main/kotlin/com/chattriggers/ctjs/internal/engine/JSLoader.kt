@@ -46,7 +46,8 @@ object JSLoader {
     private val mixinIdMap = mutableMapOf<Int, MixinCallback>()
     private val mixins = mutableMapOf<Mixin, MixinDetails>()
 
-    internal val virtualFiles = ConcurrentHashMap<String, String>()
+    private val virtualFiles = ConcurrentHashMap<String, String>()
+    private val virtualFilesLower = ConcurrentHashMap<String, String>()
 
     private val INVOKE_MIXIN_CALL = MethodHandles.lookup().findStatic(
         JSLoader::class.java,
@@ -82,6 +83,12 @@ object JSLoader {
                 e.printTraceToConsole()
             }
         }
+    }
+
+    // Helper to add virtual files with case-insensitive mapping support
+    fun addVirtualFile(path: String, content: String) {
+        virtualFiles[path] = content
+        virtualFilesLower[path.lowercase()] = path
     }
 
     internal fun mixinSetup(modules: List<Module>): Map<Mixin, MixinDetails> {
@@ -270,7 +277,7 @@ object JSLoader {
                 existing
             } else {
                 ("A new injector mixin was registered at runtime. This will require a restart, and will " +
-                    "have no effect until then!").printToConsole()
+                        "have no effect until then!").printToConsole()
                 null
             }
         } else {
@@ -321,6 +328,15 @@ object JSLoader {
     }
 
     private class VirtualModuleSourceProvider(private val fallback: ModuleSourceProvider) : ModuleSourceProvider {
+        private fun getContent(key: String): Pair<String, String>? {
+            val exact = virtualFiles[key]
+            if (exact != null) return key to exact
+
+            val realKey = virtualFilesLower[key.lowercase()] ?: return null
+            val content = virtualFiles[realKey] ?: return null
+            return realKey to content
+        }
+
         override fun loadSource(moduleId: String?, paths: Scriptable?, validator: Any?): ModuleSource? {
             val normalizedId = moduleId?.removePrefix("./")?.removePrefix("/") ?: return null
 
@@ -334,11 +350,9 @@ object JSLoader {
             )
 
             for (key in possibleKeys) {
-                val content = virtualFiles[key]
-                if (content != null) {
-                    val uri = URI("file", null, "/ct_virtual/$key", null)
-                    return ModuleSource(StringReader(content), null, uri, uri, validator)
-                }
+                val (realKey, content) = getContent(key) ?: continue
+                val uri = URI("file", null, "/ct_virtual/$realKey", null)
+                return ModuleSource(StringReader(content), null, uri, uri, validator)
             }
 
             return fallback.loadSource(moduleId, paths, validator)
@@ -355,11 +369,9 @@ object JSLoader {
                 )
 
                 for (key in candidates) {
-                    val content = virtualFiles[key]
-                    if (content != null) {
-                        val fileUri = URI("file", null, "/ct_virtual/$key", null)
-                        return ModuleSource(StringReader(content), null, fileUri, fileUri, validator)
-                    }
+                    val (realKey, content) = getContent(key) ?: continue
+                    val fileUri = URI("file", null, "/ct_virtual/$realKey", null)
+                    return ModuleSource(StringReader(content), null, fileUri, fileUri, validator)
                 }
 
                 return null
