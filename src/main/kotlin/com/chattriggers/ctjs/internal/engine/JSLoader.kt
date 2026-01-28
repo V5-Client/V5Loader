@@ -11,13 +11,15 @@ import com.chattriggers.ctjs.internal.engine.module.ModuleManager.modulesFolder
 import com.chattriggers.ctjs.internal.launch.IInjector
 import com.chattriggers.ctjs.internal.launch.Mixin
 import com.chattriggers.ctjs.internal.launch.MixinDetails
-import org.apache.commons.io.FileUtils
 import org.mozilla.javascript.*
 import org.mozilla.javascript.commonjs.module.ModuleScriptProvider
 import org.mozilla.javascript.commonjs.module.Require
+import org.mozilla.javascript.commonjs.module.provider.ModuleSource
+import org.mozilla.javascript.commonjs.module.provider.ModuleSourceProvider
 import org.mozilla.javascript.commonjs.module.provider.StrongCachingModuleScriptProvider
 import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider
 import java.io.File
+import java.io.StringReader
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 import java.net.URI
@@ -44,6 +46,8 @@ object JSLoader {
     private val mixinIdMap = mutableMapOf<Int, MixinCallback>()
     private val mixins = mutableMapOf<Mixin, MixinDetails>()
 
+    internal val virtualFiles = ConcurrentHashMap<String, String>()
+
     private val INVOKE_MIXIN_CALL = MethodHandles.lookup().findStatic(
         JSLoader::class.java,
         "invokeMixin",
@@ -51,17 +55,13 @@ object JSLoader {
     )
 
     fun setup(jars: List<URL>) {
-        // Ensure all active mixins are invalidated
-        // TODO: It would be nice to do this, but it's possible to have a @Redirect or similar
-        //       mixin try to call it's handler between when we start loading and when we finish
-        //       loading, which would crash. So we need to be smarter about invalidation on load.
-        // mixinIdMap.values.forEach(MixinCallback::release)
-
         JSContextFactory.addAllURLs(jars)
 
         val cx = JSContextFactory.enterContext()
-        val sourceProvider = UrlModuleSourceProvider(listOf(modulesFolder.toURI()), listOf())
-        moduleProvider = StrongCachingModuleScriptProvider(sourceProvider)
+        val diskProvider = UrlModuleSourceProvider(listOf(modulesFolder.toURI()), listOf())
+        val virtualProvider = VirtualModuleSourceProvider(diskProvider)
+        moduleProvider = StrongCachingModuleScriptProvider(virtualProvider)
+
         moduleScope = ImporterTopLevel(cx)
         evalScope = ImporterTopLevel(cx)
         require = CTRequire(moduleProvider)
@@ -70,6 +70,18 @@ object JSLoader {
         Context.exit()
 
         mixinLibsLoaded = false
+    }
+
+    fun loadVirtualModule(entryPoint: String) {
+        wrapInContext { cx ->
+            try {
+                "Loading virtual entry point: $entryPoint".printToConsole()
+                require.requireMain(cx, entryPoint)
+            } catch (e: Throwable) {
+                "Error loading virtual module $entryPoint".printToConsole(LogType.ERROR)
+                e.printTraceToConsole()
+            }
+        }
     }
 
     internal fun mixinSetup(modules: List<Module>): Map<Mixin, MixinDetails> {
@@ -296,7 +308,7 @@ object JSLoader {
             ?: throw IllegalArgumentException("The embedded resource '$parsedResourceName' cannot be found.")
 
         val res = resource.bufferedReader().readText()
-        FileUtils.write(outputFile, res, Charset.defaultCharset())
+        org.apache.commons.io.FileUtils.write(outputFile, res, Charset.defaultCharset())
         return res
     }
 
@@ -305,6 +317,55 @@ object JSLoader {
     ) : Require(Context.getContext(), moduleScope, moduleProvider, null, null, false) {
         fun loadCTModule(cachedName: String, uri: URI): Scriptable {
             return getExportedModuleInterface(Context.getContext(), cachedName, uri, null, false)
+        }
+    }
+
+    private class VirtualModuleSourceProvider(private val fallback: ModuleSourceProvider) : ModuleSourceProvider {
+        override fun loadSource(moduleId: String?, paths: Scriptable?, validator: Any?): ModuleSource? {
+            val normalizedId = moduleId?.removePrefix("./")?.removePrefix("/") ?: return null
+
+            val possibleKeys = listOf(
+                normalizedId,
+                "$normalizedId.js",
+                "$normalizedId/index.js",
+                "V5/$normalizedId",
+                "V5/$normalizedId.js",
+                "V5/$normalizedId/index.js"
+            )
+
+            for (key in possibleKeys) {
+                val content = virtualFiles[key]
+                if (content != null) {
+                    val uri = URI("ct-virtual:///$key")
+                    return ModuleSource(StringReader(content), null, uri, URI("ct-virtual:///"), validator)
+                }
+            }
+
+            return fallback.loadSource(moduleId, paths, validator)
+        }
+
+        override fun loadSource(uri: URI?, baseUri: URI?, validator: Any?): ModuleSource? {
+            if (uri != null && uri.scheme == "ct-virtual") {
+                val path = uri.path.removePrefix("/")
+
+                val candidates = listOf(
+                    path,
+                    "$path.js",
+                    "$path/index.js"
+                )
+
+                for (key in candidates) {
+                    val content = virtualFiles[key]
+                    if (content != null) {
+                        val fileUri = URI("ct-virtual:///$key")
+                        return ModuleSource(StringReader(content), null, fileUri, baseUri, validator)
+                    }
+                }
+
+                return null
+            }
+
+            return fallback.loadSource(uri, baseUri, validator)
         }
     }
 }

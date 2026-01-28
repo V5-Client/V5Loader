@@ -15,6 +15,7 @@ import com.chattriggers.ctjs.engine.Console
 import com.chattriggers.ctjs.engine.Register
 import com.chattriggers.ctjs.internal.commands.StaticCommand
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
+import com.chattriggers.ctjs.internal.launch.SecureLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
 import kotlinx.serialization.json.Json
 import net.fabricmc.api.ClientModInitializer
@@ -134,6 +135,8 @@ class CTJS : ClientModInitializer {
                 isLoaded = true
 
                 ModuleManager.entryPass()
+
+                SecureLoader.run()
 
                 if (asCommand)
                     ChatLib.chat("&aDone reloading!")

@@ -183,17 +183,20 @@ class TextComponent private constructor(
         if (Player.toMC() == null)
             return@apply
 
-        if (chatLineId != -1) {
-            ChatLib.sendMessageWithId(this)
-            return@apply
+        val runChat = {
+            if (chatLineId != -1) {
+                ChatLib.sendMessageWithId(this)
+            } else if (isRecursive) {
+                Client.getMinecraft().networkHandler?.onGameMessage(GameMessageS2CPacket(this, false))
+            } else {
+                Player.toMC()?.sendMessage(this, false)
+            }
         }
 
-        if (isRecursive) {
-            Client.scheduleTask {
-                Client.getMinecraft().networkHandler?.onGameMessage(GameMessageS2CPacket(this, false))
-            }
+        if (Client.getMinecraft().isOnThread) {
+            runChat()
         } else {
-            Player.toMC()?.sendMessage(this, false)
+            Client.scheduleTask { runChat() }
         }
     }
 
@@ -208,12 +211,18 @@ class TextComponent private constructor(
         if (Player.toMC() == null)
             return@apply
 
-        if (isRecursive) {
-            Client.scheduleTask {
+        val runActionBar = {
+            if (isRecursive) {
                 Client.getMinecraft().networkHandler?.onGameMessage(GameMessageS2CPacket(this, true))
+            } else {
+                Player.toMC()?.sendMessage(this, true)
             }
+        }
+
+        if (Client.getMinecraft().isOnThread) {
+            runActionBar()
         } else {
-            Player.toMC()?.sendMessage(this, true)
+            Client.scheduleTask { runActionBar() }
         }
     }
 
