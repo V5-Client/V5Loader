@@ -2783,6 +2783,7 @@ public final class com/chattriggers/ctjs/engine/WrappedThread {
 	public final fun isInterrupted ()Z
 	public final fun resume ()V
 	public final fun run ()V
+	public final fun setDaemon (Z)V
 	public static final fun sleep (J)V
 	public static final fun sleep (JI)V
 	public final fun start ()V

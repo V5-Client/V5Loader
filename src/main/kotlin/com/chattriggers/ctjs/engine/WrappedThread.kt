@@ -28,6 +28,7 @@ class WrappedThread(private val task: Runnable) {
     fun isAlive() = true
     fun suspend() {}
     fun resume() {}
+    fun setDaemon(on: Boolean) {}
     fun getId() = 0L
 
     companion object {
