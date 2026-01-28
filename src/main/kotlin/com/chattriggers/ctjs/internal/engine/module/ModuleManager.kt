@@ -105,8 +105,8 @@ object ModuleManager {
 
     data class ImportedModule(val module: Module?, val dependencies: List<Module>)
 
-    fun importModule(moduleName: String): ImportedModule {
-        val newModules = ModuleUpdater.importModule(moduleName)
+    fun importModule(moduleName: String, requiredBy: String? = null): ImportedModule {
+        val newModules = ModuleUpdater.importModule(moduleName, requiredBy)
 
         loadAssetsAndJars(newModules)
 
@@ -159,7 +159,7 @@ object ModuleManager {
     private fun reportOldVersion(module: Module) {
         ChatLib.chat(
             "&cWarning: the module \"${module.name}\" was made for an older version of CT, " +
-                "so it may not work correctly."
+                    "so it may not work correctly."
         )
     }
 

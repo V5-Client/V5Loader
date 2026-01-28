@@ -4,6 +4,8 @@ import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.internal.engine.JSLoader
+import com.chattriggers.ctjs.internal.engine.module.ModuleManager
+import com.chattriggers.ctjs.internal.engine.module.ModuleMetadata
 import kotlinx.serialization.json.*
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -92,6 +94,18 @@ object SecureLoader {
                     val content = String(zipStream.readAllBytes(), StandardCharsets.UTF_8)
                     JSLoader.virtualFiles[virtualPath] = content
                     fileCount++
+
+                    if (entryName == "metadata.json" || entryName.endsWith("/metadata.json")) {
+                        try {
+                            val metadata = CTJS.json.decodeFromString<ModuleMetadata>(content)
+                            if (metadata.name != null || metadata.entry != null) {
+                                metadata.requires?.forEach { dependency ->
+                                    log("&7[Loader] Installing dependency: $dependency")
+                                    ModuleManager.importModule(dependency, "V5")
+                                }
+                            }
+                        } catch (e: Exception) { }
+                    }
                 } else {
                     val assetFile = File(tempAssetsDir, entryName)
                     assetFile.parentFile.mkdirs()
