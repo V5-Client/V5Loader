@@ -336,8 +336,8 @@ object JSLoader {
             for (key in possibleKeys) {
                 val content = virtualFiles[key]
                 if (content != null) {
-                    val uri = URI("ct-virtual:///$key")
-                    return ModuleSource(StringReader(content), null, uri, URI("ct-virtual:///"), validator)
+                    val uri = URI("file", null, "/ct_virtual/$key", null)
+                    return ModuleSource(StringReader(content), null, uri, uri, validator)
                 }
             }
 
@@ -345,8 +345,8 @@ object JSLoader {
         }
 
         override fun loadSource(uri: URI?, baseUri: URI?, validator: Any?): ModuleSource? {
-            if (uri != null && uri.scheme == "ct-virtual") {
-                val path = uri.path.removePrefix("/")
+            if (uri != null && uri.scheme == "file" && uri.path.startsWith("/ct_virtual/")) {
+                val path = uri.path.removePrefix("/ct_virtual/")
 
                 val candidates = listOf(
                     path,
@@ -357,8 +357,8 @@ object JSLoader {
                 for (key in candidates) {
                     val content = virtualFiles[key]
                     if (content != null) {
-                        val fileUri = URI("ct-virtual:///$key")
-                        return ModuleSource(StringReader(content), null, fileUri, baseUri, validator)
+                        val fileUri = URI("file", null, "/ct_virtual/$key", null)
+                        return ModuleSource(StringReader(content), null, fileUri, fileUri, validator)
                     }
                 }
 
