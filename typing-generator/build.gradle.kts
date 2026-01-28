@@ -1,11 +1,17 @@
+plugins {
+    alias(libs.plugins.kotlin)
+}
+
+kotlin {
+    kotlin {
+        jvmToolchain(21)
+    }
+}
+
 buildscript {
     dependencies {
         classpath(libs.gradle.plugin)
     }
-}
-
-plugins {
-    alias(libs.plugins.kotlin)
 }
 
 repositories {
