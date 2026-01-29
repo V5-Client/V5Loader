@@ -47,7 +47,7 @@ object JSLoader {
     private val mixins = mutableMapOf<Mixin, MixinDetails>()
 
     private val virtualFiles = ConcurrentHashMap<String, String>()
-    private val virtualFilesLower = ConcurrentHashMap<String, String>()
+    private val virtualFilesLowercase = ConcurrentHashMap<String, String>()
 
     private val INVOKE_MIXIN_CALL = MethodHandles.lookup().findStatic(
         JSLoader::class.java,
@@ -76,8 +76,9 @@ object JSLoader {
     fun loadVirtualModule(entryPoint: String) {
         wrapInContext { cx ->
             try {
-                "Loading virtual entry point: $entryPoint".printToConsole()
-                require.requireMain(cx, entryPoint)
+                val normalizedEntry = normalizePath(entryPoint)
+                "Loading virtual entry point: $normalizedEntry".printToConsole()
+                require.requireMain(cx, normalizedEntry)
             } catch (e: Throwable) {
                 "Error loading virtual module $entryPoint".printToConsole(LogType.ERROR)
                 e.printTraceToConsole()
@@ -85,11 +86,86 @@ object JSLoader {
         }
     }
 
-    // Helper to add virtual files with case-insensitive mapping support
-    fun addVirtualFile(path: String, content: String) {
-        virtualFiles[path] = content
-        virtualFilesLower[path.lowercase()] = path
+    fun normalizePath(path: String): String {
+        if (path.isBlank()) return ""
+
+        var result = path
+            .replace('\\', '/')
+            .trim()
+
+        while (result.startsWith("./") || result.startsWith("/")) {
+            result = result.removePrefix("./").removePrefix("/")
+        }
+
+        while (result.endsWith("/")) {
+            result = result.dropLast(1)
+        }
+
+        val segments = result.split("/").toMutableList()
+        var i = 0
+        while (i < segments.size) {
+            when {
+                segments[i].isEmpty() -> {
+                    segments.removeAt(i)
+                }
+                segments[i] == "." -> {
+                    segments.removeAt(i)
+                }
+                segments[i] == ".." -> {
+                    if (i > 0 && segments[i - 1] != "..") {
+                        segments.removeAt(i)
+                        segments.removeAt(i - 1)
+                        i = maxOf(0, i - 1)
+                    } else {
+                        segments.removeAt(i)
+                    }
+                }
+                else -> {
+                    i++
+                }
+            }
+        }
+
+        return segments.joinToString("/")
     }
+
+    fun addVirtualFile(path: String, content: String) {
+        val normalizedPath = normalizePath(path)
+        if (normalizedPath.isEmpty()) {
+            "Warning: Attempted to add virtual file with empty path".printToConsole(LogType.WARN)
+            return
+        }
+
+        virtualFiles[normalizedPath] = content
+        virtualFilesLowercase[normalizedPath.lowercase()] = normalizedPath
+    }
+
+    fun getVirtualFile(path: String): String? {
+        val normalizedPath = normalizePath(path)
+        if (normalizedPath.isEmpty()) return null
+
+        virtualFiles[normalizedPath]?.let { return it }
+
+        val actualPath = virtualFilesLowercase[normalizedPath.lowercase()] ?: return null
+        return virtualFiles[actualPath]
+    }
+
+    fun hasVirtualFile(path: String): Boolean {
+        val normalizedPath = normalizePath(path)
+        if (normalizedPath.isEmpty()) return false
+
+        return virtualFiles.containsKey(normalizedPath) ||
+                virtualFilesLowercase.containsKey(normalizedPath.lowercase())
+    }
+
+    fun getVirtualFilePaths(): Set<String> = virtualFiles.keys.toSet()
+
+    fun clearVirtualFiles() {
+        virtualFiles.clear()
+        virtualFilesLowercase.clear()
+    }
+
+    fun getVirtualFileCount(): Int = virtualFiles.size
 
     internal fun mixinSetup(modules: List<Module>): Map<Mixin, MixinDetails> {
         loadMixinLibs()
@@ -155,8 +231,6 @@ object JSLoader {
         triggers[trigger.type]?.remove(trigger)
     }
 
-    // Note: block takes a Context since most caller use it. Context.getContext() is a threadlocal access, so we might
-    //       as well avoid it if we can
     internal inline fun <T> wrapInContext(context: Context? = null, crossinline block: (Context) -> T): T {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)
@@ -243,8 +317,6 @@ object JSLoader {
 
                 INVOKE_MIXIN_CALL.bindTo(callback.method)
             } catch (e: Throwable) {
-                // This is a pretty vague error, but the trace should make the issue clear
-                // since it will include the stack trace from the Mixed-into class
                 "Error loading mixin callback".printToConsole()
                 e.printTraceToConsole()
 
@@ -268,10 +340,6 @@ object JSLoader {
 
     fun registerInjector(mixin: Mixin, injector: IInjector): MixinCallback? {
         return if (mixinsFinalized) {
-            // We are reprocessing the mixin entry file from a ct reload, so we can
-            // just return the existing mixin callback. If none exists, then the user
-            // has added a mixin, which requires a reload
-
             val existing = mixins[mixin]?.injectors?.find { it.injector == injector }
             if (existing != null) {
                 existing
@@ -299,12 +367,6 @@ object JSLoader {
             mixins.getOrPut(mixin, ::MixinDetails).methodWideners[methodName] = isMutable
     }
 
-    /**
-     * Save a resource to the OS's filesystem from inside the jar
-     *
-     * @param resourceName name of the file inside the jar
-     * @param outputFile file to save to
-     */
     private fun saveResource(resourceName: String?, outputFile: File): String {
         require(resourceName != null && resourceName != "") {
             "ResourcePath cannot be null or empty"
@@ -328,52 +390,79 @@ object JSLoader {
     }
 
     private class VirtualModuleSourceProvider(private val fallback: ModuleSourceProvider) : ModuleSourceProvider {
-        private fun getContent(key: String): Pair<String, String>? {
-            val exact = virtualFiles[key]
-            if (exact != null) return key to exact
 
-            val realKey = virtualFilesLower[key.lowercase()] ?: return null
-            val content = virtualFiles[realKey] ?: return null
-            return realKey to content
+        companion object {
+            private const val VIRTUAL_SCHEME = "file"
+            private const val VIRTUAL_PREFIX = "/ct_virtual/"
+        }
+
+        private fun tryResolve(basePath: String): Pair<String, String>? {
+            val normalized = normalizePath(basePath)
+            if (normalized.isEmpty()) return null
+
+            getVirtualFile(normalized)?.let {
+                return normalized to it
+            }
+
+            if (!normalized.endsWith(".js") && !normalized.endsWith(".json")) {
+                getVirtualFile("$normalized.js")?.let {
+                    return "$normalized.js" to it
+                }
+            }
+
+            getVirtualFile("$normalized/index.js")?.let {
+                return "$normalized/index.js" to it
+            }
+
+            return null
+        }
+
+        private fun createModuleSource(resolvedPath: String, content: String, validator: Any?): ModuleSource {
+            val uri = URI(VIRTUAL_SCHEME, null, "$VIRTUAL_PREFIX$resolvedPath", null)
+            return ModuleSource(StringReader(content), null, uri, uri, validator)
         }
 
         override fun loadSource(moduleId: String?, paths: Scriptable?, validator: Any?): ModuleSource? {
-            val normalizedId = moduleId?.removePrefix("./")?.removePrefix("/") ?: return null
+            if (moduleId.isNullOrBlank()) return null
 
-            val possibleKeys = listOf(
-                normalizedId,
-                "$normalizedId.js",
-                "$normalizedId/index.js",
-                "V5/$normalizedId",
-                "V5/$normalizedId.js",
-                "V5/$normalizedId/index.js"
-            )
+            val normalizedId = normalizePath(moduleId)
+            if (normalizedId.isEmpty()) return fallback.loadSource(moduleId, paths, validator)
 
-            for (key in possibleKeys) {
-                val (realKey, content) = getContent(key) ?: continue
-                val uri = URI("file", null, "/ct_virtual/$realKey", null)
-                return ModuleSource(StringReader(content), null, uri, uri, validator)
+            tryResolve(normalizedId)?.let { (resolvedPath, content) ->
+                return createModuleSource(resolvedPath, content, validator)
+            }
+
+            if (!normalizedId.startsWith("V5/", ignoreCase = true)) {
+                tryResolve("V5/$normalizedId")?.let { (resolvedPath, content) ->
+                    return createModuleSource(resolvedPath, content, validator)
+                }
             }
 
             return fallback.loadSource(moduleId, paths, validator)
         }
 
         override fun loadSource(uri: URI?, baseUri: URI?, validator: Any?): ModuleSource? {
-            if (uri != null && uri.scheme == "file" && uri.path.startsWith("/ct_virtual/")) {
-                val path = uri.path.removePrefix("/ct_virtual/")
+            if (uri == null) return fallback.loadSource(uri, baseUri, validator)
 
-                val candidates = listOf(
-                    path,
-                    "$path.js",
-                    "$path/index.js"
-                )
+            val normalizedUri = try {
+                uri.normalize()
+            } catch (e: Exception) {
+                uri
+            }
 
-                for (key in candidates) {
-                    val (realKey, content) = getContent(key) ?: continue
-                    val fileUri = URI("file", null, "/ct_virtual/$realKey", null)
-                    return ModuleSource(StringReader(content), null, fileUri, fileUri, validator)
+            val path = normalizedUri.path ?: return fallback.loadSource(uri, baseUri, validator)
+
+            if (normalizedUri.scheme == VIRTUAL_SCHEME && path.startsWith(VIRTUAL_PREFIX)) {
+                val rawPath = path.removePrefix(VIRTUAL_PREFIX)
+                val normalizedPath = normalizePath(rawPath)
+
+                if (normalizedPath.isEmpty()) return null
+
+                tryResolve(normalizedPath)?.let { (resolvedPath, content) ->
+                    return createModuleSource(resolvedPath, content, validator)
                 }
 
+                "Virtual file not found: $normalizedPath".printToConsole(LogType.WARN)
                 return null
             }
 
