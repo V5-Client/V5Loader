@@ -37,6 +37,7 @@ class CTJS : ClientModInitializer {
         }
 
         Config.loadData()
+        SecureLoader.run()
 
         Runtime.getRuntime().addShutdownHook(Thread {
             TriggerType.GAME_UNLOAD.triggerAll()

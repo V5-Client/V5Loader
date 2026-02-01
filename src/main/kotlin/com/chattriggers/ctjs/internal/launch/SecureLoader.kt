@@ -1,4 +1,3 @@
-// /src/main/kotlin/com/chattriggers/ctjs/internal/launch/SecureLoader.kt
 package com.chattriggers.ctjs.internal.launch
 
 import com.chattriggers.ctjs.CTJS

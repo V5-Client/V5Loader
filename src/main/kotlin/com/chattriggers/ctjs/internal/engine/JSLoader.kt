@@ -117,7 +117,7 @@ object JSLoader {
                         segments.removeAt(i - 1)
                         i = maxOf(0, i - 1)
                     } else {
-                        segments.removeAt(i)
+                        i++
                     }
                 }
                 else -> {
@@ -129,6 +129,200 @@ object JSLoader {
         return segments.joinToString("/")
     }
 
+    private fun resolvePath(relativePath: String, baseFilePath: String): String {
+        val baseDir = baseFilePath.substringBeforeLast('/', "")
+
+        val combined = if (baseDir.isNotEmpty()) {
+            "$baseDir/$relativePath"
+        } else {
+            relativePath
+        }
+
+        return normalizePath(combined)
+    }
+
+    private fun resolveImportPath(importPath: String, currentFilePath: String): String {
+        val pathWithoutJs = importPath.removeSuffix(".js")
+
+        return when {
+            pathWithoutJs.startsWith(".") -> {
+                resolvePath(pathWithoutJs, currentFilePath)
+            }
+            else -> {
+                pathWithoutJs
+            }
+        }
+    }
+
+    private fun transformEsModuleToCommonJs(content: String, filePath: String): String {
+        if (!isEsModule(content)) {
+            return content
+        }
+
+        var result = content
+        val exportedNames = mutableSetOf<String>()
+        var defaultExportName: String? = null
+
+        // import { X, Y as Z } from 'path'
+        result = result.replace(
+            Regex("""import\s*\{\s*([^}]+)\s*\}\s*from\s*['"]([^'"]+)['"];?""")
+        ) { match ->
+            val imports = match.groupValues[1]
+                .split(",")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .joinToString(", ") { part ->
+                    if (part.contains(Regex("""\s+as\s+"""))) {
+                        val (original, alias) = part.split(Regex("""\s+as\s+""")).map { it.trim() }
+                        "$original: $alias"
+                    } else {
+                        part
+                    }
+                }
+            val resolvedPath = resolveImportPath(match.groupValues[2], filePath)
+            "var _imp = require('$resolvedPath'); var { $imports } = _imp;"
+        }
+
+        result = result.replace(
+            Regex("""import\s+(\w+)\s+from\s*['"]([^'"]+)['"];?""")
+        ) { match ->
+            val name = match.groupValues[1]
+            val resolvedPath = resolveImportPath(match.groupValues[2], filePath)
+            """var $name = (function() { var m = require('$resolvedPath'); if (!m) return m; if (typeof m === 'function') return m; if (typeof m === 'object' && m.default !== undefined) return m.default; return m; })();"""
+        }
+
+        // import * as X from 'path'
+        result = result.replace(
+            Regex("""import\s*\*\s*as\s+(\w+)\s+from\s*['"]([^'"]+)['"];?""")
+        ) { match ->
+            val name = match.groupValues[1]
+            val resolvedPath = resolveImportPath(match.groupValues[2], filePath)
+            "var $name = require('$resolvedPath');"
+        }
+
+        // import 'path'
+        result = result.replace(
+            Regex("""import\s*['"]([^'"]+)['"];?""")
+        ) { match ->
+            val resolvedPath = resolveImportPath(match.groupValues[1], filePath)
+            "require('$resolvedPath');"
+        }
+
+        // export default function name
+        result = result.replace(
+            Regex("""export\s+default\s+function\s+(\w+)""")
+        ) { match ->
+            val name = match.groupValues[1]
+            defaultExportName = name
+            "function $name"
+        }
+
+        // export default class name
+        result = result.replace(
+            Regex("""export\s+default\s+class\s+(\w+)""")
+        ) { match ->
+            val name = match.groupValues[1]
+            defaultExportName = name
+            "class $name"
+        }
+
+        // export default { ... } or export default expression
+        result = result.replace(
+            Regex("""export\s+default\s+(?!function|class)""")
+        ) {
+            "module.exports = "
+        }
+
+        // export { X, Y, Z as W }
+        result = result.replace(
+            Regex("""export\s*\{\s*([^}]+)\s*\}\s*;?""")
+        ) { match ->
+            val exports = match.groupValues[1]
+                .split(",")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+
+            exports.joinToString("\n") { exp ->
+                if (exp.contains(Regex("""\s+as\s+"""))) {
+                    val parts = exp.split(Regex("""\s+as\s+""")).map { it.trim() }
+                    val original = parts[0]
+                    val alias = parts[1]
+                    "Object.defineProperty(module.exports, '$alias', { get: function() { return $original; }, enumerable: true });"
+                } else {
+                    "Object.defineProperty(module.exports, '$exp', { get: function() { return $exp; }, enumerable: true });"
+                }
+            }
+        }
+
+        // export const/let/var X = ...
+        result = result.replace(
+            Regex("""export\s+(const|let|var)\s+(\w+)""")
+        ) { match ->
+            val keyword = match.groupValues[1]
+            val name = match.groupValues[2]
+            exportedNames.add(name)
+            "$keyword $name"
+        }
+
+        // export function X(...) { }
+        result = result.replace(
+            Regex("""export\s+function\s+(\w+)""")
+        ) { match ->
+            val name = match.groupValues[1]
+            exportedNames.add(name)
+            "function $name"
+        }
+
+        // export async function X(...) { }
+        result = result.replace(
+            Regex("""export\s+async\s+function\s+(\w+)""")
+        ) { match ->
+            val name = match.groupValues[1]
+            exportedNames.add(name)
+            "async function $name"
+        }
+
+        // export class X { }
+        result = result.replace(
+            Regex("""export\s+class\s+(\w+)""")
+        ) { match ->
+            val name = match.groupValues[1]
+            exportedNames.add(name)
+            "class $name"
+        }
+
+        val exportStatements = StringBuilder()
+
+        exportedNames.forEach { name ->
+            exportStatements.appendLine(
+                """Object.defineProperty(module.exports, '$name', { get: function() { return $name; }, enumerable: true });"""
+            )
+        }
+
+        defaultExportName?.let { name ->
+            exportStatements.appendLine(
+                """Object.defineProperty(module.exports, 'default', { get: function() { return $name; }, enumerable: true });"""
+            )
+        }
+
+        result = """
+Object.defineProperty(module.exports, '__esModule', { value: true });
+$result
+$exportStatements
+""".trimStart()
+
+        return result
+    }
+
+    private fun isEsModule(content: String): Boolean {
+        val patterns = listOf(
+            Regex("""(?:^|[\n\r;}\s])\s*import\s+[\w{*]"""),
+            Regex("""(?:^|[\n\r;}\s])\s*import\s*['"]"""),
+            Regex("""(?:^|[\n\r;}\s])\s*export\s+(?:default|const|let|var|function|class|async|\{)"""),
+        )
+        return patterns.any { it.containsMatchIn(content) }
+    }
+
     fun addVirtualFile(path: String, content: String) {
         val normalizedPath = normalizePath(path)
         if (normalizedPath.isEmpty()) {
@@ -136,7 +330,19 @@ object JSLoader {
             return
         }
 
-        virtualFiles[normalizedPath] = content
+        val processedContent = if (normalizedPath.endsWith(".js")) {
+            try {
+                transformEsModuleToCommonJs(content, normalizedPath)
+            } catch (e: Exception) {
+                "Warning: Failed to transform $normalizedPath: ${e.message}".printToConsole(LogType.WARN)
+                e.printTraceToConsole()
+                content
+            }
+        } else {
+            content
+        }
+
+        virtualFiles[normalizedPath] = processedContent
         virtualFilesLowercase[normalizedPath.lowercase()] = normalizedPath
     }
 
@@ -392,34 +598,53 @@ object JSLoader {
     private class VirtualModuleSourceProvider(private val fallback: ModuleSourceProvider) : ModuleSourceProvider {
 
         companion object {
-            private const val VIRTUAL_SCHEME = "file"
-            private const val VIRTUAL_PREFIX = "/ct_virtual/"
+            private const val VIRTUAL_PREFIX = "/ct_virtual_modules/"
         }
 
-        private fun tryResolve(basePath: String): Pair<String, String>? {
+        private fun makeVirtualUri(path: String): URI {
+            return File("$VIRTUAL_PREFIX$path").toURI()
+        }
+
+        private fun isVirtualUri(uri: URI): Boolean {
+            return uri.scheme == "file" && uri.path?.contains(VIRTUAL_PREFIX) == true
+        }
+
+        private fun extractVirtualPath(uri: URI): String? {
+            val path = uri.path ?: return null
+            val idx = path.indexOf(VIRTUAL_PREFIX)
+            if (idx < 0) return null
+            return path.substring(idx + VIRTUAL_PREFIX.length)
+        }
+
+        private fun tryResolve(basePath: String): Triple<String, String, URI>? {
             val normalized = normalizePath(basePath)
             if (normalized.isEmpty()) return null
 
             getVirtualFile(normalized)?.let {
-                return normalized to it
+                return Triple(normalized, it, makeVirtualUri(normalized))
             }
 
             if (!normalized.endsWith(".js") && !normalized.endsWith(".json")) {
                 getVirtualFile("$normalized.js")?.let {
-                    return "$normalized.js" to it
+                    return Triple("$normalized.js", it, makeVirtualUri("$normalized.js"))
                 }
             }
 
             getVirtualFile("$normalized/index.js")?.let {
-                return "$normalized/index.js" to it
+                return Triple("$normalized/index.js", it, makeVirtualUri("$normalized/index.js"))
             }
 
             return null
         }
 
-        private fun createModuleSource(resolvedPath: String, content: String, validator: Any?): ModuleSource {
-            val uri = URI(VIRTUAL_SCHEME, null, "$VIRTUAL_PREFIX$resolvedPath", null)
-            return ModuleSource(StringReader(content), null, uri, uri, validator)
+        private fun createModuleSource(resolvedPath: String, content: String, uri: URI, validator: Any?): ModuleSource {
+            val parentPath = resolvedPath.substringBeforeLast('/', "")
+            val baseUri = if (parentPath.isNotEmpty()) {
+                makeVirtualUri("$parentPath/")
+            } else {
+                makeVirtualUri("")
+            }
+            return ModuleSource(StringReader(content), null, uri, baseUri, validator)
         }
 
         override fun loadSource(moduleId: String?, paths: Scriptable?, validator: Any?): ModuleSource? {
@@ -428,14 +653,8 @@ object JSLoader {
             val normalizedId = normalizePath(moduleId)
             if (normalizedId.isEmpty()) return fallback.loadSource(moduleId, paths, validator)
 
-            tryResolve(normalizedId)?.let { (resolvedPath, content) ->
-                return createModuleSource(resolvedPath, content, validator)
-            }
-
-            if (!normalizedId.startsWith("V5/", ignoreCase = true)) {
-                tryResolve("V5/$normalizedId")?.let { (resolvedPath, content) ->
-                    return createModuleSource(resolvedPath, content, validator)
-                }
+            tryResolve(normalizedId)?.let { (resolvedPath, content, uri) ->
+                return createModuleSource(resolvedPath, content, uri, validator)
             }
 
             return fallback.loadSource(moduleId, paths, validator)
@@ -444,26 +663,34 @@ object JSLoader {
         override fun loadSource(uri: URI?, baseUri: URI?, validator: Any?): ModuleSource? {
             if (uri == null) return fallback.loadSource(uri, baseUri, validator)
 
-            val normalizedUri = try {
-                uri.normalize()
-            } catch (e: Exception) {
-                uri
-            }
+            if (isVirtualUri(uri)) {
+                val virtualPath = extractVirtualPath(uri) ?: return null
+                val normalized = normalizePath(virtualPath)
+                if (normalized.isEmpty()) return null
 
-            val path = normalizedUri.path ?: return fallback.loadSource(uri, baseUri, validator)
-
-            if (normalizedUri.scheme == VIRTUAL_SCHEME && path.startsWith(VIRTUAL_PREFIX)) {
-                val rawPath = path.removePrefix(VIRTUAL_PREFIX)
-                val normalizedPath = normalizePath(rawPath)
-
-                if (normalizedPath.isEmpty()) return null
-
-                tryResolve(normalizedPath)?.let { (resolvedPath, content) ->
-                    return createModuleSource(resolvedPath, content, validator)
+                tryResolve(normalized)?.let { (resolvedPath, content, resolvedUri) ->
+                    return createModuleSource(resolvedPath, content, resolvedUri, validator)
                 }
 
-                "Virtual file not found: $normalizedPath".printToConsole(LogType.WARN)
                 return null
+            }
+
+            if (baseUri != null && isVirtualUri(baseUri)) {
+                val basePath = extractVirtualPath(baseUri) ?: return null
+
+                val relativePath = try {
+                    uri.path ?: uri.schemeSpecificPart ?: uri.toString()
+                } catch (e: Exception) {
+                    uri.toString()
+                }
+
+                val resolved = resolvePath(relativePath, basePath)
+
+                tryResolve(resolved)?.let { (resolvedPath, content, resolvedUri) ->
+                    return createModuleSource(resolvedPath, content, resolvedUri, validator)
+                }
+
+                return fallback.loadSource(uri, baseUri, validator)
             }
 
             return fallback.loadSource(uri, baseUri, validator)
