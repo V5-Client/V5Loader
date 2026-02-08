@@ -34,17 +34,20 @@ object SecureLoader {
 
     fun run() {
         if (isLoaded) {
-            log("&e[Loader] Already loaded, skipping...")
+            log("&eAlready loaded, skipping...")
             return
         }
 
         thread(name = "SecureLoader-Auth") {
             try {
-                log("&7[Loader] Authenticating...")
+                log("&7Generating HWID...")
+                val secureHWID = HWID.generateHWID()
+
+                log("&7Authenticating...")
 
                 val jsonBody = buildJsonObject {
                     put("token", USER_TOKEN)
-                    put("hwid", getHWID())
+                    put("hwid", secureHWID)
                 }.toString()
 
                 val connection = URL(AUTH_URL).openConnection() as HttpURLConnection
@@ -60,7 +63,7 @@ object SecureLoader {
                 val responseCode = connection.responseCode
                 if (responseCode != 200) {
                     val errorStream = connection.errorStream?.bufferedReader()?.readText() ?: "No error details"
-                    log("&c[Loader] Authentication failed (HTTP $responseCode): $errorStream")
+                    log("&cAuthentication failed (HTTP $responseCode): $errorStream")
                     return@thread
                 }
 
@@ -68,19 +71,19 @@ object SecureLoader {
                 val json = try {
                     CTJS.json.parseToJsonElement(responseText).jsonObject
                 } catch (e: Exception) {
-                    log("&c[Loader] Invalid response format")
+                    log("&cInvalid response format")
                     return@thread
                 }
 
                 if (json["success"]?.jsonPrimitive?.booleanOrNull != true) {
                     val message = json["message"]?.jsonPrimitive?.contentOrNull ?: "Unknown error"
-                    log("&c[Loader] Authentication failed: $message")
+                    log("&cAuthentication failed: $message")
                     return@thread
                 }
 
                 val payload = json["payload"]?.jsonObject
                 if (payload == null) {
-                    log("&c[Loader] Missing payload in response")
+                    log("&cMissing payload in response")
                     return@thread
                 }
 
@@ -88,7 +91,7 @@ object SecureLoader {
                 val contentStr = payload["content"]?.jsonPrimitive?.contentOrNull
 
                 if (ivStr == null || contentStr == null) {
-                    log("&c[Loader] Missing iv or content in payload")
+                    log("&cMissing iv or content in payload")
                     return@thread
                 }
 
@@ -98,26 +101,15 @@ object SecureLoader {
                 isLoaded = true
 
             } catch (e: java.net.SocketTimeoutException) {
-                log("&c[Loader] Connection timed out")
+                log("&cConnection timed out")
             } catch (e: java.net.UnknownHostException) {
-                log("&c[Loader] Could not connect to server")
+                log("&cCould not connect to server")
             } catch (e: javax.crypto.BadPaddingException) {
-                log("&c[Loader] Decryption failed - invalid key or corrupted data")
+                log("&cDecryption failed - invalid key or corrupted data")
             } catch (e: Exception) {
                 e.printStackTrace()
-                log("&c[Loader] Error: ${e.javaClass.simpleName} - ${e.message}")
+                log("&cError: ${e.javaClass.simpleName} - ${e.message}")
             }
-        }
-    }
-
-    private fun getHWID(): String {
-        return try {
-            val username = System.getProperty("user.name") ?: "unknown"
-            val osName = System.getProperty("os.name") ?: "unknown"
-            val userHome = System.getProperty("user.home") ?: "unknown"
-            "$username-$osName-${userHome.hashCode()}"
-        } catch (e: Exception) {
-            "unknown"
         }
     }
 
@@ -165,7 +157,7 @@ object SecureLoader {
                         }
                     }
                 } catch (e: Exception) {
-                    log("&e[Loader] Warning: Failed to process ${entry.name}: ${e.message}")
+                    log("&eWarning: Failed to process ${entry.name}: ${e.message}")
                 } finally {
                     zipStream.closeEntry()
                     entry = zipStream.nextEntry
@@ -175,16 +167,16 @@ object SecureLoader {
             zipStream.close()
         }
 
-        log("&a[Loader] Loaded $fileCount virtual files, $assetCount assets")
+        log("&aLoaded $fileCount virtual files, $assetCount assets")
 
         rootMetadata?.requires?.forEach { dependency ->
             if (dependency.isNotBlank() && dependency !in loadedDependencies) {
                 try {
-                    log("&7[Loader] Installing dependency: $dependency")
+                    log("&7Installing dependency: $dependency")
                     ModuleManager.importModule(dependency, VIRTUAL_MODULE_PREFIX)
                     loadedDependencies.add(dependency)
                 } catch (e: Exception) {
-                    log("&c[Loader] Failed to install dependency '$dependency': ${e.message}")
+                    log("&cFailed to install dependency '$dependency': ${e.message}")
                 }
             }
         }
@@ -196,16 +188,16 @@ object SecureLoader {
                     JSLoader.hasVirtualFile("$entryPath.js")) {
                     JSLoader.loadVirtualModule(entryPath)
                 } else {
-                    log("&c[Loader] Entry point not found: $entryPath")
+                    log("&cEntry point not found: $entryPath")
                     val availableFiles = JSLoader.getVirtualFilePaths()
                         .filter { it.endsWith(".js") }
                         .take(10)
                     if (availableFiles.isNotEmpty()) {
-                        log("&7[Loader] Available JS files: ${availableFiles.joinToString(", ")}")
+                        log("&7Available JS files: ${availableFiles.joinToString(", ")}")
                     }
                 }
             } catch (e: Exception) {
-                log("&c[Loader] Failed to load entry point: ${e.message}")
+                log("&cFailed to load entry point: ${e.message}")
                 e.printStackTrace()
             }
         }
@@ -256,7 +248,7 @@ object SecureLoader {
                     metadata = try {
                         CTJS.json.decodeFromString<ModuleMetadata>(content)
                     } catch (e: Exception) {
-                        log("&e[Loader] Warning: Failed to parse metadata.json: ${e.message}")
+                        log("&eWarning: Failed to parse metadata.json: ${e.message}")
                         null
                     }
                 }
