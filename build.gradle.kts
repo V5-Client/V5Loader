@@ -32,6 +32,10 @@ repositories {
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
     maven("https://maven.terraformersmc.com/releases")
     maven("https://repo.essential.gg/repository/maven-public")
+
+    flatDir {
+        dirs("libs")
+    }
 }
 
 dependencies {
@@ -53,6 +57,8 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(project(":typing-generator"))
     ksp(project(":typing-generator"))
+
+    include("local:V5Mod")
 }
 
 loom {

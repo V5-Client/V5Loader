@@ -34,8 +34,7 @@ object SecureLoader {
 
     fun run() {
         if (isLoaded) {
-            log("&eAlready loaded, skipping...")
-            return
+            log("&eAlready loaded, but it's better to reload anyway...")
         }
 
         thread(name = "SecureLoader-Auth") {
