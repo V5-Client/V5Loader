@@ -201,21 +201,21 @@ object RenderUtils {
             }
 
             val layer = if (depth) RenderLayers.LINE_LIST else RenderLayers.LINE_LIST_ESP
-            if (layer != currentLayer) {
-                bufferSource.draw()
-                currentLayer = layer
-                currentLineWidth = -1f
-            }
 
             val thickness = ((flags shr 2) and 0xFF) / 10f
             val dist = distanceSquared(lineData[i], lineData[i + 1], lineData[i + 2])
-            val scaledWidth = (thickness / dist.coerceAtLeast(1.0).pow(0.1)).toFloat()
+            val scaledWidth = (kotlin.math.round((thickness / dist.coerceAtLeast(1.0).pow(0.1)).toFloat() * 10f) / 10f).coerceAtLeast(0.1f)
 
-            if (abs(scaledWidth - currentLineWidth) > 0.05f) {
+            if (layer != currentLayer || abs(scaledWidth - currentLineWidth) > 0.01f) {
                 bufferSource.draw()
-                RenderSystem.lineWidth(scaledWidth)
+
+                currentLayer = layer
                 currentLineWidth = scaledWidth
+
+                RenderSystem.lineWidth(scaledWidth)
             }
+
+            val buffer = bufferSource.getBuffer(layer)
 
             tmpVector3f.set(lineData[i].toFloat(), lineData[i + 1].toFloat(), lineData[i + 2].toFloat())
             val dir = Vec3d(
@@ -224,13 +224,7 @@ object RenderUtils {
                 lineData[i + 5] - lineData[i + 2]
             )
 
-            VertexRendering.drawVector(
-                matrices,
-                bufferSource.getBuffer(layer),
-                tmpVector3f,
-                dir,
-                lineColors[idx]
-            )
+            VertexRendering.drawVector(matrices, buffer, tmpVector3f, dir, lineColors[idx])
         }
 
         bufferSource.draw()
