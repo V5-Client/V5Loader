@@ -28,7 +28,10 @@ if (!project.hasProperty("full")) {
 version = property("mod_version").toString()
 
 repositories {
+    mavenCentral()
+    maven("https://maven.fabricmc.net")
     maven("https://jitpack.io")
+    maven("https://maven.meteordev.org/releases")
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
     maven("https://maven.terraformersmc.com/releases")
     maven("https://repo.essential.gg/repository/maven-public")
@@ -50,7 +53,7 @@ dependencies {
         include(this)
     }
 
-//    modApi(libs.modmenu)
+    // modApi(libs.modmenu)
     modRuntimeOnly(libs.devauth)
     dokkaPlugin(libs.versioning)
 
@@ -58,7 +61,31 @@ dependencies {
     implementation(project(":typing-generator"))
     ksp(project(":typing-generator"))
 
-    include("local:V5Mod")
+    // Discord IPC
+    implementation("meteordevelopment:discord-ipc:1.1")
+    include("meteordevelopment:discord-ipc:1.1")
+
+    // NanoVG (with natives)
+    modImplementation(libs.lwjgl.nanovg) { include(this) }
+    listOf("windows", "linux", "macos", "macos-arm64").forEach {
+        modImplementation(variantOf(libs.lwjgl.nanovg) { classifier("natives-$it") }) {
+            include(this)
+        }
+    }
+
+    // Mixin Extras
+    modImplementation("io.github.llamalad7:mixinextras-fabric:0.5.0")
+    include("io.github.llamalad7:mixinextras-fabric:0.5.0")
+
+    // Pathfinding and rendering
+    modImplementation("local:Swift")
+    include("local:Swift")
+
+    // Proxy support
+    implementation("io.netty:netty-handler-proxy:4.1.97.Final")
+    include("io.netty:netty-handler-proxy:4.1.97.Final")
+    implementation("io.netty:netty-codec-socks:4.1.97.Final")
+    include("io.netty:netty-codec-socks:4.1.97.Final")
 }
 
 loom {
@@ -116,10 +143,13 @@ tasks {
         }
     }
 
+    // shit fix for file name but ehh
     jar {
-        from("LICENSE") {
-            rename { "${name}_${base.archivesName.get()}" }
-        }
+        archiveFileName.set("v5-${project.version}.jar")
+    }
+
+    remapJar {
+        archiveFileName.set("v5-${project.version}.jar")
     }
 
     dokkaHtml {

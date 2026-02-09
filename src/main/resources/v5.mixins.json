@@ -1,0 +1,24 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "com.v5.mixins",
+    "compatibilityLevel": "JAVA_21",
+    "client": [
+        "RenderLayersMixin",
+        "LightTextureManagerMixin",
+        "AbstractTerrainRenderContextMixin",
+        "ChunkOcclusionDataBuilderMixin",
+        "AbstractBlockStateMixin",
+        "BlockModelRendererMixin",
+        "YggdrasilServicesKeyInfoMixin",
+        "GameOptionsAccessorMixin",
+        "TranslationMixin",
+        "ClientConnectionProxyMixin",
+        "MultiplayerScreenMixin",
+        "GameRendererMixin",
+        "FirmamentModAnnouncerMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

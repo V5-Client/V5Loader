@@ -2798,3 +2798,393 @@ public final class com/chattriggers/ctjs/engine/WrappedThread$Companion {
 	public static synthetic fun sleep$default (Lcom/chattriggers/ctjs/engine/WrappedThread$Companion;JIILjava/lang/Object;)V
 }
 
+public final class com/v5/Entrypoint : net/fabricmc/api/ClientModInitializer {
+	public fun <init> ()V
+	public fun onInitializeClient ()V
+}
+
+public final class com/v5/gradient/Chat {
+	public static final field INSTANCE Lcom/v5/gradient/Chat;
+	public final fun buildGradient (Ljava/lang/String;II)Lnet/minecraft/text/MutableText;
+	public final fun parseColoredText (Ljava/lang/String;)Lnet/minecraft/text/MutableText;
+	public static final fun sendGradientMsg (Ljava/lang/String;II[Ljava/lang/Object;)V
+}
+
+public final class com/v5/keybind/KeyBindUtils {
+	public static final field INSTANCE Lcom/v5/keybind/KeyBindUtils;
+	public static final fun create (Ljava/lang/String;Ljava/lang/String;I)Lcom/v5/keybind/KeyBindUtils$WrappedKeyBind;
+	public static final fun init ()V
+}
+
+public final class com/v5/keybind/KeyBindUtils$WrappedKeyBind {
+	public fun <init> (Ljava/lang/String;ILnet/minecraft/client/option/KeyBinding$Category;)V
+	public final fun getCategory ()Lnet/minecraft/client/option/KeyBinding$Category;
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getKeyBinding ()Lnet/minecraft/client/option/KeyBinding;
+	public final fun getKeyCode ()I
+	public final fun onKeyPress (Ljava/lang/Runnable;)Lcom/v5/keybind/KeyBindUtils$WrappedKeyBind;
+}
+
+public class com/v5/mixins/AbstractBlockStateMixin {
+	public fun <init> ()V
+}
+
+public abstract class com/v5/mixins/AbstractTerrainRenderContextMixin {
+	protected field blockInfo Lnet/fabricmc/fabric/impl/client/indigo/renderer/render/BlockRenderInfo;
+	public fun <init> ()V
+}
+
+public class com/v5/mixins/BlockModelRendererMixin {
+	public fun <init> ()V
+}
+
+public class com/v5/mixins/ChunkOcclusionDataBuilderMixin {
+	public fun <init> ()V
+}
+
+public abstract class com/v5/mixins/ClientConnectionProxyMixin {
+	public fun <init> ()V
+}
+
+public class com/v5/mixins/FirmamentModAnnouncerMixin {
+	public fun <init> ()V
+}
+
+public abstract interface class com/v5/mixins/GameOptionsAccessorMixin {
+	public abstract fun getAllKeys ()[Lnet/minecraft/client/option/KeyBinding;
+	public abstract fun setAllKeys ([Lnet/minecraft/client/option/KeyBinding;)V
+}
+
+public class com/v5/mixins/GameRendererMixin {
+	public fun <init> ()V
+}
+
+public class com/v5/mixins/LightTextureManagerMixin {
+	public fun <init> ()V
+}
+
+public abstract class com/v5/mixins/MultiplayerScreenMixin : net/minecraft/client/gui/screen/Screen {
+	protected fun <init> (Lnet/minecraft/text/Text;)V
+	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+}
+
+public abstract class com/v5/mixins/RenderLayersMixin {
+	public fun <init> ()V
+}
+
+public class com/v5/mixins/TranslationMixin {
+	public fun <init> ()V
+}
+
+public class com/v5/mixins/YggdrasilServicesKeyInfoMixin {
+	public fun <init> ()V
+}
+
+public final class com/v5/pathfinding/PathManager {
+	public static final field INSTANCE Lcom/v5/pathfinding/PathManager;
+	public static final fun cancelSearch ()V
+	public static final fun clear ()V
+	public static final fun findPath (IIIIII)Z
+	public static final fun findPath (IIIIIII)Z
+	public static final fun findPath (IIIIIIIZ)Z
+	public static synthetic fun findPath$default (IIIIIIIZILjava/lang/Object;)Z
+	public static final fun findPathMultipleGoals (III[I)Z
+	public static final fun findPathMultipleGoals (III[II)Z
+	public static final fun findPathMultipleGoals (III[IIZ)Z
+	public static synthetic fun findPathMultipleGoals$default (III[IIZILjava/lang/Object;)Z
+	public static final fun getKeyNodeCount ()I
+	public static final fun getKeyNodesArray ()[I
+	public static final fun getLastError ()Ljava/lang/String;
+	public static final fun getLastTimeMs ()J
+	public static final fun getNodesExplored ()I
+	public static final fun getPathArray ()[I
+	public static final fun getPathSize ()I
+	public static final fun hasPath ()Z
+	public static final fun isSearching ()Z
+}
+
+public final class com/v5/proxy/Proxy {
+	public fun <init> (Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Z
+	public final fun copy (Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lcom/v5/proxy/Proxy;
+	public static synthetic fun copy$default (Lcom/v5/proxy/Proxy;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Lcom/v5/proxy/Proxy;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIp ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getPassword ()Ljava/lang/String;
+	public final fun getPort ()I
+	public final fun getUsername ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isEnabled ()Z
+	public final fun setEnabled (Z)V
+	public final fun setIp (Ljava/lang/String;)V
+	public final fun setName (Ljava/lang/String;)V
+	public final fun setPassword (Ljava/lang/String;)V
+	public final fun setPort (I)V
+	public final fun setUsername (Ljava/lang/String;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/v5/proxy/ProxyInfo {
+	public static final field INSTANCE Lcom/v5/proxy/ProxyInfo;
+	public final fun addProxy (Lcom/v5/proxy/Proxy;)V
+	public final fun getEnabledProxies ()Ljava/util/List;
+	public final fun getProxies ()Ljava/util/List;
+	public final fun removeProxy (Lcom/v5/proxy/Proxy;)V
+	public final fun setProxyEnabled (Lcom/v5/proxy/Proxy;Z)V
+	public final fun updateProxy (Lcom/v5/proxy/Proxy;Lcom/v5/proxy/Proxy;)V
+}
+
+public final class com/v5/qol/DiscordRPC {
+	public static final field INSTANCE Lcom/v5/qol/DiscordRPC;
+	public static final fun resetTimestamp ()V
+	public static final fun revertToIdle ()V
+	public static final fun stayOn ()V
+	public static final fun turnOff ()V
+	public static final fun updatePresence (Ljava/lang/String;Ljava/lang/String;)V
+}
+
+public final class com/v5/qol/Xray {
+	public static final field INSTANCE Lcom/v5/qol/Xray;
+	public static field alpha I
+	public static field isEnabled Z
+	public static final fun returnAlpha (Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)I
+	public static final fun setAlpha (I)V
+	public static final fun setDisabled ()V
+	public static final fun setEnabled ()V
+}
+
+public final class com/v5/render/NVGRenderer {
+	public static final field INSTANCE Lcom/v5/render/NVGRenderer;
+	public static field vg J
+	public static final fun beginFrame (FF)V
+	public static final fun clearImageCache ()V
+	public static final fun destroy ()V
+	public static final fun drawCheckerboard (FFFFF)V
+	public static final fun drawCheckerboard (FFFFFF)V
+	public static synthetic fun drawCheckerboard$default (FFFFFFILjava/lang/Object;)V
+	public static final fun drawCircle (FFFI)V
+	public static final fun drawDropShadow (FFFFFFFI)V
+	public static final fun drawGLTexture (IIIFFFF)V
+	public static final fun drawGLTexture (IIIFFFFF)V
+	public static final fun drawGLTexture (IIIFFFFFF)V
+	public static synthetic fun drawGLTexture$default (IIIFFFFFFILjava/lang/Object;)V
+	public static final fun drawGLTextureRegion (IIIIIIIFFFF)V
+	public static final fun drawGLTextureRegion (IIIIIIIFFFFF)V
+	public static final fun drawGLTextureRegion (IIIIIIIFFFFFF)V
+	public static synthetic fun drawGLTextureRegion$default (IIIIIIIFFFFFFILjava/lang/Object;)V
+	public static final fun drawGif (Ljava/lang/String;FFFFI)V
+	public static final fun drawGif (Ljava/lang/String;FFFFIF)V
+	public static final fun drawGif (Ljava/lang/String;FFFFIFF)V
+	public static synthetic fun drawGif$default (Ljava/lang/String;FFFFIFFILjava/lang/Object;)V
+	public static final fun drawGradientRect (FFFFIILjava/lang/Object;)V
+	public static final fun drawGradientRect (FFFFIILjava/lang/Object;F)V
+	public static synthetic fun drawGradientRect$default (FFFFIILjava/lang/Object;FILjava/lang/Object;)V
+	public static final fun drawHollowGradientRect (FFFFFIILjava/lang/Object;)V
+	public static final fun drawHollowGradientRect (FFFFFIILjava/lang/Object;F)V
+	public static synthetic fun drawHollowGradientRect$default (FFFFFIILjava/lang/Object;FILjava/lang/Object;)V
+	public static final fun drawHollowRect (FFFFFI)V
+	public static final fun drawHollowRect (FFFFFIF)V
+	public static synthetic fun drawHollowRect$default (FFFFFIFILjava/lang/Object;)V
+	public static final fun drawHueBar (FFFFF)V
+	public static final fun drawImage (Ljava/lang/String;FFFF)V
+	public static final fun drawImage (Ljava/lang/String;FFFFF)V
+	public static final fun drawImage (Ljava/lang/String;FFFFFF)V
+	public static synthetic fun drawImage$default (Ljava/lang/String;FFFFFFILjava/lang/Object;)V
+	public static final fun drawImageFromUrl (Ljava/lang/String;FFFF)V
+	public static final fun drawImageFromUrl (Ljava/lang/String;FFFFF)V
+	public static final fun drawImageFromUrl (Ljava/lang/String;FFFFFF)V
+	public static synthetic fun drawImageFromUrl$default (Ljava/lang/String;FFFFFFILjava/lang/Object;)V
+	public static final fun drawLine (FFFFFI)V
+	public static final fun drawRect (FFFFI)V
+	public static final fun drawRoundedRect (FFFFFI)V
+	public static final fun drawRoundedRectVaried (FFFFIFFFF)V
+	public static final fun endFrame ()V
+	public static final fun getCacheStats ()Ljava/lang/String;
+	public final fun getDefaultFont ()Lcom/v5/render/helper/Font;
+	public static final fun globalAlpha (F)V
+	public static final fun invalidateGLTexture (I)V
+	public static final fun isImageLoaded (Ljava/lang/String;)Z
+	public static final fun linearGradient (FFFFII)V
+	public static final fun loadGif (Ljava/lang/String;)Lcom/v5/render/NVGRenderer$GifData;
+	public static final fun loadImage (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun popScissor ()V
+	public static final fun pushScissor (FFFF)V
+	public static final fun registerV5Render (Ljava/lang/Runnable;)V
+	public static final fun resetScissor ()V
+	public static final fun restore ()V
+	public static final fun rotate (F)V
+	public static final fun runDrawables ()V
+	public static final fun save ()V
+	public static final fun scale (FF)V
+	public static final fun scissor (FFFF)V
+	public static final fun setGlobalCompositeOperation (I)V
+	public static final fun text (Ljava/lang/String;FFFII)V
+	public static final fun text (Ljava/lang/String;FFFILcom/v5/render/helper/Font;I)V
+	public static synthetic fun text$default (Ljava/lang/String;FFFILcom/v5/render/helper/Font;IILjava/lang/Object;)V
+	public static final fun textWidth (Ljava/lang/String;F)F
+	public static final fun textWidth (Ljava/lang/String;FLcom/v5/render/helper/Font;)F
+	public static synthetic fun textWidth$default (Ljava/lang/String;FLcom/v5/render/helper/Font;ILjava/lang/Object;)F
+	public static final fun translate (FF)V
+	public static final fun unloadGif (Ljava/lang/String;)V
+	public static final fun unloadImage (Ljava/lang/String;)V
+	public static final fun unregisterV5Render (Ljava/lang/Runnable;)V
+}
+
+public final class com/v5/render/NVGRenderer$GifData {
+	public fun <init> (III[I)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()[I
+	public final fun copy (III[I)Lcom/v5/render/NVGRenderer$GifData;
+	public static synthetic fun copy$default (Lcom/v5/render/NVGRenderer$GifData;III[IILjava/lang/Object;)Lcom/v5/render/NVGRenderer$GifData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDelays ()[I
+	public final fun getFrameCount ()I
+	public final fun getHeight ()I
+	public final fun getWidth ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/v5/render/RenderUtils {
+	public static final field INSTANCE Lcom/v5/render/RenderUtils;
+	public static final fun drawFilledBox (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;Z)V
+	public static synthetic fun drawFilledBox$default (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;ZILjava/lang/Object;)V
+	public static final fun drawHitbox (Lnet/minecraft/entity/Entity;Lcom/v5/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawHitbox$default (Lnet/minecraft/entity/Entity;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static final fun drawLine (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawLine$default (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static final fun drawSizedBox (Lnet/minecraft/util/math/Vec3d;DDDLcom/v5/render/RenderUtils$Color;ZFZ)V
+	public static synthetic fun drawSizedBox$default (Lnet/minecraft/util/math/Vec3d;DDDLcom/v5/render/RenderUtils$Color;ZFZILjava/lang/Object;)V
+	public static final fun drawStyledBox (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;Lcom/v5/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawStyledBox$default (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static final fun drawText (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;FZZZZ)V
+	public static synthetic fun drawText$default (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;FZZZZILjava/lang/Object;)V
+	public static final fun drawTracer (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawTracer$default (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static final fun drawWireFrameBox (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawWireFrameBox$default (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
+}
+
+public final class com/v5/render/RenderUtils$Color {
+	public fun <init> (IIII)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun copy (IIII)Lcom/v5/render/RenderUtils$Color;
+	public static synthetic fun copy$default (Lcom/v5/render/RenderUtils$Color;IIIIILjava/lang/Object;)Lcom/v5/render/RenderUtils$Color;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getA ()I
+	public final fun getAf ()F
+	public final fun getB ()I
+	public final fun getBf ()F
+	public final fun getG ()I
+	public final fun getGf ()F
+	public final fun getPacked ()I
+	public final fun getR ()I
+	public final fun getRf ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/v5/render/helper/Font {
+	public fun <init> (Ljava/lang/String;Ljava/io/InputStream;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun buffer ()Ljava/nio/ByteBuffer;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+}
+
+public final class com/v5/render/helper/FrustumHolder {
+	public static final field INSTANCE Lcom/v5/render/helper/FrustumHolder;
+	public static field currentFrustum Lnet/minecraft/client/render/Frustum;
+}
+
+public final class com/v5/render/helper/FrustumUtils {
+	public static final field INSTANCE Lcom/v5/render/helper/FrustumUtils;
+	public static final fun isVisible (Lnet/minecraft/client/render/Frustum;DDDDDD)Z
+	public static final fun isVisible (Lnet/minecraft/client/render/Frustum;Lnet/minecraft/util/math/Box;)Z
+}
+
+public final class com/v5/render/helper/Image {
+	public static final field Companion Lcom/v5/render/helper/Image$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/io/InputStream;Ljava/nio/ByteBuffer;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/io/InputStream;Ljava/nio/ByteBuffer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun buffer ()Ljava/nio/ByteBuffer;
+	public final fun close ()V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIdentifier ()Ljava/lang/String;
+	public final fun getInputStream ()Ljava/io/InputStream;
+	public fun hashCode ()I
+	public final fun isGIF ()Z
+	public final fun isSVG ()Z
+}
+
+public final class com/v5/render/helper/Image$Companion {
+	public final fun fromPath (Ljava/lang/String;)Lcom/v5/render/helper/Image;
+	public final fun fromStream (Ljava/lang/String;Ljava/io/InputStream;)Lcom/v5/render/helper/Image;
+}
+
+public final class com/v5/render/objects/RenderLayers {
+	public static final field INSTANCE Lcom/v5/render/objects/RenderLayers;
+	public static final field LINE_LIST Lnet/minecraft/client/render/RenderLayer;
+	public static final field LINE_LIST_ESP Lnet/minecraft/client/render/RenderLayer;
+	public static final field TRIANGLE_STRIP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
+	public static final field TRIANGLE_STRIP_ESP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
+}
+
+public final class com/v5/render/objects/RenderPipelines {
+	public static final field INSTANCE Lcom/v5/render/objects/RenderPipelines;
+	public static final field LINE_LIST Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+	public static final field LINE_LIST_ESP Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+	public static final field TRIANGLE_STRIP Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+	public static final field TRIANGLE_STRIP_ESP Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+}
+
+public final class com/v5/screen/ProxyEditScreen : net/minecraft/client/gui/screen/Screen {
+	public fun <init> (Lcom/v5/screen/ProxyManagerScreen;Lcom/v5/proxy/Proxy;)V
+	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+}
+
+public final class com/v5/screen/ProxyManagerScreen : net/minecraft/client/gui/screen/Screen {
+	public fun <init> (Lnet/minecraft/client/gui/screen/Screen;)V
+	public final fun refreshList ()V
+	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+}
+
+public final class com/v5/screen/ProxyManagerScreen$ProxyListWidget : net/minecraft/client/gui/widget/ElementListWidget {
+	public fun <init> (Lcom/v5/screen/ProxyManagerScreen;Lnet/minecraft/client/MinecraftClient;IIII)V
+	public fun getRowWidth ()I
+	public final fun refresh ()V
+}
+
+public final class com/v5/screen/ProxyManagerScreen$ProxyListWidget$ProxyEntry : net/minecraft/client/gui/widget/ElementListWidget$Entry {
+	public fun <init> (Lcom/v5/screen/ProxyManagerScreen$ProxyListWidget;Lcom/v5/proxy/Proxy;)V
+	public fun children ()Ljava/util/List;
+	public fun render (Lnet/minecraft/client/gui/DrawContext;IIZF)V
+	public fun selectableChildren ()Ljava/util/List;
+}
+
+public final class com/v5/screen/WelcomeScreen : net/minecraft/client/gui/screen/Screen {
+	public static final field Companion Lcom/v5/screen/WelcomeScreen$Companion;
+	public fun <init> ()V
+	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
+	public fun mouseReleased (Lnet/minecraft/client/gui/Click;)Z
+	public static final fun open ()V
+	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+	public fun shouldCloseOnEsc ()Z
+}
+
+public final class com/v5/screen/WelcomeScreen$Companion {
+	public final fun open ()V
+}
+

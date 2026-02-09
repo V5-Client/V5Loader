@@ -1,17 +1,17 @@
 {
     "schemaVersion": 1,
     "id": "ctjs",
-    "name": "ChatTriggers",
+    "name": "V5",
     "version": "$version",
-    "description": "A framework for Minecraft that allows for live scripting and client modification using JavaScript",
-    "authors": ["Ecolsson", "FalseHonesty", "kerbybit"],
-    "contributors": ["Squagward", "Debuggings", "DJtheRedstoner", "srockw", "DocilElm"],
-    "icon": "assets/ctjs/logo.png",
-    "license": ["MIT"],
+    "description": "A ChatTriggers fork optimized for advanced automation and high-performance client-side scripting.",
+    "authors": ["Zurviq, rdbt, EpsilonPhoenix"],
+    "contributors": ["Oblongboot", "Nathan", "IcyHenryT"],
+    "icon": "assets/v5/icon.png",
+    "license": [],
     "contact": {
-        "homepage": "https://chattriggers.com",
-        "sources": "https://github.com/ChatTriggers/ChatTriggers",
-        "issues": "https://github.com/ChatTriggers/ChatTriggers/issues"
+        "homepage": "https://rdbt.top/",
+        "sources": "https://discord.gg/RvQJq7vE3a",
+        "issues": "https://discord.gg/RvQJq7vE3a"
     },
     "environment": "client",
     "entrypoints": {
@@ -23,7 +23,7 @@
             "com.chattriggers.ctjs.internal.compat.ModMenuEntry"
         ]
     },
-    "mixins": ["ctjs.mixins.json"],
+    "mixins": ["ctjs.mixins.json", "v5.mixins.json"],
     "depends": {
         "fabricloader": ">=$loader_version",
         "fabric-api": ">=$fabric_api_version",
