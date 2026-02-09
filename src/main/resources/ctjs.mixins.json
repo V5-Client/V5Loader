@@ -5,7 +5,7 @@
     "compatibilityLevel": "JAVA_21",
     "client": [
         "AbstractSoundInstanceAccessor",
-        "BlockEntityRenderDispatcherMixin",
+        "BlockEntityRenderStateMixin",
         "BookScreenAccessor",
         "BossBarHudAccessor",
         "ChatHudAccessor",
