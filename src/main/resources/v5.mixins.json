@@ -16,7 +16,8 @@
         "ClientConnectionProxyMixin",
         "MultiplayerScreenMixin",
         "GameRendererMixin",
-        "FirmamentModAnnouncerMixin"
+        "FirmamentModAnnouncerMixin",
+        "DrawContextCapture"
     ],
     "injectors": {
         "defaultRequire": 1

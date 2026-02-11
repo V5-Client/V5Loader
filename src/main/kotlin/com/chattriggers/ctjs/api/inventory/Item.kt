@@ -12,6 +12,7 @@ import com.chattriggers.ctjs.api.world.block.BlockPos
 import com.chattriggers.ctjs.internal.Skippable
 import com.chattriggers.ctjs.internal.TooltipOverridable
 import com.chattriggers.ctjs.internal.utils.asMixin
+import com.v5.render.helper.DrawContextHolder
 import net.minecraft.block.pattern.CachedBlockPosition
 import net.minecraft.client.render.OverlayTexture
 import net.minecraft.client.render.item.ItemRenderState
@@ -24,6 +25,7 @@ import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.util.crash.CrashException
 import net.minecraft.util.crash.CrashReport
 import kotlin.jvm.optionals.getOrNull
+import net.minecraft.client.gui.DrawContext
 
 class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
     val type: ItemType = ItemType(mcValue.item)
@@ -108,60 +110,26 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
     // TODO: make a component wrapper?
     fun getNBT() = mcValue.components
 
-    /**
-     * Renders the item icon to the client's overlay, with customizable overlay information.
-     *
-     * @param x the x location
-     * @param y the y location
-     * @param scale the scale
-     * @param z the z level to draw the item at
-     */
     @JvmOverloads
-    fun draw(x: Float = 0f, y: Float = 0f, scale: Float = 1f, z: Float = 200f) {
-        val itemRenderer = Client.getMinecraft().itemRenderer
-        val itemRenderState = ItemRenderState()
+    fun draw(x: Float = 0f, y: Float = 0f, scale: Float = 1f) {
+        if (mcValue.isEmpty) return
+        val context = DrawContextHolder.currentContext ?: return
 
-        Renderer.pushMatrix()
-            .scale(scale, scale, 1f)
-            .translate(x / scale, y / scale, z)
+        context.matrices.pushMatrix()
+        context.matrices.translate(x, y)
+        context.matrices.scale(scale, scale)
 
-        // The item draw method moved to DrawContext in 1.20, which we don't have access
-        // to here, so its drawItem method has been copy-pasted here instead
-        if (mcValue.isEmpty)
-            return
-        Client.getMinecraft().itemModelManager.clearAndUpdate(itemRenderState, mcValue, ItemDisplayContext.GUI, World.toMC(), null, 0)
-        Renderer.pushMatrix()
-        Renderer.translate(x + 8, y + 8, 150 + z)
+        // DEBUG: Ensure we are drawing at a Z-level that isn't hidden
+        // Standard DrawContext.drawItem handles its own Z, but we can wrap it
         try {
-            val orderedRender = Client.getMinecraft().gameRenderer.entityRenderCommandQueue
-            val vertexConsumers = Client.getMinecraft().bufferBuilders.entityVertexConsumers
-            Renderer.scale(16.0f, -16.0f, 16.0f)
-            if (!itemRenderState.isSideLit)
-                vertexConsumers.draw()
-                // TODO: find out a way to get Diffuse instance and call setType
-                // DiffuseLighting.disableGuiDepthLighting()
-
-            itemRenderState.render(Renderer.matrixStack.toMC(), orderedRender, 15728880, OverlayTexture.DEFAULT_UV, 0)
-
-            Renderer.disableDepth()
-            vertexConsumers.draw()
-            Renderer.enableDepth()
-
-            if (!itemRenderState.isSideLit) {
-                // TODO: find out a way to get Diffuse instance and call setType
-                // DiffuseLighting.enableGuiDepthLighting()
-            }
-        } catch (e: Throwable) {
-            val crashReport = CrashReport.create(e, "Rendering item")
-            val crashReportSection = crashReport.addElement("Item being rendered")
-            crashReportSection.add("Item Type") { mcValue.item.toString() }
-            crashReportSection.add("Item Damage") { mcValue.damage.toString() }
-            crashReportSection.add("Item Components") { mcValue.components.toString() }
-            crashReportSection.add("Item Foil") { mcValue.hasGlint().toString() }
-            throw CrashException(crashReport)
+            // In 1.21.10, drawItem is the safest method.
+            // Ensure mcValue is a valid net.minecraft.item.ItemStack
+            context.drawItem(mcValue, 0, 0)
+        } catch (e: Exception) {
+            // If this hits, the context is likely invalid/disposed
+            println("Draw Error: ${e.message}")
         } finally {
-            Renderer.popMatrix()
-            Renderer.popMatrix()
+            context.matrices.popMatrix()
         }
     }
 

@@ -1087,8 +1087,7 @@ public final class com/chattriggers/ctjs/api/inventory/Item : com/chattriggers/c
 	public final fun draw (F)V
 	public final fun draw (FF)V
 	public final fun draw (FFF)V
-	public final fun draw (FFFF)V
-	public static synthetic fun draw$default (Lcom/chattriggers/ctjs/api/inventory/Item;FFFFILjava/lang/Object;)V
+	public static synthetic fun draw$default (Lcom/chattriggers/ctjs/api/inventory/Item;FFFILjava/lang/Object;)V
 	public static final fun fromMC (Lnet/minecraft/item/ItemStack;)Lcom/chattriggers/ctjs/api/inventory/Item;
 	public final fun getDamage ()I
 	public final fun getDurability ()I
@@ -2846,6 +2845,10 @@ public abstract class com/v5/mixins/ClientConnectionProxyMixin {
 	public fun <init> ()V
 }
 
+public class com/v5/mixins/DrawContextCapture {
+	public fun <init> ()V
+}
+
 public class com/v5/mixins/FirmamentModAnnouncerMixin {
 	public fun <init> ()V
 }
@@ -3093,6 +3096,12 @@ public final class com/v5/render/RenderUtils$Color {
 	public final fun getRf ()F
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/v5/render/helper/DrawContextHolder {
+	public static final field INSTANCE Lcom/v5/render/helper/DrawContextHolder;
+	public static final fun getCurrentContext ()Lnet/minecraft/client/gui/DrawContext;
+	public static final fun setCurrentContext (Lnet/minecraft/client/gui/DrawContext;)V
 }
 
 public final class com/v5/render/helper/Font {
