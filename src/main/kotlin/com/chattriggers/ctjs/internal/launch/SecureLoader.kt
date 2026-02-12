@@ -2,161 +2,156 @@ package com.chattriggers.ctjs.internal.launch
 
 import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.api.client.Client
-import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
 import com.chattriggers.ctjs.internal.engine.module.ModuleMetadata
-import kotlinx.serialization.json.*
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.net.HttpURLConnection
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import java.awt.Desktop
+import java.io.*
+import java.net.ServerSocket
+import java.net.URI
 import java.net.URL
 import java.nio.charset.StandardCharsets
-import java.util.Base64
+import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
-import kotlin.concurrent.thread
+import kotlin.system.exitProcess
 
 object SecureLoader {
     private const val SECRET_KEY = "12345678901234567890123456789012"
-    private const val AUTH_URL = "http://localhost:8080/api/loader/login"
+    private const val BACKEND_URL = "https://backend.rdbt.top"
     private const val VIRTUAL_MODULE_PREFIX = "V5"
     private const val ENTRY_POINT = "loader"
 
-    private var USER_TOKEN = "DISCORD_TOKEN_EXAMPLE_1"
+    var jwtToken: String? = null
+        private set
 
     @Volatile
     private var isLoaded = false
 
     fun run() {
-        if (isLoaded) {
-            log("&eAlready loaded, but it's better to reload anyway...")
-        }
+        println("[V5] Game loading paused for authentication.")
 
-        thread(name = "SecureLoader-Auth") {
-            try {
-                log("&7Generating HWID...")
-                val secureHWID = HWID.generateHWID()
+        try {
+            val serverSocket = ServerSocket(0)
+            val port = serverSocket.localPort
+            serverSocket.soTimeout = 240 * 1000 // 240 seconds
 
-                log("&7Authenticating...")
+            val authUrl = "$BACKEND_URL/api/auth/discord/login?state=port:$port"
+            println("[V5] Opening browser to: $authUrl")
 
-                val jsonBody = buildJsonObject {
-                    put("token", USER_TOKEN)
-                    put("hwid", secureHWID)
-                }.toString()
-
-                val connection = URL(AUTH_URL).openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.setRequestProperty("User-Agent", "CTJS-V5")
-                connection.connectTimeout = 10000
-                connection.readTimeout = 10000
-                connection.doOutput = true
-
-                connection.outputStream.use { it.write(jsonBody.toByteArray(StandardCharsets.UTF_8)) }
-
-                val responseCode = connection.responseCode
-                if (responseCode != 200) {
-                    val errorStream = connection.errorStream?.bufferedReader()?.readText() ?: "No error details"
-                    log("&cAuthentication failed (HTTP $responseCode): $errorStream")
-                    return@thread
-                }
-
-                val responseText = connection.inputStream.bufferedReader().readText()
-                val json = try {
-                    CTJS.json.parseToJsonElement(responseText).jsonObject
-                } catch (e: Exception) {
-                    log("&cInvalid response format")
-                    return@thread
-                }
-
-                if (json["success"]?.jsonPrimitive?.booleanOrNull != true) {
-                    val message = json["message"]?.jsonPrimitive?.contentOrNull ?: "Unknown error"
-                    log("&cAuthentication failed: $message")
-                    return@thread
-                }
-
-                val payload = json["payload"]?.jsonObject
-                if (payload == null) {
-                    log("&cMissing payload in response")
-                    return@thread
-                }
-
-                val ivStr = payload["iv"]?.jsonPrimitive?.contentOrNull
-                val contentStr = payload["content"]?.jsonPrimitive?.contentOrNull
-
-                if (ivStr == null || contentStr == null) {
-                    log("&cMissing iv or content in payload")
-                    return@thread
-                }
-
-                val zipBytes = decryptToBytes(contentStr, ivStr)
-                processZip(zipBytes)
-
-                isLoaded = true
-
-            } catch (e: java.net.SocketTimeoutException) {
-                log("&cConnection timed out")
-            } catch (e: java.net.UnknownHostException) {
-                log("&cCould not connect to server")
-            } catch (e: javax.crypto.BadPaddingException) {
-                log("&cDecryption failed - invalid key or corrupted data")
-            } catch (e: Exception) {
-                e.printStackTrace()
-                log("&cError: ${e.javaClass.simpleName} - ${e.message}")
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(URI(authUrl))
+            } else {
+                println("[V5] FAILED TO OPEN BROWSER! Open this URL manually:")
+                println(authUrl)
             }
+
+            println("[V5] Waiting for authentication...")
+
+            try {
+                val clientSocket = serverSocket.accept()
+                val reader = BufferedReader(InputStreamReader(clientSocket.getInputStream()))
+                val requestLine = reader.readLine() // GET /callback?token=... HTTP/1.1
+
+                val writer = PrintWriter(clientSocket.getOutputStream(), true)
+                writer.println("HTTP/1.1 200 OK")
+                writer.println("Content-Type: text/html")
+                writer.println("\r\n")
+                writer.println("<h1>Authenticated!</h1><p>You can close this tab and return to the game.</p><script>window.close()</script>")
+                writer.close()
+                clientSocket.close()
+                serverSocket.close()
+
+                if (requestLine != null && requestLine.contains("token=")) {
+                    val tokenStart = requestLine.indexOf("token=") + 6
+                    val tokenEnd = requestLine.indexOf(" ", tokenStart)
+                    val rawToken = if (tokenEnd == -1) requestLine.substring(tokenStart) else requestLine.substring(tokenStart, tokenEnd)
+                    jwtToken = rawToken.split("&")[0]
+                } else {
+                    throw IOException("Invalid callback request")
+                }
+
+            } catch (e: Exception) {
+                println("[V5] Authentication timed out or failed.")
+                exitProcess(0)
+            }
+
+            if (jwtToken == null) {
+                exitProcess(0)
+            }
+
+            println("[V5] Authenticated. Welcome to V5!")
+            downloadAndLoad(jwtToken!!)
+
+            isLoaded = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            exitProcess(0)
         }
     }
 
-    private fun log(message: String) {
-        try {
-            if (Client.getMinecraft().isOnThread) {
-                ChatLib.chat(message)
-            } else {
-                Client.scheduleTask { ChatLib.chat(message) }
-            }
-        } catch (e: Exception) {
-            println("[SecureLoader] $message")
+    private fun downloadAndLoad(token: String) {
+        val url = URL("$BACKEND_URL/api/download/v5")
+        val connection = url.openConnection()
+        connection.setRequestProperty("Authorization", "Bearer $token")
+        connection.setRequestProperty("User-Agent", "V5Loader/1.0")
+        connection.connectTimeout = 10000
+        connection.readTimeout = 30000
+
+        val responseCode = (connection as java.net.HttpURLConnection).responseCode
+        if (responseCode != 200) {
+            println("[V5] Download failed with code: $responseCode")
+            exitProcess(0)
         }
+
+        val responseText = connection.inputStream.bufferedReader().readText()
+        val json = CTJS.json.parseToJsonElement(responseText).jsonObject
+
+        if (json["success"]?.jsonPrimitive?.booleanOrNull != true) {
+            exitProcess(0)
+        }
+
+        val payload = json["payload"]?.jsonObject ?: throw IOException("Missing payload")
+        val ivStr = payload["iv"]?.jsonPrimitive?.contentOrNull
+        val contentStr = payload["content"]?.jsonPrimitive?.contentOrNull
+
+        if (ivStr == null || contentStr == null) {
+            throw IOException("Invalid payload structure")
+        }
+
+        val zipBytes = decryptToBytes(contentStr, ivStr)
+        processZip(zipBytes)
     }
 
     private fun processZip(zipData: ByteArray) {
         JSLoader.clearVirtualFiles()
 
         val zipStream = ZipInputStream(ByteArrayInputStream(zipData))
-
         val tempAssetsDir = File(CTJS.assetsDir, VIRTUAL_MODULE_PREFIX)
         tempAssetsDir.mkdirs()
 
-        var fileCount = 0
-        var assetCount = 0
         var rootMetadata: ModuleMetadata? = null
         val loadedDependencies = mutableSetOf<String>()
 
         try {
             var entry: ZipEntry? = zipStream.nextEntry
-
             while (entry != null) {
                 try {
                     if (!entry.isDirectory) {
                         val result = processZipEntry(zipStream, entry, tempAssetsDir)
-                        when (result) {
-                            is ZipEntryResult.VirtualFile -> {
-                                fileCount++
-                                if (result.isRootMetadata) {
-                                    rootMetadata = result.metadata
-                                }
-                            }
-                            is ZipEntryResult.AssetFile -> assetCount++
-                            is ZipEntryResult.Skipped -> { /* ignore */ }
+                        if (result is ZipEntryResult.VirtualFile && result.isRootMetadata) {
+                            rootMetadata = result.metadata
                         }
                     }
                 } catch (e: Exception) {
-                    log("&eWarning: Failed to process ${entry.name}: ${e.message}")
+                    // file errors, probably need to report to devs? maybe we could have error webhook?
                 } finally {
                     zipStream.closeEntry()
                     entry = zipStream.nextEntry
@@ -166,37 +161,22 @@ object SecureLoader {
             zipStream.close()
         }
 
-        log("&aLoaded $fileCount virtual files, $assetCount assets")
-
         rootMetadata?.requires?.forEach { dependency ->
             if (dependency.isNotBlank() && dependency !in loadedDependencies) {
                 try {
-                    log("&7Installing dependency: $dependency")
                     ModuleManager.importModule(dependency, VIRTUAL_MODULE_PREFIX)
                     loadedDependencies.add(dependency)
-                } catch (e: Exception) {
-                    log("&cFailed to install dependency '$dependency': ${e.message}")
-                }
+                } catch (e: Exception) {}
             }
         }
 
         Client.scheduleTask {
             try {
                 val entryPath = "$VIRTUAL_MODULE_PREFIX/$ENTRY_POINT"
-                if (JSLoader.hasVirtualFile(entryPath) ||
-                    JSLoader.hasVirtualFile("$entryPath.js")) {
+                if (JSLoader.hasVirtualFile(entryPath) || JSLoader.hasVirtualFile("$entryPath.js")) {
                     JSLoader.loadVirtualModule(entryPath)
-                } else {
-                    log("&cEntry point not found: $entryPath")
-                    val availableFiles = JSLoader.getVirtualFilePaths()
-                        .filter { it.endsWith(".js") }
-                        .take(10)
-                    if (availableFiles.isNotEmpty()) {
-                        log("&7Available JS files: ${availableFiles.joinToString(", ")}")
-                    }
                 }
             } catch (e: Exception) {
-                log("&cFailed to load entry point: ${e.message}")
                 e.printStackTrace()
             }
         }
@@ -208,29 +188,15 @@ object SecureLoader {
         object Skipped : ZipEntryResult()
     }
 
-    private fun processZipEntry(
-        zipStream: ZipInputStream,
-        entry: ZipEntry,
-        assetsDir: File
-    ): ZipEntryResult {
+    private fun processZipEntry(zipStream: ZipInputStream, entry: ZipEntry, assetsDir: File): ZipEntryResult {
         val rawName = entry.name
-
-        var entryName = rawName
+        val entryName = rawName
             .replace('\\', '/')
             .removePrefix("$VIRTUAL_MODULE_PREFIX/")
             .removePrefix("/")
             .trim()
 
-        if (entryName.isEmpty() ||
-            entryName.startsWith(".") ||
-            entryName.contains("/.") ||
-            entryName.endsWith(".yml") ||
-            entryName.endsWith(".md") ||
-            entryName == "desktop.ini" ||
-            entryName.startsWith(".github/") ||
-            entryName.startsWith(".vscode/")) {
-            return ZipEntryResult.Skipped
-        }
+        if (entryName.isEmpty() || entryName.startsWith(".") || entryName.contains("/.")) return ZipEntryResult.Skipped
 
         val virtualPath = "$VIRTUAL_MODULE_PREFIX/$entryName"
         val extension = entryName.substringAfterLast('.', "").lowercase()
@@ -239,33 +205,19 @@ object SecureLoader {
             extension == "js" || extension == "json" -> {
                 val content = String(zipStream.readAllBytes(), StandardCharsets.UTF_8)
                 JSLoader.addVirtualFile(virtualPath, content)
-
                 val isRootMetadata = entryName == "metadata.json"
                 var metadata: ModuleMetadata? = null
-
                 if (isRootMetadata) {
-                    metadata = try {
-                        CTJS.json.decodeFromString<ModuleMetadata>(content)
-                    } catch (e: Exception) {
-                        log("&eWarning: Failed to parse metadata.json: ${e.message}")
-                        null
-                    }
+                    metadata = try { CTJS.json.decodeFromString<ModuleMetadata>(content) } catch (e: Exception) { null }
                 }
-
                 ZipEntryResult.VirtualFile(isRootMetadata, metadata)
             }
-
             extension in listOf("png", "jpg", "jpeg", "gif", "svg", "wav", "ogg", "mp3") -> {
                 val assetFile = File(assetsDir, entryName)
                 assetFile.parentFile?.mkdirs()
-
-                FileOutputStream(assetFile).use { fos ->
-                    zipStream.copyTo(fos)
-                }
-
+                FileOutputStream(assetFile).use { fos -> zipStream.copyTo(fos) }
                 ZipEntryResult.AssetFile
             }
-
             else -> ZipEntryResult.Skipped
         }
     }
@@ -273,13 +225,10 @@ object SecureLoader {
     private fun decryptToBytes(encryptedBase64: String, ivBase64: String): ByteArray {
         val keyBytes = SECRET_KEY.toByteArray(StandardCharsets.UTF_8)
         val key = SecretKeySpec(keyBytes, "AES")
-
         val ivBytes = Base64.getDecoder().decode(ivBase64)
         val iv = IvParameterSpec(ivBytes)
-
         val cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING")
         cipher.init(Cipher.DECRYPT_MODE, key, iv)
-
         val encryptedBytes = Base64.getDecoder().decode(encryptedBase64)
         return cipher.doFinal(encryptedBytes)
     }

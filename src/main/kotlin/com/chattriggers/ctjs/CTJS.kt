@@ -137,7 +137,7 @@ class CTJS : ClientModInitializer {
 
                 ModuleManager.entryPass()
 
-                SecureLoader.run()
+                SecureLoader.reload()
 
                 if (asCommand)
                     ChatLib.chat("&aDone reloading!")
