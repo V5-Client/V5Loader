@@ -61,22 +61,51 @@ object SecureLoader {
                 val requestLine = reader.readLine() // GET /callback?token=... HTTP/1.1
 
                 val writer = PrintWriter(clientSocket.getOutputStream(), true)
-                writer.println("HTTP/1.1 200 OK")
-                writer.println("Content-Type: text/html")
-                writer.println("\r\n")
-                writer.println("<h1>Authenticated!</h1><p>You can close this tab and return to the game.</p><script>window.close()</script>")
-                writer.close()
-                clientSocket.close()
-                serverSocket.close()
 
                 if (requestLine != null && requestLine.contains("token=")) {
                     val tokenStart = requestLine.indexOf("token=") + 6
                     val tokenEnd = requestLine.indexOf(" ", tokenStart)
                     val rawToken = if (tokenEnd == -1) requestLine.substring(tokenStart) else requestLine.substring(tokenStart, tokenEnd)
                     jwtToken = rawToken.split("&")[0]
+
+                    writer.println("HTTP/1.1 200 OK")
+                    writer.println("Content-Type: text/html")
+                    writer.println("\r\n")
+                    writer.println("<h1>Authenticated!</h1><p>You can close this tab and return to the game.</p><script>window.close()</script>")
+                } else if (requestLine != null && requestLine.contains("error=")) {
+                    val errorStart = requestLine.indexOf("error=") + 6
+                    val errorEnd = requestLine.indexOf(" ", errorStart)
+                    val error = if (errorEnd == -1) requestLine.substring(errorStart) else requestLine.substring(errorStart, errorEnd)
+                    
+                    writer.println("HTTP/1.1 403 Forbidden")
+                    writer.println("Content-Type: text/html")
+                    writer.println("\r\n")
+                    
+                    when (error) {
+                        "access_denied" -> {
+                            writer.println("<h1>Access Denied</h1><p>You do not have access to V5.</p>")
+                            println("[V5] Access denied: user does not have access to V5")
+                        }
+                        "banned" -> {
+                            writer.println("<h1>Access Denied</h1><p>You are banned.</p>")
+                            println("[V5] Access denied: user is banned")
+                        }
+                        else -> {
+                            writer.println("<h1>Authentication failed</h1>")
+                            println("[V5] Authentication failed with error: $error")
+                        }
+                    }
+                    exitProcess(0)
                 } else {
-                    throw IOException("Invalid callback request")
+                    writer.println("HTTP/1.1 400 Bad Request")
+                    writer.println("Content-Type: text/html")
+                    writer.println("\r\n")
+                    writer.println("<h1>Authentication failed</h1>")
                 }
+
+                writer.close()
+                clientSocket.close()
+                serverSocket.close()
 
             } catch (e: Exception) {
                 println("[V5] Authentication timed out or failed.")
@@ -98,6 +127,42 @@ object SecureLoader {
     }
 
     private fun downloadAndLoad(token: String) {
+        try {
+            val statusUrl = URL("$BACKEND_URL/api/authstatus")
+            val statusConnection = statusUrl.openConnection()
+            statusConnection.setRequestProperty("Authorization", "Bearer $token")
+            statusConnection.setRequestProperty("User-Agent", "V5Loader/1.0")
+            statusConnection.connectTimeout = 10000
+            statusConnection.readTimeout = 30000
+
+            val statusCode = (statusConnection as java.net.HttpURLConnection).responseCode
+            if (statusCode != 200) {
+                println("[V5] Auth status check failed with code: $statusCode")
+                exitProcess(0)
+            }
+
+            val statusText = statusConnection.inputStream.bufferedReader().readText()
+            val statusJson = CTJS.json.parseToJsonElement(statusText).jsonObject
+            val userStatus = statusJson["status"]?.jsonObject
+
+            if (userStatus != null) {
+                val isBanned = userStatus["isBanned"]?.jsonPrimitive?.booleanOrNull ?: false
+                val releaseChannel = userStatus["releaseChannel"]?.jsonPrimitive?.contentOrNull ?: "No access"
+
+                if (isBanned) {
+                    println("[V5] Download failed: You are banned.")
+                    exitProcess(0)
+                }
+                if (releaseChannel == "No access") {
+                    println("[V5] Download failed: You do not have access to V5.")
+                    exitProcess(0)
+                }
+            }
+        } catch (e: Exception) {
+            println("[V5] Failed to check auth status: ${e.message}")
+            exitProcess(0)
+        }
+
         val url = URL("$BACKEND_URL/api/download/v5")
         val connection = url.openConnection()
         connection.setRequestProperty("Authorization", "Bearer $token")
@@ -107,7 +172,23 @@ object SecureLoader {
 
         val responseCode = (connection as java.net.HttpURLConnection).responseCode
         if (responseCode != 200) {
-            println("[V5] Download failed with code: $responseCode")
+            val responseText = connection.inputStream.bufferedReader().readText()
+            val json = try {
+                CTJS.json.parseToJsonElement(responseText).jsonObject
+            } catch (e: Exception) {
+                null
+            }
+            
+            val errorMessage = json?.get("error")?.jsonPrimitive?.contentOrNull ?: "Unknown error"
+            
+            when (errorMessage) {
+                "BANNED" -> println("[V5] Download failed: You are banned.")
+                "ACCESS_DENIED" -> println("[V5] Download failed: You do not have access to V5.")
+                "UNAUTHORIZED" -> println("[V5] Download failed: Unauthorized. Please authenticate again.")
+                "INVALID_CHANNEL" -> println("[V5] Download failed: Invalid release channel.")
+                "FILE_NOT_FOUND" -> println("[V5] Download failed: Build not found.")
+                else -> println("[V5] Download failed with error: $errorMessage (code: $responseCode)")
+            }
             exitProcess(0)
         }
 
