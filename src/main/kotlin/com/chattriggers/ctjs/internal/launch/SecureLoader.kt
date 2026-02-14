@@ -33,91 +33,17 @@ object SecureLoader {
         private set
 
     @Volatile
+    private var sessionReleaseChannel: String? = null
+
+    @Volatile
     private var isLoaded = false
 
     fun run() {
-        println("[V5] Game loading paused for authentication.")
-
         try {
-            val serverSocket = ServerSocket(0)
-            val port = serverSocket.localPort
-            serverSocket.soTimeout = 240 * 1000 // 240 seconds
-
-            val authUrl = "$BACKEND_URL/api/auth/discord/login?state=port:$port"
-            println("[V5] Opening browser to: $authUrl")
-
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI(authUrl))
-            } else {
-                println("[V5] FAILED TO OPEN BROWSER! Open this URL manually:")
-                println(authUrl)
-            }
-
-            println("[V5] Waiting for authentication...")
-
-            try {
-                val clientSocket = serverSocket.accept()
-                val reader = BufferedReader(InputStreamReader(clientSocket.getInputStream()))
-                val requestLine = reader.readLine() // GET /callback?token=... HTTP/1.1
-
-                val writer = PrintWriter(clientSocket.getOutputStream(), true)
-
-                if (requestLine != null && requestLine.contains("token=")) {
-                    val tokenStart = requestLine.indexOf("token=") + 6
-                    val tokenEnd = requestLine.indexOf(" ", tokenStart)
-                    val rawToken = if (tokenEnd == -1) requestLine.substring(tokenStart) else requestLine.substring(tokenStart, tokenEnd)
-                    jwtToken = rawToken.split("&")[0]
-
-                    writer.println("HTTP/1.1 200 OK")
-                    writer.println("Content-Type: text/html")
-                    writer.println("\r\n")
-                    writer.println("<h1>Authenticated!</h1><p>You can close this tab and return to the game.</p><script>window.close()</script>")
-                } else if (requestLine != null && requestLine.contains("error=")) {
-                    val errorStart = requestLine.indexOf("error=") + 6
-                    val errorEnd = requestLine.indexOf(" ", errorStart)
-                    val error = if (errorEnd == -1) requestLine.substring(errorStart) else requestLine.substring(errorStart, errorEnd)
-                    
-                    writer.println("HTTP/1.1 403 Forbidden")
-                    writer.println("Content-Type: text/html")
-                    writer.println("\r\n")
-                    
-                    when (error) {
-                        "access_denied" -> {
-                            writer.println("<h1>Access Denied</h1><p>You do not have access to V5.</p>")
-                            println("[V5] Access denied: user does not have access to V5")
-                        }
-                        "banned" -> {
-                            writer.println("<h1>Access Denied</h1><p>You are banned.</p>")
-                            println("[V5] Access denied: user is banned")
-                        }
-                        else -> {
-                            writer.println("<h1>Authentication failed</h1>")
-                            println("[V5] Authentication failed with error: $error")
-                        }
-                    }
-                    exitProcess(0)
-                } else {
-                    writer.println("HTTP/1.1 400 Bad Request")
-                    writer.println("Content-Type: text/html")
-                    writer.println("\r\n")
-                    writer.println("<h1>Authentication failed</h1>")
-                }
-
-                writer.close()
-                clientSocket.close()
-                serverSocket.close()
-
-            } catch (e: Exception) {
-                println("[V5] Authentication timed out or failed.")
-                exitProcess(0)
-            }
-
-            if (jwtToken == null) {
-                exitProcess(0)
-            }
-
-            println("[V5] Authenticated. Welcome to V5!")
-            downloadAndLoad(jwtToken!!)
+            ensureAuthenticatedSession()
+            val token = jwtToken ?: exitProcess(0)
+            val releaseChannel = sessionReleaseChannel ?: exitProcess(0)
+            downloadAndLoad(token, releaseChannel)
 
             isLoaded = true
         } catch (e: Exception) {
@@ -126,7 +52,96 @@ object SecureLoader {
         }
     }
 
-    private fun downloadAndLoad(token: String) {
+    private fun ensureAuthenticatedSession() {
+        if (jwtToken != null && sessionReleaseChannel != null) return
+        if (jwtToken != null && sessionReleaseChannel == null) {
+            sessionReleaseChannel = fetchAndValidateReleaseChannel(jwtToken!!)
+            return
+        }
+
+        println("[V5] Game loading paused for authentication.")
+        authenticate()
+
+        val token = jwtToken ?: exitProcess(0)
+        sessionReleaseChannel = fetchAndValidateReleaseChannel(token)
+        println("[V5] Authenticated. Welcome to V5!")
+    }
+
+    private fun authenticate() {
+        val serverSocket = ServerSocket(0)
+        val port = serverSocket.localPort
+        serverSocket.soTimeout = 240 * 1000 // 240 seconds
+
+        val authUrl = "$BACKEND_URL/api/auth/discord/login?state=port:$port"
+        println("[V5] Opening browser to: $authUrl")
+
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            Desktop.getDesktop().browse(URI(authUrl))
+        } else {
+            println("[V5] FAILED TO OPEN BROWSER! Open this URL manually:")
+            println(authUrl)
+        }
+
+        println("[V5] Waiting for authentication...")
+
+        try {
+            val clientSocket = serverSocket.accept()
+            val reader = BufferedReader(InputStreamReader(clientSocket.getInputStream()))
+            val requestLine = reader.readLine() // GET /callback?token=... HTTP/1.1
+
+            val writer = PrintWriter(clientSocket.getOutputStream(), true)
+
+            if (requestLine != null && requestLine.contains("token=")) {
+                val tokenStart = requestLine.indexOf("token=") + 6
+                val tokenEnd = requestLine.indexOf(" ", tokenStart)
+                val rawToken = if (tokenEnd == -1) requestLine.substring(tokenStart) else requestLine.substring(tokenStart, tokenEnd)
+                jwtToken = rawToken.split("&")[0]
+
+                writer.println("HTTP/1.1 200 OK")
+                writer.println("Content-Type: text/html")
+                writer.println("\r\n")
+                writer.println("<h1>Authenticated!</h1><p>You can close this tab and return to the game.</p><script>window.close()</script>")
+            } else if (requestLine != null && requestLine.contains("error=")) {
+                val errorStart = requestLine.indexOf("error=") + 6
+                val errorEnd = requestLine.indexOf(" ", errorStart)
+                val error = if (errorEnd == -1) requestLine.substring(errorStart) else requestLine.substring(errorStart, errorEnd)
+
+                writer.println("HTTP/1.1 403 Forbidden")
+                writer.println("Content-Type: text/html")
+                writer.println("\r\n")
+
+                when (error) {
+                    "access_denied" -> {
+                        writer.println("<h1>Access Denied</h1><p>You do not have access to V5.</p>")
+                        println("[V5] Access denied: user does not have access to V5")
+                    }
+                    "banned" -> {
+                        writer.println("<h1>Access Denied</h1><p>You are banned.</p>")
+                        println("[V5] Access denied: user is banned")
+                    }
+                    else -> {
+                        writer.println("<h1>Authentication failed</h1>")
+                        println("[V5] Authentication failed with error: $error")
+                    }
+                }
+                exitProcess(0)
+            } else {
+                writer.println("HTTP/1.1 400 Bad Request")
+                writer.println("Content-Type: text/html")
+                writer.println("\r\n")
+                writer.println("<h1>Authentication failed</h1>")
+            }
+
+            writer.close()
+            clientSocket.close()
+            serverSocket.close()
+        } catch (e: Exception) {
+            println("[V5] Authentication timed out or failed.")
+            exitProcess(0)
+        }
+    }
+
+    private fun fetchAndValidateReleaseChannel(token: String): String {
         try {
             val statusUrl = URL("$BACKEND_URL/api/authstatus")
             val statusConnection = statusUrl.openConnection()
@@ -157,10 +172,19 @@ object SecureLoader {
                     println("[V5] Download failed: You do not have access to V5.")
                     exitProcess(0)
                 }
+                return releaseChannel
             }
         } catch (e: Exception) {
             println("[V5] Failed to check auth status: ${e.message}")
             exitProcess(0)
+        }
+        exitProcess(0)
+    }
+
+    private fun downloadAndLoad(token: String, releaseChannel: String) {
+        if (releaseChannel == "Dev") {
+            println("[V5] Hi Dev! Skipping loader step.")
+            return
         }
 
         val url = URL("$BACKEND_URL/api/download/v5")
@@ -178,9 +202,9 @@ object SecureLoader {
             } catch (e: Exception) {
                 null
             }
-            
+
             val errorMessage = json?.get("error")?.jsonPrimitive?.contentOrNull ?: "Unknown error"
-            
+
             when (errorMessage) {
                 "BANNED" -> println("[V5] Download failed: You are banned.")
                 "ACCESS_DENIED" -> println("[V5] Download failed: You do not have access to V5.")
