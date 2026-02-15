@@ -4,22 +4,27 @@ import com.chattriggers.ctjs.api.Mappings
 import com.chattriggers.ctjs.engine.printTraceToConsole
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
 import com.llamalad7.mixinextras.MixinExtrasBootstrap
+import java.io.OutputStream
+import java.io.PrintStream
 import org.objectweb.asm.tree.ClassNode
 import org.slf4j.LoggerFactory
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
-import java.io.OutputStream
-import java.io.PrintStream
 
 class CTMixinPlugin : IMixinConfigPlugin {
     override fun onLoad(mixinPackage: String?) {
         redirectIO()
 
         Mappings.initialize()
+
+        SecureLoader.onMixinPlugin()
+
         ModuleManager.setup()
         MixinExtrasBootstrap.init()
 
         try {
+            SecureLoader.onCTMixinApplication()
+
             DynamicMixinManager.initialize()
             DynamicMixinManager.applyAccessWideners()
         } catch (e: Throwable) {
@@ -31,26 +36,23 @@ class CTMixinPlugin : IMixinConfigPlugin {
 
     override fun shouldApplyMixin(targetClassName: String?, mixinClassName: String?): Boolean = true
 
-    override fun acceptTargets(myTargets: MutableSet<String>?, otherTargets: MutableSet<String>?) {
-    }
+    override fun acceptTargets(myTargets: MutableSet<String>?, otherTargets: MutableSet<String>?) {}
 
     override fun getMixins(): MutableList<String>? = null
 
     override fun preApply(
-        targetClassName: String?,
-        targetClass: ClassNode?,
-        mixinClassName: String?,
-        mixinInfo: IMixinInfo?
-    ) {
-    }
+            targetClassName: String?,
+            targetClass: ClassNode?,
+            mixinClassName: String?,
+            mixinInfo: IMixinInfo?
+    ) {}
 
     override fun postApply(
-        targetClassName: String?,
-        targetClass: ClassNode?,
-        mixinClassName: String?,
-        mixinInfo: IMixinInfo?
-    ) {
-    }
+            targetClassName: String?,
+            targetClass: ClassNode?,
+            mixinClassName: String?,
+            mixinInfo: IMixinInfo?
+    ) {}
 
     private fun redirectIO() {
         // This mimics what net.minecraft.Bootstrap does with the output streams, but
@@ -61,7 +63,8 @@ class CTMixinPlugin : IMixinConfigPlugin {
         System.setOut(LoggerPrintStream("STDOUT", STDOUT))
     }
 
-    private open class LoggerPrintStream(protected val name: String, out: OutputStream) : PrintStream(out) {
+    private open class LoggerPrintStream(protected val name: String, out: OutputStream) :
+            PrintStream(out) {
         override fun println(message: String?) {
             log(message)
         }

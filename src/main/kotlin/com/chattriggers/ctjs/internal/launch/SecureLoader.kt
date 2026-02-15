@@ -5,10 +5,6 @@ import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
 import com.chattriggers.ctjs.internal.engine.module.ModuleMetadata
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import java.awt.Desktop
 import java.io.*
 import java.net.HttpURLConnection
@@ -24,6 +20,10 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 object SecureLoader {
     private const val SECRET_KEY = "12345678901234567890123456789012"
@@ -32,30 +32,81 @@ object SecureLoader {
     private const val ENTRY_POINT = "loader"
     private const val HEARTBEAT_INTERVAL_MS = 150_000L // 2 minutes 30 seconds
 
-    @Volatile
-    private var jwtToken: String? = null
-
-    @Volatile
-    private var sessionReleaseChannel: String? = null
-
-    @Volatile
-    private var isLoaded = false
+    @Volatile private var jwtToken: String? = null
+    @Volatile private var sessionReleaseChannel: String? = null
+    @Volatile private var isPluginLoaded = false
+    @Volatile private var areMixinsApplied = false
+    @Volatile private var isLoaded = false
+    @Volatile private var rootMetadata: ModuleMetadata? = null
 
     private var heartbeatThread: Thread? = null
 
     fun run() {
+        onMixinPlugin()
+        onCTMixinApplication()
+        onInitalise()
+    }
+
+    fun onMixinPlugin() {
+        if (isPluginLoaded) return
+        println("[V5] Stage: onMixinPlugin")
         try {
             ensureAuthenticatedSession()
             val token = jwtToken ?: exitProcess(0)
             val releaseChannel = sessionReleaseChannel ?: exitProcess(0)
-            downloadAndLoad(token, releaseChannel)
 
-            isLoaded = true
-            startHeartbeat()
+            if (releaseChannel == "Dev") {
+                println("[V5] Hi Dev! Skipping loader step.")
+                isPluginLoaded = true
+                return
+            }
+
+            val zipBytes = downloadZip(token)
+            processZip(zipBytes)
+            isPluginLoaded = true
         } catch (e: Exception) {
             e.printStackTrace()
             exitProcess(0)
         }
+    }
+
+    fun onCTMixinApplication() {
+        if (areMixinsApplied) return
+        println("[V5] Stage: onCTMixinApplication")
+        val metadata = rootMetadata ?: return
+        val mixinEntry = metadata.mixinEntry ?: return
+        val entryPath = "$VIRTUAL_MODULE_PREFIX/$mixinEntry"
+        JSLoader.loadVirtualMixin(entryPath)
+        areMixinsApplied = true
+    }
+
+    fun onInitalise() {
+        if (isLoaded) return
+        println("[V5] Stage: onInitalise")
+        val metadata = rootMetadata ?: return
+
+        metadata.requires?.forEach { dependency ->
+            if (dependency.isNotBlank()) {
+                try {
+                    ModuleManager.importModule(dependency, VIRTUAL_MODULE_PREFIX)
+                } catch (e: Exception) {}
+            }
+        }
+
+        Client.scheduleTask {
+            try {
+                val entryPath = "$VIRTUAL_MODULE_PREFIX/$ENTRY_POINT"
+                if (JSLoader.hasVirtualFile(entryPath) || JSLoader.hasVirtualFile("$entryPath.js")
+                ) {
+                    JSLoader.loadVirtualModule(entryPath)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        isLoaded = true
+        startHeartbeat()
     }
 
     private fun ensureAuthenticatedSession() {
@@ -98,17 +149,23 @@ object SecureLoader {
             if (requestLine != null && requestLine.contains("token=")) {
                 val tokenStart = requestLine.indexOf("token=") + 6
                 val tokenEnd = requestLine.indexOf(" ", tokenStart)
-                val rawToken = if (tokenEnd == -1) requestLine.substring(tokenStart) else requestLine.substring(tokenStart, tokenEnd)
+                val rawToken =
+                        if (tokenEnd == -1) requestLine.substring(tokenStart)
+                        else requestLine.substring(tokenStart, tokenEnd)
                 jwtToken = rawToken.split("&")[0]
 
                 writer.println("HTTP/1.1 200 OK")
                 writer.println("Content-Type: text/html")
                 writer.println("\r\n")
-                writer.println("<h1>Authenticated!</h1><p>You can close this tab and return to the game.</p><script>window.close()</script>")
+                writer.println(
+                        "<h1>Authenticated!</h1><p>You can close this tab and return to the game.</p><script>window.close()</script>"
+                )
             } else if (requestLine != null && requestLine.contains("error=")) {
                 val errorStart = requestLine.indexOf("error=") + 6
                 val errorEnd = requestLine.indexOf(" ", errorStart)
-                val error = if (errorEnd == -1) requestLine.substring(errorStart) else requestLine.substring(errorStart, errorEnd)
+                val error =
+                        if (errorEnd == -1) requestLine.substring(errorStart)
+                        else requestLine.substring(errorStart, errorEnd)
 
                 writer.println("HTTP/1.1 403 Forbidden")
                 writer.println("Content-Type: text/html")
@@ -149,7 +206,11 @@ object SecureLoader {
         val osName = System.getProperty("os.name", "").lowercase(Locale.getDefault())
         val isMac = osName.contains("mac")
         val isWindows = osName.contains("win")
-        val isLinux = osName.contains("nix") || osName.contains("nux") || osName.contains("linux") || osName.contains("aix")
+        val isLinux =
+                osName.contains("nix") ||
+                        osName.contains("nux") ||
+                        osName.contains("linux") ||
+                        osName.contains("aix")
 
         if (isMac) {
             try {
@@ -159,7 +220,9 @@ object SecureLoader {
         }
 
         try {
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            if (Desktop.isDesktopSupported() &&
+                            Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)
+            ) {
                 Desktop.getDesktop().browse(URI(url))
                 return true
             }
@@ -168,7 +231,8 @@ object SecureLoader {
         return try {
             when {
                 isWindows -> {
-                    Runtime.getRuntime().exec(arrayOf("rundll32", "url.dll,FileProtocolHandler", url))
+                    Runtime.getRuntime()
+                            .exec(arrayOf("rundll32", "url.dll,FileProtocolHandler", url))
                     true
                 }
                 isLinux -> {
@@ -203,7 +267,8 @@ object SecureLoader {
 
             if (userStatus != null) {
                 val isBanned = userStatus["isBanned"]?.jsonPrimitive?.booleanOrNull ?: false
-                val releaseChannel = userStatus["releaseChannel"]?.jsonPrimitive?.contentOrNull ?: "No access"
+                val releaseChannel =
+                        userStatus["releaseChannel"]?.jsonPrimitive?.contentOrNull ?: "No access"
 
                 if (isBanned) {
                     println("[V5] Download failed: You are banned.")
@@ -225,16 +290,17 @@ object SecureLoader {
     private fun startHeartbeat() {
         if (heartbeatThread != null && heartbeatThread!!.isAlive) return
 
-        heartbeatThread = thread(start = true, isDaemon = true, name = "V5-Heartbeat") {
-            while (isLoaded) {
-                try {
-                    Thread.sleep(HEARTBEAT_INTERVAL_MS)
-                    performHeartbeat()
-                } catch (e: InterruptedException) {
-                    break
-                } catch (e: Exception) {}
-            }
-        }
+        heartbeatThread =
+                thread(start = true, isDaemon = true, name = "V5-Heartbeat") {
+                    while (isLoaded) {
+                        try {
+                            Thread.sleep(HEARTBEAT_INTERVAL_MS)
+                            performHeartbeat()
+                        } catch (e: InterruptedException) {
+                            break
+                        } catch (e: Exception) {}
+                    }
+                }
     }
 
     private fun performHeartbeat() {
@@ -271,12 +337,7 @@ object SecureLoader {
         }
     }
 
-    private fun downloadAndLoad(token: String, releaseChannel: String) {
-        if (releaseChannel == "Dev") {
-            println("[V5] Hi Dev! Skipping loader step.")
-            return
-        }
-
+    private fun downloadZip(token: String): ByteArray {
         val url = URL("$BACKEND_URL/api/download/v5")
         val connection = url.openConnection()
         connection.setRequestProperty("Authorization", "Bearer $token")
@@ -287,21 +348,26 @@ object SecureLoader {
         val responseCode = (connection as HttpURLConnection).responseCode
         if (responseCode != 200) {
             val responseText = connection.inputStream.bufferedReader().readText()
-            val json = try {
-                CTJS.json.parseToJsonElement(responseText).jsonObject
-            } catch (e: Exception) {
-                null
-            }
+            val json =
+                    try {
+                        CTJS.json.parseToJsonElement(responseText).jsonObject
+                    } catch (e: Exception) {
+                        null
+                    }
 
             val errorMessage = json?.get("error")?.jsonPrimitive?.contentOrNull ?: "Unknown error"
 
             when (errorMessage) {
                 "BANNED" -> println("[V5] Download failed: You are banned.")
                 "ACCESS_DENIED" -> println("[V5] Download failed: You do not have access to V5.")
-                "UNAUTHORIZED" -> println("[V5] Download failed: Unauthorized. Please authenticate again.")
+                "UNAUTHORIZED" ->
+                        println("[V5] Download failed: Unauthorized. Please authenticate again.")
                 "INVALID_CHANNEL" -> println("[V5] Download failed: Invalid release channel.")
                 "FILE_NOT_FOUND" -> println("[V5] Download failed: Build not found.")
-                else -> println("[V5] Download failed with error: $errorMessage (code: $responseCode)")
+                else ->
+                        println(
+                                "[V5] Download failed with error: $errorMessage (code: $responseCode)"
+                        )
             }
             exitProcess(0)
         }
@@ -321,8 +387,7 @@ object SecureLoader {
             throw IOException("Invalid payload structure")
         }
 
-        val zipBytes = decryptToBytes(contentStr, ivStr)
-        processZip(zipBytes)
+        return decryptToBytes(contentStr, ivStr)
     }
 
     private fun processZip(zipData: ByteArray) {
@@ -331,9 +396,6 @@ object SecureLoader {
         val zipStream = ZipInputStream(ByteArrayInputStream(zipData))
         val tempAssetsDir = File(CTJS.assetsDir, VIRTUAL_MODULE_PREFIX)
         tempAssetsDir.mkdirs()
-
-        var rootMetadata: ModuleMetadata? = null
-        val loadedDependencies = mutableSetOf<String>()
 
         try {
             var entry: ZipEntry? = zipStream.nextEntry
@@ -346,7 +408,8 @@ object SecureLoader {
                         }
                     }
                 } catch (e: Exception) {
-                    // file errors, probably need to report to devs? maybe we could have error webhook?
+                    // file errors, probably need to report to devs? maybe we could have error
+                    // webhook?
                 } finally {
                     zipStream.closeEntry()
                     entry = zipStream.nextEntry
@@ -355,43 +418,29 @@ object SecureLoader {
         } finally {
             zipStream.close()
         }
-
-        rootMetadata?.requires?.forEach { dependency ->
-            if (dependency.isNotBlank() && dependency !in loadedDependencies) {
-                try {
-                    ModuleManager.importModule(dependency, VIRTUAL_MODULE_PREFIX)
-                    loadedDependencies.add(dependency)
-                } catch (e: Exception) {}
-            }
-        }
-
-        Client.scheduleTask {
-            try {
-                val entryPath = "$VIRTUAL_MODULE_PREFIX/$ENTRY_POINT"
-                if (JSLoader.hasVirtualFile(entryPath) || JSLoader.hasVirtualFile("$entryPath.js")) {
-                    JSLoader.loadVirtualModule(entryPath)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
     }
 
     private sealed class ZipEntryResult {
-        data class VirtualFile(val isRootMetadata: Boolean, val metadata: ModuleMetadata?) : ZipEntryResult()
+        data class VirtualFile(val isRootMetadata: Boolean, val metadata: ModuleMetadata?) :
+                ZipEntryResult()
         object AssetFile : ZipEntryResult()
         object Skipped : ZipEntryResult()
     }
 
-    private fun processZipEntry(zipStream: ZipInputStream, entry: ZipEntry, assetsDir: File): ZipEntryResult {
+    private fun processZipEntry(
+            zipStream: ZipInputStream,
+            entry: ZipEntry,
+            assetsDir: File
+    ): ZipEntryResult {
         val rawName = entry.name
-        val entryName = rawName
-            .replace('\\', '/')
-            .removePrefix("$VIRTUAL_MODULE_PREFIX/")
-            .removePrefix("/")
-            .trim()
+        val entryName =
+                rawName.replace('\\', '/')
+                        .removePrefix("$VIRTUAL_MODULE_PREFIX/")
+                        .removePrefix("/")
+                        .trim()
 
-        if (entryName.isEmpty() || entryName.startsWith(".") || entryName.contains("/.")) return ZipEntryResult.Skipped
+        if (entryName.isEmpty() || entryName.startsWith(".") || entryName.contains("/."))
+                return ZipEntryResult.Skipped
 
         val virtualPath = "$VIRTUAL_MODULE_PREFIX/$entryName"
         val extension = entryName.substringAfterLast('.', "").lowercase()
@@ -403,7 +452,12 @@ object SecureLoader {
                 val isRootMetadata = entryName == "metadata.json"
                 var metadata: ModuleMetadata? = null
                 if (isRootMetadata) {
-                    metadata = try { CTJS.json.decodeFromString<ModuleMetadata>(content) } catch (e: Exception) { null }
+                    metadata =
+                            try {
+                                CTJS.json.decodeFromString<ModuleMetadata>(content)
+                            } catch (e: Exception) {
+                                null
+                            }
                 }
                 ZipEntryResult.VirtualFile(isRootMetadata, metadata)
             }
@@ -430,6 +484,8 @@ object SecureLoader {
 
     fun reload() {
         isLoaded = false
+        isPluginLoaded = false
+        areMixinsApplied = false
         heartbeatThread = null
         JSLoader.clearVirtualFiles()
         run()

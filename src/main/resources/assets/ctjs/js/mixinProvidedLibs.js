@@ -31,8 +31,12 @@
     const WrapOperationObj = Java.type('com.chattriggers.ctjs.internal.launch.WrapOperation');
     const WrapWithConditionObj = Java.type('com.chattriggers.ctjs.internal.launch.WrapWithCondition');
 
-    global.Condition = Condition
+    global.Condition = Condition;
     global.Opcodes = Java.type('org.objectweb.asm.Opcodes');
+
+    global.ArrayList = Packages.java.util.ArrayList;
+    global.HashMap = Packages.java.util.HashMap;
+    global.Hand = Packages.net.minecraft.util.Hand;
 
     // Descriptor helpers
     global.void_ = 'V';
