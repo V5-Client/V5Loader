@@ -81,9 +81,7 @@ object SecureLoader {
         val authUrl = "$BACKEND_URL/api/auth/discord/login?state=port:$port"
         println("[V5] Opening browser to: $authUrl")
 
-        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            Desktop.getDesktop().browse(URI(authUrl))
-        } else {
+        if (!openBrowserUrl(authUrl)) {
             println("[V5] FAILED TO OPEN BROWSER! Open this URL manually:")
             println(authUrl)
         }
@@ -144,6 +142,43 @@ object SecureLoader {
         } catch (e: Exception) {
             println("[V5] Authentication timed out or failed.")
             exitProcess(0)
+        }
+    }
+
+    private fun openBrowserUrl(url: String): Boolean {
+        val osName = System.getProperty("os.name", "").lowercase(Locale.getDefault())
+        val isMac = osName.contains("mac")
+        val isWindows = osName.contains("win")
+        val isLinux = osName.contains("nix") || osName.contains("nux") || osName.contains("linux") || osName.contains("aix")
+
+        if (isMac) {
+            try {
+                Runtime.getRuntime().exec(arrayOf("open", url))
+                return true
+            } catch (_: Exception) {}
+        }
+
+        try {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(URI(url))
+                return true
+            }
+        } catch (_: Exception) {}
+
+        return try {
+            when {
+                isWindows -> {
+                    Runtime.getRuntime().exec(arrayOf("rundll32", "url.dll,FileProtocolHandler", url))
+                    true
+                }
+                isLinux -> {
+                    Runtime.getRuntime().exec(arrayOf("xdg-open", url))
+                    true
+                }
+                else -> false
+            }
+        } catch (_: Exception) {
+            false
         }
     }
 
