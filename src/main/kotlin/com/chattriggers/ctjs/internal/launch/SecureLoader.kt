@@ -11,6 +11,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.awt.Desktop
 import java.io.*
+import java.net.HttpURLConnection
 import java.net.ServerSocket
 import java.net.URI
 import java.net.URL
@@ -21,6 +22,7 @@ import java.util.zip.ZipInputStream
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
 object SecureLoader {
@@ -28,7 +30,9 @@ object SecureLoader {
     private const val BACKEND_URL = "https://backend.rdbt.top"
     private const val VIRTUAL_MODULE_PREFIX = "V5"
     private const val ENTRY_POINT = "loader"
+    private const val HEARTBEAT_INTERVAL_MS = 150_000L // 2 minutes 30 seconds
 
+    @Volatile
     var jwtToken: String? = null
         private set
 
@@ -38,6 +42,8 @@ object SecureLoader {
     @Volatile
     private var isLoaded = false
 
+    private var heartbeatThread: Thread? = null
+
     fun run() {
         try {
             ensureAuthenticatedSession()
@@ -46,6 +52,7 @@ object SecureLoader {
             downloadAndLoad(token, releaseChannel)
 
             isLoaded = true
+            startHeartbeat()
         } catch (e: Exception) {
             e.printStackTrace()
             exitProcess(0)
@@ -150,7 +157,7 @@ object SecureLoader {
             statusConnection.connectTimeout = 10000
             statusConnection.readTimeout = 30000
 
-            val statusCode = (statusConnection as java.net.HttpURLConnection).responseCode
+            val statusCode = (statusConnection as HttpURLConnection).responseCode
             if (statusCode != 200) {
                 println("[V5] Auth status check failed with code: $statusCode")
                 exitProcess(0)
@@ -181,6 +188,55 @@ object SecureLoader {
         exitProcess(0)
     }
 
+    private fun startHeartbeat() {
+        if (heartbeatThread != null && heartbeatThread!!.isAlive) return
+
+        heartbeatThread = thread(start = true, isDaemon = true, name = "V5-Heartbeat") {
+            while (isLoaded) {
+                try {
+                    Thread.sleep(HEARTBEAT_INTERVAL_MS)
+                    performHeartbeat()
+                } catch (e: InterruptedException) {
+                    break
+                } catch (e: Exception) {}
+            }
+        }
+    }
+
+    private fun performHeartbeat() {
+        val currentToken = jwtToken ?: return
+
+        try {
+            val url = URL("$BACKEND_URL/api/auth/heartbeat")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Authorization", "Bearer $currentToken")
+            connection.setRequestProperty("User-Agent", "V5Loader/1.0")
+            connection.setRequestProperty("Content-Length", "0")
+            connection.connectTimeout = 10000
+            connection.readTimeout = 10000
+            connection.doOutput = true
+
+            val responseCode = connection.responseCode
+            if (responseCode == 200) {
+                val responseText = connection.inputStream.bufferedReader().readText()
+                val json = CTJS.json.parseToJsonElement(responseText).jsonObject
+                val newToken = json["token"]?.jsonPrimitive?.contentOrNull
+
+                if (newToken != null) {
+                    jwtToken = newToken
+                }
+            } else if (responseCode == 401 || responseCode == 403) {
+                println("[V5] Session expired or revoked. Exiting.")
+                exitProcess(0)
+            } else {
+                println("[V5] Heartbeat failed with code: $responseCode")
+            }
+        } catch (e: Exception) {
+            println("[V5] Failed to send heartbeat: ${e.message}")
+        }
+    }
+
     private fun downloadAndLoad(token: String, releaseChannel: String) {
         if (releaseChannel == "Dev") {
             println("[V5] Hi Dev! Skipping loader step.")
@@ -194,7 +250,7 @@ object SecureLoader {
         connection.connectTimeout = 10000
         connection.readTimeout = 30000
 
-        val responseCode = (connection as java.net.HttpURLConnection).responseCode
+        val responseCode = (connection as HttpURLConnection).responseCode
         if (responseCode != 200) {
             val responseText = connection.inputStream.bufferedReader().readText()
             val json = try {
@@ -340,9 +396,12 @@ object SecureLoader {
 
     fun reload() {
         isLoaded = false
+        heartbeatThread = null
         JSLoader.clearVirtualFiles()
         run()
     }
 
     fun isLoaded(): Boolean = isLoaded
+
+    fun getJwtToken(): String? = jwtToken
 }
