@@ -33,8 +33,7 @@ object SecureLoader {
     private const val HEARTBEAT_INTERVAL_MS = 150_000L // 2 minutes 30 seconds
 
     @Volatile
-    var jwtToken: String? = null
-        private set
+    private var jwtToken: String? = null
 
     @Volatile
     private var sessionReleaseChannel: String? = null
