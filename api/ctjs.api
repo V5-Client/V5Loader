@@ -2887,10 +2887,17 @@ public final class com/v5/pathfinding/PathManager {
 	public static final field INSTANCE Lcom/v5/pathfinding/PathManager;
 	public static final fun cancelSearch ()V
 	public static final fun clear ()V
+	public static final fun findFlyPath ([[I[[I)Z
+	public static final fun findFlyPath ([[I[[II)Z
+	public static synthetic fun findFlyPath$default ([[I[[IIILjava/lang/Object;)Z
 	public static final fun findPath (IIIIII)Z
 	public static final fun findPath (IIIIIII)Z
 	public static final fun findPath (IIIIIIIZ)Z
+	public static final fun findPath ([[I[[I)Z
+	public static final fun findPath ([[I[[II)Z
+	public static final fun findPath ([[I[[IIZ)Z
 	public static synthetic fun findPath$default (IIIIIIIZILjava/lang/Object;)Z
+	public static synthetic fun findPath$default ([[I[[IIZILjava/lang/Object;)Z
 	public static final fun findPathMultipleGoals (III[I)Z
 	public static final fun findPathMultipleGoals (III[II)Z
 	public static final fun findPathMultipleGoals (III[IIZ)Z
