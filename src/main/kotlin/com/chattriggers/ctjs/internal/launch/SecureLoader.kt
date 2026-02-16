@@ -444,9 +444,10 @@ object SecureLoader {
 
         val virtualPath = "$VIRTUAL_MODULE_PREFIX/$entryName"
         val extension = entryName.substringAfterLast('.', "").lowercase()
+        val isInAssets = entryName.startsWith("assets/")
 
         return when {
-            extension == "js" || extension == "json" -> {
+            extension == "js" || (extension == "json" && !isInAssets) -> {
                 val content = String(zipStream.readAllBytes(), StandardCharsets.UTF_8)
                 JSLoader.addVirtualFile(virtualPath, content)
                 val isRootMetadata = entryName == "metadata.json"
@@ -461,7 +462,7 @@ object SecureLoader {
                 }
                 ZipEntryResult.VirtualFile(isRootMetadata, metadata)
             }
-            extension in listOf("png", "jpg", "jpeg", "gif", "svg", "wav", "ogg", "mp3") -> {
+            extension in listOf("png", "jpg", "jpeg", "gif", "svg", "wav", "ogg", "mp3", "json") -> {
                 val assetFile = File(assetsDir, entryName)
                 assetFile.parentFile?.mkdirs()
                 FileOutputStream(assetFile).use { fos -> zipStream.copyTo(fos) }
