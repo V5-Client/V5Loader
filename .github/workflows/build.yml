@@ -31,18 +31,19 @@ jobs:
       - name: Build
         run: ./gradlew --no-daemon build -Pfull
 
+      - name: Download latest grunt obfuscator
+        run: |
+          curl -L -o grunt-main.jar https://github.com/SpartanB312/Grunt/releases/latest/download/grunt-main.jar
+
+      - name: Run grunt obfuscation
+        run: java -jar grunt-main.jar cfg.json
+
       - name: Get Short SHA
         id: sha
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Flatten Output Directory
-        run: |
-          mkdir temp-dir
-          cp build/libs/* temp-dir
-          cp build/generated/ksp/main/resources/* temp-dir
-
-      - name: Publish Artifacts
+      - name: Publish Loader Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ChatTriggers-artifacts-${{ steps.sha.outputs.sha_short }}
-          path: temp-dir
+          name: V5-Loader-${{ steps.sha.outputs.sha_short }}
+          path: V5-Loader.jar
