@@ -20,11 +20,11 @@ public abstract class ClientConnectionProxyMixin {
 
     @Inject(method = "addHandlers", at = @At("HEAD"))
     private static void addHandlers(
-            ChannelPipeline pipeline,
-            NetworkSide nwside,
-            boolean singleplayer,
-            PacketSizeLogger packetSizeLogger,
-            CallbackInfo ci
+        ChannelPipeline pipeline,
+        NetworkSide nwside,
+        boolean singleplayer,
+        PacketSizeLogger packetSizeLogger,
+        CallbackInfo ci
     ) {
         if (nwside != NetworkSide.CLIENTBOUND || singleplayer) return;
 
@@ -33,23 +33,26 @@ public abstract class ClientConnectionProxyMixin {
 
         Proxy proxy = activeProxies.getFirst();
 
+        String ip = proxy.getIp();
+        if (ip == null) return;
+        ip = ip.trim();
+
         String username = proxy.getUsername();
         String password = proxy.getPassword();
 
-        if (username != null && !username.isBlank()) {
-            pipeline.addFirst(
-                    new Socks5ProxyHandler(
-                            new InetSocketAddress(proxy.getIp(), proxy.getPort()),
-                            username,
-                            password
-                    )
-            );
+        username = (username != null) ? username.trim() : "";
+        password = (password != null) ? password.trim() : "";
+
+        if (!username.isEmpty()) {
+            pipeline.addFirst("proxy", new Socks5ProxyHandler(
+                new InetSocketAddress(ip, proxy.getPort()),
+                username,
+                password
+            ));
         } else {
-            pipeline.addFirst(
-                    new Socks5ProxyHandler(
-                            new InetSocketAddress(proxy.getIp(), proxy.getPort())
-                    )
-            );
+            pipeline.addFirst("proxy", new Socks5ProxyHandler(
+                new InetSocketAddress(ip, proxy.getPort())
+            ));
         }
     }
 }

@@ -176,11 +176,11 @@ class ProxyEditScreen(
     }
 
     private fun save() {
-        val name = nameField.text
-        val ip = ipField.text
-        val portStr = portField.text
-        val username = usernameField.text
-        val password = passwordField.text
+        val name = nameField.text.trim()
+        val ip = ipField.text.trim()
+        val portStr = portField.text.trim()
+        val username = usernameField.text.trim()
+        val password = passwordField.text.trim()
 
         if (ip.isBlank() || portStr.isBlank()) return
         val port = portStr.toIntOrNull() ?: return

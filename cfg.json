@@ -3,7 +3,10 @@
     "Input": "build/libs/v5-1.0.0.jar",
     "Output": "V5-Loader.jar",
     "Libraries": [],
-    "Exclusions": ["com/chattriggers/**", "com/chattriggers/*/**"],
+    "Exclusions": [
+      "com/chattriggers/**",
+      "com/chattriggers/*/**"
+    ],
     "MixinPackage": [
       "com/v5/mixins/",
       "dev/quiteboring/swift/mixins",
@@ -29,14 +32,19 @@
     "LineDebug": true,
     "RenameSourceDebug": false,
     "SourceNames": [],
-    "Exclusion": ["com/chattriggers/**", "com/chattriggers/*/**"]
+    "Exclusion": [
+      "com/chattriggers/**",
+      "com/chattriggers/*/**"
+    ]
   },
   "Shrinking": {
     "Enabled": false,
     "RemoveInnerClass": true,
     "RemoveUnusedLabel": true,
     "RemoveNOP": false,
-    "AnnotationRemovals": ["Ljava/lang/Override;"],
+    "AnnotationRemovals": [
+      "Ljava/lang/Override;"
+    ],
     "Exclusion": []
   },
   "KotlinOptimizer": {
@@ -53,7 +61,10 @@
     ],
     "ReplaceLdc": true,
     "IntrinsicsExclusion": [],
-    "MetadataExclusion": ["com/chattriggers/**", "com/chattriggers/*/**"]
+    "MetadataExclusion": [
+      "com/chattriggers/**",
+      "com/chattriggers/*/**"
+    ]
   },
   "EnumOptimize": {
     "Enabled": false,
@@ -79,7 +90,9 @@
   "HWIDAuthentication": {
     "Enabled": false,
     "OnlineMode": true,
-    "OfflineHWID": ["Put HWID here (For offline mode only)"],
+    "OfflineHWID": [
+      "Put HWID here (For offline mode only)"
+    ],
     "OnlineURL": "https://pastebin.com/XXXXX",
     "EncryptKey": "1186118611861186",
     "CachePools": 5,
@@ -102,7 +115,10 @@
     "Enabled": true,
     "Arrayed": false,
     "ReplaceInvokeDynamics": true,
-    "Exclusion": ["com/chattriggers/**", "com/chattriggers/*/**"]
+    "Exclusion": [
+      "com/chattriggers/**",
+      "com/chattriggers/*/**"
+    ]
   },
   "NumberEncrypt": {
     "Enabled": true,
@@ -110,13 +126,19 @@
     "FloatingPoint": true,
     "Arrayed": false,
     "MaxInsnSize": 16384,
-    "Exclusion": ["com/chattriggers/**", "com/chattriggers/*/**"]
+    "Exclusion": [
+      "com/chattriggers/**",
+      "com/chattriggers/*/**"
+    ]
   },
   "ArithmeticEncrypt": {
     "Enabled": true,
     "Intensity": 1,
     "MaxInsnSize": 16384,
-    "Exclusion": ["com/chattriggers/**", "com/chattriggers/*/**"]
+    "Exclusion": [
+      "com/chattriggers/**",
+      "com/chattriggers/*/**"
+    ]
   },
   "Controlflow": {
     "Enabled": false,
@@ -148,7 +170,10 @@
     "JunkCode": true,
     "MaxJunkCode": 2,
     "ExpandedJunkCode": true,
-    "Exclusion": ["com/chattriggers/**", "com/chattriggers/*/**"]
+    "Exclusion": [
+      "com/chattriggers/**",
+      "com/chattriggers/*/**"
+    ]
   },
   "ConstBuilder": {
     "Enabled": false,
@@ -170,7 +195,10 @@
     "HeavyEncrypt": false,
     "DontScramble": true,
     "NativeAnnotation": false,
-    "Exclusion": ["com/chattriggers/**", "com/chattriggers/*/**"]
+    "Exclusion": [
+      "com/chattriggers/**",
+      "com/chattriggers/*/**"
+    ]
   },
   "RedirectStringEquals": {
     "Enabled": false,
@@ -237,7 +265,9 @@
       "net/spartanb312/Example2.method",
       "net/spartanb312/Example3.method()V"
     ],
-    "ExcludedName": ["methodName"]
+    "ExcludedName": [
+      "methodName"
+    ]
   },
   "FieldRename": {
     "Enabled": false,
@@ -245,8 +275,14 @@
     "RandomKeywordPrefix": false,
     "Prefix": "",
     "Reversed": false,
-    "Exclusion": ["net/spartanb312/Example1", "net/spartanb312/Example2.field"],
-    "ExcludedName": ["INSTANCE", "Companion"]
+    "Exclusion": [
+      "net/spartanb312/Example1",
+      "net/spartanb312/Example2.field"
+    ],
+    "ExcludedName": [
+      "INSTANCE",
+      "Companion"
+    ]
   },
   "ClassRename": {
     "Enabled": false,
@@ -267,8 +303,14 @@
     "Enabled": false,
     "Dictionary": "Alphabet",
     "Prefix": "",
-    "Exclusion": ["net/spartanb312/Example1", "net/spartanb312/Example2.field"],
-    "ExcludedName": ["INSTANCE", "Companion"]
+    "Exclusion": [
+      "net/spartanb312/Example1",
+      "net/spartanb312/Example2.field"
+    ],
+    "ExcludedName": [
+      "INSTANCE",
+      "Companion"
+    ]
   },
   "MixinClassRename": {
     "Enabled": false,
@@ -308,7 +350,11 @@
   },
   "Watermark": {
     "Enabled": false,
-    "Names": ["I AM WATERMARK", "CYKA BLYAT", "NAME"],
+    "Names": [
+      "I AM WATERMARK",
+      "CYKA BLYAT",
+      "NAME"
+    ],
     "Messages": [
       "PROTECTED BY GRUNT KLASS MASTER",
       "PROTECTED BY SPARTAN EVERETT",
@@ -318,8 +364,15 @@
     "FieldMark": true,
     "MethodMark": true,
     "AnnotationMark": false,
-    "Annotations": ["ProtectedByGrunt", "JvavMetadata"],
-    "Versions": ["114514", "1919810", "69420"],
+    "Annotations": [
+      "ProtectedByGrunt",
+      "JvavMetadata"
+    ],
+    "Versions": [
+      "114514",
+      "1919810",
+      "69420"
+    ],
     "InterfaceMark": false,
     "FatherOfJava": "jvav/lang/YuShengJun",
     "CustomTrashMethod": false,
@@ -334,6 +387,8 @@
     "Bungee YML": true,
     "Fabric JSON": true,
     "Velocity JSON": true,
-    "ManifestPrefix": ["Main-Class:"]
+    "ManifestPrefix": [
+      "Main-Class:"
+    ]
   }
 }
