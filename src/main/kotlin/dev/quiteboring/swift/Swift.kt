@@ -34,7 +34,7 @@ class Swift : ClientModInitializer {
     // THESE COMMANDS ARE COMMENTED OUT FOR A REASON. DO NOT UNCOMMENT ON PUSH
     //HeatmapCommand.dispatch()
     //PathCommand.dispatch()
-
+    //
     //WorldRenderEvent.LAST.register { ctx ->
     //  PathCommand.onRender(ctx)
     //  HeatmapCommand.onRender(ctx)

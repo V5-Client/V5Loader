@@ -41,6 +41,7 @@ repositories {
     maven("https://maven.terraformersmc.com/releases")
     maven("https://repo.essential.gg/repository/maven-public")
     maven("https://repo.hypixel.net/repository/Hypixel/")
+    maven("https://api.modrinth.com/maven")
 }
 
 dependencies {
@@ -84,7 +85,8 @@ dependencies {
     include("io.netty:netty-handler-proxy:4.1.97.Final")
 
     implementation("net.hypixel:mod-api:1.0.1")
-    include("net.hypixel:mod-api:1.0.1")
+    modImplementation("maven.modrinth:hypixel-mod-api:1.0.1+build.1+mc1.21")
+    include("maven.modrinth:hypixel-mod-api:1.0.1+build.1+mc1.21")
 }
 
 loom {
