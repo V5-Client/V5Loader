@@ -14,12 +14,21 @@ public final class com/chattriggers/ctjs/CTJS : net/fabricmc/api/ClientModInitia
 public final class com/chattriggers/ctjs/CTJS$Companion {
 	public final fun getAssetsDir ()Ljava/io/File;
 	public final fun getConfigLocation ()Ljava/io/File;
+	public final fun getImages$ctjs ()Ljava/util/List;
+	public final fun getJson$ctjs ()Lkotlinx/serialization/json/Json;
+	public final fun getSounds$ctjs ()Ljava/util/List;
+	public final fun isDevelopment$ctjs ()Z
 	public final fun isLoaded ()Z
 	public final fun load (Z)V
 	public static synthetic fun load$default (Lcom/chattriggers/ctjs/CTJS$Companion;ZILjava/lang/Object;)V
 	public final fun makeWebRequest$ctjs (Ljava/lang/String;)Ljava/net/URLConnection;
+	public final fun makeWebRequest$ctjs (Ljava/lang/String;Ljava/lang/String;)Ljava/net/URLConnection;
+	public static synthetic fun makeWebRequest$ctjs$default (Lcom/chattriggers/ctjs/CTJS$Companion;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ljava/net/URLConnection;
 	public final fun unload (Z)V
 	public static synthetic fun unload$default (Lcom/chattriggers/ctjs/CTJS$Companion;ZILjava/lang/Object;)V
+}
+
+public final class com/chattriggers/ctjs/TypealiasesKt {
 }
 
 public abstract interface class com/chattriggers/ctjs/api/CTWrapper {
@@ -111,9 +120,70 @@ public final class com/chattriggers/ctjs/api/Config$ConsoleSettings$Companion {
 
 public final class com/chattriggers/ctjs/api/Mappings {
 	public static final field INSTANCE Lcom/chattriggers/ctjs/api/Mappings;
+	public final fun getMappedClass$ctjs (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/Mappings$MappedClass;
+	public final fun getMappedClassName$ctjs (Ljava/lang/String;)Ljava/lang/String;
+	public final fun getMappedPackages$ctjs ()Ljava/util/Set;
+	public final fun getUnmappedClass$ctjs (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/Mappings$MappedClass;
+	public final fun initialize$ctjs ()V
 	public static final fun mapClassName (Ljava/lang/String;)Ljava/lang/String;
 	public static final fun unmapClass (Ljava/lang/Class;)Ljava/lang/String;
 	public static final fun unmapClassName (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class com/chattriggers/ctjs/api/Mappings$MappedClass {
+	public fun <init> (Lcom/chattriggers/ctjs/api/Mappings$Mapping;Ljava/util/Map;Ljava/util/Map;)V
+	public final fun findMethods (Ljava/lang/String;Lorg/spongepowered/asm/mixin/transformer/ClassInfo;)Ljava/util/List;
+	public final fun getFields ()Ljava/util/Map;
+	public final fun getMethods ()Ljava/util/Map;
+	public final fun getName ()Lcom/chattriggers/ctjs/api/Mappings$Mapping;
+}
+
+public final class com/chattriggers/ctjs/api/Mappings$MappedField {
+	public fun <init> (Lcom/chattriggers/ctjs/api/Mappings$Mapping;Lcom/chattriggers/ctjs/api/Mappings$Mapping;)V
+	public final fun component1 ()Lcom/chattriggers/ctjs/api/Mappings$Mapping;
+	public final fun component2 ()Lcom/chattriggers/ctjs/api/Mappings$Mapping;
+	public final fun copy (Lcom/chattriggers/ctjs/api/Mappings$Mapping;Lcom/chattriggers/ctjs/api/Mappings$Mapping;)Lcom/chattriggers/ctjs/api/Mappings$MappedField;
+	public static synthetic fun copy$default (Lcom/chattriggers/ctjs/api/Mappings$MappedField;Lcom/chattriggers/ctjs/api/Mappings$Mapping;Lcom/chattriggers/ctjs/api/Mappings$Mapping;ILjava/lang/Object;)Lcom/chattriggers/ctjs/api/Mappings$MappedField;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Lcom/chattriggers/ctjs/api/Mappings$Mapping;
+	public final fun getType ()Lcom/chattriggers/ctjs/api/Mappings$Mapping;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/chattriggers/ctjs/api/Mappings$MappedMethod {
+	public fun <init> (Lcom/chattriggers/ctjs/api/Mappings$Mapping;Ljava/util/List;Lcom/chattriggers/ctjs/api/Mappings$Mapping;)V
+	public final fun getName ()Lcom/chattriggers/ctjs/api/Mappings$Mapping;
+	public final fun getParameters ()Ljava/util/List;
+	public final fun getReturnType ()Lcom/chattriggers/ctjs/api/Mappings$Mapping;
+	public final fun toDescriptor ()Ljava/lang/String;
+	public final fun toFullDescriptor ()Ljava/lang/String;
+}
+
+public final class com/chattriggers/ctjs/api/Mappings$MappedParameter {
+	public fun <init> (Lcom/chattriggers/ctjs/api/Mappings$Mapping;Lcom/chattriggers/ctjs/api/Mappings$Mapping;I)V
+	public final fun getLvtIndex ()I
+	public final fun getName ()Lcom/chattriggers/ctjs/api/Mappings$Mapping;
+	public final fun getType ()Lcom/chattriggers/ctjs/api/Mappings$Mapping;
+}
+
+public final class com/chattriggers/ctjs/api/Mappings$Mapping {
+	public static final field Companion Lcom/chattriggers/ctjs/api/Mappings$Mapping$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lcom/chattriggers/ctjs/api/Mappings$Mapping;
+	public static synthetic fun copy$default (Lcom/chattriggers/ctjs/api/Mappings$Mapping;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/chattriggers/ctjs/api/Mappings$Mapping;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMapped ()Ljava/lang/String;
+	public final fun getOriginal ()Ljava/lang/String;
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/chattriggers/ctjs/api/Mappings$Mapping$Companion {
+	public final fun fromMapped (Lnet/fabricmc/mappingio/tree/MappingTree$ElementMapping;)Lcom/chattriggers/ctjs/api/Mappings$Mapping;
 }
 
 public final class com/chattriggers/ctjs/api/client/CPS : com/chattriggers/ctjs/internal/utils/Initializer {
@@ -157,6 +227,7 @@ public final class com/chattriggers/ctjs/api/client/Client {
 	public static final fun getMinecraft ()Lnet/minecraft/client/MinecraftClient;
 	public static final fun getMouseX ()D
 	public static final fun getMouseY ()D
+	public final fun getReferenceSystemTime$ctjs ()J
 	public static final fun getSystemTime ()J
 	public static final fun getTabGui ()Lnet/minecraft/client/gui/hud/PlayerListHud;
 	public static final fun getTotalMemory ()J
@@ -174,6 +245,7 @@ public final class com/chattriggers/ctjs/api/client/Client {
 	public static synthetic fun scheduleTask$default (ILkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
 	public static final fun sendPacket (Lnet/minecraft/network/packet/Packet;)V
 	public static final fun setCurrentChatMessage (Ljava/lang/String;)V
+	public final fun setReferenceSystemTime$ctjs (J)V
 	public static final fun showTitle (Ljava/lang/String;Ljava/lang/String;III)V
 }
 
@@ -235,6 +307,7 @@ public final class com/chattriggers/ctjs/api/client/KeyBind {
 	public final fun getKeyCode ()I
 	public final fun isKeyDown ()Z
 	public final fun isPressed ()Z
+	public final fun onTick$ctjs ()V
 	public final fun registerKeyDown (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/client/KeyBind;
 	public final fun registerKeyPress (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/client/KeyBind;
 	public final fun registerKeyRelease (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/client/KeyBind;
@@ -246,6 +319,9 @@ public final class com/chattriggers/ctjs/api/client/KeyBind {
 }
 
 public final class com/chattriggers/ctjs/api/client/KeyBind$Companion : com/chattriggers/ctjs/internal/utils/Initializer {
+	public final fun clearKeyBinds$ctjs ()V
+	public final fun getCategoryName$ctjs (Lnet/minecraft/client/option/KeyBinding$Category;)Ljava/lang/String;
+	public final fun getKeyBinds$ctjs ()Ljava/util/concurrent/CopyOnWriteArrayList;
 	public fun init ()V
 }
 
@@ -1161,6 +1237,7 @@ public final class com/chattriggers/ctjs/api/inventory/Slot : com/chattriggers/c
 public abstract class com/chattriggers/ctjs/api/inventory/action/Action {
 	public static final field Companion Lcom/chattriggers/ctjs/api/inventory/action/Action$Companion;
 	public fun <init> (II)V
+	public abstract fun complete$ctjs ()V
 	protected final fun doClick (ILnet/minecraft/screen/slot/SlotActionType;)V
 	public final fun getSlot ()I
 	public final fun getWindowId ()I
@@ -1187,6 +1264,7 @@ public final class com/chattriggers/ctjs/api/inventory/action/Action$Type : java
 
 public final class com/chattriggers/ctjs/api/inventory/action/ClickAction : com/chattriggers/ctjs/api/inventory/action/Action {
 	public fun <init> (II)V
+	public fun complete$ctjs ()V
 	public final fun getClickType ()Lcom/chattriggers/ctjs/api/inventory/action/ClickAction$ClickType;
 	public final fun getHoldingShift ()Z
 	public final fun getItemInHand ()Z
@@ -1210,6 +1288,7 @@ public final class com/chattriggers/ctjs/api/inventory/action/ClickAction$ClickT
 
 public final class com/chattriggers/ctjs/api/inventory/action/DragAction : com/chattriggers/ctjs/api/inventory/action/Action {
 	public fun <init> (II)V
+	public fun complete$ctjs ()V
 	public final fun getClickType ()Lcom/chattriggers/ctjs/api/inventory/action/DragAction$ClickType;
 	public final fun getStage ()Lcom/chattriggers/ctjs/api/inventory/action/DragAction$Stage;
 	public final fun setClickString (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/inventory/action/DragAction;
@@ -1240,12 +1319,14 @@ public final class com/chattriggers/ctjs/api/inventory/action/DragAction$Stage :
 
 public final class com/chattriggers/ctjs/api/inventory/action/DropAction : com/chattriggers/ctjs/api/inventory/action/Action {
 	public fun <init> (II)V
+	public fun complete$ctjs ()V
 	public final fun getHoldingCtrl ()Z
 	public final fun setHoldingCtrl (Z)Lcom/chattriggers/ctjs/api/inventory/action/DropAction;
 }
 
 public final class com/chattriggers/ctjs/api/inventory/action/KeyAction : com/chattriggers/ctjs/api/inventory/action/Action {
 	public fun <init> (II)V
+	public fun complete$ctjs ()V
 	public final fun getKey ()I
 	public final fun setKey (I)Lcom/chattriggers/ctjs/api/inventory/action/KeyAction;
 }
@@ -1399,13 +1480,17 @@ public final class com/chattriggers/ctjs/api/message/ChatLib {
 	public static synthetic fun getChatBreak$default (Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
 	public static final fun getChatLines ()Ljava/util/List;
 	public static final fun getChatWidth ()I
+	public final fun onChatHudClearChat$ctjs ()V
+	public final fun onChatHudLineRemoved$ctjs (Lnet/minecraft/client/gui/hud/ChatHudLine;)V
 	public static final fun removeFormatting (Ljava/lang/String;)Ljava/lang/String;
 	public static final fun replaceFormatting (Ljava/lang/String;)Ljava/lang/String;
 	public static final fun say (Ljava/lang/String;)Lkotlin/Unit;
+	public final fun sendMessageWithId$ctjs (Lcom/chattriggers/ctjs/api/message/TextComponent;)V
 	public static final fun simulateChat (Ljava/lang/Object;)V
 }
 
 public final class com/chattriggers/ctjs/api/message/TextComponent : java/lang/Iterable, kotlin/jvm/internal/markers/KMappedMarker, net/minecraft/text/Text {
+	public static final field Companion Lcom/chattriggers/ctjs/api/message/TextComponent$Companion;
 	public fun <init> ()V
 	public fun <init> ([Ljava/lang/Object;)V
 	public final fun actionBar ()Lcom/chattriggers/ctjs/api/message/TextComponent;
@@ -1429,6 +1514,7 @@ public final class com/chattriggers/ctjs/api/message/TextComponent : java/lang/I
 	public final fun isEmpty ()Z
 	public final fun isRecursive ()Z
 	public fun iterator ()Ljava/util/Iterator;
+	public final fun toMutableText$ctjs ()Lnet/minecraft/text/MutableText;
 	public fun toString ()Ljava/lang/String;
 	public final fun withChatLineId ()Lcom/chattriggers/ctjs/api/message/TextComponent;
 	public final fun withChatLineId (I)Lcom/chattriggers/ctjs/api/message/TextComponent;
@@ -1439,6 +1525,10 @@ public final class com/chattriggers/ctjs/api/message/TextComponent : java/lang/I
 	public final fun withText (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/message/TextComponent;
 	public final fun withTextAt (ILjava/lang/Object;)Lcom/chattriggers/ctjs/api/message/TextComponent;
 	public final fun withoutTextAt (I)Lcom/chattriggers/ctjs/api/message/TextComponent;
+}
+
+public final class com/chattriggers/ctjs/api/message/TextComponent$Companion {
+	public final fun jsObjectToStyle$ctjs (Lorg/mozilla/javascript/NativeObject;)Lnet/minecraft/text/Style;
 }
 
 public final class com/chattriggers/ctjs/api/render/Book {
@@ -1454,6 +1544,29 @@ public final class com/chattriggers/ctjs/api/render/Book {
 	public final fun isOpen ()Z
 	public final fun setPage (ILcom/chattriggers/ctjs/api/message/TextComponent;)Lcom/chattriggers/ctjs/api/render/Book;
 	public final fun setPage (ILjava/lang/String;)Lcom/chattriggers/ctjs/api/render/Book;
+}
+
+public final class com/chattriggers/ctjs/api/render/CTPlayerRenderer : net/minecraft/client/render/entity/PlayerEntityRenderer {
+	public fun <init> (Lnet/minecraft/client/render/entity/EntityRendererFactory$Context;Z)V
+	public final fun getShowArmor ()Z
+	public final fun getShowArrows ()Z
+	public final fun getShowCape ()Z
+	public final fun getShowElytra ()Z
+	public final fun getShowHeldItem ()Z
+	public final fun getShowNametag ()Z
+	public final fun getShowParrot ()Z
+	public final fun getShowStingers ()Z
+	public synthetic fun renderLabelIfPresent (Lnet/minecraft/client/render/entity/state/EntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V
+	public final fun setOptions (ZZZZZZZZ)V
+	public static synthetic fun setOptions$default (Lcom/chattriggers/ctjs/api/render/CTPlayerRenderer;ZZZZZZZZILjava/lang/Object;)V
+	public final fun setShowArmor (Z)V
+	public final fun setShowArrows (Z)V
+	public final fun setShowCape (Z)V
+	public final fun setShowElytra (Z)V
+	public final fun setShowHeldItem (Z)V
+	public final fun setShowNametag (Z)V
+	public final fun setShowParrot (Z)V
+	public final fun setShowStingers (Z)V
 }
 
 public final class com/chattriggers/ctjs/api/render/Display {
@@ -1581,6 +1694,7 @@ public final class com/chattriggers/ctjs/api/render/Image {
 	public static final fun fromFile (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/render/Image;
 	public static final fun fromUrl (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/render/Image;
 	public static final fun fromUrl (Ljava/lang/String;Ljava/lang/String;)Lcom/chattriggers/ctjs/api/render/Image;
+	public final fun getIdOrRegister$ctjs ()Lnet/minecraft/util/Identifier;
 	public final fun getImage ()Ljava/awt/image/BufferedImage;
 	public final fun getTexture ()Lnet/minecraft/client/texture/NativeImageBackedTexture;
 	public final fun getTextureHeight ()I
@@ -1664,6 +1778,7 @@ public final class com/chattriggers/ctjs/api/render/Renderer {
 	public static final field WHITE J
 	public static final field YELLOW J
 	public static field colorized Ljava/lang/Long;
+	public static field matrixStack Lgg/essential/universal/UMatrixStack;
 	public static final field screen Lcom/chattriggers/ctjs/api/render/Renderer$ScreenWrapper;
 	public static final fun begin ()Lcom/chattriggers/ctjs/api/render/Renderer;
 	public static final fun begin (Lcom/chattriggers/ctjs/api/render/Renderer$DrawMode;)Lcom/chattriggers/ctjs/api/render/Renderer;
@@ -1717,6 +1832,8 @@ public final class com/chattriggers/ctjs/api/render/Renderer {
 	public static final fun getColor (IIII)J
 	public static synthetic fun getColor$default (IIIIILjava/lang/Object;)J
 	public static final fun getFontRenderer ()Lnet/minecraft/client/font/TextRenderer;
+	public final fun getMatrixPushCounter$ctjs ()I
+	public final fun getMatrixStack$ctjs ()Lgg/essential/universal/UMatrixStack;
 	public static final fun getPartialTicks ()F
 	public static final fun getRainbow (F)J
 	public static final fun getRainbow (FF)J
@@ -1727,6 +1844,7 @@ public final class com/chattriggers/ctjs/api/render/Renderer {
 	public static final fun getRenderManager ()Lnet/minecraft/client/render/WorldRenderer;
 	public static final fun getRenderPos (FFF)Lcom/chattriggers/ctjs/api/vec/Vec3f;
 	public static final fun getStringWidth (Ljava/lang/String;)I
+	public static final fun initializePlayerRenderers$ctjs (Lnet/minecraft/client/render/entity/EntityRendererFactory$Context;)V
 	public static final fun light (II)Lcom/chattriggers/ctjs/api/render/Renderer;
 	public static final fun lineWidth (F)Lcom/chattriggers/ctjs/api/render/Renderer;
 	public static final fun multiply (Lorg/joml/Quaternionf;)Lcom/chattriggers/ctjs/api/render/Renderer;
@@ -1748,11 +1866,17 @@ public final class com/chattriggers/ctjs/api/render/Renderer {
 	public static final fun scale (FF)Lcom/chattriggers/ctjs/api/render/Renderer;
 	public static final fun scale (FFF)Lcom/chattriggers/ctjs/api/render/Renderer;
 	public static synthetic fun scale$default (FFFILjava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Renderer;
+	public final fun setMatrixPushCounter$ctjs (I)V
+	public final fun setMatrixStack$ctjs (Lgg/essential/universal/UMatrixStack;)V
+	public static final fun setPartialTicks$ctjs (F)V
+	public final fun splitText$ctjs (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/render/Renderer$TextLines;
 	public static final fun tex (FF)Lcom/chattriggers/ctjs/api/render/Renderer;
 	public static final fun translate (FF)Lcom/chattriggers/ctjs/api/render/Renderer;
 	public static final fun translate (FFF)Lcom/chattriggers/ctjs/api/render/Renderer;
 	public static synthetic fun translate$default (FFFILjava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Renderer;
 	public static final fun tryBlendFuncSeparate (IIII)Lcom/chattriggers/ctjs/api/render/Renderer;
+	public final fun withMatrix$ctjs (Lnet/minecraft/client/util/math/MatrixStack;FLkotlin/jvm/functions/Function0;)V
+	public static synthetic fun withMatrix$ctjs$default (Lcom/chattriggers/ctjs/api/render/Renderer;Lnet/minecraft/client/util/math/MatrixStack;FLkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
 }
 
 public final class com/chattriggers/ctjs/api/render/Renderer$DrawMode : java/lang/Enum {
@@ -1800,6 +1924,21 @@ public final class com/chattriggers/ctjs/api/render/Renderer$ScreenWrapper {
 	public final fun getHeight ()I
 	public final fun getScale ()D
 	public final fun getWidth ()I
+}
+
+public final class com/chattriggers/ctjs/api/render/Renderer$TextLines {
+	public fun <init> (Ljava/util/List;FF)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun copy (Ljava/util/List;FF)Lcom/chattriggers/ctjs/api/render/Renderer$TextLines;
+	public static synthetic fun copy$default (Lcom/chattriggers/ctjs/api/render/Renderer$TextLines;Ljava/util/List;FFILjava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Renderer$TextLines;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()F
+	public final fun getLines ()Ljava/util/List;
+	public final fun getWidth ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/chattriggers/ctjs/api/render/Renderer$VertexFormat : java/lang/Enum {
@@ -1884,6 +2023,8 @@ public final class com/chattriggers/ctjs/api/render/Text {
 	public final fun draw (Lnet/minecraft/client/gui/DrawContext;)Lcom/chattriggers/ctjs/api/render/Text;
 	public final fun draw (Lnet/minecraft/client/gui/DrawContext;Ljava/lang/Integer;)Lcom/chattriggers/ctjs/api/render/Text;
 	public final fun draw (Lnet/minecraft/client/gui/DrawContext;Ljava/lang/Integer;Ljava/lang/Integer;)Lcom/chattriggers/ctjs/api/render/Text;
+	public final fun draw$ctjs (Lnet/minecraft/client/gui/DrawContext;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;)Lcom/chattriggers/ctjs/api/render/Text;
+	public static synthetic fun draw$ctjs$default (Lcom/chattriggers/ctjs/api/render/Text;Lnet/minecraft/client/gui/DrawContext;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;ILjava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Text;
 	public static synthetic fun draw$default (Lcom/chattriggers/ctjs/api/render/Text;Lnet/minecraft/client/gui/DrawContext;Ljava/lang/Integer;Ljava/lang/Integer;ILjava/lang/Object;)Lcom/chattriggers/ctjs/api/render/Text;
 	public final fun exceedsMaxLines ()Z
 	public final fun getAlign ()Lcom/chattriggers/ctjs/api/render/Text$Align;
@@ -1975,6 +2116,7 @@ public final class com/chattriggers/ctjs/api/triggers/ChatTrigger : com/chattrig
 	public final fun setParameter (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/triggers/ChatTrigger;
 	public final fun setParameters ([Ljava/lang/String;)Lcom/chattriggers/ctjs/api/triggers/ChatTrigger;
 	public final fun setStart ()Lcom/chattriggers/ctjs/api/triggers/ChatTrigger;
+	public fun trigger$ctjs ([Ljava/lang/Object;)V
 	public final fun triggerIfCanceled (Z)Lcom/chattriggers/ctjs/api/triggers/ChatTrigger;
 }
 
@@ -1987,6 +2129,7 @@ public abstract class com/chattriggers/ctjs/api/triggers/ClassFilterTrigger : co
 	public synthetic fun <init> (Ljava/lang/Object;Lcom/chattriggers/ctjs/api/triggers/ITriggerType;Ljava/lang/Class;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun setFilteredClass (Ljava/lang/Class;)Lcom/chattriggers/ctjs/api/triggers/ClassFilterTrigger;
 	public final fun setFilteredClasses (Ljava/util/List;)Lcom/chattriggers/ctjs/api/triggers/ClassFilterTrigger;
+	public fun trigger$ctjs ([Ljava/lang/Object;)V
 	protected abstract fun unwrap (Ljava/lang/Object;)Ljava/lang/Object;
 }
 
@@ -2001,6 +2144,7 @@ public final class com/chattriggers/ctjs/api/triggers/CommandTrigger : com/chatt
 	public static synthetic fun setName$default (Lcom/chattriggers/ctjs/api/triggers/CommandTrigger;Ljava/lang/String;ZILjava/lang/Object;)Lcom/chattriggers/ctjs/api/triggers/CommandTrigger;
 	public final fun setTabCompletions (Lkotlin/jvm/functions/Function1;)Lcom/chattriggers/ctjs/api/triggers/CommandTrigger;
 	public final fun setTabCompletions ([Ljava/lang/String;)Lcom/chattriggers/ctjs/api/triggers/CommandTrigger;
+	public fun trigger$ctjs ([Ljava/lang/Object;)V
 }
 
 public final class com/chattriggers/ctjs/api/triggers/CustomTriggerType : com/chattriggers/ctjs/api/triggers/ITriggerType {
@@ -2017,6 +2161,7 @@ public final class com/chattriggers/ctjs/api/triggers/CustomTriggerType : com/ch
 
 public final class com/chattriggers/ctjs/api/triggers/EventTrigger : com/chattriggers/ctjs/api/triggers/Trigger {
 	public fun <init> (Ljava/lang/Object;Lcom/chattriggers/ctjs/api/triggers/ITriggerType;)V
+	public fun trigger$ctjs ([Ljava/lang/Object;)V
 	public final fun triggerIfCanceled (Z)Lcom/chattriggers/ctjs/api/triggers/EventTrigger;
 }
 
@@ -2036,6 +2181,7 @@ public final class com/chattriggers/ctjs/api/triggers/PacketTrigger : com/chattr
 
 public final class com/chattriggers/ctjs/api/triggers/RegularTrigger : com/chattriggers/ctjs/api/triggers/Trigger {
 	public fun <init> (Ljava/lang/Object;Lcom/chattriggers/ctjs/api/triggers/ITriggerType;)V
+	public fun trigger$ctjs ([Ljava/lang/Object;)V
 }
 
 public final class com/chattriggers/ctjs/api/triggers/RenderBlockEntityTrigger : com/chattriggers/ctjs/api/triggers/ClassFilterTrigger {
@@ -2051,6 +2197,7 @@ public final class com/chattriggers/ctjs/api/triggers/RenderEntityTrigger : com/
 public final class com/chattriggers/ctjs/api/triggers/SoundPlayTrigger : com/chattriggers/ctjs/api/triggers/Trigger {
 	public fun <init> (Ljava/lang/Object;)V
 	public final fun setCriteria (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/triggers/SoundPlayTrigger;
+	public fun trigger$ctjs ([Ljava/lang/Object;)V
 }
 
 public final class com/chattriggers/ctjs/api/triggers/StepTrigger : com/chattriggers/ctjs/api/triggers/Trigger {
@@ -2058,6 +2205,7 @@ public final class com/chattriggers/ctjs/api/triggers/StepTrigger : com/chattrig
 	public fun register ()Lcom/chattriggers/ctjs/api/triggers/Trigger;
 	public final fun setDelay (J)Lcom/chattriggers/ctjs/api/triggers/StepTrigger;
 	public final fun setFps (J)Lcom/chattriggers/ctjs/api/triggers/StepTrigger;
+	public fun trigger$ctjs ([Ljava/lang/Object;)V
 }
 
 public abstract class com/chattriggers/ctjs/api/triggers/Trigger : java/lang/Comparable {
@@ -2072,6 +2220,7 @@ public abstract class com/chattriggers/ctjs/api/triggers/Trigger : java/lang/Com
 	public final fun setMethod (Ljava/lang/Object;)V
 	public final fun setPriority (Lcom/chattriggers/ctjs/api/triggers/Trigger$Priority;)Lcom/chattriggers/ctjs/api/triggers/Trigger;
 	public final fun setType (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;)V
+	public abstract fun trigger$ctjs ([Ljava/lang/Object;)V
 	public fun unregister ()Lcom/chattriggers/ctjs/api/triggers/Trigger;
 }
 
@@ -2347,7 +2496,9 @@ public final class com/chattriggers/ctjs/api/world/Scoreboard {
 	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/Scoreboard;
 	public static final fun addLine (ILcom/chattriggers/ctjs/api/message/TextComponent;)V
 	public static final fun addLine (ILjava/lang/String;)V
+	public final fun clearCustom$ctjs ()V
 	public static final fun createTeam (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/entity/Team;
+	public final fun getCustomTitle$ctjs ()Z
 	public static final fun getLineByIndex (I)Lcom/chattriggers/ctjs/api/world/Scoreboard$Score;
 	public static final fun getLines ()Ljava/util/List;
 	public static final fun getLines (Z)Ljava/util/List;
@@ -2361,6 +2512,8 @@ public final class com/chattriggers/ctjs/api/world/Scoreboard {
 	public static final fun removeIndex (IZ)V
 	public static synthetic fun removeIndex$default (IZILjava/lang/Object;)V
 	public static final fun removeScores (I)V
+	public final fun resetCache$ctjs ()V
+	public final fun setCustomTitle$ctjs (Z)V
 	public static final fun setLine (ILcom/chattriggers/ctjs/api/message/TextComponent;)V
 	public static final fun setLine (ILcom/chattriggers/ctjs/api/message/TextComponent;Z)V
 	public static final fun setLine (ILjava/lang/String;)V
@@ -2409,8 +2562,11 @@ public final class com/chattriggers/ctjs/api/world/TabList {
 	public static final fun addName (Ljava/lang/String;Z)V
 	public static synthetic fun addName$default (Lcom/chattriggers/ctjs/api/message/TextComponent;ZILjava/lang/Object;)V
 	public static synthetic fun addName$default (Ljava/lang/String;ZILjava/lang/Object;)V
+	public final fun clearCustom$ctjs ()V
 	public static final fun clearFooter ()V
 	public static final fun clearHeader ()V
+	public final fun getCustomFooter$ctjs ()Z
+	public final fun getCustomHeader$ctjs ()Z
 	public static final fun getFooter ()Ljava/lang/String;
 	public static final fun getFooterComponent ()Lcom/chattriggers/ctjs/api/message/TextComponent;
 	public static final fun getHeader ()Ljava/lang/String;
@@ -2421,6 +2577,9 @@ public final class com/chattriggers/ctjs/api/world/TabList {
 	public static final fun getUnformattedNames ()Ljava/util/List;
 	public static final fun removeNames (Lcom/chattriggers/ctjs/api/message/TextComponent;)V
 	public static final fun removeNames (Ljava/lang/String;)V
+	public final fun resetCache$ctjs ()V
+	public final fun setCustomFooter$ctjs (Z)V
+	public final fun setCustomHeader$ctjs (Z)V
 	public static final fun setFooter (Ljava/lang/Object;)V
 	public static final fun setHeader (Ljava/lang/Object;)V
 	public static final fun toMC ()Lnet/minecraft/client/gui/hud/PlayerListHud;
@@ -2440,6 +2599,12 @@ public final class com/chattriggers/ctjs/api/world/TabList$Name : com/chattrigge
 	public synthetic fun toMC ()Ljava/lang/Object;
 	public fun toMC ()Lnet/minecraft/client/network/PlayerListEntry;
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/chattriggers/ctjs/api/world/TabList$PlayerComparator : java/util/Comparator {
+	public fun <init> ()V
+	public synthetic fun compare (Ljava/lang/Object;Ljava/lang/Object;)I
+	public fun compare (Lnet/minecraft/client/network/PlayerListEntry;Lnet/minecraft/client/network/PlayerListEntry;)I
 }
 
 public final class com/chattriggers/ctjs/api/world/World {
@@ -2719,15 +2884,26 @@ public final class com/chattriggers/ctjs/engine/LogType$Companion {
 public final class com/chattriggers/ctjs/engine/MixinCallback {
 	public fun <init> (ILcom/chattriggers/ctjs/internal/launch/IInjector;)V
 	public final fun attach (Ljava/lang/Object;)V
+	public final fun component1$ctjs ()I
+	public final fun component2$ctjs ()Lcom/chattriggers/ctjs/internal/launch/IInjector;
 	public final fun copy (ILcom/chattriggers/ctjs/internal/launch/IInjector;)Lcom/chattriggers/ctjs/engine/MixinCallback;
 	public static synthetic fun copy$default (Lcom/chattriggers/ctjs/engine/MixinCallback;ILcom/chattriggers/ctjs/internal/launch/IInjector;ILjava/lang/Object;)Lcom/chattriggers/ctjs/engine/MixinCallback;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHandle$ctjs ()Ljava/lang/invoke/MethodHandle;
+	public final fun getId$ctjs ()I
+	public final fun getInjector$ctjs ()Lcom/chattriggers/ctjs/internal/launch/IInjector;
+	public final fun getInvalidator$ctjs ()Ljava/lang/invoke/SwitchPoint;
+	public final fun getMethod$ctjs ()Ljava/lang/Object;
 	public fun hashCode ()I
+	public final fun setHandle$ctjs (Ljava/lang/invoke/MethodHandle;)V
+	public final fun setInvalidator$ctjs (Ljava/lang/invoke/SwitchPoint;)V
+	public final fun setMethod$ctjs (Ljava/lang/Object;)V
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/chattriggers/ctjs/engine/Register {
 	public static final field INSTANCE Lcom/chattriggers/ctjs/engine/Register;
+	public final fun clearCustomTriggers$ctjs ()V
 	public static final fun createCustomTrigger (Ljava/lang/String;)Ljava/lang/Object;
 	public static final fun register (Ljava/lang/String;Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/triggers/Trigger;
 	public static final fun registerActionBar (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/triggers/Trigger;
@@ -2822,6 +2998,8 @@ public final class com/v5/keybind/KeyBindUtils$WrappedKeyBind {
 	public final fun getKeyBinding ()Lnet/minecraft/client/option/KeyBinding;
 	public final fun getKeyCode ()I
 	public final fun onKeyPress (Ljava/lang/Runnable;)Lcom/v5/keybind/KeyBindUtils$WrappedKeyBind;
+	public final fun registerToGame$ctjs ()V
+	public final fun update$ctjs ()V
 }
 
 public class com/v5/mixins/AbstractBlockStateMixin {
@@ -3063,6 +3241,32 @@ public final class com/v5/render/NVGRenderer$GifData {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/v5/render/NVGRenderer$imageCache$1 : java/util/LinkedHashMap {
+	public final fun containsKey (Ljava/lang/Object;)Z
+	public fun containsKey (Ljava/lang/String;)Z
+	public fun containsValue (Lcom/v5/render/NVGRenderer$CachedImage;)Z
+	public final fun containsValue (Ljava/lang/Object;)Z
+	public final fun entrySet ()Ljava/util/Set;
+	public final fun get (Ljava/lang/Object;)Lcom/v5/render/NVGRenderer$CachedImage;
+	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun get (Ljava/lang/String;)Lcom/v5/render/NVGRenderer$CachedImage;
+	public fun getEntries ()Ljava/util/Set;
+	public fun getKeys ()Ljava/util/Set;
+	public final fun getOrDefault (Ljava/lang/Object;Lcom/v5/render/NVGRenderer$CachedImage;)Lcom/v5/render/NVGRenderer$CachedImage;
+	public final synthetic fun getOrDefault (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public fun getOrDefault (Ljava/lang/String;Lcom/v5/render/NVGRenderer$CachedImage;)Lcom/v5/render/NVGRenderer$CachedImage;
+	public fun getSize ()I
+	public fun getValues ()Ljava/util/Collection;
+	public final fun keySet ()Ljava/util/Set;
+	public final fun remove (Ljava/lang/Object;)Lcom/v5/render/NVGRenderer$CachedImage;
+	public final synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun remove (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public fun remove (Ljava/lang/String;)Lcom/v5/render/NVGRenderer$CachedImage;
+	public fun remove (Ljava/lang/String;Lcom/v5/render/NVGRenderer$CachedImage;)Z
+	public final fun size ()I
+	public final fun values ()Ljava/util/Collection;
+}
+
 public final class com/v5/render/RenderUtils {
 	public static final field INSTANCE Lcom/v5/render/RenderUtils;
 	public static final fun drawFilledBox (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;Z)V
@@ -3202,5 +3406,482 @@ public final class com/v5/screen/WelcomeScreen : net/minecraft/client/gui/screen
 
 public final class com/v5/screen/WelcomeScreen$Companion {
 	public final fun open ()V
+}
+
+public final class dev/quiteboring/swift/Swift : net/fabricmc/api/ClientModInitializer {
+	public static final field Companion Ldev/quiteboring/swift/Swift$Companion;
+	public static final field executor Ljava/util/concurrent/ExecutorService;
+	public static final field settings Ldev/quiteboring/swift/util/setting/Settings;
+	public fun <init> ()V
+	public fun onInitializeClient ()V
+}
+
+public final class dev/quiteboring/swift/Swift$Companion {
+}
+
+public final class dev/quiteboring/swift/cache/CachedChunk {
+	public static final field AIR Lnet/minecraft/block/BlockState;
+	public static final field AIR_ID I
+	public static final field Companion Ldev/quiteboring/swift/cache/CachedChunk$Companion;
+	public final field maxY I
+	public final field minY I
+	public field ready Z
+	public fun <init> (II)V
+	public final fun get (III)Lnet/minecraft/block/BlockState;
+	public final fun getDistanceData (I)[B
+	public final fun getSectionData (I)[I
+	public final fun getStateId (III)I
+	public final fun hasSection (I)Z
+	public final fun set (IIILnet/minecraft/block/BlockState;)V
+	public final fun setDistanceData (I[B)V
+	public final fun setDistanceDataByIndex (I[B)V
+	public final fun setSection (I[I)V
+}
+
+public final class dev/quiteboring/swift/cache/CachedChunk$Companion {
+}
+
+public final class dev/quiteboring/swift/cache/CachedWorld {
+	public static final field INSTANCE Ldev/quiteboring/swift/cache/CachedWorld;
+	public final fun clear ()V
+	public static final fun getBlockState (III)Lnet/minecraft/block/BlockState;
+	public final fun getCacheStats ()Ljava/lang/String;
+	public static final fun getChunk (II)Ldev/quiteboring/swift/cache/CachedChunk;
+	public final fun load (Ljava/lang/String;)V
+	public final fun onPacketReceive (Lnet/minecraft/network/packet/Packet;)V
+	public final fun processPendingChunks ()V
+	public final fun saveAndClear (Ljava/lang/String;)V
+	public final fun waitForLoad ()V
+}
+
+public final class dev/quiteboring/swift/command/HeatmapCommand {
+	public static final field INSTANCE Ldev/quiteboring/swift/command/HeatmapCommand;
+	public final fun dispatch ()V
+	public final fun onRender (Ldev/quiteboring/swift/event/Context;)V
+}
+
+public final class dev/quiteboring/swift/command/HeatmapCommand$Mode : java/lang/Enum {
+	public static final field EDGE Ldev/quiteboring/swift/command/HeatmapCommand$Mode;
+	public static final field PENALTY Ldev/quiteboring/swift/command/HeatmapCommand$Mode;
+	public static final field WALL Ldev/quiteboring/swift/command/HeatmapCommand$Mode;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/quiteboring/swift/command/HeatmapCommand$Mode;
+	public static fun values ()[Ldev/quiteboring/swift/command/HeatmapCommand$Mode;
+}
+
+public final class dev/quiteboring/swift/command/PathCommand {
+	public static final field INSTANCE Ldev/quiteboring/swift/command/PathCommand;
+	public final fun dispatch ()V
+	public final fun onRender (Ldev/quiteboring/swift/event/Context;)V
+}
+
+public final class dev/quiteboring/swift/event/Context {
+	public field camera Lnet/minecraft/client/render/Camera;
+	public field consumers Lnet/minecraft/client/render/VertexConsumerProvider;
+	public field frustum Lnet/minecraft/client/render/Frustum;
+	public fun <init> ()V
+	public final fun getCamera ()Lnet/minecraft/client/render/Camera;
+	public final fun getConsumers ()Lnet/minecraft/client/render/VertexConsumerProvider;
+	public final fun getFrustum ()Lnet/minecraft/client/render/Frustum;
+	public final fun getMatrixStack ()Lnet/minecraft/client/util/math/MatrixStack;
+	public final fun setCamera (Lnet/minecraft/client/render/Camera;)V
+	public final fun setConsumers (Lnet/minecraft/client/render/VertexConsumerProvider;)V
+	public final fun setFrustum (Lnet/minecraft/client/render/Frustum;)V
+	public final fun setMatrixStack (Lnet/minecraft/client/util/math/MatrixStack;)V
+}
+
+public final class dev/quiteboring/swift/event/PacketEvent {
+	public static final field INSTANCE Ldev/quiteboring/swift/event/PacketEvent;
+	public static final field RECEIVE Lnet/fabricmc/fabric/api/event/Event;
+}
+
+public abstract interface class dev/quiteboring/swift/event/PacketEvent$ReceiveEvent {
+	public abstract fun trigger (Lnet/minecraft/network/packet/Packet;)V
+}
+
+public final class dev/quiteboring/swift/event/WorldRenderEvent {
+	public static final field INSTANCE Ldev/quiteboring/swift/event/WorldRenderEvent;
+	public static final field LAST Lnet/fabricmc/fabric/api/event/Event;
+	public static final field START Lnet/fabricmc/fabric/api/event/Event;
+}
+
+public abstract interface class dev/quiteboring/swift/event/WorldRenderEvent$LastEvent {
+	public abstract fun trigger (Ldev/quiteboring/swift/event/Context;)V
+}
+
+public abstract interface class dev/quiteboring/swift/event/WorldRenderEvent$StartEvent {
+	public abstract fun trigger (Ldev/quiteboring/swift/event/Context;)V
+}
+
+public final class dev/quiteboring/swift/finder/calculate/Path {
+	public fun <init> (Ldev/quiteboring/swift/finder/movement/CalculationContext;Ldev/quiteboring/swift/finder/calculate/PathNode;JIZ)V
+	public synthetic fun <init> (Ldev/quiteboring/swift/finder/movement/CalculationContext;Ldev/quiteboring/swift/finder/calculate/PathNode;JIZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getKeyNodes ()Ljava/util/List;
+	public final fun getNanosPerNode ()D
+	public final fun getNodesExplored ()I
+	public final fun getPoints ()Ljava/util/List;
+	public final fun getTimeTaken ()J
+}
+
+public final class dev/quiteboring/swift/finder/calculate/PathNode {
+	public static final field Companion Ldev/quiteboring/swift/finder/calculate/PathNode$Companion;
+	public field fCost D
+	public field gCost D
+	public final field hCost D
+	public field heapPosition I
+	public field parent Ldev/quiteboring/swift/finder/calculate/PathNode;
+	public final field x I
+	public final field y I
+	public final field z I
+	public fun <init> (IIILdev/quiteboring/swift/finder/goal/IGoal;)V
+	public static final fun coordKey (III)J
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+}
+
+public final class dev/quiteboring/swift/finder/calculate/PathNode$Companion {
+	public final fun coordKey (III)J
+}
+
+public final class dev/quiteboring/swift/finder/calculate/openset/BinaryHeapOpenSet {
+	public field size I
+	public fun <init> ()V
+	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun add (Ldev/quiteboring/swift/finder/calculate/PathNode;)V
+	public final fun clear ()V
+	public final fun isEmpty ()Z
+	public final fun isNotEmpty ()Z
+	public final fun poll ()Ldev/quiteboring/swift/finder/calculate/PathNode;
+	public final fun relocate (Ldev/quiteboring/swift/finder/calculate/PathNode;)V
+}
+
+public final class dev/quiteboring/swift/finder/calculate/path/AStarPathfinder {
+	public fun <init> ([[ILdev/quiteboring/swift/finder/goal/IGoal;Ldev/quiteboring/swift/finder/movement/CalculationContext;IDDZ)V
+	public synthetic fun <init> ([[ILdev/quiteboring/swift/finder/goal/IGoal;Ldev/quiteboring/swift/finder/movement/CalculationContext;IDDZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun findPath ()Ldev/quiteboring/swift/finder/calculate/Path;
+}
+
+public final class dev/quiteboring/swift/finder/costs/ActionCosts {
+	public final field FLY_ONE_BLOCK_TIME D
+	public final field GAP_JUMP_REWARD_OFFSET D
+	public final field JUMP_PENALTY D
+	public final field JUMP_UP_ONE_BLOCK_TIME D
+	public final field LAND_RECOVERY_TIME D
+	public final field MOMENTUM_LOSS_PENALTY D
+	public final field SLAB_ASCENT_TIME D
+	public final field SPRINT_DIAGONAL_TIME D
+	public final field SPRINT_ONE_BLOCK_TIME D
+	public final field WALK_OFF_EDGE_TIME D
+	public fun <init> ()V
+	public final fun getFallTime (I)D
+	public final fun getINF_COST ()D
+}
+
+public final class dev/quiteboring/swift/finder/goal/Goal : dev/quiteboring/swift/finder/goal/IGoal {
+	public fun <init> (IIIIILdev/quiteboring/swift/finder/movement/CalculationContext;)V
+	public final fun getGoalX ()I
+	public final fun getGoalY ()I
+	public final fun getGoalZ ()I
+	public final fun getStartX ()I
+	public final fun getStartZ ()I
+	public fun heuristic (III)D
+	public fun isAtGoal (III)Z
+}
+
+public final class dev/quiteboring/swift/finder/goal/GoalFly : dev/quiteboring/swift/finder/goal/IGoal {
+	public static final field Companion Ldev/quiteboring/swift/finder/goal/GoalFly$Companion;
+	public fun <init> (IIIIIILdev/quiteboring/swift/finder/movement/CalculationContext;)V
+	public final fun getCtx ()Ldev/quiteboring/swift/finder/movement/CalculationContext;
+	public final fun getGoalX ()I
+	public final fun getGoalY ()I
+	public final fun getGoalZ ()I
+	public final fun getStartX ()I
+	public final fun getStartY ()I
+	public final fun getStartZ ()I
+	public fun heuristic (III)D
+	public fun isAtGoal (III)Z
+}
+
+public final class dev/quiteboring/swift/finder/goal/GoalFly$Companion {
+}
+
+public abstract interface class dev/quiteboring/swift/finder/goal/IGoal {
+	public abstract fun heuristic (III)D
+	public abstract fun isAtGoal (III)Z
+}
+
+public final class dev/quiteboring/swift/finder/goal/MultiGoal : dev/quiteboring/swift/finder/goal/IGoal {
+	public fun <init> (Ljava/util/List;)V
+	public fun heuristic (III)D
+	public fun isAtGoal (III)Z
+}
+
+public final class dev/quiteboring/swift/finder/helper/BlockStateAccessor {
+	public final field access Ldev/quiteboring/swift/finder/helper/BlockViewWrapper;
+	public final field mutablePos Lnet/minecraft/util/math/BlockPos$Mutable;
+	public fun <init> (Lnet/minecraft/world/World;)V
+	public final fun get (III)Lnet/minecraft/block/BlockState;
+	public final fun getWorld ()Lnet/minecraft/world/World;
+}
+
+public final class dev/quiteboring/swift/finder/helper/BlockViewWrapper : net/minecraft/world/BlockView {
+	public fun <init> (Ldev/quiteboring/swift/finder/helper/BlockStateAccessor;)V
+	public fun getBlockEntity (Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/entity/BlockEntity;
+	public fun getBlockState (Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;
+	public fun getBottomY ()I
+	public fun getFluidState (Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/fluid/FluidState;
+	public fun getHeight ()I
+}
+
+public final class dev/quiteboring/swift/finder/movement/CalculationContext {
+	public static final field CRUISE_BUFFER I
+	public static final field Companion Ldev/quiteboring/swift/finder/movement/CalculationContext$Companion;
+	public field cruiseY I
+	public field goalX I
+	public field goalY I
+	public field goalZ I
+	public field startX I
+	public field startY I
+	public field startZ I
+	public fun <init> ()V
+	public final fun get (III)Lnet/minecraft/block/BlockState;
+	public final fun getBsa ()Ldev/quiteboring/swift/finder/helper/BlockStateAccessor;
+	public final fun getCost ()Ldev/quiteboring/swift/finder/costs/ActionCosts;
+	public final fun getMaxFallHeight ()I
+	public final fun getMc ()Lnet/minecraft/client/MinecraftClient;
+	public final fun getPrecomputedData ()Ldev/quiteboring/swift/finder/precompute/PrecomputedData;
+	public final fun getSafeCache ()Ldev/quiteboring/swift/finder/precompute/SafePositionCache;
+	public final fun getWdc ()Ldev/quiteboring/swift/finder/precompute/WallDistanceCalculator;
+	public final fun getWorld ()Lnet/minecraft/client/world/ClientWorld;
+	public final fun setFlightParameters (IIIIII)V
+}
+
+public final class dev/quiteboring/swift/finder/movement/CalculationContext$Companion {
+}
+
+public abstract interface class dev/quiteboring/swift/finder/movement/IMove {
+	public abstract fun calculate (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+}
+
+public final class dev/quiteboring/swift/finder/movement/MovementHelper {
+	public static final field INSTANCE Ldev/quiteboring/swift/finder/movement/MovementHelper;
+	public static final field SHAPE_CONTEXT Lnet/minecraft/block/ShapeContext;
+	public static final fun isPassableState (Ldev/quiteboring/swift/finder/helper/BlockStateAccessor;IIILnet/minecraft/block/BlockState;)Z
+	public static final fun isSolidState (Ldev/quiteboring/swift/finder/helper/BlockStateAccessor;IIILnet/minecraft/block/BlockState;)Z
+}
+
+public final class dev/quiteboring/swift/finder/movement/MovementResult {
+	public fun <init> ()V
+	public final fun getCost ()D
+	public final fun getX ()I
+	public final fun getY ()I
+	public final fun getZ ()I
+	public final fun reset ()V
+	public final fun set (III)V
+	public final fun setCost (D)V
+	public final fun setX (I)V
+	public final fun setY (I)V
+	public final fun setZ (I)V
+}
+
+public abstract class dev/quiteboring/swift/finder/movement/Moves : java/lang/Enum, dev/quiteboring/swift/finder/movement/IMove {
+	public static final field ASCEND_EAST Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field ASCEND_NORTH Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field ASCEND_SOUTH Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field ASCEND_WEST Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field DESCEND_EAST Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field DESCEND_NORTH Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field DESCEND_SOUTH Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field DESCEND_WEST Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field DIAGONAL_NORTHEAST Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field DIAGONAL_NORTHWEST Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field DIAGONAL_SOUTHEAST Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field DIAGONAL_SOUTHWEST Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field TRAVERSE_EAST Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field TRAVERSE_NORTH Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field TRAVERSE_SOUTH Ldev/quiteboring/swift/finder/movement/Moves;
+	public static final field TRAVERSE_WEST Ldev/quiteboring/swift/finder/movement/Moves;
+	public synthetic fun <init> (Ljava/lang/String;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getOffsetX ()I
+	public final fun getOffsetZ ()I
+	public static fun valueOf (Ljava/lang/String;)Ldev/quiteboring/swift/finder/movement/Moves;
+	public static fun values ()[Ldev/quiteboring/swift/finder/movement/Moves;
+}
+
+public final class dev/quiteboring/swift/finder/movement/MovesFly : java/lang/Enum, dev/quiteboring/swift/finder/movement/IMove {
+	public static final field DOWN Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field DOWN_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field DOWN_NORTH Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field DOWN_NORTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field DOWN_NORTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field DOWN_SOUTH Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field DOWN_SOUTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field DOWN_SOUTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field DOWN_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field NORTH Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field NORTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field NORTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field SOUTH Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field SOUTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field SOUTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field UP Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field UP_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field UP_NORTH Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field UP_NORTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field UP_NORTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field UP_SOUTH Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field UP_SOUTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field UP_SOUTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field UP_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static final field WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public fun calculate (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+	public final fun getDx ()I
+	public final fun getDy ()I
+	public final fun getDz ()I
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static fun values ()[Ldev/quiteboring/swift/finder/movement/MovesFly;
+}
+
+public final class dev/quiteboring/swift/finder/movement/movements/MovementFly {
+	public static final field INSTANCE Ldev/quiteboring/swift/finder/movement/movements/MovementFly;
+	public static final fun calculate (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+}
+
+public final class dev/quiteboring/swift/finder/movement/movements/MovementWalk {
+	public static final field INSTANCE Ldev/quiteboring/swift/finder/movement/movements/MovementWalk;
+	public static final fun ascend (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+	public static final fun descend (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+	public static final fun diagonal (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+	public static final fun jumpGap (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+	public static final fun traverse (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+}
+
+public final class dev/quiteboring/swift/finder/precompute/PrecomputedData {
+	public static final field BLOCKING_WALL I
+	public static final field CARPET_LIKE I
+	public static final field COMPUTED I
+	public static final field Companion Ldev/quiteboring/swift/finder/precompute/PrecomputedData$Companion;
+	public static final field FLY_PASSABLE I
+	public static final field FULL_CUBE I
+	public static final field PASSABLE I
+	public static final field SLAB_BOTTOM I
+	public static final field SOLID I
+	public final field states [I
+	public fun <init> (Ldev/quiteboring/swift/finder/helper/BlockStateAccessor;)V
+	public final fun getData (IIILnet/minecraft/block/BlockState;)I
+	public final fun isBlockingWall (IIILnet/minecraft/block/BlockState;)Z
+	public static synthetic fun isBlockingWall$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public final fun isBottomSlab (IIILnet/minecraft/block/BlockState;)Z
+	public static synthetic fun isBottomSlab$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public final fun isCarpetLike (IIILnet/minecraft/block/BlockState;)Z
+	public static synthetic fun isCarpetLike$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public final fun isFullCube (IIILnet/minecraft/block/BlockState;)Z
+	public static synthetic fun isFullCube$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public final fun isPassable (IIILnet/minecraft/block/BlockState;)Z
+	public static synthetic fun isPassable$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public final fun isPassableForFlying (IIILnet/minecraft/block/BlockState;)Z
+	public static synthetic fun isPassableForFlying$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public final fun isSolid (IIILnet/minecraft/block/BlockState;)Z
+	public static synthetic fun isSolid$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+}
+
+public final class dev/quiteboring/swift/finder/precompute/PrecomputedData$Companion {
+}
+
+public final class dev/quiteboring/swift/finder/precompute/SafePositionCache {
+	public static final field Companion Ldev/quiteboring/swift/finder/precompute/SafePositionCache$Companion;
+	public fun <init> (Ldev/quiteboring/swift/finder/movement/CalculationContext;)V
+	public final fun clear ()V
+	public final fun isSafe (III)Z
+}
+
+public final class dev/quiteboring/swift/finder/precompute/SafePositionCache$Companion {
+}
+
+public final class dev/quiteboring/swift/finder/precompute/WallDistanceCalculator {
+	public static final field Companion Ldev/quiteboring/swift/finder/precompute/WallDistanceCalculator$Companion;
+	public static final field EDGE_PENALTIES [D
+	public static final field MAX_DIST I
+	public static final field WALL_PENALTIES [D
+	public fun <init> (Ldev/quiteboring/swift/finder/movement/CalculationContext;)V
+	public final fun clearCache ()V
+	public final fun getEdgeDistance (III)I
+	public final fun getPathPenalty (III)D
+	public final fun getWallDistance (III)I
+}
+
+public final class dev/quiteboring/swift/finder/precompute/WallDistanceCalculator$Companion {
+}
+
+public final class dev/quiteboring/swift/integration/HypixelManager {
+	public static final field INSTANCE Ldev/quiteboring/swift/integration/HypixelManager;
+	public final fun init ()V
+	public final fun onDisconnect ()V
+}
+
+public final class dev/quiteboring/swift/io/WorldSerializer {
+	public static final field INSTANCE Ldev/quiteboring/swift/io/WorldSerializer;
+	public final fun load (Ljava/lang/String;)Ljava/util/concurrent/ConcurrentHashMap;
+	public final fun save (Ljava/lang/String;Ljava/util/Map;)V
+}
+
+public class dev/quiteboring/swift/mixins/ClientConnectionMixin {
+	public fun <init> ()V
+}
+
+public abstract interface class dev/quiteboring/swift/mixins/FrustumInvoker {
+	public abstract fun invokeIntersectAab (DDDDDD)I
+}
+
+public class dev/quiteboring/swift/mixins/WorldRendererMixin {
+	public fun <init> ()V
+}
+
+public final class dev/quiteboring/swift/util/PlayerUtils {
+	public static final field INSTANCE Ldev/quiteboring/swift/util/PlayerUtils;
+	public final fun getBlockStandingOn ()Lnet/minecraft/util/math/BlockPos;
+}
+
+public final class dev/quiteboring/swift/util/render/ExtensionsKt {
+	public static final fun drawBox (Ldev/quiteboring/swift/event/Context;Lnet/minecraft/util/math/Box;Ljava/awt/Color;Z)V
+	public static synthetic fun drawBox$default (Ldev/quiteboring/swift/event/Context;Lnet/minecraft/util/math/Box;Ljava/awt/Color;ZILjava/lang/Object;)V
+	public static final fun drawLine (Ldev/quiteboring/swift/event/Context;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Ljava/awt/Color;ZF)V
+	public static synthetic fun drawLine$default (Ldev/quiteboring/swift/event/Context;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Ljava/awt/Color;ZFILjava/lang/Object;)V
+}
+
+public final class dev/quiteboring/swift/util/render/FrustumUtils {
+	public static final field INSTANCE Ldev/quiteboring/swift/util/render/FrustumUtils;
+	public final fun isVisible (Lnet/minecraft/client/render/Frustum;DDDDDD)Z
+	public final fun isVisible (Lnet/minecraft/client/render/Frustum;Lnet/minecraft/util/math/Box;)Z
+}
+
+public final class dev/quiteboring/swift/util/render/Layers {
+	public static final field INSTANCE Ldev/quiteboring/swift/util/render/Layers;
+	public final fun getLINE_LIST ()Lnet/minecraft/client/render/RenderLayer;
+	public final fun getLINE_LIST_ESP ()Lnet/minecraft/client/render/RenderLayer;
+	public final fun getTRIANGLE_STRIP ()Lnet/minecraft/client/render/RenderLayer$MultiPhase;
+	public final fun getTRIANGLE_STRIP_ESP ()Lnet/minecraft/client/render/RenderLayer$MultiPhase;
+}
+
+public final class dev/quiteboring/swift/util/render/Pipelines {
+	public static final field INSTANCE Ldev/quiteboring/swift/util/render/Pipelines;
+	public final fun getLINE_LIST ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+	public final fun getLINE_LIST_ESP ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+	public final fun getTRIANGLE_STRIP ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+	public final fun getTRIANGLE_STRIP_ESP ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+}
+
+public final class dev/quiteboring/swift/util/setting/Settings {
+	public fun <init> ()V
+	public final fun getChunksPerTick ()I
+	public final fun getMaximumCachedChunks ()I
+	public final fun getWorldCache ()Z
+	public final fun setChunksPerTick (I)V
+	public final fun setMaximumCachedChunks (I)V
+	public final fun setWorldCache (Z)V
 }
 

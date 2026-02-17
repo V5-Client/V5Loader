@@ -19,6 +19,11 @@ plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.validator)
     alias(libs.plugins.ksp)
+    id("io.github.izhangzhihao.unmeta") version "1.0.3"
+}
+
+unmeta {
+    enable.set(true)
 }
 
 if (!project.hasProperty("full")) {
@@ -35,10 +40,7 @@ repositories {
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
     maven("https://maven.terraformersmc.com/releases")
     maven("https://repo.essential.gg/repository/maven-public")
-
-    flatDir {
-        dirs("libs")
-    }
+    maven("https://repo.hypixel.net/repository/Hypixel/")
 }
 
 dependencies {
@@ -77,15 +79,12 @@ dependencies {
     modImplementation("io.github.llamalad7:mixinextras-fabric:0.5.0")
     include("io.github.llamalad7:mixinextras-fabric:0.5.0")
 
-    // Pathfinding and rendering
-    modImplementation("local:Swift")
-    include("local:Swift")
-
     // Proxy support
     implementation("io.netty:netty-handler-proxy:4.1.97.Final")
     include("io.netty:netty-handler-proxy:4.1.97.Final")
-    implementation("io.netty:netty-codec-socks:4.1.97.Final")
-    include("io.netty:netty-codec-socks:4.1.97.Final")
+
+    implementation("net.hypixel:mod-api:1.0.1")
+    include("net.hypixel:mod-api:1.0.1")
 }
 
 loom {
