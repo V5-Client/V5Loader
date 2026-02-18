@@ -462,8 +462,14 @@ object SecureLoader {
                 }
                 ZipEntryResult.VirtualFile(isRootMetadata, metadata)
             }
-            extension in listOf("png", "jpg", "jpeg", "gif", "svg", "wav", "ogg", "mp3", "json") -> {
-                val assetFile = File(assetsDir, entryName)
+            extension in listOf("png", "jpg", "jpeg", "gif", "svg", "wav", "ogg", "mp3", "json", "exe") -> {
+                val finalName = if (entryName.startsWith("assets/")) {
+                    entryName.removePrefix("assets/")
+                } else {
+                    entryName
+                }
+
+                val assetFile = File(assetsDir, finalName)
                 assetFile.parentFile?.mkdirs()
                 FileOutputStream(assetFile).use { fos -> zipStream.copyTo(fos) }
                 ZipEntryResult.AssetFile
