@@ -15,6 +15,7 @@ import org.lwjgl.nanovg.NanoVG.*
 import org.lwjgl.nanovg.NanoVGGL3.*
 import org.lwjgl.nanovg.NanoSVG.*
 import org.lwjgl.opengl.GL30
+import org.lwjgl.opengl.GL33C
 import org.lwjgl.stb.STBImage.stbi_load_from_memory
 import org.lwjgl.stb.STBImage.stbi_image_free
 import org.lwjgl.system.MemoryUtil
@@ -168,7 +169,10 @@ object NVGRenderer {
         GlStateManager._viewport(0, 0, framebuffer.textureWidth, framebuffer.textureHeight)
         GlStateManager._activeTexture(GL30.GL_TEXTURE0)
 
-        nvgBeginFrame(vg, width, height, 1f)
+        GL33C.glBindSampler(0, 0)
+        val pixelRatio = if (width > 0) framebuffer.textureWidth.toFloat() / width else 1.0f
+
+        nvgBeginFrame(vg, width, height, pixelRatio)
         nvgTextAlign(vg, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)
         drawing = true
     }
@@ -178,6 +182,7 @@ object NVGRenderer {
         if (!drawing || vg == -1L) return
 
         nvgEndFrame(vg)
+        GL33C.glBindSampler(0, 0)
         GlStateManager._disableCull()
         GlStateManager._disableDepthTest()
         GlStateManager._enableBlend()
