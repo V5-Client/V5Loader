@@ -4,6 +4,7 @@ import com.v5.render.helper.Image
 import com.v5.render.helper.Font
 import com.mojang.blaze3d.opengl.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import com.v5.render.helper.TextureTracker
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.GlBackend
 import net.minecraft.client.texture.GlTexture
@@ -86,24 +87,6 @@ object NVGRenderer {
     private var drawing = false
     @JvmField var vg = -1L
 
-    private var isGLStateSaved = false
-    private var savedActiveTexture = 0
-    private var savedBoundTextures = IntArray(8)
-    private var savedVAO = 0
-    private var savedArrayBuffer = 0
-    private var savedElementBuffer = 0
-    private var savedProgram = 0
-    private var savedUnpackAlignment = 0
-    private var savedBlendEnabled = false
-    private var savedBlendSrcRGB = 0
-    private var savedBlendDstRGB = 0
-    private var savedBlendSrcAlpha = 0
-    private var savedBlendDstAlpha = 0
-    private var savedScissorEnabled = false
-    private var savedCullEnabled = false
-    private var savedDepthEnabled = false
-    private var savedStencilEnabled = false
-
     data class GifData(
         val width: Int,
         val height: Int,
@@ -169,82 +152,23 @@ object NVGRenderer {
         if (vg == -1L) throw RuntimeException("Failed to initialize NanoVG")
     }
 
-    private fun saveGLState() {
-        if (isGLStateSaved) return
-
-        savedActiveTexture = GL30.glGetInteger(GL30.GL_ACTIVE_TEXTURE)
-        for (i in savedBoundTextures.indices) {
-            GL30.glActiveTexture(GL30.GL_TEXTURE0 + i)
-            savedBoundTextures[i] = GL30.glGetInteger(GL30.GL_TEXTURE_BINDING_2D)
-        }
-        GL30.glActiveTexture(savedActiveTexture)
-
-        savedVAO = GL30.glGetInteger(GL30.GL_VERTEX_ARRAY_BINDING)
-        savedArrayBuffer = GL30.glGetInteger(GL30.GL_ARRAY_BUFFER_BINDING)
-        savedElementBuffer = GL30.glGetInteger(GL30.GL_ELEMENT_ARRAY_BUFFER_BINDING)
-        savedProgram = GL30.glGetInteger(GL30.GL_CURRENT_PROGRAM)
-        savedUnpackAlignment = GL30.glGetInteger(GL30.GL_UNPACK_ALIGNMENT)
-
-        savedBlendEnabled = GL30.glIsEnabled(GL30.GL_BLEND)
-        savedBlendSrcRGB = GL30.glGetInteger(GL30.GL_BLEND_SRC_RGB)
-        savedBlendDstRGB = GL30.glGetInteger(GL30.GL_BLEND_DST_RGB)
-        savedBlendSrcAlpha = GL30.glGetInteger(GL30.GL_BLEND_SRC_ALPHA)
-        savedBlendDstAlpha = GL30.glGetInteger(GL30.GL_BLEND_DST_ALPHA)
-
-        savedScissorEnabled = GL30.glIsEnabled(GL30.GL_SCISSOR_TEST)
-        savedCullEnabled = GL30.glIsEnabled(GL30.GL_CULL_FACE)
-        savedDepthEnabled = GL30.glIsEnabled(GL30.GL_DEPTH_TEST)
-        savedStencilEnabled = GL30.glIsEnabled(GL30.GL_STENCIL_TEST)
-
-        isGLStateSaved = true
-    }
-
-    private fun restoreGLState() {
-        if (!isGLStateSaved) return
-
-        GL30.glUseProgram(savedProgram)
-        GL30.glBindVertexArray(savedVAO)
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, savedArrayBuffer)
-        GL30.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, savedElementBuffer)
-        GL30.glPixelStorei(GL30.GL_UNPACK_ALIGNMENT, savedUnpackAlignment)
-
-        for (i in savedBoundTextures.indices) {
-            GL30.glActiveTexture(GL30.GL_TEXTURE0 + i)
-            GL30.glBindTexture(GL30.GL_TEXTURE_2D, savedBoundTextures[i])
-        }
-        GL30.glActiveTexture(savedActiveTexture)
-
-        if (savedBlendEnabled) GL30.glEnable(GL30.GL_BLEND) else GL30.glDisable(GL30.GL_BLEND)
-        GL30.glBlendFuncSeparate(savedBlendSrcRGB, savedBlendDstRGB, savedBlendSrcAlpha, savedBlendDstAlpha)
-
-        if (savedScissorEnabled) GL30.glEnable(GL30.GL_SCISSOR_TEST) else GL30.glDisable(GL30.GL_SCISSOR_TEST)
-        if (savedCullEnabled) GL30.glEnable(GL30.GL_CULL_FACE) else GL30.glDisable(GL30.GL_CULL_FACE)
-        if (savedDepthEnabled) GL30.glEnable(GL30.GL_DEPTH_TEST) else GL30.glDisable(GL30.GL_DEPTH_TEST)
-        if (savedStencilEnabled) GL30.glEnable(GL30.GL_STENCIL_TEST) else GL30.glDisable(GL30.GL_STENCIL_TEST)
-
-        isGLStateSaved = false
-    }
-
     @JvmStatic
     fun beginFrame(width: Float, height: Float) {
         if (!isGameReady()) return
         ensureInitialized()
         if (drawing) return
 
-        saveGLState()
-
         val framebuffer = mc.framebuffer
-        val bufferManager = (RenderSystem.getDevice() as GlBackend).bufferManager
-        val glFramebuffer = (framebuffer.colorAttachment as GlTexture).getOrCreateFramebuffer(bufferManager, null)
+        val glFramebuffer = (framebuffer.colorAttachment as GlTexture).getOrCreateFramebuffer(
+            (RenderSystem.getDevice() as GlBackend).bufferManager,
+            null
+        )
 
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, glFramebuffer)
         GlStateManager._viewport(0, 0, framebuffer.textureWidth, framebuffer.textureHeight)
         GlStateManager._activeTexture(GL30.GL_TEXTURE0)
 
-        val pixelRatio = if (width > 0) framebuffer.textureWidth.toFloat() / width else 1.0f
-
-        nvgBeginFrame(vg, width, height, pixelRatio)
-        nvgGlobalCompositeOperation(vg, NVG_SOURCE_OVER)
+        nvgBeginFrame(vg, width, height, 1f)
         nvgTextAlign(vg, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)
         drawing = true
     }
@@ -254,13 +178,16 @@ object NVGRenderer {
         if (!drawing || vg == -1L) return
 
         nvgEndFrame(vg)
+        GlStateManager._disableCull()
+        GlStateManager._disableDepthTest()
+        GlStateManager._enableBlend()
+        GlStateManager._blendFuncSeparate(770, 771, 1, 0)
+        GlStateManager._glUseProgram(0)
 
-        GL30.glBindVertexArray(0)
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0)
-        GL30.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, 0)
-        GL30.glUseProgram(0)
-
-        restoreGLState()
+        if (TextureTracker.prevActiveTexture != -1) {
+            GlStateManager._activeTexture(TextureTracker.prevActiveTexture)
+            if (TextureTracker.prevBoundTexture != -1) GlStateManager._bindTexture(TextureTracker.prevBoundTexture)
+        }
 
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0)
         drawing = false

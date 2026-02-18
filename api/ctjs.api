@@ -3040,6 +3040,10 @@ public class com/v5/mixins/GameRendererMixin {
 	public fun <init> ()V
 }
 
+public class com/v5/mixins/GlStateManagerMixin {
+	public fun <init> ()V
+}
+
 public class com/v5/mixins/LightTextureManagerMixin {
 	public fun <init> ()V
 }
@@ -3352,6 +3356,14 @@ public final class com/v5/render/helper/Image {
 public final class com/v5/render/helper/Image$Companion {
 	public final fun fromPath (Ljava/lang/String;)Lcom/v5/render/helper/Image;
 	public final fun fromStream (Ljava/lang/String;Ljava/io/InputStream;)Lcom/v5/render/helper/Image;
+}
+
+public final class com/v5/render/helper/TextureTracker {
+	public static final field INSTANCE Lcom/v5/render/helper/TextureTracker;
+	public static final fun getPrevActiveTexture ()I
+	public static final fun getPrevBoundTexture ()I
+	public static final fun setPrevActiveTexture (I)V
+	public static final fun setPrevBoundTexture (I)V
 }
 
 public final class com/v5/render/objects/RenderLayers {
