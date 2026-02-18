@@ -165,6 +165,10 @@ object NVGRenderer {
             null
         )
 
+        val prevFramebuffer = GL33C.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING)
+        val prevViewport = IntArray(4)
+        GL33C.glGetIntegerv(GL33C.GL_VIEWPORT, prevViewport)
+
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, glFramebuffer)
         GlStateManager._viewport(0, 0, framebuffer.textureWidth, framebuffer.textureHeight)
         GlStateManager._activeTexture(GL30.GL_TEXTURE0)
@@ -175,7 +179,13 @@ object NVGRenderer {
         nvgBeginFrame(vg, width, height, pixelRatio)
         nvgTextAlign(vg, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)
         drawing = true
+
+        savedFramebuffer = prevFramebuffer
+        savedViewport = prevViewport
     }
+
+    private var savedFramebuffer = 0
+    private var savedViewport = IntArray(4)
 
     @JvmStatic
     fun endFrame() {
@@ -189,12 +199,12 @@ object NVGRenderer {
         GlStateManager._blendFuncSeparate(770, 771, 1, 0)
         GlStateManager._glUseProgram(0)
 
-        if (TextureTracker.prevActiveTexture != -1) {
-            GlStateManager._activeTexture(TextureTracker.prevActiveTexture)
-            if (TextureTracker.prevBoundTexture != -1) GlStateManager._bindTexture(TextureTracker.prevBoundTexture)
-        }
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, savedFramebuffer)
+        GlStateManager._viewport(savedViewport[0], savedViewport[1], savedViewport[2], savedViewport[3])
 
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0)
+        GlStateManager._activeTexture(GL30.GL_TEXTURE0)
+        GlStateManager._bindTexture(0)
+
         drawing = false
     }
 
