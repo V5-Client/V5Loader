@@ -83,6 +83,8 @@ dependencies {
     // Proxy support
     implementation("io.netty:netty-handler-proxy:4.1.97.Final")
     include("io.netty:netty-handler-proxy:4.1.97.Final")
+    implementation("io.netty:netty-codec-socks:4.1.97.Final")
+    include("io.netty:netty-codec-socks:4.1.97.Final")
 
     implementation("net.hypixel:mod-api:1.0.1")
     modImplementation("maven.modrinth:hypixel-mod-api:1.0.1+build.1+mc1.21")
