@@ -26,7 +26,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 object SecureLoader {
-    private const val SECRET_KEY = "12345678901234567890123456789012"
     private const val BACKEND_URL = "https://backend.rdbt.top"
     private const val VIRTUAL_MODULE_PREFIX = "V5"
     private const val ENTRY_POINT = "loader"
@@ -40,6 +39,7 @@ object SecureLoader {
     @Volatile private var rootMetadata: ModuleMetadata? = null
 
     private var heartbeatThread: Thread? = null
+    private val cachedHwid by lazy { HWID.generateHWID() }
 
     fun run() {
         onMixinPlugin()
@@ -111,17 +111,145 @@ object SecureLoader {
 
     private fun ensureAuthenticatedSession() {
         if (jwtToken != null && sessionReleaseChannel != null) return
-        if (jwtToken != null && sessionReleaseChannel == null) {
-            sessionReleaseChannel = fetchAndValidateReleaseChannel(jwtToken!!)
+        if (tryHwidLogin()) {
+            println("[V5] Auto-login successful!")
             return
         }
 
-        println("[V5] Game loading paused for authentication.")
+        println("[V5] Auto-login failed. Game loading paused for authentication.")
         authenticate()
 
         val token = jwtToken ?: exitProcess(0)
         sessionReleaseChannel = fetchAndValidateReleaseChannel(token)
-        println("[V5] Authenticated. Welcome to V5!")
+
+        println("[V5] Authenticated.")
+        bindHwid(token)
+        println("[V5] Welcome to V5!")
+    }
+
+    private fun readResponseText(connection: HttpURLConnection): String {
+        return try {
+            val stream = if (connection.responseCode in 200..299) {
+                connection.inputStream
+            } else {
+                connection.errorStream
+            }
+            stream?.bufferedReader()?.use { it.readText() } ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    private fun parseJsonObjectOrNull(text: String): kotlinx.serialization.json.JsonObject? {
+        if (text.isBlank()) return null
+        return try {
+            CTJS.json.parseToJsonElement(text).jsonObject
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun tryHwidLogin(): Boolean {
+        try {
+            val url = URL("$BACKEND_URL/api/auth/login-hwid")
+            val connection = (url.openConnection() as HttpURLConnection).apply {
+                requestMethod = "POST"
+                setRequestProperty("Content-Type", "application/json")
+                setRequestProperty("User-Agent", "V5Loader/1.1")
+                doOutput = true
+                connectTimeout = 10000
+                readTimeout = 15000
+            }
+
+            val jsonBody = "{\"hwid\": \"$cachedHwid\"}"
+            connection.outputStream.use { it.write(jsonBody.toByteArray(StandardCharsets.UTF_8)) }
+
+            val code = connection.responseCode
+            val responseText = readResponseText(connection)
+            val json = parseJsonObjectOrNull(responseText)
+            val backendError = json?.get("error")?.jsonPrimitive?.contentOrNull
+                ?: json?.get("reason")?.jsonPrimitive?.contentOrNull
+
+            if (code == 200) {
+                if (json?.get("success")?.jsonPrimitive?.booleanOrNull == true) {
+                    jwtToken = json["token"]?.jsonPrimitive?.contentOrNull
+                    sessionReleaseChannel = json["channel"]?.jsonPrimitive?.contentOrNull
+                    return jwtToken != null && sessionReleaseChannel != null
+                }
+                return false
+            }
+
+            when (backendError) {
+                "HWID_NOT_FOUND" -> return false // user not bound yet
+                "HWID_CONFLICT" -> {
+                    println("[V5] This HWID is linked to multiple accounts. Contact support.")
+                    exitProcess(0)
+                }
+                "BANNED" -> {
+                    println("[V5] Access denied: you are banned.")
+                    exitProcess(0)
+                }
+                "ACCESS_DENIED" -> {
+                    println("[V5] Access denied: account has no V5 access.")
+                    exitProcess(0)
+                }
+                else -> {
+                    println("[V5] Auto-login failed (code=$code, error=${backendError ?: "unknown"}).")
+                    return false
+                }
+            }
+        } catch (e: Exception) {
+            println("[V5] Auto-login error: ${e.message}")
+        }
+        return false
+    }
+
+
+    private fun bindHwid(token: String) {
+        try {
+            val url = URL("$BACKEND_URL/api/auth/bind-hwid")
+            val connection = (url.openConnection() as HttpURLConnection).apply {
+                requestMethod = "POST"
+                setRequestProperty("Authorization", "Bearer $token")
+                setRequestProperty("Content-Type", "application/json")
+                setRequestProperty("User-Agent", "V5Loader/1.1")
+                doOutput = true
+                connectTimeout = 10000
+                readTimeout = 15000
+            }
+
+            val jsonBody = "{\"hwid\": \"$cachedHwid\"}"
+            connection.outputStream.use { it.write(jsonBody.toByteArray(StandardCharsets.UTF_8)) }
+
+            val code = connection.responseCode
+            if (code in 200..299) return
+
+            val responseText = readResponseText(connection)
+            val json = parseJsonObjectOrNull(responseText)
+            val backendError = json?.get("error")?.jsonPrimitive?.contentOrNull
+
+            when (backendError) {
+                "HWID_ALREADY_BOUND" -> {
+                    println("[V5] This HWID is already bound to a different account.")
+                    exitProcess(0)
+                }
+                "BANNED" -> {
+                    println("[V5] Access denied: banned account.")
+                    exitProcess(0)
+                }
+                "UNAUTHORIZED" -> {
+                    println("[V5] Session expired before HWID bind.")
+                    exitProcess(0)
+                }
+                else -> {
+                    println("[V5] Failed to bind HWID (code=$code, error=${backendError ?: "unknown"}).")
+                    exitProcess(0)
+                }
+            }
+        } catch (e: Exception) {
+            println("[V5] Failed to bind HWID: ${e.message}")
+            exitProcess(0)
+        }
     }
 
     private fun authenticate() {
@@ -382,12 +510,24 @@ object SecureLoader {
         val payload = json["payload"]?.jsonObject ?: throw IOException("Missing payload")
         val ivStr = payload["iv"]?.jsonPrimitive?.contentOrNull
         val contentStr = payload["content"]?.jsonPrimitive?.contentOrNull
+        val keyStr = payload["key"]?.jsonPrimitive?.contentOrNull
 
-        if (ivStr == null || contentStr == null) {
+        if (ivStr == null || contentStr == null || keyStr == null) {
             throw IOException("Invalid payload structure")
         }
 
-        return decryptToBytes(contentStr, ivStr)
+        return decryptToBytes(contentStr, ivStr, keyStr)
+    }
+
+    private fun decryptToBytes(encryptedBase64: String, ivBase64: String, keyStr: String): ByteArray {
+        val keyBytes = keyStr.toByteArray(StandardCharsets.UTF_8)
+        val key = SecretKeySpec(keyBytes, "AES")
+        val ivBytes = Base64.getDecoder().decode(ivBase64)
+        val iv = IvParameterSpec(ivBytes)
+        val cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING")
+        cipher.init(Cipher.DECRYPT_MODE, key, iv)
+        val encryptedBytes = Base64.getDecoder().decode(encryptedBase64)
+        return cipher.doFinal(encryptedBytes)
     }
 
     private fun processZip(zipData: ByteArray) {
@@ -476,17 +616,6 @@ object SecureLoader {
             }
             else -> ZipEntryResult.Skipped
         }
-    }
-
-    private fun decryptToBytes(encryptedBase64: String, ivBase64: String): ByteArray {
-        val keyBytes = SECRET_KEY.toByteArray(StandardCharsets.UTF_8)
-        val key = SecretKeySpec(keyBytes, "AES")
-        val ivBytes = Base64.getDecoder().decode(ivBase64)
-        val iv = IvParameterSpec(ivBytes)
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING")
-        cipher.init(Cipher.DECRYPT_MODE, key, iv)
-        val encryptedBytes = Base64.getDecoder().decode(encryptedBase64)
-        return cipher.doFinal(encryptedBytes)
     }
 
     fun reload() {

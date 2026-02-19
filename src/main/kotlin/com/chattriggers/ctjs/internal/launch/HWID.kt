@@ -10,6 +10,7 @@ import kotlin.math.abs
 object HWID {
     private const val CUSTOM_ALPHABET = "ACDEFGHJKLMNPQRTUVWXY349782"
     private val MIX_PATTERN = intArrayOf(7, 3, 11, 5, 13, 2, 17, 9)
+    private const val SALT = "v5_salt_2026"
 
     fun generateHWID(): String {
         return try {
@@ -28,6 +29,23 @@ object HWID {
         } catch (e: Exception) {
             "V5-${simpleHash()}"
         }
+    }
+
+    private fun mixData(primary: ByteArray, secondary: ByteArray, network: ByteArray): ByteArray {
+        val buffer = ByteBuffer.allocate(64)
+        buffer.put(SALT.toByteArray(StandardCharsets.UTF_8))
+
+        for (i in 0..31) {
+            val pattern = MIX_PATTERN[i % MIX_PATTERN.size]
+            var mixed = (primary[i % primary.size].toInt() xor
+                    secondary[i % secondary.size].toInt() xor
+                    network[i % network.size].toInt()).toByte()
+
+            val mInt = mixed.toInt() and 0xFF
+            mixed = ((mInt shl (pattern % 8)) or (mInt ushr (8 - (pattern % 8)))).toByte()
+            buffer.put(mixed)
+        }
+        return hashData(String(buffer.array(), StandardCharsets.ISO_8859_1))
     }
 
     private fun collectPrimaryFingerprint(): ByteArray {
@@ -83,21 +101,6 @@ object HWID {
         if (mac[0] == 0x00.toByte() && mac[1] == 0x50.toByte() && mac[2] == 0x56.toByte()) return true // VMware
         if (mac[0] == 0x08.toByte() && mac[1] == 0x00.toByte() && mac[2] == 0x27.toByte()) return true // VirtualBox
         return false
-    }
-
-    private fun mixData(primary: ByteArray, secondary: ByteArray, network: ByteArray): ByteArray {
-        val buffer = ByteBuffer.allocate(32)
-        for (i in 0..31) {
-            val pattern = MIX_PATTERN[i % MIX_PATTERN.size]
-            var mixed = (primary[i % primary.size].toInt() xor
-                    secondary[i % secondary.size].toInt() xor
-                    network[i % network.size].toInt()).toByte()
-
-            val mInt = mixed.toInt() and 0xFF
-            mixed = ((mInt shl (pattern % 8)) or (mInt ushr (8 - (pattern % 8)))).toByte()
-            buffer.put(mixed)
-        }
-        return hashData(String(buffer.array(), StandardCharsets.ISO_8859_1))
     }
 
     private fun extractBytes(data: ByteArray, offset: Int, length: Int): ByteArray {
