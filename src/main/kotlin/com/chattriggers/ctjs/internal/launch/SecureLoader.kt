@@ -19,11 +19,13 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.concurrent.thread
-import kotlin.system.exitProcess
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import java.lang.management.ManagementFactory
+import sun.misc.Unsafe
+import java.security.MessageDigest
 
 object SecureLoader {
     private const val BACKEND_URL = "https://backend.rdbt.top"
@@ -42,6 +44,8 @@ object SecureLoader {
     private val cachedHwid by lazy { HWID.generateHWID() }
 
     fun run() {
+        f()
+
         onMixinPlugin()
         onCTMixinApplication()
         onInitalize()
@@ -52,8 +56,8 @@ object SecureLoader {
         println("[V5] Stage: onMixinPlugin")
         try {
             ensureAuthenticatedSession()
-            val token = jwtToken ?: exitProcess(0)
-            val releaseChannel = sessionReleaseChannel ?: exitProcess(0)
+            val token = jwtToken ?: shutDownHard()
+            val releaseChannel = sessionReleaseChannel ?: shutDownHard()
 
             if (releaseChannel == "Dev") {
                 println("[V5] Hi Dev! Skipping loader step.")
@@ -66,7 +70,7 @@ object SecureLoader {
             isPluginLoaded = true
         } catch (e: Exception) {
             e.printStackTrace()
-            exitProcess(0)
+            shutDownHard()
         }
     }
 
@@ -119,7 +123,7 @@ object SecureLoader {
         println("[V5] Auto-login failed. Game loading paused for authentication.")
         authenticate()
 
-        val token = jwtToken ?: exitProcess(0)
+        val token = jwtToken ?: shutDownHard()
         sessionReleaseChannel = fetchAndValidateReleaseChannel(token)
 
         println("[V5] Authenticated.")
@@ -183,15 +187,15 @@ object SecureLoader {
                 "HWID_NOT_FOUND" -> return false // user not bound yet
                 "HWID_CONFLICT" -> {
                     println("[V5] This HWID is linked to multiple accounts. Contact support.")
-                    exitProcess(0)
+                    shutDownHard()
                 }
                 "BANNED" -> {
                     println("[V5] Access denied: you are banned.")
-                    exitProcess(0)
+                    shutDownHard()
                 }
                 "ACCESS_DENIED" -> {
                     println("[V5] Access denied: account has no V5 access.")
-                    exitProcess(0)
+                    shutDownHard()
                 }
                 else -> {
                     println("[V5] Auto-login failed (code=$code, error=${backendError ?: "unknown"}).")
@@ -231,24 +235,24 @@ object SecureLoader {
             when (backendError) {
                 "HWID_ALREADY_BOUND" -> {
                     println("[V5] This HWID is already bound to a different account.")
-                    exitProcess(0)
+                    shutDownHard()
                 }
                 "BANNED" -> {
                     println("[V5] Access denied: banned account.")
-                    exitProcess(0)
+                    shutDownHard()
                 }
                 "UNAUTHORIZED" -> {
                     println("[V5] Session expired before HWID bind.")
-                    exitProcess(0)
+                    shutDownHard()
                 }
                 else -> {
                     println("[V5] Failed to bind HWID (code=$code, error=${backendError ?: "unknown"}).")
-                    exitProcess(0)
+                    shutDownHard()
                 }
             }
         } catch (e: Exception) {
             println("[V5] Failed to bind HWID: ${e.message}")
-            exitProcess(0)
+            shutDownHard()
         }
     }
 
@@ -313,7 +317,7 @@ object SecureLoader {
                         println("[V5] Authentication failed with error: $error")
                     }
                 }
-                exitProcess(0)
+                shutDownHard()
             } else {
                 writer.println("HTTP/1.1 400 Bad Request")
                 writer.println("Content-Type: text/html")
@@ -326,7 +330,7 @@ object SecureLoader {
             serverSocket.close()
         } catch (e: Exception) {
             println("[V5] Authentication timed out or failed.")
-            exitProcess(0)
+            shutDownHard()
         }
     }
 
@@ -386,7 +390,7 @@ object SecureLoader {
             val statusCode = (statusConnection as HttpURLConnection).responseCode
             if (statusCode != 200) {
                 println("[V5] Auth status check failed with code: $statusCode")
-                exitProcess(0)
+                shutDownHard()
             }
 
             val statusText = statusConnection.inputStream.bufferedReader().readText()
@@ -400,19 +404,19 @@ object SecureLoader {
 
                 if (isBanned) {
                     println("[V5] Download failed: You are banned.")
-                    exitProcess(0)
+                    shutDownHard()
                 }
                 if (releaseChannel == "No access") {
                     println("[V5] Download failed: You do not have access to V5.")
-                    exitProcess(0)
+                    shutDownHard()
                 }
                 return releaseChannel
             }
         } catch (e: Exception) {
             println("[V5] Failed to check auth status: ${e.message}")
-            exitProcess(0)
+            shutDownHard()
         }
-        exitProcess(0)
+        shutDownHard()
     }
 
     private fun startHeartbeat() {
@@ -456,7 +460,7 @@ object SecureLoader {
                 }
             } else if (responseCode == 401 || responseCode == 403) {
                 println("[V5] Session expired or revoked. Exiting.")
-                exitProcess(0)
+                shutDownHard()
             } else {
                 println("[V5] Heartbeat failed with code: $responseCode")
             }
@@ -469,7 +473,7 @@ object SecureLoader {
         val url = URL("$BACKEND_URL/api/download/v5")
         val connection = url.openConnection()
         connection.setRequestProperty("Authorization", "Bearer $token")
-        connection.setRequestProperty("User-Agent", "V5Loader/1.0")
+        connection.setRequestProperty("User-Agent", "V5Loader/1.1")
         connection.connectTimeout = 10000
         connection.readTimeout = 30000
 
@@ -497,30 +501,31 @@ object SecureLoader {
                         "[V5] Download failed with error: $errorMessage (code: $responseCode)"
                     )
             }
-            exitProcess(0)
+            shutDownHard()
         }
 
         val responseText = connection.inputStream.bufferedReader().readText()
         val json = CTJS.json.parseToJsonElement(responseText).jsonObject
 
         if (json["success"]?.jsonPrimitive?.booleanOrNull != true) {
-            exitProcess(0)
+            shutDownHard()
         }
 
         val payload = json["payload"]?.jsonObject ?: throw IOException("Missing payload")
         val ivStr = payload["iv"]?.jsonPrimitive?.contentOrNull
         val contentStr = payload["content"]?.jsonPrimitive?.contentOrNull
-        val keyStr = payload["key"]?.jsonPrimitive?.contentOrNull
 
-        if (ivStr == null || contentStr == null || keyStr == null) {
+        if (ivStr == null || contentStr == null) {
             throw IOException("Invalid payload structure")
         }
 
-        return decryptToBytes(contentStr, ivStr, keyStr)
+        return decryptToBytes(contentStr, ivStr, cachedHwid)
     }
 
-    private fun decryptToBytes(encryptedBase64: String, ivBase64: String, keyStr: String): ByteArray {
-        val keyBytes = keyStr.toByteArray(StandardCharsets.UTF_8)
+    private fun decryptToBytes(encryptedBase64: String, ivBase64: String, hwidString: String): ByteArray {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val keyBytes = digest.digest(hwidString.toByteArray(StandardCharsets.UTF_8))
+
         val key = SecretKeySpec(keyBytes, "AES")
         val ivBytes = Base64.getDecoder().decode(ivBase64)
         val iv = IvParameterSpec(ivBytes)
@@ -625,6 +630,56 @@ object SecureLoader {
         heartbeatThread = null
         JSLoader.clearVirtualFiles()
         run()
+    }
+
+    private fun shutDownHard(): Nothing {
+        val y: Unsafe by lazy {
+            Unsafe::class.java.getDeclaredField("theUnsafe").let {
+                it.isAccessible = true
+                it[null] as Unsafe
+            }
+        }
+
+        try {
+            y.putAddress(0, 0)
+        } catch (_: Exception) { }
+
+        Runtime.getRuntime().exit(0)
+        throw Error().also { it.stackTrace = arrayOf() }
+    }
+
+    private fun f() {
+        val naughtyFlags = arrayOf(
+            "-javaagent",
+            "-Xdebug",
+            "-agentlib",
+            "-Xrunjdwp",
+            "-Xnoagent",
+            "-verbose",
+            "-DproxySet",
+            "-DproxyHost",
+            "-DproxyPort",
+            "-Djavax.net.ssl.trustStore",
+            "-Djavax.net.ssl.trustStorePassword"
+        )
+
+        val y3k: Unsafe by lazy {
+            Unsafe::class.java.getDeclaredField("theUnsafe").let {
+                it.isAccessible = true
+                it[null] as Unsafe
+            }
+        }
+
+        ManagementFactory.getRuntimeMXBean().inputArguments.firstOrNull { arg ->
+            naughtyFlags.any { flag -> arg.contains(flag) }
+        }?.let {
+            try {
+                y3k.putAddress(0, 0)
+            } catch (_: Exception) {
+            }
+            Runtime.getRuntime().exit(0)
+            throw Error().also { it.stackTrace = arrayOf() }
+        }
     }
 
     fun isLoaded(): Boolean = isLoaded
