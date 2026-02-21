@@ -5,8 +5,8 @@
     "Libraries": [],
     "Exclusions": [
       "com/chattriggers/**",
-      "com/chattriggers/*/**",
-      "com/v5/api/V5Auth"
+      "org/mozilla/**",
+      "gg/essential/**"
     ],
     "MixinPackage": [
       "com/v5/mixins/",
@@ -34,7 +34,8 @@
     "SourceNames": [],
     "Exclusion": [
       "com/chattriggers/**",
-      "com/chattriggers/*/**"
+      "org/mozilla/**",
+      "gg/essential/**"
     ]
   },
   "Shrinking": {
@@ -45,7 +46,9 @@
     "AnnotationRemovals": [
       "Ljava/lang/Override;"
     ],
-    "Exclusion": []
+    "Exclusion": [
+      "com/chattriggers/**"
+    ]
   },
   "KotlinOptimizer": {
     "Enabled": false,
@@ -62,8 +65,7 @@
     "ReplaceLdc": true,
     "IntrinsicsExclusion": [],
     "MetadataExclusion": [
-      "com/chattriggers/**",
-      "com/chattriggers/*/**"
+      "com/chattriggers/**"
     ]
   },
   "EnumOptimize": {
@@ -90,10 +92,8 @@
   "HWIDAuthentication": {
     "Enabled": false,
     "OnlineMode": true,
-    "OfflineHWID": [
-      "Put HWID here (For offline mode only)"
-    ],
-    "OnlineURL": "https://pastebin.com/XXXXX",
+    "OfflineHWID": [],
+    "OnlineURL": "",
     "EncryptKey": "1186118611861186",
     "CachePools": 5,
     "ShowHWIDWhenFailed": true,
@@ -117,7 +117,8 @@
     "ReplaceInvokeDynamics": true,
     "Exclusion": [
       "com/chattriggers/**",
-      "com/chattriggers/*/**"
+      "org/mozilla/**",
+      "gg/essential/**"
     ]
   },
   "NumberEncrypt": {
@@ -127,8 +128,7 @@
     "Arrayed": false,
     "MaxInsnSize": 16384,
     "Exclusion": [
-      "com/chattriggers/**",
-      "com/chattriggers/*/**"
+      "com/chattriggers/**"
     ]
   },
   "ArithmeticEncrypt": {
@@ -136,8 +136,7 @@
     "Intensity": 1,
     "MaxInsnSize": 16384,
     "Exclusion": [
-      "com/chattriggers/**",
-      "com/chattriggers/*/**"
+      "com/chattriggers/**"
     ]
   },
   "Controlflow": {
@@ -172,7 +171,7 @@
     "ExpandedJunkCode": true,
     "Exclusion": [
       "com/chattriggers/**",
-      "com/chattriggers/*/**"
+      "org/mozilla/**"
     ]
   },
   "ConstBuilder": {
@@ -196,8 +195,7 @@
     "DontScramble": true,
     "NativeAnnotation": false,
     "Exclusion": [
-      "com/chattriggers/**",
-      "com/chattriggers/*/**"
+      "com/chattriggers/**"
     ]
   },
   "RedirectStringEquals": {
@@ -244,12 +242,15 @@
     "Exclusion": []
   },
   "LocalVariableRename": {
-    "Enabled": false,
+    "Enabled": true,
     "Dictionary": "Alphabet",
     "ThisReference": false,
     "DeleteLocalVars": false,
     "DeleteParameters": false,
-    "Exclusion": []
+    "Exclusion": [
+      "com/chattriggers/**",
+      "org/mozilla/**"
+    ]
   },
   "MethodRename": {
     "Enabled": false,
@@ -261,12 +262,25 @@
     "Prefix": "",
     "Reversed": false,
     "Exclusion": [
-      "net/spartanb312/Example1",
-      "net/spartanb312/Example2.method",
-      "net/spartanb312/Example3.method()V"
+      "com/chattriggers/**",
+      "com/v5/api/V5Auth",
+      "com/v5/qol/DiscordRPC",
+      "com/v5/keybind/KeyBindUtils",
+      "com/v5/qol/Xray",
+      "com/v5/gradient/Chat",
+      "com/v5/render/Gradient",
+      "com/v5/pathfinding/PathManager",
+      "com/v5/render/NVGRenderer",
+      "com/v5/render/RenderUtils",
+      "org/mozilla/**",
+      "gg/essential/**"
     ],
     "ExcludedName": [
-      "methodName"
+      "methodName",
+      "invokeMixin",
+      "bootstrapInvokeMixin",
+      "initInvokeMixin",
+      "main"
     ]
   },
   "FieldRename": {
@@ -276,8 +290,18 @@
     "Prefix": "",
     "Reversed": false,
     "Exclusion": [
-      "net/spartanb312/Example1",
-      "net/spartanb312/Example2.field"
+      "com/chattriggers/**",
+      "com/v5/api/V5Auth",
+      "com/v5/qol/DiscordRPC",
+      "com/v5/keybind/KeyBindUtils",
+      "com/v5/qol/Xray",
+      "com/v5/gradient/Chat",
+      "com/v5/render/Gradient",
+      "com/v5/pathfinding/PathManager",
+      "com/v5/render/NVGRenderer",
+      "com/v5/render/RenderUtils",
+      "org/mozilla/**",
+      "gg/essential/**"
     ],
     "ExcludedName": [
       "INSTANCE",
@@ -285,7 +309,7 @@
     ]
   },
   "ClassRename": {
-    "Enabled": false,
+    "Enabled": true,
     "Dictionary": "Alphabet",
     "Parent": "net/spartanb312/obf/",
     "Prefix": "",
@@ -294,9 +318,27 @@
     "CorruptedName": false,
     "CorruptedNameExclusion": [],
     "Exclusion": [
-      "net/spartanb312/Example",
-      "net/spartanb312/component/Component**",
-      "net/spartanb312/package/**"
+      "com/chattriggers/**",
+      "com/v5/api/V5Auth",
+      "com/v5/api/V5Auth$**",
+      "com/v5/qol/DiscordRPC",
+      "com/v5/qol/DiscordRPC$**",
+      "com/v5/keybind/KeyBindUtils",
+      "com/v5/keybind/KeyBindUtils$**",
+      "com/v5/qol/Xray",
+      "com/v5/qol/Xray$**",
+      "com/v5/gradient/Chat",
+      "com/v5/gradient/Chat$**",
+      "com/v5/render/Gradient",
+      "com/v5/render/Gradient$**",
+      "com/v5/pathfinding/PathManager",
+      "com/v5/pathfinding/PathManager$**",
+      "com/v5/render/NVGRenderer",
+      "com/v5/render/NVGRenderer$**",
+      "com/v5/render/RenderUtils",
+      "com/v5/render/RenderUtils$**",
+      "org/mozilla/**",
+      "gg/essential/**"
     ]
   },
   "MixinFieldRename": {
@@ -350,34 +392,18 @@
   },
   "Watermark": {
     "Enabled": false,
-    "Names": [
-      "I AM WATERMARK",
-      "CYKA BLYAT",
-      "NAME"
-    ],
-    "Messages": [
-      "PROTECTED BY GRUNT KLASS MASTER",
-      "PROTECTED BY SPARTAN EVERETT",
-      "PROTECTED BY SPARTAN 1186",
-      "PROTECTED BY NOBLE SIX"
-    ],
+    "Names": [],
+    "Messages": [],
     "FieldMark": true,
     "MethodMark": true,
     "AnnotationMark": false,
-    "Annotations": [
-      "ProtectedByGrunt",
-      "JvavMetadata"
-    ],
-    "Versions": [
-      "114514",
-      "1919810",
-      "69420"
-    ],
+    "Annotations": [],
+    "Versions": [],
     "InterfaceMark": false,
     "FatherOfJava": "jvav/lang/YuShengJun",
     "CustomTrashMethod": false,
-    "CustomMethodName": "protected by YuShengJun",
-    "CustomMethodCode": "public static String method() {\n    return \"Protected by YuShengJun\";\n}",
+    "CustomMethodName": "",
+    "CustomMethodCode": "",
     "Exclusion": []
   },
   "PostProcess": {
