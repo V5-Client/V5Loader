@@ -107,26 +107,30 @@ object SecureLoader {
     fun onInitialize() {
         if (isLoaded) return
         println("[V5] Stage: onInitialize")
-        val metadata = rootMetadata ?: return
+        val metadata = rootMetadata
 
-        metadata.requires?.forEach { dependency ->
-            if (dependency.isNotBlank()) {
-                try {
-                    ModuleManager.importModule(dependency, VIRTUAL_MODULE_PREFIX)
-                } catch (e: Exception) {}
-            }
-        }
-
-        Client.scheduleTask {
-            try {
-                val entryPath = "$VIRTUAL_MODULE_PREFIX/$ENTRY_POINT"
-                if (JSLoader.hasVirtualFile(entryPath) || JSLoader.hasVirtualFile("$entryPath.js")
-                ) {
-                    JSLoader.loadVirtualModule(entryPath)
+        if (metadata != null) {
+            metadata.requires?.forEach { dependency ->
+                if (dependency.isNotBlank()) {
+                    try {
+                        ModuleManager.importModule(dependency, VIRTUAL_MODULE_PREFIX)
+                    } catch (e: Exception) {}
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
+
+            Client.scheduleTask {
+                try {
+                    val entryPath = "$VIRTUAL_MODULE_PREFIX/$ENTRY_POINT"
+                    if (JSLoader.hasVirtualFile(entryPath) || JSLoader.hasVirtualFile("$entryPath.js")
+                    ) {
+                        JSLoader.loadVirtualModule(entryPath)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        } else if (sessionReleaseChannel == "Dev") {
+            println("[V5] Dev!")
         }
 
         isLoaded = true
