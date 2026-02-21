@@ -5,11 +5,12 @@
     "Libraries": [],
     "Exclusions": [
       "com/chattriggers/**",
-      "com/chattriggers/*/**"
+      "com/chattriggers/*/**",
+      "com/v5/api/V5Auth"
     ],
     "MixinPackage": [
       "com/v5/mixins/",
-      "dev/quiteboring/swift/mixins",
+      "com/v5/swift/mixins",
       "com/chattriggers/ctjs/internal/mixins/"
     ],
     "DumpMappings": true,
