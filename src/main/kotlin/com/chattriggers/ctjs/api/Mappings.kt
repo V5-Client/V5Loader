@@ -31,7 +31,11 @@ object Mappings {
 
     internal fun initialize() {
         val container = FabricLoader.getInstance().getModContainer(CTJS.MOD_ID)
-        val mappingVersion = container.get().metadata.getCustomValue("${CTJS.MOD_ID}:yarn-mappings").asString
+        val mappingVersion = if (container.isPresent) {
+            container.get().metadata.getCustomValue("${CTJS.MOD_ID}:yarn-mappings").asString
+        } else {
+            "1.21.10+build.1"
+        }
         val jarName = "yarn-$mappingVersion-v2.jar".urlEncode()
 
         val jarBytes = URI("$YARN_MAPPINGS_URL_PREFIX${mappingVersion.urlEncode()}/$jarName").toURL().readBytes()
