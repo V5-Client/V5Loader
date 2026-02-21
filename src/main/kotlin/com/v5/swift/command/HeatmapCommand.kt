@@ -1,9 +1,9 @@
 package com.v5.swift.command
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
+import com.v5.render.RenderUtils
 import com.v5.swift.event.Context
 import com.v5.swift.finder.movement.CalculationContext
-import com.v5.swift.util.render.drawBox
 import java.awt.Color
 import kotlin.math.abs
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -175,9 +175,11 @@ object HeatmapCommand {
   fun onRender(ctx: Context) {
     boxes?.let {
       it.forEach { (box, color) ->
-        ctx.drawBox(box, color)
+        RenderUtils.drawBox(box, color.toRenderColor())
       }
     }
   }
+
+  private fun Color.toRenderColor() = RenderUtils.Color(red, green, blue, alpha)
 
 }

@@ -10,7 +10,6 @@
     ],
     "MixinPackage": [
       "com/v5/mixins/",
-      "com/v5/swift/mixins",
       "com/chattriggers/ctjs/internal/mixins/"
     ],
     "DumpMappings": true,

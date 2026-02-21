@@ -1,4 +1,4 @@
-package com.v5.swift.mixins;
+package com.v5.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;

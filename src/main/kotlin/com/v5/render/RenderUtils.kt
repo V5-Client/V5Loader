@@ -13,6 +13,7 @@ import net.minecraft.client.render.VertexRendering
 import net.minecraft.client.util.BufferAllocator
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.Entity
+import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 import org.joml.Quaternionf
 import org.joml.Vector3f
@@ -300,9 +301,27 @@ object RenderUtils {
     }
 
     @JvmStatic
+    fun drawFilledBox(box: Box, color: Color, depth: Boolean = false) {
+        if (boxCount >= MAX_BOXES) return
+        addBox(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, color, true, depth, 10f)
+    }
+
+    @JvmStatic
     fun drawWireFrameBox(pos: Vec3d, color: Color, thickness: Float = 5f, depth: Boolean = false) {
         if (boxCount >= MAX_BOXES) return
         addBox(pos.x, pos.y, pos.z, pos.x + 1, pos.y + 1, pos.z + 1, color, false, depth, thickness)
+    }
+
+    @JvmStatic
+    fun drawWireFrameBox(box: Box, color: Color, thickness: Float = 5f, depth: Boolean = false) {
+        if (boxCount >= MAX_BOXES) return
+        addBox(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, color, false, depth, thickness)
+    }
+
+    @JvmStatic
+    fun drawBox(box: Box, color: Color, thickness: Float = 2f, depth: Boolean = false) {
+        if (boxCount < MAX_BOXES) addBox(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, color, true, depth, 10f)
+        if (boxCount < MAX_BOXES) addBox(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, color, false, depth, thickness)
     }
 
     @JvmStatic

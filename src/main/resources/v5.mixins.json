@@ -18,7 +18,12 @@
         "GameRendererMixin",
         "FirmamentModAnnouncerMixin",
         "DrawContextCapture",
-        "GlStateManagerMixin"
+        "GlStateManagerMixin",
+        "FrustumInvoker",
+        "WorldRendererMixin"
+    ],
+    "mixins": [
+        "ClientConnectionMixin"
     ],
     "injectors": {
         "defaultRequire": 1

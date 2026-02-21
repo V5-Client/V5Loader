@@ -12,8 +12,7 @@ import com.v5.swift.finder.goal.Goal
 import com.v5.swift.finder.goal.GoalFly
 import com.v5.swift.finder.movement.CalculationContext
 import com.v5.swift.util.PlayerUtils
-import com.v5.swift.util.render.drawBox
-import com.v5.swift.util.render.drawLine
+import com.v5.render.RenderUtils
 import java.awt.Color
 import java.util.concurrent.Future
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -171,7 +170,7 @@ object PathCommand {
           pos.x + 0.35, pos.y + 0.35, pos.z + 0.35,
           pos.x + 0.65, pos.y + 0.65, pos.z + 0.65
         )
-        ctx.drawBox(box, color = green)
+        RenderUtils.drawBox(box, green.toRenderColor())
       }
     }
 
@@ -179,7 +178,7 @@ object PathCommand {
       val center = Vec3d(pos.x + 0.5, pos.y.toDouble(), pos.z + 0.5)
 
       prev?.let { vec ->
-        ctx.drawLine(vec, center, color = Color(255, 132, 94), thickness = 2F)
+        RenderUtils.drawLine(vec, center, Color(255, 132, 94).toRenderColor(), thickness = 2F)
       }
 
       val box = Box(
@@ -187,9 +186,11 @@ object PathCommand {
         pos.x + 1.0, pos.y - 1.0, pos.z + 1.0
       )
 
-      ctx.drawBox(box, color = Color(255, 132, 94))
+      RenderUtils.drawBox(box, Color(255, 132, 94).toRenderColor())
       prev = center
     }
   }
+
+  private fun Color.toRenderColor() = RenderUtils.Color(red, green, blue, alpha)
 
 }

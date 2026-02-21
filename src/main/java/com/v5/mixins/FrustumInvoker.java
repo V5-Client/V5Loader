@@ -1,4 +1,4 @@
-package com.v5.swift.mixins;
+package com.v5.mixins;
 
 import net.minecraft.client.render.Frustum;
 import org.spongepowered.asm.mixin.Mixin;

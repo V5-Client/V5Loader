@@ -1,4 +1,4 @@
-package com.v5.swift.mixins;
+package com.v5.mixins;
 
 import com.v5.swift.event.PacketEvent;
 import net.minecraft.network.ClientConnection;

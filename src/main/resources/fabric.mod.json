@@ -27,7 +27,7 @@
             "com.chattriggers.ctjs.internal.compat.ModMenuEntry"
         ]
     },
-    "mixins": ["ctjs.mixins.json", "v5.mixins.json", "swift.mixins.json"],
+    "mixins": ["ctjs.mixins.json", "v5.mixins.json"],
     "depends": {
         "fabricloader": ">=$loader_version",
         "fabric-api": ">=$fabric_api_version",
