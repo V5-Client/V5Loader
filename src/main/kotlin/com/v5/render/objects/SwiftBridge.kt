@@ -1,7 +1,7 @@
 package com.v5.render.objects
 
-import dev.quiteboring.swift.util.render.Layers as SwiftLayers
-import dev.quiteboring.swift.util.render.Pipelines as SwiftPipelines
+import com.v5.swift.util.render.Layers as SwiftLayers
+import com.v5.swift.util.render.Pipelines as SwiftPipelines
 
 object RenderLayers {
     @JvmField val LINE_LIST = SwiftLayers.LINE_LIST

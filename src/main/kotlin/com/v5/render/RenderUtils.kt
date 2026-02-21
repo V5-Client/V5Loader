@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.v5.render.helper.FrustumHolder
 import com.v5.render.helper.FrustumUtils
 import com.v5.render.objects.RenderLayers
-import dev.quiteboring.swift.event.WorldRenderEvent
+import com.v5.swift.event.WorldRenderEvent
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.render.Frustum
@@ -13,7 +13,6 @@ import net.minecraft.client.render.VertexRendering
 import net.minecraft.client.util.BufferAllocator
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.Entity
-import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 import org.joml.Quaternionf
 import org.joml.Vector3f

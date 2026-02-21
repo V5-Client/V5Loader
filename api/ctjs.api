@@ -2978,6 +2978,13 @@ public final class com/v5/Entrypoint : net/fabricmc/api/ClientModInitializer {
 	public fun onInitializeClient ()V
 }
 
+public final class com/v5/api/V5Auth {
+	public static final field INSTANCE Lcom/v5/api/V5Auth;
+	public final fun getInternalToken ()Ljava/lang/String;
+	public static final fun getJwtToken ()Ljava/lang/String;
+	public final fun setInternalToken (Ljava/lang/String;)V
+}
+
 public final class com/v5/gradient/Chat {
 	public static final field INSTANCE Lcom/v5/gradient/Chat;
 	public final fun buildGradient (Ljava/lang/String;II)Lnet/minecraft/text/MutableText;
@@ -3000,6 +3007,21 @@ public final class com/v5/keybind/KeyBindUtils$WrappedKeyBind {
 	public final fun onKeyPress (Ljava/lang/Runnable;)Lcom/v5/keybind/KeyBindUtils$WrappedKeyBind;
 	public final fun registerToGame$ctjs ()V
 	public final fun update$ctjs ()V
+}
+
+public final class com/v5/launch/HWID {
+	public static final field INSTANCE Lcom/v5/launch/HWID;
+	public final fun generateHWID ()Ljava/lang/String;
+}
+
+public final class com/v5/launch/SecureLoader {
+	public static final field INSTANCE Lcom/v5/launch/SecureLoader;
+	public final fun isLoaded ()Z
+	public final fun onCTMixinApplication ()V
+	public final fun onInitialize ()V
+	public final fun onMixinPlugin ()V
+	public final fun reload ()V
+	public final fun run ()V
 }
 
 public class com/v5/mixins/AbstractBlockStateMixin {
@@ -3420,21 +3442,21 @@ public final class com/v5/screen/WelcomeScreen$Companion {
 	public final fun open ()V
 }
 
-public final class dev/quiteboring/swift/Swift : net/fabricmc/api/ClientModInitializer {
-	public static final field Companion Ldev/quiteboring/swift/Swift$Companion;
+public final class com/v5/swift/Swift : net/fabricmc/api/ClientModInitializer {
+	public static final field Companion Lcom/v5/swift/Swift$Companion;
 	public static final field executor Ljava/util/concurrent/ExecutorService;
-	public static final field settings Ldev/quiteboring/swift/util/setting/Settings;
+	public static final field settings Lcom/v5/swift/util/setting/Settings;
 	public fun <init> ()V
 	public fun onInitializeClient ()V
 }
 
-public final class dev/quiteboring/swift/Swift$Companion {
+public final class com/v5/swift/Swift$Companion {
 }
 
-public final class dev/quiteboring/swift/cache/CachedChunk {
+public final class com/v5/swift/cache/CachedChunk {
 	public static final field AIR Lnet/minecraft/block/BlockState;
 	public static final field AIR_ID I
-	public static final field Companion Ldev/quiteboring/swift/cache/CachedChunk$Companion;
+	public static final field Companion Lcom/v5/swift/cache/CachedChunk$Companion;
 	public final field maxY I
 	public final field minY I
 	public field ready Z
@@ -3450,15 +3472,15 @@ public final class dev/quiteboring/swift/cache/CachedChunk {
 	public final fun setSection (I[I)V
 }
 
-public final class dev/quiteboring/swift/cache/CachedChunk$Companion {
+public final class com/v5/swift/cache/CachedChunk$Companion {
 }
 
-public final class dev/quiteboring/swift/cache/CachedWorld {
-	public static final field INSTANCE Ldev/quiteboring/swift/cache/CachedWorld;
+public final class com/v5/swift/cache/CachedWorld {
+	public static final field INSTANCE Lcom/v5/swift/cache/CachedWorld;
 	public final fun clear ()V
 	public static final fun getBlockState (III)Lnet/minecraft/block/BlockState;
 	public final fun getCacheStats ()Ljava/lang/String;
-	public static final fun getChunk (II)Ldev/quiteboring/swift/cache/CachedChunk;
+	public static final fun getChunk (II)Lcom/v5/swift/cache/CachedChunk;
 	public final fun load (Ljava/lang/String;)V
 	public final fun onPacketReceive (Lnet/minecraft/network/packet/Packet;)V
 	public final fun processPendingChunks ()V
@@ -3466,28 +3488,28 @@ public final class dev/quiteboring/swift/cache/CachedWorld {
 	public final fun waitForLoad ()V
 }
 
-public final class dev/quiteboring/swift/command/HeatmapCommand {
-	public static final field INSTANCE Ldev/quiteboring/swift/command/HeatmapCommand;
+public final class com/v5/swift/command/HeatmapCommand {
+	public static final field INSTANCE Lcom/v5/swift/command/HeatmapCommand;
 	public final fun dispatch ()V
-	public final fun onRender (Ldev/quiteboring/swift/event/Context;)V
+	public final fun onRender (Lcom/v5/swift/event/Context;)V
 }
 
-public final class dev/quiteboring/swift/command/HeatmapCommand$Mode : java/lang/Enum {
-	public static final field EDGE Ldev/quiteboring/swift/command/HeatmapCommand$Mode;
-	public static final field PENALTY Ldev/quiteboring/swift/command/HeatmapCommand$Mode;
-	public static final field WALL Ldev/quiteboring/swift/command/HeatmapCommand$Mode;
+public final class com/v5/swift/command/HeatmapCommand$Mode : java/lang/Enum {
+	public static final field EDGE Lcom/v5/swift/command/HeatmapCommand$Mode;
+	public static final field PENALTY Lcom/v5/swift/command/HeatmapCommand$Mode;
+	public static final field WALL Lcom/v5/swift/command/HeatmapCommand$Mode;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Ldev/quiteboring/swift/command/HeatmapCommand$Mode;
-	public static fun values ()[Ldev/quiteboring/swift/command/HeatmapCommand$Mode;
+	public static fun valueOf (Ljava/lang/String;)Lcom/v5/swift/command/HeatmapCommand$Mode;
+	public static fun values ()[Lcom/v5/swift/command/HeatmapCommand$Mode;
 }
 
-public final class dev/quiteboring/swift/command/PathCommand {
-	public static final field INSTANCE Ldev/quiteboring/swift/command/PathCommand;
+public final class com/v5/swift/command/PathCommand {
+	public static final field INSTANCE Lcom/v5/swift/command/PathCommand;
 	public final fun dispatch ()V
-	public final fun onRender (Ldev/quiteboring/swift/event/Context;)V
+	public final fun onRender (Lcom/v5/swift/event/Context;)V
 }
 
-public final class dev/quiteboring/swift/event/Context {
+public final class com/v5/swift/event/Context {
 	public field camera Lnet/minecraft/client/render/Camera;
 	public field consumers Lnet/minecraft/client/render/VertexConsumerProvider;
 	public field frustum Lnet/minecraft/client/render/Frustum;
@@ -3502,32 +3524,32 @@ public final class dev/quiteboring/swift/event/Context {
 	public final fun setMatrixStack (Lnet/minecraft/client/util/math/MatrixStack;)V
 }
 
-public final class dev/quiteboring/swift/event/PacketEvent {
-	public static final field INSTANCE Ldev/quiteboring/swift/event/PacketEvent;
+public final class com/v5/swift/event/PacketEvent {
+	public static final field INSTANCE Lcom/v5/swift/event/PacketEvent;
 	public static final field RECEIVE Lnet/fabricmc/fabric/api/event/Event;
 }
 
-public abstract interface class dev/quiteboring/swift/event/PacketEvent$ReceiveEvent {
+public abstract interface class com/v5/swift/event/PacketEvent$ReceiveEvent {
 	public abstract fun trigger (Lnet/minecraft/network/packet/Packet;)V
 }
 
-public final class dev/quiteboring/swift/event/WorldRenderEvent {
-	public static final field INSTANCE Ldev/quiteboring/swift/event/WorldRenderEvent;
+public final class com/v5/swift/event/WorldRenderEvent {
+	public static final field INSTANCE Lcom/v5/swift/event/WorldRenderEvent;
 	public static final field LAST Lnet/fabricmc/fabric/api/event/Event;
 	public static final field START Lnet/fabricmc/fabric/api/event/Event;
 }
 
-public abstract interface class dev/quiteboring/swift/event/WorldRenderEvent$LastEvent {
-	public abstract fun trigger (Ldev/quiteboring/swift/event/Context;)V
+public abstract interface class com/v5/swift/event/WorldRenderEvent$LastEvent {
+	public abstract fun trigger (Lcom/v5/swift/event/Context;)V
 }
 
-public abstract interface class dev/quiteboring/swift/event/WorldRenderEvent$StartEvent {
-	public abstract fun trigger (Ldev/quiteboring/swift/event/Context;)V
+public abstract interface class com/v5/swift/event/WorldRenderEvent$StartEvent {
+	public abstract fun trigger (Lcom/v5/swift/event/Context;)V
 }
 
-public final class dev/quiteboring/swift/finder/calculate/Path {
-	public fun <init> (Ldev/quiteboring/swift/finder/movement/CalculationContext;Ldev/quiteboring/swift/finder/calculate/PathNode;JIZ)V
-	public synthetic fun <init> (Ldev/quiteboring/swift/finder/movement/CalculationContext;Ldev/quiteboring/swift/finder/calculate/PathNode;JIZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class com/v5/swift/finder/calculate/Path {
+	public fun <init> (Lcom/v5/swift/finder/movement/CalculationContext;Lcom/v5/swift/finder/calculate/PathNode;JIZ)V
+	public synthetic fun <init> (Lcom/v5/swift/finder/movement/CalculationContext;Lcom/v5/swift/finder/calculate/PathNode;JIZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getKeyNodes ()Ljava/util/List;
 	public final fun getNanosPerNode ()D
 	public final fun getNodesExplored ()I
@@ -3535,46 +3557,46 @@ public final class dev/quiteboring/swift/finder/calculate/Path {
 	public final fun getTimeTaken ()J
 }
 
-public final class dev/quiteboring/swift/finder/calculate/PathNode {
-	public static final field Companion Ldev/quiteboring/swift/finder/calculate/PathNode$Companion;
+public final class com/v5/swift/finder/calculate/PathNode {
+	public static final field Companion Lcom/v5/swift/finder/calculate/PathNode$Companion;
 	public field fCost D
 	public field gCost D
 	public final field hCost D
 	public field heapPosition I
-	public field parent Ldev/quiteboring/swift/finder/calculate/PathNode;
+	public field parent Lcom/v5/swift/finder/calculate/PathNode;
 	public final field x I
 	public final field y I
 	public final field z I
-	public fun <init> (IIILdev/quiteboring/swift/finder/goal/IGoal;)V
+	public fun <init> (IIILcom/v5/swift/finder/goal/IGoal;)V
 	public static final fun coordKey (III)J
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 }
 
-public final class dev/quiteboring/swift/finder/calculate/PathNode$Companion {
+public final class com/v5/swift/finder/calculate/PathNode$Companion {
 	public final fun coordKey (III)J
 }
 
-public final class dev/quiteboring/swift/finder/calculate/openset/BinaryHeapOpenSet {
+public final class com/v5/swift/finder/calculate/openset/BinaryHeapOpenSet {
 	public field size I
 	public fun <init> ()V
 	public fun <init> (I)V
 	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun add (Ldev/quiteboring/swift/finder/calculate/PathNode;)V
+	public final fun add (Lcom/v5/swift/finder/calculate/PathNode;)V
 	public final fun clear ()V
 	public final fun isEmpty ()Z
 	public final fun isNotEmpty ()Z
-	public final fun poll ()Ldev/quiteboring/swift/finder/calculate/PathNode;
-	public final fun relocate (Ldev/quiteboring/swift/finder/calculate/PathNode;)V
+	public final fun poll ()Lcom/v5/swift/finder/calculate/PathNode;
+	public final fun relocate (Lcom/v5/swift/finder/calculate/PathNode;)V
 }
 
-public final class dev/quiteboring/swift/finder/calculate/path/AStarPathfinder {
-	public fun <init> ([[ILdev/quiteboring/swift/finder/goal/IGoal;Ldev/quiteboring/swift/finder/movement/CalculationContext;IDDZ)V
-	public synthetic fun <init> ([[ILdev/quiteboring/swift/finder/goal/IGoal;Ldev/quiteboring/swift/finder/movement/CalculationContext;IDDZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun findPath ()Ldev/quiteboring/swift/finder/calculate/Path;
+public final class com/v5/swift/finder/calculate/path/AStarPathfinder {
+	public fun <init> ([[ILcom/v5/swift/finder/goal/IGoal;Lcom/v5/swift/finder/movement/CalculationContext;IDDZ)V
+	public synthetic fun <init> ([[ILcom/v5/swift/finder/goal/IGoal;Lcom/v5/swift/finder/movement/CalculationContext;IDDZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun findPath ()Lcom/v5/swift/finder/calculate/Path;
 }
 
-public final class dev/quiteboring/swift/finder/costs/ActionCosts {
+public final class com/v5/swift/finder/costs/ActionCosts {
 	public final field FLY_ONE_BLOCK_TIME D
 	public final field GAP_JUMP_REWARD_OFFSET D
 	public final field JUMP_PENALTY D
@@ -3590,8 +3612,8 @@ public final class dev/quiteboring/swift/finder/costs/ActionCosts {
 	public final fun getINF_COST ()D
 }
 
-public final class dev/quiteboring/swift/finder/goal/Goal : dev/quiteboring/swift/finder/goal/IGoal {
-	public fun <init> (IIIIILdev/quiteboring/swift/finder/movement/CalculationContext;)V
+public final class com/v5/swift/finder/goal/Goal : com/v5/swift/finder/goal/IGoal {
+	public fun <init> (IIIIILcom/v5/swift/finder/movement/CalculationContext;)V
 	public final fun getGoalX ()I
 	public final fun getGoalY ()I
 	public final fun getGoalZ ()I
@@ -3601,10 +3623,10 @@ public final class dev/quiteboring/swift/finder/goal/Goal : dev/quiteboring/swif
 	public fun isAtGoal (III)Z
 }
 
-public final class dev/quiteboring/swift/finder/goal/GoalFly : dev/quiteboring/swift/finder/goal/IGoal {
-	public static final field Companion Ldev/quiteboring/swift/finder/goal/GoalFly$Companion;
-	public fun <init> (IIIIIILdev/quiteboring/swift/finder/movement/CalculationContext;)V
-	public final fun getCtx ()Ldev/quiteboring/swift/finder/movement/CalculationContext;
+public final class com/v5/swift/finder/goal/GoalFly : com/v5/swift/finder/goal/IGoal {
+	public static final field Companion Lcom/v5/swift/finder/goal/GoalFly$Companion;
+	public fun <init> (IIIIIILcom/v5/swift/finder/movement/CalculationContext;)V
+	public final fun getCtx ()Lcom/v5/swift/finder/movement/CalculationContext;
 	public final fun getGoalX ()I
 	public final fun getGoalY ()I
 	public final fun getGoalZ ()I
@@ -3615,30 +3637,30 @@ public final class dev/quiteboring/swift/finder/goal/GoalFly : dev/quiteboring/s
 	public fun isAtGoal (III)Z
 }
 
-public final class dev/quiteboring/swift/finder/goal/GoalFly$Companion {
+public final class com/v5/swift/finder/goal/GoalFly$Companion {
 }
 
-public abstract interface class dev/quiteboring/swift/finder/goal/IGoal {
+public abstract interface class com/v5/swift/finder/goal/IGoal {
 	public abstract fun heuristic (III)D
 	public abstract fun isAtGoal (III)Z
 }
 
-public final class dev/quiteboring/swift/finder/goal/MultiGoal : dev/quiteboring/swift/finder/goal/IGoal {
+public final class com/v5/swift/finder/goal/MultiGoal : com/v5/swift/finder/goal/IGoal {
 	public fun <init> (Ljava/util/List;)V
 	public fun heuristic (III)D
 	public fun isAtGoal (III)Z
 }
 
-public final class dev/quiteboring/swift/finder/helper/BlockStateAccessor {
-	public final field access Ldev/quiteboring/swift/finder/helper/BlockViewWrapper;
+public final class com/v5/swift/finder/helper/BlockStateAccessor {
+	public final field access Lcom/v5/swift/finder/helper/BlockViewWrapper;
 	public final field mutablePos Lnet/minecraft/util/math/BlockPos$Mutable;
 	public fun <init> (Lnet/minecraft/world/World;)V
 	public final fun get (III)Lnet/minecraft/block/BlockState;
 	public final fun getWorld ()Lnet/minecraft/world/World;
 }
 
-public final class dev/quiteboring/swift/finder/helper/BlockViewWrapper : net/minecraft/world/BlockView {
-	public fun <init> (Ldev/quiteboring/swift/finder/helper/BlockStateAccessor;)V
+public final class com/v5/swift/finder/helper/BlockViewWrapper : net/minecraft/world/BlockView {
+	public fun <init> (Lcom/v5/swift/finder/helper/BlockStateAccessor;)V
 	public fun getBlockEntity (Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/entity/BlockEntity;
 	public fun getBlockState (Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;
 	public fun getBottomY ()I
@@ -3646,9 +3668,9 @@ public final class dev/quiteboring/swift/finder/helper/BlockViewWrapper : net/mi
 	public fun getHeight ()I
 }
 
-public final class dev/quiteboring/swift/finder/movement/CalculationContext {
+public final class com/v5/swift/finder/movement/CalculationContext {
 	public static final field CRUISE_BUFFER I
-	public static final field Companion Ldev/quiteboring/swift/finder/movement/CalculationContext$Companion;
+	public static final field Companion Lcom/v5/swift/finder/movement/CalculationContext$Companion;
 	public field cruiseY I
 	public field goalX I
 	public field goalY I
@@ -3658,32 +3680,32 @@ public final class dev/quiteboring/swift/finder/movement/CalculationContext {
 	public field startZ I
 	public fun <init> ()V
 	public final fun get (III)Lnet/minecraft/block/BlockState;
-	public final fun getBsa ()Ldev/quiteboring/swift/finder/helper/BlockStateAccessor;
-	public final fun getCost ()Ldev/quiteboring/swift/finder/costs/ActionCosts;
+	public final fun getBsa ()Lcom/v5/swift/finder/helper/BlockStateAccessor;
+	public final fun getCost ()Lcom/v5/swift/finder/costs/ActionCosts;
 	public final fun getMaxFallHeight ()I
 	public final fun getMc ()Lnet/minecraft/client/MinecraftClient;
-	public final fun getPrecomputedData ()Ldev/quiteboring/swift/finder/precompute/PrecomputedData;
-	public final fun getSafeCache ()Ldev/quiteboring/swift/finder/precompute/SafePositionCache;
-	public final fun getWdc ()Ldev/quiteboring/swift/finder/precompute/WallDistanceCalculator;
+	public final fun getPrecomputedData ()Lcom/v5/swift/finder/precompute/PrecomputedData;
+	public final fun getSafeCache ()Lcom/v5/swift/finder/precompute/SafePositionCache;
+	public final fun getWdc ()Lcom/v5/swift/finder/precompute/WallDistanceCalculator;
 	public final fun getWorld ()Lnet/minecraft/client/world/ClientWorld;
 	public final fun setFlightParameters (IIIIII)V
 }
 
-public final class dev/quiteboring/swift/finder/movement/CalculationContext$Companion {
+public final class com/v5/swift/finder/movement/CalculationContext$Companion {
 }
 
-public abstract interface class dev/quiteboring/swift/finder/movement/IMove {
-	public abstract fun calculate (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+public abstract interface class com/v5/swift/finder/movement/IMove {
+	public abstract fun calculate (Lcom/v5/swift/finder/movement/CalculationContext;IIILcom/v5/swift/finder/movement/MovementResult;)V
 }
 
-public final class dev/quiteboring/swift/finder/movement/MovementHelper {
-	public static final field INSTANCE Ldev/quiteboring/swift/finder/movement/MovementHelper;
+public final class com/v5/swift/finder/movement/MovementHelper {
+	public static final field INSTANCE Lcom/v5/swift/finder/movement/MovementHelper;
 	public static final field SHAPE_CONTEXT Lnet/minecraft/block/ShapeContext;
-	public static final fun isPassableState (Ldev/quiteboring/swift/finder/helper/BlockStateAccessor;IIILnet/minecraft/block/BlockState;)Z
-	public static final fun isSolidState (Ldev/quiteboring/swift/finder/helper/BlockStateAccessor;IIILnet/minecraft/block/BlockState;)Z
+	public static final fun isPassableState (Lcom/v5/swift/finder/helper/BlockStateAccessor;IIILnet/minecraft/block/BlockState;)Z
+	public static final fun isSolidState (Lcom/v5/swift/finder/helper/BlockStateAccessor;IIILnet/minecraft/block/BlockState;)Z
 }
 
-public final class dev/quiteboring/swift/finder/movement/MovementResult {
+public final class com/v5/swift/finder/movement/MovementResult {
 	public fun <init> ()V
 	public final fun getCost ()D
 	public final fun getX ()I
@@ -3697,197 +3719,197 @@ public final class dev/quiteboring/swift/finder/movement/MovementResult {
 	public final fun setZ (I)V
 }
 
-public abstract class dev/quiteboring/swift/finder/movement/Moves : java/lang/Enum, dev/quiteboring/swift/finder/movement/IMove {
-	public static final field ASCEND_EAST Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field ASCEND_NORTH Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field ASCEND_SOUTH Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field ASCEND_WEST Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field DESCEND_EAST Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field DESCEND_NORTH Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field DESCEND_SOUTH Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field DESCEND_WEST Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field DIAGONAL_NORTHEAST Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field DIAGONAL_NORTHWEST Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field DIAGONAL_SOUTHEAST Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field DIAGONAL_SOUTHWEST Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field TRAVERSE_EAST Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field TRAVERSE_NORTH Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field TRAVERSE_SOUTH Ldev/quiteboring/swift/finder/movement/Moves;
-	public static final field TRAVERSE_WEST Ldev/quiteboring/swift/finder/movement/Moves;
+public abstract class com/v5/swift/finder/movement/Moves : java/lang/Enum, com/v5/swift/finder/movement/IMove {
+	public static final field ASCEND_EAST Lcom/v5/swift/finder/movement/Moves;
+	public static final field ASCEND_NORTH Lcom/v5/swift/finder/movement/Moves;
+	public static final field ASCEND_SOUTH Lcom/v5/swift/finder/movement/Moves;
+	public static final field ASCEND_WEST Lcom/v5/swift/finder/movement/Moves;
+	public static final field DESCEND_EAST Lcom/v5/swift/finder/movement/Moves;
+	public static final field DESCEND_NORTH Lcom/v5/swift/finder/movement/Moves;
+	public static final field DESCEND_SOUTH Lcom/v5/swift/finder/movement/Moves;
+	public static final field DESCEND_WEST Lcom/v5/swift/finder/movement/Moves;
+	public static final field DIAGONAL_NORTHEAST Lcom/v5/swift/finder/movement/Moves;
+	public static final field DIAGONAL_NORTHWEST Lcom/v5/swift/finder/movement/Moves;
+	public static final field DIAGONAL_SOUTHEAST Lcom/v5/swift/finder/movement/Moves;
+	public static final field DIAGONAL_SOUTHWEST Lcom/v5/swift/finder/movement/Moves;
+	public static final field TRAVERSE_EAST Lcom/v5/swift/finder/movement/Moves;
+	public static final field TRAVERSE_NORTH Lcom/v5/swift/finder/movement/Moves;
+	public static final field TRAVERSE_SOUTH Lcom/v5/swift/finder/movement/Moves;
+	public static final field TRAVERSE_WEST Lcom/v5/swift/finder/movement/Moves;
 	public synthetic fun <init> (Ljava/lang/String;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public final fun getOffsetX ()I
 	public final fun getOffsetZ ()I
-	public static fun valueOf (Ljava/lang/String;)Ldev/quiteboring/swift/finder/movement/Moves;
-	public static fun values ()[Ldev/quiteboring/swift/finder/movement/Moves;
+	public static fun valueOf (Ljava/lang/String;)Lcom/v5/swift/finder/movement/Moves;
+	public static fun values ()[Lcom/v5/swift/finder/movement/Moves;
 }
 
-public final class dev/quiteboring/swift/finder/movement/MovesFly : java/lang/Enum, dev/quiteboring/swift/finder/movement/IMove {
-	public static final field DOWN Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field DOWN_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field DOWN_NORTH Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field DOWN_NORTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field DOWN_NORTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field DOWN_SOUTH Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field DOWN_SOUTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field DOWN_SOUTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field DOWN_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field NORTH Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field NORTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field NORTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field SOUTH Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field SOUTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field SOUTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field UP Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field UP_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field UP_NORTH Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field UP_NORTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field UP_NORTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field UP_SOUTH Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field UP_SOUTH_EAST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field UP_SOUTH_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field UP_WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static final field WEST Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public fun calculate (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+public final class com/v5/swift/finder/movement/MovesFly : java/lang/Enum, com/v5/swift/finder/movement/IMove {
+	public static final field DOWN Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field DOWN_EAST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field DOWN_NORTH Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field DOWN_NORTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field DOWN_NORTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field DOWN_SOUTH Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field DOWN_SOUTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field DOWN_SOUTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field DOWN_WEST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field EAST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field NORTH Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field NORTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field NORTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field SOUTH Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field SOUTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field SOUTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field UP Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field UP_EAST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field UP_NORTH Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field UP_NORTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field UP_NORTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field UP_SOUTH Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field UP_SOUTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field UP_SOUTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field UP_WEST Lcom/v5/swift/finder/movement/MovesFly;
+	public static final field WEST Lcom/v5/swift/finder/movement/MovesFly;
+	public fun calculate (Lcom/v5/swift/finder/movement/CalculationContext;IIILcom/v5/swift/finder/movement/MovementResult;)V
 	public final fun getDx ()I
 	public final fun getDy ()I
 	public final fun getDz ()I
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Ldev/quiteboring/swift/finder/movement/MovesFly;
-	public static fun values ()[Ldev/quiteboring/swift/finder/movement/MovesFly;
+	public static fun valueOf (Ljava/lang/String;)Lcom/v5/swift/finder/movement/MovesFly;
+	public static fun values ()[Lcom/v5/swift/finder/movement/MovesFly;
 }
 
-public final class dev/quiteboring/swift/finder/movement/movements/MovementFly {
-	public static final field INSTANCE Ldev/quiteboring/swift/finder/movement/movements/MovementFly;
-	public static final fun calculate (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+public final class com/v5/swift/finder/movement/movements/MovementFly {
+	public static final field INSTANCE Lcom/v5/swift/finder/movement/movements/MovementFly;
+	public static final fun calculate (Lcom/v5/swift/finder/movement/CalculationContext;IIIIIILcom/v5/swift/finder/movement/MovementResult;)V
 }
 
-public final class dev/quiteboring/swift/finder/movement/movements/MovementWalk {
-	public static final field INSTANCE Ldev/quiteboring/swift/finder/movement/movements/MovementWalk;
-	public static final fun ascend (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
-	public static final fun descend (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
-	public static final fun diagonal (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
-	public static final fun jumpGap (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
-	public static final fun traverse (Ldev/quiteboring/swift/finder/movement/CalculationContext;IIIIILdev/quiteboring/swift/finder/movement/MovementResult;)V
+public final class com/v5/swift/finder/movement/movements/MovementWalk {
+	public static final field INSTANCE Lcom/v5/swift/finder/movement/movements/MovementWalk;
+	public static final fun ascend (Lcom/v5/swift/finder/movement/CalculationContext;IIIIILcom/v5/swift/finder/movement/MovementResult;)V
+	public static final fun descend (Lcom/v5/swift/finder/movement/CalculationContext;IIIIILcom/v5/swift/finder/movement/MovementResult;)V
+	public static final fun diagonal (Lcom/v5/swift/finder/movement/CalculationContext;IIIIILcom/v5/swift/finder/movement/MovementResult;)V
+	public static final fun jumpGap (Lcom/v5/swift/finder/movement/CalculationContext;IIIIILcom/v5/swift/finder/movement/MovementResult;)V
+	public static final fun traverse (Lcom/v5/swift/finder/movement/CalculationContext;IIIIILcom/v5/swift/finder/movement/MovementResult;)V
 }
 
-public final class dev/quiteboring/swift/finder/precompute/PrecomputedData {
+public final class com/v5/swift/finder/precompute/PrecomputedData {
 	public static final field BLOCKING_WALL I
 	public static final field CARPET_LIKE I
 	public static final field COMPUTED I
-	public static final field Companion Ldev/quiteboring/swift/finder/precompute/PrecomputedData$Companion;
+	public static final field Companion Lcom/v5/swift/finder/precompute/PrecomputedData$Companion;
 	public static final field FLY_PASSABLE I
 	public static final field FULL_CUBE I
 	public static final field PASSABLE I
 	public static final field SLAB_BOTTOM I
 	public static final field SOLID I
 	public final field states [I
-	public fun <init> (Ldev/quiteboring/swift/finder/helper/BlockStateAccessor;)V
+	public fun <init> (Lcom/v5/swift/finder/helper/BlockStateAccessor;)V
 	public final fun getData (IIILnet/minecraft/block/BlockState;)I
 	public final fun isBlockingWall (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isBlockingWall$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public static synthetic fun isBlockingWall$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isBottomSlab (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isBottomSlab$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public static synthetic fun isBottomSlab$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isCarpetLike (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isCarpetLike$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public static synthetic fun isCarpetLike$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isFullCube (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isFullCube$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public static synthetic fun isFullCube$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isPassable (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isPassable$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public static synthetic fun isPassable$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isPassableForFlying (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isPassableForFlying$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public static synthetic fun isPassableForFlying$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isSolid (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isSolid$default (Ldev/quiteboring/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public static synthetic fun isSolid$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 }
 
-public final class dev/quiteboring/swift/finder/precompute/PrecomputedData$Companion {
+public final class com/v5/swift/finder/precompute/PrecomputedData$Companion {
 }
 
-public final class dev/quiteboring/swift/finder/precompute/SafePositionCache {
-	public static final field Companion Ldev/quiteboring/swift/finder/precompute/SafePositionCache$Companion;
-	public fun <init> (Ldev/quiteboring/swift/finder/movement/CalculationContext;)V
+public final class com/v5/swift/finder/precompute/SafePositionCache {
+	public static final field Companion Lcom/v5/swift/finder/precompute/SafePositionCache$Companion;
+	public fun <init> (Lcom/v5/swift/finder/movement/CalculationContext;)V
 	public final fun clear ()V
 	public final fun isSafe (III)Z
 }
 
-public final class dev/quiteboring/swift/finder/precompute/SafePositionCache$Companion {
+public final class com/v5/swift/finder/precompute/SafePositionCache$Companion {
 }
 
-public final class dev/quiteboring/swift/finder/precompute/WallDistanceCalculator {
-	public static final field Companion Ldev/quiteboring/swift/finder/precompute/WallDistanceCalculator$Companion;
+public final class com/v5/swift/finder/precompute/WallDistanceCalculator {
+	public static final field Companion Lcom/v5/swift/finder/precompute/WallDistanceCalculator$Companion;
 	public static final field EDGE_PENALTIES [D
 	public static final field MAX_DIST I
 	public static final field WALL_PENALTIES [D
-	public fun <init> (Ldev/quiteboring/swift/finder/movement/CalculationContext;)V
+	public fun <init> (Lcom/v5/swift/finder/movement/CalculationContext;)V
 	public final fun clearCache ()V
 	public final fun getEdgeDistance (III)I
 	public final fun getPathPenalty (III)D
 	public final fun getWallDistance (III)I
 }
 
-public final class dev/quiteboring/swift/finder/precompute/WallDistanceCalculator$Companion {
+public final class com/v5/swift/finder/precompute/WallDistanceCalculator$Companion {
 }
 
-public final class dev/quiteboring/swift/integration/HypixelManager {
-	public static final field INSTANCE Ldev/quiteboring/swift/integration/HypixelManager;
+public final class com/v5/swift/integration/HypixelManager {
+	public static final field INSTANCE Lcom/v5/swift/integration/HypixelManager;
 	public final fun init ()V
 	public final fun onDisconnect ()V
 }
 
-public final class dev/quiteboring/swift/io/WorldSerializer {
-	public static final field INSTANCE Ldev/quiteboring/swift/io/WorldSerializer;
+public final class com/v5/swift/io/WorldSerializer {
+	public static final field INSTANCE Lcom/v5/swift/io/WorldSerializer;
 	public final fun load (Ljava/lang/String;)Ljava/util/concurrent/ConcurrentHashMap;
 	public final fun save (Ljava/lang/String;Ljava/util/Map;)V
 }
 
-public class dev/quiteboring/swift/mixins/ClientConnectionMixin {
+public class com/v5/swift/mixins/ClientConnectionMixin {
 	public fun <init> ()V
 }
 
-public abstract interface class dev/quiteboring/swift/mixins/FrustumInvoker {
+public abstract interface class com/v5/swift/mixins/FrustumInvoker {
 	public abstract fun invokeIntersectAab (DDDDDD)I
 }
 
-public class dev/quiteboring/swift/mixins/WorldRendererMixin {
+public class com/v5/swift/mixins/WorldRendererMixin {
 	public fun <init> ()V
 }
 
-public final class dev/quiteboring/swift/util/PlayerUtils {
-	public static final field INSTANCE Ldev/quiteboring/swift/util/PlayerUtils;
+public final class com/v5/swift/util/PlayerUtils {
+	public static final field INSTANCE Lcom/v5/swift/util/PlayerUtils;
 	public final fun getBlockStandingOn ()Lnet/minecraft/util/math/BlockPos;
 }
 
-public final class dev/quiteboring/swift/util/render/ExtensionsKt {
-	public static final fun drawBox (Ldev/quiteboring/swift/event/Context;Lnet/minecraft/util/math/Box;Ljava/awt/Color;Z)V
-	public static synthetic fun drawBox$default (Ldev/quiteboring/swift/event/Context;Lnet/minecraft/util/math/Box;Ljava/awt/Color;ZILjava/lang/Object;)V
-	public static final fun drawLine (Ldev/quiteboring/swift/event/Context;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Ljava/awt/Color;ZF)V
-	public static synthetic fun drawLine$default (Ldev/quiteboring/swift/event/Context;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Ljava/awt/Color;ZFILjava/lang/Object;)V
+public final class com/v5/swift/util/render/ExtensionsKt {
+	public static final fun drawBox (Lcom/v5/swift/event/Context;Lnet/minecraft/util/math/Box;Ljava/awt/Color;Z)V
+	public static synthetic fun drawBox$default (Lcom/v5/swift/event/Context;Lnet/minecraft/util/math/Box;Ljava/awt/Color;ZILjava/lang/Object;)V
+	public static final fun drawLine (Lcom/v5/swift/event/Context;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Ljava/awt/Color;ZF)V
+	public static synthetic fun drawLine$default (Lcom/v5/swift/event/Context;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Ljava/awt/Color;ZFILjava/lang/Object;)V
 }
 
-public final class dev/quiteboring/swift/util/render/FrustumUtils {
-	public static final field INSTANCE Ldev/quiteboring/swift/util/render/FrustumUtils;
+public final class com/v5/swift/util/render/FrustumUtils {
+	public static final field INSTANCE Lcom/v5/swift/util/render/FrustumUtils;
 	public final fun isVisible (Lnet/minecraft/client/render/Frustum;DDDDDD)Z
 	public final fun isVisible (Lnet/minecraft/client/render/Frustum;Lnet/minecraft/util/math/Box;)Z
 }
 
-public final class dev/quiteboring/swift/util/render/Layers {
-	public static final field INSTANCE Ldev/quiteboring/swift/util/render/Layers;
+public final class com/v5/swift/util/render/Layers {
+	public static final field INSTANCE Lcom/v5/swift/util/render/Layers;
 	public final fun getLINE_LIST ()Lnet/minecraft/client/render/RenderLayer;
 	public final fun getLINE_LIST_ESP ()Lnet/minecraft/client/render/RenderLayer;
 	public final fun getTRIANGLE_STRIP ()Lnet/minecraft/client/render/RenderLayer$MultiPhase;
 	public final fun getTRIANGLE_STRIP_ESP ()Lnet/minecraft/client/render/RenderLayer$MultiPhase;
 }
 
-public final class dev/quiteboring/swift/util/render/Pipelines {
-	public static final field INSTANCE Ldev/quiteboring/swift/util/render/Pipelines;
+public final class com/v5/swift/util/render/Pipelines {
+	public static final field INSTANCE Lcom/v5/swift/util/render/Pipelines;
 	public final fun getLINE_LIST ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
 	public final fun getLINE_LIST_ESP ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
 	public final fun getTRIANGLE_STRIP ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
 	public final fun getTRIANGLE_STRIP_ESP ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
 }
 
-public final class dev/quiteboring/swift/util/setting/Settings {
+public final class com/v5/swift/util/setting/Settings {
 	public fun <init> ()V
 	public final fun getChunksPerTick ()I
 	public final fun getMaximumCachedChunks ()I

@@ -1,13 +1,13 @@
 package com.v5.pathfinding
 
-import dev.quiteboring.swift.Swift
-import dev.quiteboring.swift.finder.calculate.Path
-import dev.quiteboring.swift.finder.calculate.path.AStarPathfinder
-import dev.quiteboring.swift.finder.goal.Goal
-import dev.quiteboring.swift.finder.goal.GoalFly
-import dev.quiteboring.swift.finder.goal.IGoal
-import dev.quiteboring.swift.finder.goal.MultiGoal
-import dev.quiteboring.swift.finder.movement.CalculationContext
+import com.v5.swift.Swift
+import com.v5.swift.finder.calculate.Path
+import com.v5.swift.finder.calculate.path.AStarPathfinder
+import com.v5.swift.finder.goal.Goal
+import com.v5.swift.finder.goal.GoalFly
+import com.v5.swift.finder.goal.IGoal
+import com.v5.swift.finder.goal.MultiGoal
+import com.v5.swift.finder.movement.CalculationContext
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
 

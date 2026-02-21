@@ -4,6 +4,7 @@ import com.chattriggers.ctjs.api.Mappings
 import com.chattriggers.ctjs.engine.printTraceToConsole
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
 import com.llamalad7.mixinextras.MixinExtrasBootstrap
+import com.v5.launch.SecureLoader
 import java.io.OutputStream
 import java.io.PrintStream
 import org.objectweb.asm.tree.ClassNode

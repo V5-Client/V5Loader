@@ -20,7 +20,7 @@
         ],
         "client": [
             "com.chattriggers.ctjs.CTJS",
-            "dev.quiteboring.swift.Swift",
+            "com.v5.swift.Swift",
             "com.v5.Entrypoint"
         ],
         "modmenu": [

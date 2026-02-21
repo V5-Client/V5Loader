@@ -1,6 +1,6 @@
 package com.v5.render.helper
 
-import dev.quiteboring.swift.mixins.FrustumInvoker
+import com.v5.swift.mixins.FrustumInvoker
 import net.minecraft.client.render.Frustum
 import net.minecraft.util.math.Box
 import org.joml.FrustumIntersection
