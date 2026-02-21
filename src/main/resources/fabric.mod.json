@@ -33,6 +33,9 @@
         "fabric-api": ">=$fabric_api_version",
         "fabric-language-kotlin": ">=$fabric_kotlin_version"
     },
+    "breaks": {
+        "smoothboot": "*"
+    },
     "custom": {
         "ctjs:yarn-mappings": "$yarn_mappings",
         "modmenu": {
