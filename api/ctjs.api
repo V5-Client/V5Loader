@@ -3041,6 +3041,10 @@ public class com/v5/mixins/ChunkOcclusionDataBuilderMixin {
 	public fun <init> ()V
 }
 
+public class com/v5/mixins/ClientConnectionMixin {
+	public fun <init> ()V
+}
+
 public abstract class com/v5/mixins/ClientConnectionProxyMixin {
 	public fun <init> ()V
 }
@@ -3051,6 +3055,10 @@ public class com/v5/mixins/DrawContextCapture {
 
 public class com/v5/mixins/FirmamentModAnnouncerMixin {
 	public fun <init> ()V
+}
+
+public abstract interface class com/v5/mixins/FrustumInvoker {
+	public abstract fun invokeIntersectAab (DDDDDD)I
 }
 
 public abstract interface class com/v5/mixins/GameOptionsAccessorMixin {
@@ -3080,6 +3088,10 @@ public abstract class com/v5/mixins/RenderLayersMixin {
 }
 
 public class com/v5/mixins/TranslationMixin {
+	public fun <init> ()V
+}
+
+public class com/v5/mixins/WorldRendererMixin {
 	public fun <init> ()V
 }
 
@@ -3295,7 +3307,11 @@ public final class com/v5/render/NVGRenderer$imageCache$1 : java/util/LinkedHash
 
 public final class com/v5/render/RenderUtils {
 	public static final field INSTANCE Lcom/v5/render/RenderUtils;
+	public static final fun drawBox (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawBox$default (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static final fun drawFilledBox (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;Z)V
 	public static final fun drawFilledBox (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;Z)V
+	public static synthetic fun drawFilledBox$default (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;ZILjava/lang/Object;)V
 	public static synthetic fun drawFilledBox$default (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;ZILjava/lang/Object;)V
 	public static final fun drawHitbox (Lnet/minecraft/entity/Entity;Lcom/v5/render/RenderUtils$Color;FZ)V
 	public static synthetic fun drawHitbox$default (Lnet/minecraft/entity/Entity;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
@@ -3309,7 +3325,9 @@ public final class com/v5/render/RenderUtils {
 	public static synthetic fun drawText$default (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;FZZZZILjava/lang/Object;)V
 	public static final fun drawTracer (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZ)V
 	public static synthetic fun drawTracer$default (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static final fun drawWireFrameBox (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;FZ)V
 	public static final fun drawWireFrameBox (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawWireFrameBox$default (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
 	public static synthetic fun drawWireFrameBox$default (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
 }
 
@@ -3863,50 +3881,9 @@ public final class com/v5/swift/io/WorldSerializer {
 	public final fun save (Ljava/lang/String;Ljava/util/Map;)V
 }
 
-public class com/v5/swift/mixins/ClientConnectionMixin {
-	public fun <init> ()V
-}
-
-public abstract interface class com/v5/swift/mixins/FrustumInvoker {
-	public abstract fun invokeIntersectAab (DDDDDD)I
-}
-
-public class com/v5/swift/mixins/WorldRendererMixin {
-	public fun <init> ()V
-}
-
 public final class com/v5/swift/util/PlayerUtils {
 	public static final field INSTANCE Lcom/v5/swift/util/PlayerUtils;
 	public final fun getBlockStandingOn ()Lnet/minecraft/util/math/BlockPos;
-}
-
-public final class com/v5/swift/util/render/ExtensionsKt {
-	public static final fun drawBox (Lcom/v5/swift/event/Context;Lnet/minecraft/util/math/Box;Ljava/awt/Color;Z)V
-	public static synthetic fun drawBox$default (Lcom/v5/swift/event/Context;Lnet/minecraft/util/math/Box;Ljava/awt/Color;ZILjava/lang/Object;)V
-	public static final fun drawLine (Lcom/v5/swift/event/Context;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Ljava/awt/Color;ZF)V
-	public static synthetic fun drawLine$default (Lcom/v5/swift/event/Context;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Ljava/awt/Color;ZFILjava/lang/Object;)V
-}
-
-public final class com/v5/swift/util/render/FrustumUtils {
-	public static final field INSTANCE Lcom/v5/swift/util/render/FrustumUtils;
-	public final fun isVisible (Lnet/minecraft/client/render/Frustum;DDDDDD)Z
-	public final fun isVisible (Lnet/minecraft/client/render/Frustum;Lnet/minecraft/util/math/Box;)Z
-}
-
-public final class com/v5/swift/util/render/Layers {
-	public static final field INSTANCE Lcom/v5/swift/util/render/Layers;
-	public final fun getLINE_LIST ()Lnet/minecraft/client/render/RenderLayer;
-	public final fun getLINE_LIST_ESP ()Lnet/minecraft/client/render/RenderLayer;
-	public final fun getTRIANGLE_STRIP ()Lnet/minecraft/client/render/RenderLayer$MultiPhase;
-	public final fun getTRIANGLE_STRIP_ESP ()Lnet/minecraft/client/render/RenderLayer$MultiPhase;
-}
-
-public final class com/v5/swift/util/render/Pipelines {
-	public static final field INSTANCE Lcom/v5/swift/util/render/Pipelines;
-	public final fun getLINE_LIST ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
-	public final fun getLINE_LIST_ESP ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
-	public final fun getTRIANGLE_STRIP ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
-	public final fun getTRIANGLE_STRIP_ESP ()Lcom/mojang/blaze3d/pipeline/RenderPipeline;
 }
 
 public final class com/v5/swift/util/setting/Settings {
