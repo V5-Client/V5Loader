@@ -8,7 +8,6 @@ import com.v5.render.helper.TextureTracker
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.GlBackend
 import net.minecraft.client.texture.GlTexture
-import net.minecraft.util.Identifier
 import org.lwjgl.nanovg.NVGColor
 import org.lwjgl.nanovg.NVGPaint
 import org.lwjgl.nanovg.NanoVG.*
@@ -41,7 +40,9 @@ object NVGRenderer {
 
     val defaultFont by lazy {
         try {
-            Font("Default", mc.resourceManager.getResource(Identifier.of("v5", "font.otf")).get().inputStream)
+            val stream = NVGRenderer::class.java.getResourceAsStream("/assets/v5/font.otf")
+                ?: throw Exception("Could not find /assets/v5/font.otf in classpath")
+            Font("Default", stream)
         } catch (e: Exception) {
             println("[V5] Failed to load font: ${e.message}")
             null
