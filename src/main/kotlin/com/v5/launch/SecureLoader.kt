@@ -180,7 +180,6 @@ object SecureLoader {
 
                 if (newToken != null) {
                     V5Auth.internalToken = newToken
-                    System.setProperty("v5.token", newToken)
                 }
             } else if (responseCode == 401 || responseCode == 403) {
                 println("[V5] Session expired or revoked. Exiting.")
