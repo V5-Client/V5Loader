@@ -6,6 +6,22 @@ object V5Auth {
 
     @JvmStatic
     fun getJwtToken(): String? {
-        return internalToken
+        val token = internalToken
+        if (!token.isNullOrBlank()) return token
+
+        val propertyToken = System.getProperty("v5.token")
+        if (!propertyToken.isNullOrBlank()) {
+            internalToken = propertyToken
+            return propertyToken
+        }
+
+        return null
+    }
+
+    @JvmStatic
+    fun setJwtToken(token: String?) {
+        if (token.isNullOrBlank()) return
+        internalToken = token
+        System.setProperty("v5.token", token)
     }
 }

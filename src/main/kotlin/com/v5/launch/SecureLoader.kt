@@ -40,7 +40,9 @@ object SecureLoader {
     private const val BACKEND_URL = "https://backend.rdbt.top"
     private const val VIRTUAL_MODULE_PREFIX = "V5"
     private const val ENTRY_POINT = "loader"
-    private const val HEARTBEAT_INTERVAL_MS = 150_000L // 2 minutes 30 seconds
+    private const val DEFAULT_HEARTBEAT_INTERVAL_MS = 150_000L // 2 minutes 30 seconds
+    private const val MIN_HEARTBEAT_INTERVAL_MS = 30_000L
+    private const val MAX_HEARTBEAT_INTERVAL_MS = 300_000L
     private const val DOWNLOAD_KDF_INFO = "v5-download-kek-v2"
     private val rng = SecureRandom()
 
@@ -51,6 +53,7 @@ object SecureLoader {
     @Volatile private var rootMetadata: ModuleMetadata? = null
 
     private var heartbeatThread: Thread? = null
+    @Volatile private var heartbeatIntervalMs: Long = DEFAULT_HEARTBEAT_INTERVAL_MS
 
     fun run() {
         runAntiTamperChecks()
@@ -69,7 +72,7 @@ object SecureLoader {
                 println("[V5] Auto-login failed. No token passed from native loader.")
                 shutDownHard()
             }
-            V5Auth.internalToken = token
+            V5Auth.setJwtToken(token)
 
             if (isDevMode) {
                 println("[V5] Hi Dev! Skipping loader step.")
@@ -148,7 +151,7 @@ object SecureLoader {
         heartbeatThread = thread(start = true, isDaemon = true, name = "V5-Heartbeat") {
             while (isLoaded) {
                 try {
-                    Thread.sleep(HEARTBEAT_INTERVAL_MS)
+                    Thread.sleep(heartbeatIntervalMs)
                     performHeartbeat()
                 } catch (e: InterruptedException) {
                     break
@@ -159,7 +162,7 @@ object SecureLoader {
     }
 
     private fun performHeartbeat() {
-        val currentToken = V5Auth.internalToken ?: return
+        val currentToken = V5Auth.getJwtToken() ?: return
 
         try {
             val url = URL("$BACKEND_URL/api/auth/heartbeat")
@@ -176,10 +179,17 @@ object SecureLoader {
             if (responseCode == 200) {
                 val responseText = connection.inputStream.bufferedReader().readText()
                 val json = CTJS.Companion.json.parseToJsonElement(responseText).jsonObject
-                val newToken = json["token"]?.jsonPrimitive?.contentOrNull
+                val newToken = json["access_token"]?.jsonPrimitive?.contentOrNull
+                    ?: json["token"]?.jsonPrimitive?.contentOrNull
+                val serverHeartbeatIntervalSeconds = json["heartbeat_interval_seconds"]?.jsonPrimitive?.contentOrNull?.toLongOrNull()
 
                 if (newToken != null) {
-                    V5Auth.internalToken = newToken
+                    V5Auth.setJwtToken(newToken)
+                }
+
+                if (serverHeartbeatIntervalSeconds != null && serverHeartbeatIntervalSeconds > 0L) {
+                    val requestedMs = serverHeartbeatIntervalSeconds * 1000L
+                    heartbeatIntervalMs = requestedMs.coerceIn(MIN_HEARTBEAT_INTERVAL_MS, MAX_HEARTBEAT_INTERVAL_MS)
                 }
             } else if (responseCode == 401 || responseCode == 403) {
                 println("[V5] Session expired or revoked. Exiting.")

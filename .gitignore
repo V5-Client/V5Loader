@@ -41,3 +41,5 @@ replay_*.log
 *.jfr
 
 versions/*/api/
+
+grunt-main.jar
