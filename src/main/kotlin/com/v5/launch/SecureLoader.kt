@@ -148,8 +148,8 @@ object SecureLoader {
         heartbeatThread = thread(start = true, isDaemon = true, name = "V5-Heartbeat") {
             while (isLoaded) {
                 try {
-                    Thread.sleep(DEFAULT_HEARTBEAT_INTERVAL_MS)
                     performHeartbeat()
+                    Thread.sleep(DEFAULT_HEARTBEAT_INTERVAL_MS)
                 } catch (e: InterruptedException) {
                     break
                 } catch (e: Exception) {
