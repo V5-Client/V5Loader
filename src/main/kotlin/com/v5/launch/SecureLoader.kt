@@ -178,12 +178,8 @@ object SecureLoader {
             } else if (responseCode == 401 || responseCode == 403) {
                 println("[V5] Session expired or revoked. Exiting.")
                 shutDownHard()
-            } else {
-                println("[V5] Heartbeat failed with code: $responseCode")
             }
-        } catch (e: Exception) {
-            println("[V5] Failed to send heartbeat: ${e.message}")
-        }
+        } catch (e: Exception) {}
     }
 
     private fun downloadZip(token: String): ByteArray? {
@@ -223,14 +219,7 @@ object SecureLoader {
 
         if (responseCode != 200 || json?.get("success")?.jsonPrimitive?.booleanOrNull != true) {
             val errorMessage = json?.get("error")?.jsonPrimitive?.contentOrNull ?: "Unknown error"
-            when (errorMessage) {
-                "BANNED" -> println("[V5] Download failed: You are banned.")
-                "ACCESS_DENIED" -> println("[V5] Download failed: You do not have access to V5.")
-                "UNAUTHORIZED" -> println("[V5] Download failed: Unauthorized. Please authenticate again.")
-                "INVALID_CHANNEL" -> println("[V5] Download failed: Invalid release channel.")
-                "FILE_NOT_FOUND" -> println("[V5] Download failed: Build not found.")
-                else -> println("[V5] Download failed with error: $errorMessage (code: $responseCode)")
-            }
+            println("[V5] Download failed: $errorMessage (code: $responseCode)")
             shutDownHard()
         }
 
@@ -249,14 +238,9 @@ object SecureLoader {
         val contentStr = payload["content"]?.jsonPrimitive?.contentOrNull
 
         if (
-            version != "2" ||
-            serverPub == null ||
-            serverNonce == null ||
-            kdfSalt == null ||
-            wrapIv == null ||
-            wrappedKey == null ||
-            fileIv == null ||
-            contentStr == null
+            version != "2" || serverPub == null || serverNonce == null ||
+            kdfSalt == null || wrapIv == null || wrappedKey == null ||
+            fileIv == null || contentStr == null
         ) {
             throw IOException("Invalid payload structure")
         }
