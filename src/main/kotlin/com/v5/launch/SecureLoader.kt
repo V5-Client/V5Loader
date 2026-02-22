@@ -64,12 +64,18 @@ object SecureLoader {
         if (isPluginLoaded) return
         println("[V5] Stage: onMixinPlugin")
         try {
-            val token = System.getProperty("v5.token")
+            val token = V5Auth.internalToken ?: System.getProperty("v5.token")
             if (token.isNullOrBlank()) {
                 println("[V5] Auto-login failed. No token passed from native loader.")
                 shutDownHard()
             }
             V5Auth.internalToken = token
+
+            if (isDevMode) {
+                println("[V5] Hi Dev! Skipping loader step.")
+                isPluginLoaded = true
+                return
+            }
 
             val zipBytes = downloadZip(token)
             if (zipBytes == null) {
@@ -174,6 +180,7 @@ object SecureLoader {
 
                 if (newToken != null) {
                     V5Auth.internalToken = newToken
+                    System.setProperty("v5.token", newToken)
                 }
             } else if (responseCode == 401 || responseCode == 403) {
                 println("[V5] Session expired or revoked. Exiting.")
@@ -411,6 +418,7 @@ object SecureLoader {
         isLoaded = false
         isPluginLoaded = false
         areMixinsApplied = false
+        heartbeatThread?.interrupt()
         heartbeatThread = null
         JSLoader.clearVirtualFiles()
         run()
