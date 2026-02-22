@@ -5,26 +5,18 @@ import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
 import com.chattriggers.ctjs.internal.engine.module.ModuleMetadata
-import com.v5.launch.HWID
 import com.v5.api.V5Auth
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import sun.misc.Unsafe
-import java.awt.Desktop
-import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStreamReader
-import java.io.PrintWriter
 import java.lang.management.ManagementFactory
 import java.net.HttpURLConnection
-import java.net.ServerSocket
-import java.net.URI
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.KeyFactory
@@ -35,7 +27,6 @@ import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.Arrays
 import java.util.Base64
-import java.util.Locale
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import javax.crypto.Cipher
@@ -53,14 +44,13 @@ object SecureLoader {
     private const val DOWNLOAD_KDF_INFO = "v5-download-kek-v2"
     private val rng = SecureRandom()
 
-    @Volatile private var sessionReleaseChannel: String? = null
+    @Volatile private var isDevMode = false
     @Volatile private var isPluginLoaded = false
     @Volatile private var areMixinsApplied = false
     @Volatile private var isLoaded = false
     @Volatile private var rootMetadata: ModuleMetadata? = null
 
     private var heartbeatThread: Thread? = null
-    private val cachedHwid by lazy { HWID.generateHWID() }
 
     fun run() {
         runAntiTamperChecks()
@@ -74,17 +64,21 @@ object SecureLoader {
         if (isPluginLoaded) return
         println("[V5] Stage: onMixinPlugin")
         try {
-            ensureAuthenticatedSession()
-            val token = V5Auth.internalToken ?: shutDownHard()
-            val releaseChannel = sessionReleaseChannel ?: shutDownHard()
+            val token = System.getProperty("v5.token")
+            if (token.isNullOrBlank()) {
+                println("[V5] Auto-login failed. No token passed from native loader.")
+                shutDownHard()
+            }
+            V5Auth.internalToken = token
 
-            if (releaseChannel == "Dev") {
+            val zipBytes = downloadZip(token)
+            if (zipBytes == null) {
                 println("[V5] Hi Dev! Skipping loader step.")
+                isDevMode = true
                 isPluginLoaded = true
                 return
             }
 
-            val zipBytes = downloadZip(token)
             processZip(zipBytes)
             Arrays.fill(zipBytes, 0)
             isPluginLoaded = true
@@ -96,6 +90,8 @@ object SecureLoader {
 
     fun onCTMixinApplication() {
         if (areMixinsApplied) return
+        if (isDevMode) return
+
         println("[V5] Stage: onCTMixinApplication")
         val metadata = rootMetadata ?: return
         val mixinEntry = metadata.mixinEntry ?: return
@@ -107,8 +103,14 @@ object SecureLoader {
     fun onInitialize() {
         if (isLoaded) return
         println("[V5] Stage: onInitialize")
-        val metadata = rootMetadata
 
+        if (isDevMode) {
+            isLoaded = true
+            startHeartbeat()
+            return
+        }
+
+        val metadata = rootMetadata
         if (metadata != null) {
             metadata.requires?.forEach { dependency ->
                 if (dependency.isNotBlank()) {
@@ -121,343 +123,33 @@ object SecureLoader {
             Client.scheduleTask {
                 try {
                     val entryPath = "$VIRTUAL_MODULE_PREFIX/$ENTRY_POINT"
-                    if (JSLoader.hasVirtualFile(entryPath) || JSLoader.hasVirtualFile("$entryPath.js")
-                    ) {
+                    if (JSLoader.hasVirtualFile(entryPath) || JSLoader.hasVirtualFile("$entryPath.js")) {
                         JSLoader.loadVirtualModule(entryPath)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
-        } else if (sessionReleaseChannel == "Dev") {
-            println("[V5] Dev!")
         }
 
         isLoaded = true
         startHeartbeat()
     }
 
-    private fun ensureAuthenticatedSession() {
-        if (V5Auth.internalToken != null && sessionReleaseChannel != null) return
-        if (tryHwidLogin()) {
-            println("[V5] Auto-login successful!")
-            return
-        }
-
-        println("[V5] Auto-login failed. Game loading paused for authentication.")
-        authenticate()
-
-        val token = V5Auth.internalToken ?: shutDownHard()
-        sessionReleaseChannel = fetchAndValidateReleaseChannel(token)
-
-        println("[V5] Authenticated.")
-        bindHwid(token)
-        println("[V5] Welcome to V5!")
-    }
-
-    private fun readResponseText(connection: HttpURLConnection): String {
-        return try {
-            val stream = if (connection.responseCode in 200..299) {
-                connection.inputStream
-            } else {
-                connection.errorStream
-            }
-            stream?.bufferedReader()?.use { it.readText() } ?: ""
-        } catch (e: Exception) {
-            ""
-        }
-    }
-
-    private fun parseJsonObjectOrNull(text: String): JsonObject? {
-        if (text.isBlank()) return null
-        return try {
-            CTJS.Companion.json.parseToJsonElement(text).jsonObject
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    private fun tryHwidLogin(): Boolean {
-        try {
-            val url = URL("$BACKEND_URL/api/auth/login-hwid")
-            val connection = (url.openConnection() as HttpURLConnection).apply {
-                requestMethod = "POST"
-                setRequestProperty("Content-Type", "application/json")
-                setRequestProperty("User-Agent", "V5Loader/1.1")
-                doOutput = true
-                connectTimeout = 10000
-                readTimeout = 15000
-            }
-
-            val jsonBody = "{\"hwid\": \"$cachedHwid\"}"
-            connection.outputStream.use { it.write(jsonBody.toByteArray(StandardCharsets.UTF_8)) }
-
-            val code = connection.responseCode
-            val responseText = readResponseText(connection)
-            val json = parseJsonObjectOrNull(responseText)
-            val backendError = json?.get("error")?.jsonPrimitive?.contentOrNull
-                ?: json?.get("reason")?.jsonPrimitive?.contentOrNull
-
-            if (code == 200) {
-                if (json?.get("success")?.jsonPrimitive?.booleanOrNull == true) {
-                    V5Auth.internalToken = json["token"]?.jsonPrimitive?.contentOrNull
-                    sessionReleaseChannel = json["channel"]?.jsonPrimitive?.contentOrNull
-                    return V5Auth.internalToken != null && sessionReleaseChannel != null
-                }
-                return false
-            }
-
-            when (backendError) {
-                "HWID_NOT_FOUND" -> return false // user not bound yet
-                "HWID_CONFLICT" -> {
-                    println("[V5] This HWID is linked to multiple accounts. Contact support.")
-                    shutDownHard()
-                }
-                "BANNED" -> {
-                    println("[V5] Access denied: you are banned.")
-                    shutDownHard()
-                }
-                "ACCESS_DENIED" -> {
-                    println("[V5] Access denied: account has no V5 access.")
-                    shutDownHard()
-                }
-                else -> {
-                    println("[V5] Auto-login failed (code=$code, error=${backendError ?: "unknown"}).")
-                    return false
-                }
-            }
-        } catch (e: Exception) {
-            println("[V5] Auto-login error: ${e.message}")
-        }
-        return false
-    }
-
-
-    private fun bindHwid(token: String) {
-        try {
-            val url = URL("$BACKEND_URL/api/auth/bind-hwid")
-            val connection = (url.openConnection() as HttpURLConnection).apply {
-                requestMethod = "POST"
-                setRequestProperty("Authorization", "Bearer $token")
-                setRequestProperty("Content-Type", "application/json")
-                setRequestProperty("User-Agent", "V5Loader/1.1")
-                doOutput = true
-                connectTimeout = 10000
-                readTimeout = 15000
-            }
-
-            val jsonBody = "{\"hwid\": \"$cachedHwid\"}"
-            connection.outputStream.use { it.write(jsonBody.toByteArray(StandardCharsets.UTF_8)) }
-
-            val code = connection.responseCode
-            if (code in 200..299) return
-
-            val responseText = readResponseText(connection)
-            val json = parseJsonObjectOrNull(responseText)
-            val backendError = json?.get("error")?.jsonPrimitive?.contentOrNull
-
-            when (backendError) {
-                "HWID_ALREADY_BOUND" -> {
-                    println("[V5] This HWID is already bound to a different account.")
-                    shutDownHard()
-                }
-                "BANNED" -> {
-                    println("[V5] Access denied: banned account.")
-                    shutDownHard()
-                }
-                "UNAUTHORIZED" -> {
-                    println("[V5] Session expired before HWID bind.")
-                    shutDownHard()
-                }
-                else -> {
-                    println("[V5] Failed to bind HWID (code=$code, error=${backendError ?: "unknown"}).")
-                    shutDownHard()
-                }
-            }
-        } catch (e: Exception) {
-            println("[V5] Failed to bind HWID: ${e.message}")
-            shutDownHard()
-        }
-    }
-
-    private fun authenticate() {
-        val serverSocket = ServerSocket(0)
-        val port = serverSocket.localPort
-        serverSocket.soTimeout = 240 * 1000 // 240 seconds
-
-        val authUrl = "$BACKEND_URL/api/auth/discord/login?state=port:$port"
-        println("[V5] Opening browser to: $authUrl")
-
-        if (!openBrowserUrl(authUrl)) {
-            println("[V5] FAILED TO OPEN BROWSER! Open this URL manually:")
-            println(authUrl)
-        }
-
-        println("[V5] Waiting for authentication...")
-
-        try {
-            val clientSocket = serverSocket.accept()
-            val reader = BufferedReader(InputStreamReader(clientSocket.getInputStream()))
-            val requestLine = reader.readLine() // GET /callback?token=... HTTP/1.1
-
-            val writer = PrintWriter(clientSocket.getOutputStream(), true)
-
-            if (requestLine != null && requestLine.contains("token=")) {
-                val tokenStart = requestLine.indexOf("token=") + 6
-                val tokenEnd = requestLine.indexOf(" ", tokenStart)
-                val rawToken =
-                    if (tokenEnd == -1) requestLine.substring(tokenStart)
-                    else requestLine.substring(tokenStart, tokenEnd)
-                V5Auth.internalToken = rawToken.split("&")[0]
-
-                writer.println("HTTP/1.1 200 OK")
-                writer.println("Content-Type: text/html")
-                writer.println("\r\n")
-                writer.println(
-                    "<h1>Authenticated!</h1><p>You can close this tab and return to the game.</p><script>window.close()</script>"
-                )
-            } else if (requestLine != null && requestLine.contains("error=")) {
-                val errorStart = requestLine.indexOf("error=") + 6
-                val errorEnd = requestLine.indexOf(" ", errorStart)
-                val error =
-                    if (errorEnd == -1) requestLine.substring(errorStart)
-                    else requestLine.substring(errorStart, errorEnd)
-
-                writer.println("HTTP/1.1 403 Forbidden")
-                writer.println("Content-Type: text/html")
-                writer.println("\r\n")
-
-                when (error) {
-                    "access_denied" -> {
-                        writer.println("<h1>Access Denied</h1><p>You do not have access to V5.</p>")
-                        println("[V5] Access denied: user does not have access to V5")
-                    }
-                    "banned" -> {
-                        writer.println("<h1>Access Denied</h1><p>You are banned.</p>")
-                        println("[V5] Access denied: user is banned")
-                    }
-                    else -> {
-                        writer.println("<h1>Authentication failed</h1>")
-                        println("[V5] Authentication failed with error: $error")
-                    }
-                }
-                shutDownHard()
-            } else {
-                writer.println("HTTP/1.1 400 Bad Request")
-                writer.println("Content-Type: text/html")
-                writer.println("\r\n")
-                writer.println("<h1>Authentication failed</h1>")
-            }
-
-            writer.close()
-            clientSocket.close()
-            serverSocket.close()
-        } catch (e: Exception) {
-            println("[V5] Authentication timed out or failed.")
-            shutDownHard()
-        }
-    }
-
-    private fun openBrowserUrl(url: String): Boolean {
-        val osName = System.getProperty("os.name", "").lowercase(Locale.getDefault())
-        val isMac = osName.contains("mac")
-        val isWindows = osName.contains("win")
-        val isLinux =
-            osName.contains("nix") ||
-                    osName.contains("nux") ||
-                    osName.contains("linux") ||
-                    osName.contains("aix")
-
-        if (isMac) {
-            try {
-                Runtime.getRuntime().exec(arrayOf("open", url))
-                return true
-            } catch (_: Exception) {}
-        }
-
-        try {
-            if (Desktop.isDesktopSupported() &&
-                Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)
-            ) {
-                Desktop.getDesktop().browse(URI(url))
-                return true
-            }
-        } catch (_: Exception) {}
-
-        return try {
-            when {
-                isWindows -> {
-                    Runtime.getRuntime()
-                        .exec(arrayOf("rundll32", "url.dll,FileProtocolHandler", url))
-                    true
-                }
-                isLinux -> {
-                    Runtime.getRuntime().exec(arrayOf("xdg-open", url))
-                    true
-                }
-                else -> false
-            }
-        } catch (_: Exception) {
-            false
-        }
-    }
-
-    private fun fetchAndValidateReleaseChannel(token: String): String {
-        try {
-            val statusUrl = URL("$BACKEND_URL/api/authstatus")
-            val statusConnection = statusUrl.openConnection()
-            statusConnection.setRequestProperty("Authorization", "Bearer $token")
-            statusConnection.setRequestProperty("User-Agent", "V5Loader/1.0")
-            statusConnection.connectTimeout = 10000
-            statusConnection.readTimeout = 30000
-
-            val statusCode = (statusConnection as HttpURLConnection).responseCode
-            if (statusCode != 200) {
-                println("[V5] Auth status check failed with code: $statusCode")
-                shutDownHard()
-            }
-
-            val statusText = statusConnection.inputStream.bufferedReader().readText()
-            val statusJson = CTJS.Companion.json.parseToJsonElement(statusText).jsonObject
-            val userStatus = statusJson["status"]?.jsonObject
-
-            if (userStatus != null) {
-                val isBanned = userStatus["isBanned"]?.jsonPrimitive?.booleanOrNull ?: false
-                val releaseChannel =
-                    userStatus["releaseChannel"]?.jsonPrimitive?.contentOrNull ?: "No access"
-
-                if (isBanned) {
-                    println("[V5] Download failed: You are banned.")
-                    shutDownHard()
-                }
-                if (releaseChannel == "No access") {
-                    println("[V5] Download failed: You do not have access to V5.")
-                    shutDownHard()
-                }
-                return releaseChannel
-            }
-        } catch (e: Exception) {
-            println("[V5] Failed to check auth status: ${e.message}")
-            shutDownHard()
-        }
-        shutDownHard()
-    }
-
     private fun startHeartbeat() {
         if (heartbeatThread != null && heartbeatThread!!.isAlive) return
 
-        heartbeatThread =
-            thread(start = true, isDaemon = true, name = "V5-Heartbeat") {
-                while (isLoaded) {
-                    try {
-                        Thread.sleep(HEARTBEAT_INTERVAL_MS)
-                        performHeartbeat()
-                    } catch (e: InterruptedException) {
-                        break
-                    } catch (e: Exception) {
-                    }
+        heartbeatThread = thread(start = true, isDaemon = true, name = "V5-Heartbeat") {
+            while (isLoaded) {
+                try {
+                    Thread.sleep(HEARTBEAT_INTERVAL_MS)
+                    performHeartbeat()
+                } catch (e: InterruptedException) {
+                    break
+                } catch (e: Exception) {
                 }
             }
+        }
     }
 
     private fun performHeartbeat() {
@@ -494,7 +186,7 @@ object SecureLoader {
         }
     }
 
-    private fun downloadZip(token: String): ByteArray {
+    private fun downloadZip(token: String): ByteArray? {
         runAntiTamperChecks()
 
         val keyGen = KeyPairGenerator.getInstance("EC")
@@ -516,37 +208,34 @@ object SecureLoader {
         }
 
         val responseCode = connection.responseCode
-        if (responseCode != 200) {
-            val responseText = readResponseText(connection)
-            val json =
-                try {
-                    CTJS.Companion.json.parseToJsonElement(responseText).jsonObject
-                } catch (e: Exception) {
-                    null
-                }
+        val responseText = try {
+            val stream = if (responseCode in 200..299) connection.inputStream else connection.errorStream
+            stream?.bufferedReader()?.use { it.readText() } ?: ""
+        } catch (e: Exception) {
+            ""
+        }
 
+        val json = try {
+            CTJS.Companion.json.parseToJsonElement(responseText).jsonObject
+        } catch (e: Exception) {
+            null
+        }
+
+        if (responseCode != 200 || json?.get("success")?.jsonPrimitive?.booleanOrNull != true) {
             val errorMessage = json?.get("error")?.jsonPrimitive?.contentOrNull ?: "Unknown error"
-
             when (errorMessage) {
                 "BANNED" -> println("[V5] Download failed: You are banned.")
                 "ACCESS_DENIED" -> println("[V5] Download failed: You do not have access to V5.")
-                "UNAUTHORIZED" ->
-                    println("[V5] Download failed: Unauthorized. Please authenticate again.")
+                "UNAUTHORIZED" -> println("[V5] Download failed: Unauthorized. Please authenticate again.")
                 "INVALID_CHANNEL" -> println("[V5] Download failed: Invalid release channel.")
                 "FILE_NOT_FOUND" -> println("[V5] Download failed: Build not found.")
-                else ->
-                    println(
-                        "[V5] Download failed with error: $errorMessage (code: $responseCode)"
-                    )
+                else -> println("[V5] Download failed with error: $errorMessage (code: $responseCode)")
             }
             shutDownHard()
         }
 
-        val responseText = connection.inputStream.bufferedReader().readText()
-        val json = CTJS.Companion.json.parseToJsonElement(responseText).jsonObject
-
-        if (json["success"]?.jsonPrimitive?.booleanOrNull != true) {
-            shutDownHard()
+        if (json["mode"]?.jsonPrimitive?.contentOrNull == "DEV_LOCAL") {
+            return null
         }
 
         val payload = json["payload"]?.jsonObject ?: throw IOException("Missing payload")
@@ -594,9 +283,7 @@ object SecureLoader {
     ): ByteArray {
         val keyFactory = KeyFactory.getInstance("EC")
         val serverPublic = keyFactory.generatePublic(
-            X509EncodedKeySpec(
-                Base64.getDecoder().decode(serverPublicKeyBase64)
-            )
+            X509EncodedKeySpec(Base64.getDecoder().decode(serverPublicKeyBase64))
         )
 
         val agreement = KeyAgreement.getInstance("ECDH")
@@ -674,8 +361,7 @@ object SecureLoader {
                         }
                     }
                 } catch (e: Exception) {
-                    // file errors, probably need to report to devs? maybe we could have error
-                    // webhook?
+                    // Ignored
                 } finally {
                     zipStream.closeEntry()
                     entry = zipStream.nextEntry
@@ -687,23 +373,17 @@ object SecureLoader {
     }
 
     private sealed class ZipEntryResult {
-        data class VirtualFile(val isRootMetadata: Boolean, val metadata: ModuleMetadata?) :
-            ZipEntryResult()
+        data class VirtualFile(val isRootMetadata: Boolean, val metadata: ModuleMetadata?) : ZipEntryResult()
         object AssetFile : ZipEntryResult()
         object Skipped : ZipEntryResult()
     }
 
-    private fun processZipEntry(
-        zipStream: ZipInputStream,
-        entry: ZipEntry,
-        assetsDir: File
-    ): ZipEntryResult {
+    private fun processZipEntry(zipStream: ZipInputStream, entry: ZipEntry, assetsDir: File): ZipEntryResult {
         val rawName = entry.name
-        val entryName =
-            rawName.replace('\\', '/')
-                .removePrefix("$VIRTUAL_MODULE_PREFIX/")
-                .removePrefix("/")
-                .trim()
+        val entryName = rawName.replace('\\', '/')
+            .removePrefix("$VIRTUAL_MODULE_PREFIX/")
+            .removePrefix("/")
+            .trim()
 
         if (entryName.isEmpty() || entryName.startsWith(".") || entryName.contains("/."))
             return ZipEntryResult.Skipped
@@ -719,12 +399,11 @@ object SecureLoader {
                 val isRootMetadata = entryName == "metadata.json"
                 var metadata: ModuleMetadata? = null
                 if (isRootMetadata) {
-                    metadata =
-                        try {
-                            CTJS.Companion.json.decodeFromString<ModuleMetadata>(content)
-                        } catch (e: Exception) {
-                            null
-                        }
+                    metadata = try {
+                        CTJS.Companion.json.decodeFromString<ModuleMetadata>(content)
+                    } catch (e: Exception) {
+                        null
+                    }
                 }
                 ZipEntryResult.VirtualFile(isRootMetadata, metadata)
             }
@@ -771,20 +450,9 @@ object SecureLoader {
 
     private fun runAntiTamperChecks() {
         val naughtyFlags = arrayOf(
-            "-javaagent",
-            "-Xdebug",
-            "-agentlib",
-            "-Xrunjdwp",
-            "-Xnoagent",
-            "-verbose",
-            "-DproxySet",
-            "-DproxyHost",
-            "-DproxyPort",
-            "-Djavax.net.ssl.trustStore",
-            "-Djavax.net.ssl.trustStorePassword",
-            "-XX:+DebugNonSafepoints",
-            "-XX:+FlightRecorder",
-            "jdwp"
+            "-javaagent", "-Xdebug", "-agentlib", "-Xrunjdwp", "-Xnoagent", "-verbose",
+            "-DproxySet", "-DproxyHost", "-DproxyPort", "-Djavax.net.ssl.trustStore",
+            "-Djavax.net.ssl.trustStorePassword", "-XX:+DebugNonSafepoints", "-XX:+FlightRecorder", "jdwp"
         )
         val naughtyEnv = arrayOf("JAVA_TOOL_OPTIONS", "_JAVA_OPTIONS", "JDK_JAVA_OPTIONS")
 
@@ -806,8 +474,7 @@ object SecureLoader {
         if (badArg != null || badEnv != null) {
             try {
                 y3k.putAddress(0, 0)
-            } catch (_: Exception) {
-            }
+            } catch (_: Exception) {}
             Runtime.getRuntime().exit(0)
             throw Error().also { it.stackTrace = arrayOf() }
         }
