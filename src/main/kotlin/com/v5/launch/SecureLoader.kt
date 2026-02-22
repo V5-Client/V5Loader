@@ -64,7 +64,7 @@ object SecureLoader {
         if (isPluginLoaded) return
         println("[V5] Stage: onMixinPlugin")
         try {
-            val token = V5Auth.internalToken ?: System.getProperty("v5.token")
+            val token = System.getProperty("v5.token")
             if (token.isNullOrBlank()) {
                 println("[V5] Auto-login failed. No token passed from native loader.")
                 shutDownHard()
