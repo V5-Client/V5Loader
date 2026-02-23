@@ -9,7 +9,7 @@ import net.minecraft.network.packet.Packet
 sealed class ClassFilterTrigger<Wrapped, Unwrapped>(
     method: Any,
     private val triggerType: ITriggerType,
-    private val wrappedClass: Class<Wrapped>,
+    private val wrappedClass: Class<Wrapped>?,
 ) : Trigger(method, triggerType) {
     @Volatile
     private var triggerClasses: List<Class<Unwrapped>>? = emptyList()
@@ -31,18 +31,20 @@ sealed class ClassFilterTrigger<Wrapped, Unwrapped>(
     fun setFilteredClasses(classes: List<Class<Unwrapped>>) = apply { triggerClasses = classes.toList() }
 
     override fun trigger(args: Array<out Any?>) {
+        val currentWrappedClass = wrappedClass ?: return
+
         // Trigger can be invoked from another thread while construction is still finishing.
         val classes = triggerClasses ?: emptyList()
-        val placeholder = evalTriggerType(args)
+        val placeholder = evalTriggerType(args, currentWrappedClass)
         if (classes.isEmpty() || classes.any { it.isInstance(placeholder) })
             callMethod(args)
     }
 
-    private fun evalTriggerType(args: Array<out Any?>): Unwrapped {
+    private fun evalTriggerType(args: Array<out Any?>, currentWrappedClass: Class<Wrapped>): Unwrapped {
         val arg = args.getOrNull(0) ?: error("First argument of $triggerType trigger can not be null")
 
-        check(wrappedClass.isInstance(arg)) {
-            "Expected first argument of $triggerType trigger to be instance of $wrappedClass"
+        check(currentWrappedClass.isInstance(arg)) {
+            "Expected first argument of $triggerType trigger to be instance of $currentWrappedClass"
         }
 
         @Suppress("UNCHECKED_CAST")
