@@ -11,7 +11,8 @@ sealed class ClassFilterTrigger<Wrapped, Unwrapped>(
     private val triggerType: ITriggerType,
     private val wrappedClass: Class<Wrapped>,
 ) : Trigger(method, triggerType) {
-    private var triggerClasses: List<Class<Unwrapped>> = emptyList()
+    @Volatile
+    private var triggerClasses: List<Class<Unwrapped>>? = emptyList()
 
     /**
      * Alias for `setFilteredClasses([A.class])`
@@ -27,11 +28,13 @@ sealed class ClassFilterTrigger<Wrapped, Unwrapped>(
      * @param classes The classes for which this trigger should run for
      * @return This trigger object for chaining
      */
-    fun setFilteredClasses(classes: List<Class<Unwrapped>>) = apply { triggerClasses = classes }
+    fun setFilteredClasses(classes: List<Class<Unwrapped>>) = apply { triggerClasses = classes.toList() }
 
     override fun trigger(args: Array<out Any?>) {
+        // Trigger can be invoked from another thread while construction is still finishing.
+        val classes = triggerClasses ?: emptyList()
         val placeholder = evalTriggerType(args)
-        if (triggerClasses.isEmpty() || triggerClasses.any { it.isInstance(placeholder) })
+        if (classes.isEmpty() || classes.any { it.isInstance(placeholder) })
             callMethod(args)
     }
 
