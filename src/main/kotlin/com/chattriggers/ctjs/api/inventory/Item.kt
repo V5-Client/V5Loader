@@ -111,13 +111,16 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
     // TODO: make a component wrapper?
     fun getNBT() = mcValue.components
 
-    private fun drawWithContext(context: DrawContext, x: Float, y: Float, scale: Float) {
+    private fun drawWithContext(context: DrawContext, x: Float, y: Float, scale: Float, flushDeferred: Boolean = false) {
         context.matrices.pushMatrix()
         context.matrices.translate(x, y)
         context.matrices.scale(scale, scale)
 
         try {
             context.drawItem(mcValue, 0, 0)
+            if (flushDeferred) {
+                context.drawDeferredElements()
+            }
         } catch (e: Exception) {
             println("Draw Error: ${e.message}")
         } finally {
@@ -137,7 +140,7 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
         if (mcValue.isEmpty) return
         NVGRenderer.queueOverEverything(Runnable {
             val context = DrawContextHolder.currentContext ?: return@Runnable
-            drawWithContext(context, x, y, scale)
+            drawWithContext(context, x, y, scale, flushDeferred = true)
         })
     }
 
