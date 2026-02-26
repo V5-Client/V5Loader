@@ -11,6 +11,10 @@ jobs:
     name: Build
     runs-on: "blacksmith-8vcpu-ubuntu-2404"
 
+    env:
+      NPM_GLOBAL_PREFIX: ~/.npm-global
+      WRANGLER_VERSION: latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,6 +32,30 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Cache Wrangler (npm global)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ~/.npm-global
+          key: "${{ runner.os }}-wrangler-${{ env.WRANGLER_VERSION }}"
+          restore-keys: |
+            ${{ runner.os }}-wrangler-
+
+      - name: Install Wrangler
+        run: |
+          mkdir -p "$NPM_GLOBAL_PREFIX"
+          npm config set prefix "$NPM_GLOBAL_PREFIX"
+          echo "$NPM_GLOBAL_PREFIX/bin" >> $GITHUB_PATH
+          if ! command -v wrangler >/dev/null 2>&1; then
+            if [ "$WRANGLER_VERSION" = "latest" ]; then
+              npm install -g wrangler@latest
+            else
+              npm install -g wrangler@$WRANGLER_VERSION
+            fi
+          fi
+          wrangler --version
+
       - name: Build
         run: ./gradlew --no-daemon build -Pfull
 
@@ -38,16 +66,10 @@ jobs:
       - name: Run grunt obfuscation
         run: java -jar grunt-main.jar cfg.json
 
-      - name: Get Short SHA
-        id: sha
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
       - name: Upload Loader to Cloudflare R2
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '3'
-          command: >
-            r2 object put v5-builds/V5-Loader.jar
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          wrangler r2 object put v5-builds/V5-Loader.jar \
             --file V5-Loader.jar
