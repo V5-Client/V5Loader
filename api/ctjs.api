@@ -1164,6 +1164,11 @@ public final class com/chattriggers/ctjs/api/inventory/Item : com/chattriggers/c
 	public final fun draw (FF)V
 	public final fun draw (FFF)V
 	public static synthetic fun draw$default (Lcom/chattriggers/ctjs/api/inventory/Item;FFFILjava/lang/Object;)V
+	public final fun drawItem ()V
+	public final fun drawItem (F)V
+	public final fun drawItem (FF)V
+	public final fun drawItem (FFF)V
+	public static synthetic fun drawItem$default (Lcom/chattriggers/ctjs/api/inventory/Item;FFFILjava/lang/Object;)V
 	public static final fun fromMC (Lnet/minecraft/item/ItemStack;)Lcom/chattriggers/ctjs/api/inventory/Item;
 	public final fun getDamage ()I
 	public final fun getDurability ()I
@@ -3242,6 +3247,7 @@ public final class com/v5/render/NVGRenderer {
 	public static final fun loadImage (Ljava/lang/String;)Ljava/lang/String;
 	public static final fun popScissor ()V
 	public static final fun pushScissor (FFFF)V
+	public static final fun queueOverEverything (Ljava/lang/Runnable;)V
 	public static final fun registerV5Render (Ljava/lang/Runnable;)V
 	public static final fun resetScissor ()V
 	public static final fun restore ()V
