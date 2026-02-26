@@ -11,6 +11,9 @@ jobs:
     name: Build
     runs-on: "blacksmith-8vcpu-ubuntu-2404"
 
+    env:
+      WRANGLER_VERSION: 4.67.0
+
     steps:
       - uses: actions/checkout@v4
 
@@ -22,7 +25,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - uses: actions/cache@v4
         with:
@@ -33,8 +35,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Cache Wrangler
+        id: wrangler-cache
+        uses: actions/cache@v4
+        with:
+          path: $HOME/.wrangler-bin
+          key: "${{ runner.os }}-wrangler-${{ env.WRANGLER_VERSION }}"
+
+      - name: Install Wrangler (if cache miss)
+        if: steps.wrangler-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euxo pipefail
+          mkdir -p "$HOME/.wrangler-bin"
+          npm install --prefix "$HOME/.wrangler-bin" wrangler@$WRANGLER_VERSION
+
+      - name: Add Wrangler to PATH
+        run: echo "$HOME/.wrangler-bin/node_modules/.bin" >> $GITHUB_PATH
+
       - name: Verify Wrangler
-        run: npx wrangler@latest --version
+        run: wrangler --version
 
       - name: Build
         run: ./gradlew --no-daemon build -Pfull
@@ -51,5 +70,5 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          npx wrangler@latest r2 object put v5-builds/V5-Loader.jar \
+          wrangler r2 object put v5-builds/V5-Loader.jar \
             --file V5-Loader.jar
