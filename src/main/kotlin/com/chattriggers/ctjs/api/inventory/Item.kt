@@ -12,6 +12,7 @@ import com.chattriggers.ctjs.api.world.block.BlockPos
 import com.chattriggers.ctjs.internal.Skippable
 import com.chattriggers.ctjs.internal.TooltipOverridable
 import com.chattriggers.ctjs.internal.utils.asMixin
+import com.v5.render.NVGRenderer
 import com.v5.render.helper.DrawContextHolder
 import net.minecraft.block.pattern.CachedBlockPosition
 import net.minecraft.client.render.OverlayTexture
@@ -110,27 +111,34 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
     // TODO: make a component wrapper?
     fun getNBT() = mcValue.components
 
-    @JvmOverloads
-    fun draw(x: Float = 0f, y: Float = 0f, scale: Float = 1f) {
-        if (mcValue.isEmpty) return
-        val context = DrawContextHolder.currentContext ?: return
-
+    private fun drawWithContext(context: DrawContext, x: Float, y: Float, scale: Float) {
         context.matrices.pushMatrix()
         context.matrices.translate(x, y)
         context.matrices.scale(scale, scale)
 
-        // DEBUG: Ensure we are drawing at a Z-level that isn't hidden
-        // Standard DrawContext.drawItem handles its own Z, but we can wrap it
         try {
-            // In 1.21.10, drawItem is the safest method.
-            // Ensure mcValue is a valid net.minecraft.item.ItemStack
             context.drawItem(mcValue, 0, 0)
         } catch (e: Exception) {
-            // If this hits, the context is likely invalid/disposed
             println("Draw Error: ${e.message}")
         } finally {
             context.matrices.popMatrix()
         }
+    }
+
+    @JvmOverloads
+    fun draw(x: Float = 0f, y: Float = 0f, scale: Float = 1f) {
+        if (mcValue.isEmpty) return
+        val context = DrawContextHolder.currentContext ?: return
+        drawWithContext(context, x, y, scale)
+    }
+
+    @JvmOverloads
+    fun drawItem(x: Float = 0f, y: Float = 0f, scale: Float = 1f) {
+        if (mcValue.isEmpty) return
+        NVGRenderer.queueOverEverything(Runnable {
+            val context = DrawContextHolder.currentContext ?: return@Runnable
+            drawWithContext(context, x, y, scale)
+        })
     }
 
     override fun toString(): String = "Item{name=${getName()}, type=${type.getRegistryName()}, size=${getStackSize()}}"

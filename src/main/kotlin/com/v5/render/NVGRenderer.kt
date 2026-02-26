@@ -25,6 +25,7 @@ import javax.imageio.ImageIO
 import javax.imageio.metadata.IIOMetadataNode
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.io.File
 import java.io.FileInputStream
 
@@ -85,6 +86,7 @@ object NVGRenderer {
     private const val MAX_DOWNLOADS_PER_FRAME = 5
 
     private val renderCallbacks = CopyOnWriteArrayList<Runnable>()
+    private val overEverythingQueue = ConcurrentLinkedQueue<Runnable>()
 
     private var drawing = false
     @JvmField var vg = -1L
@@ -142,6 +144,20 @@ object NVGRenderer {
                 e.printStackTrace()
             }
         }
+
+        while (true) {
+            val runnable = overEverythingQueue.poll() ?: break
+            try {
+                runnable.run()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    @JvmStatic
+    fun queueOverEverything(runnable: Runnable) {
+        overEverythingQueue.add(runnable)
     }
 
     private fun isGameReady(): Boolean {
