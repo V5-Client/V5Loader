@@ -9,10 +9,7 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: "blacksmith-8vcpu-ubuntu-2404"
-
-    env:
-      WRANGLER_VERSION: 4.67.0
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -22,10 +19,6 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - uses: actions/cache@v4
         with:
           path: |
@@ -34,26 +27,6 @@ jobs:
           key: "${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle/*.versions.toml') }}"
           restore-keys: |
             ${{ runner.os }}-gradle-
-
-      - name: Cache Wrangler
-        id: wrangler-cache
-        uses: actions/cache@v4
-        with:
-          path: $HOME/.wrangler-bin
-          key: "${{ runner.os }}-wrangler-${{ env.WRANGLER_VERSION }}"
-
-      - name: Install Wrangler (if cache miss)
-        if: steps.wrangler-cache.outputs.cache-hit != 'true'
-        run: |
-          set -euxo pipefail
-          mkdir -p "$HOME/.wrangler-bin"
-          npm install --prefix "$HOME/.wrangler-bin" wrangler@$WRANGLER_VERSION
-
-      - name: Add Wrangler to PATH
-        run: echo "$HOME/.wrangler-bin/node_modules/.bin" >> $GITHUB_PATH
-
-      - name: Verify Wrangler
-        run: wrangler --version
 
       - name: Build
         run: ./gradlew --no-daemon build -Pfull
@@ -65,10 +38,16 @@ jobs:
       - name: Run grunt obfuscation
         run: java -jar grunt-main.jar cfg.json
 
+      - name: Get Short SHA
+        id: sha
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Upload Loader to Cloudflare R2
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          wrangler r2 object put v5-builds/V5-Loader.jar \
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '3'
+          command: >
+            r2 object put v5-builds/V5-Loader.jar
             --file V5-Loader.jar
