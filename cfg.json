@@ -4,9 +4,9 @@
     "Output": "V5-Loader.jar",
     "Libraries": [],
     "Exclusions": [
-      "com/chattriggers/**",
-      "org/mozilla/**",
-      "gg/essential/**"
+      "com/chattriggers/",
+      "org/mozilla/",
+      "gg/essential/"
     ],
     "MixinPackage": [
       "com/v5/mixins/",
@@ -33,9 +33,9 @@
     "RenameSourceDebug": false,
     "SourceNames": [],
     "Exclusion": [
-      "com/chattriggers/**",
-      "org/mozilla/**",
-      "gg/essential/**"
+      "com/chattriggers/",
+      "org/mozilla/",
+      "gg/essential/"
     ]
   },
   "Shrinking": {
@@ -47,7 +47,7 @@
       "Ljava/lang/Override;"
     ],
     "Exclusion": [
-      "com/chattriggers/**"
+      "com/chattriggers/"
     ]
   },
   "KotlinOptimizer": {
@@ -65,7 +65,7 @@
     "ReplaceLdc": true,
     "IntrinsicsExclusion": [],
     "MetadataExclusion": [
-      "com/chattriggers/**"
+      "com/chattriggers/"
     ]
   },
   "EnumOptimize": {
@@ -116,9 +116,9 @@
     "Arrayed": false,
     "ReplaceInvokeDynamics": true,
     "Exclusion": [
-      "com/chattriggers/**",
-      "org/mozilla/**",
-      "gg/essential/**"
+      "com/chattriggers/",
+      "org/mozilla/",
+      "gg/essential/"
     ]
   },
   "NumberEncrypt": {
@@ -128,7 +128,7 @@
     "Arrayed": false,
     "MaxInsnSize": 16384,
     "Exclusion": [
-      "com/chattriggers/**"
+      "com/chattriggers/"
     ]
   },
   "ArithmeticEncrypt": {
@@ -136,11 +136,11 @@
     "Intensity": 1,
     "MaxInsnSize": 16384,
     "Exclusion": [
-      "com/chattriggers/**"
+      "com/chattriggers/"
     ]
   },
   "Controlflow": {
-    "Enabled": false,
+    "Enabled": true,
     "Intensity": 1,
     "ExecuteBeforeEncrypt": false,
     "SwitchExtractor": true,
@@ -170,8 +170,13 @@
     "MaxJunkCode": 2,
     "ExpandedJunkCode": true,
     "Exclusion": [
-      "com/chattriggers/**",
-      "org/mozilla/**"
+      "com/chattriggers/",
+      "org/mozilla/",
+      "com/v5/launch/",
+      "com/v5/launch/SecureLoader",
+      "com/v5/launch/SecureLoader$**",
+      "com/v5/launch/HWID",
+      "com/v5/launch/HWID$**"
     ]
   },
   "ConstBuilder": {
@@ -191,11 +196,11 @@
     "Float": true,
     "Double": true,
     "String": true,
-    "HeavyEncrypt": false,
+    "HeavyEncrypt": true,
     "DontScramble": true,
     "NativeAnnotation": false,
     "Exclusion": [
-      "com/chattriggers/**"
+      "com/chattriggers/"
     ]
   },
   "RedirectStringEquals": {
@@ -204,7 +209,7 @@
     "Exclusion": []
   },
   "FieldScramble": {
-    "Enabled": false,
+    "Enabled": true,
     "Intensity": 1,
     "ReplacePercentage": 10,
     "RandomName": false,
@@ -214,16 +219,20 @@
     "SetField": true,
     "GenerateOuterClass": false,
     "NativeAnnotation": false,
-    "ExcludedClasses": [],
+    "ExcludedClasses": [
+      "com/chattriggers/"
+    ],
     "ExcludedFieldName": []
   },
   "MethodScramble": {
-    "Enabled": false,
+    "Enabled": true,
     "ReplacePercentage": 10,
     "GenerateOuterClass": false,
     "RandomCall": true,
     "NativeAnnotation": false,
-    "ExcludedClasses": [],
+    "ExcludedClasses": [
+      "com/chattriggers/"
+    ],
     "ExcludedMethodName": []
   },
   "NativeCandidate": {
@@ -248,12 +257,12 @@
     "DeleteLocalVars": false,
     "DeleteParameters": false,
     "Exclusion": [
-      "com/chattriggers/**",
-      "org/mozilla/**"
+      "com/chattriggers/",
+      "org/mozilla/"
     ]
   },
   "MethodRename": {
-    "Enabled": false,
+    "Enabled": true,
     "Enums": true,
     "Interfaces": false,
     "Dictionary": "Alphabet",
@@ -262,7 +271,7 @@
     "Prefix": "",
     "Reversed": false,
     "Exclusion": [
-      "com/chattriggers/**",
+      "com/chattriggers/",
       "com/v5/api/V5Auth",
       "com/v5/qol/DiscordRPC",
       "com/v5/keybind/KeyBindUtils",
@@ -273,8 +282,8 @@
       "com/v5/render/NVGRenderer",
       "com/v5/render/RenderUtils",
       "com/v5/screen/WelcomeScreen",
-      "org/mozilla/**",
-      "gg/essential/**"
+      "org/mozilla/",
+      "gg/essential/"
     ],
     "ExcludedName": [
       "methodName",
@@ -285,13 +294,13 @@
     ]
   },
   "FieldRename": {
-    "Enabled": false,
+    "Enabled": true,
     "Dictionary": "Alphabet",
     "RandomKeywordPrefix": false,
     "Prefix": "",
     "Reversed": false,
     "Exclusion": [
-      "com/chattriggers/**",
+      "com/chattriggers/",
       "com/v5/api/V5Auth",
       "com/v5/qol/DiscordRPC",
       "com/v5/keybind/KeyBindUtils",
@@ -302,8 +311,8 @@
       "com/v5/render/NVGRenderer",
       "com/v5/render/RenderUtils",
       "com/v5/screen/WelcomeScreen",
-      "org/mozilla/**",
-      "gg/essential/**"
+      "org/mozilla/",
+      "gg/essential/"
     ],
     "ExcludedName": [
       "INSTANCE",
@@ -366,33 +375,39 @@
     "RefmapFile": "mixins.example.refmap.json",
     "Exclusion": [
       "net/spartanb312/Example",
-      "net/spartanb312/component/Component**",
-      "net/spartanb312/package/**"
+      "net/spartanb312/component/Component",
+      "net/spartanb312/package/"
     ]
   },
   "InvokeDynamic": {
-    "Enabled": false,
+    "Enabled": true,
     "ReplacePercentage": 10,
-    "HeavyProtection": false,
+    "HeavyProtection": true,
     "MetadataClass": "net/spartanb312/grunt/GruntMetadata",
-    "MassiveRandomBlank": false,
-    "Reobfuscate": true,
-    "EnhancedFlowReobf": false,
-    "BSMNativeAnnotation": false,
-    "Exclusion": []
+    "MassiveRandomBlank": true,
+    "Reobfuscate": false,
+    "EnhancedFlowReobf": true,
+    "BSMNativeAnnotation": true,
+    "Exclusion": [
+      "com/chattriggers/"
+    ]
   },
   "ShuffleMembers": {
-    "Enabled": false,
+    "Enabled": true,
     "Methods": true,
     "Fields": true,
     "Annotations": true,
     "Exceptions": true,
-    "Exclusion": []
+    "Exclusion": [
+      "com/chattriggers/"
+    ]
   },
   "Crasher": {
-    "Enabled": false,
+    "Enabled": true,
     "Random": false,
-    "Exclusion": []
+    "Exclusion": [
+      "com/chattriggers/"
+    ]
   },
   "Watermark": {
     "Enabled": false,
