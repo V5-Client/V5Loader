@@ -272,6 +272,7 @@
       "com/v5/pathfinding/PathManager",
       "com/v5/render/NVGRenderer",
       "com/v5/render/RenderUtils",
+      "com/v5/screen/WelcomeScreen",
       "org/mozilla/**",
       "gg/essential/**"
     ],
@@ -300,6 +301,7 @@
       "com/v5/pathfinding/PathManager",
       "com/v5/render/NVGRenderer",
       "com/v5/render/RenderUtils",
+      "com/v5/screen/WelcomeScreen",
       "org/mozilla/**",
       "gg/essential/**"
     ],
@@ -337,6 +339,8 @@
       "com/v5/render/NVGRenderer$**",
       "com/v5/render/RenderUtils",
       "com/v5/render/RenderUtils$**",
+      "com/v5/screen/WelcomeScreen",
+      "com/v5/screen/WelcomeScreen$**",
       "org/mozilla/**",
       "gg/essential/**"
     ]
