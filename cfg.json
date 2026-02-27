@@ -322,7 +322,7 @@
   "ClassRename": {
     "Enabled": true,
     "Dictionary": "Alphabet",
-    "Parent": "net/spartanb312/obf/",
+    "Parent": "com/v5/",
     "Prefix": "",
     "Reversed": false,
     "Shuffled": false,
