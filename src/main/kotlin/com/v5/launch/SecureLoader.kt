@@ -418,6 +418,8 @@ object SecureLoader {
         isLoaded = false
         isPluginLoaded = false
         areMixinsApplied = false
+        isDevMode = false
+        rootMetadata = null
         heartbeatThread?.interrupt()
         heartbeatThread = null
         JSLoader.clearVirtualFiles()
