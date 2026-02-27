@@ -10,23 +10,23 @@ object MovementWalk {
 
   @JvmStatic
   fun traverse(
-      ctx: CalculationContext,
-      x: Int, y: Int, z: Int,
-      destX: Int, destZ: Int,
-      res: MovementResult
+    ctx: CalculationContext,
+    x: Int, y: Int, z: Int,
+    destX: Int, destZ: Int,
+    res: MovementResult
   ) {
     if (!ctx.safeCache.isSafe(destX, y, destZ)) return
 
     res.set(destX, y, destZ)
-    res.cost = ctx.cost.SPRINT_ONE_BLOCK_TIME + ctx.wdc.getPathPenalty(destX, y, destZ)
+    res.cost = ctx.cost.SPRINT_ONE_BLOCK_TIME + ctx.wdc.getPathPenalty(destX, y, destZ) + ctx.getFluidPenalty(destX, y, destZ)
   }
 
   @JvmStatic
   fun diagonal(
-      ctx: CalculationContext,
-      x: Int, y: Int, z: Int,
-      destX: Int, destZ: Int,
-      res: MovementResult
+    ctx: CalculationContext,
+    x: Int, y: Int, z: Int,
+    destX: Int, destZ: Int,
+    res: MovementResult
   ) {
     if (!ctx.safeCache.isSafe(destX, y, destZ)) return
 
@@ -46,15 +46,15 @@ object MovementWalk {
     if (pre.isSolid(x, y + 1, destZ, stateZHead)) return
 
     res.set(destX, y, destZ)
-    res.cost = ctx.cost.SPRINT_DIAGONAL_TIME + ctx.wdc.getPathPenalty(destX, y, destZ)
+    res.cost = ctx.cost.SPRINT_DIAGONAL_TIME + ctx.wdc.getPathPenalty(destX, y, destZ) + ctx.getFluidPenalty(destX, y, destZ)
   }
 
   @JvmStatic
   fun ascend(
-      ctx: CalculationContext,
-      x: Int, y: Int, z: Int,
-      destX: Int, destZ: Int,
-      res: MovementResult
+    ctx: CalculationContext,
+    x: Int, y: Int, z: Int,
+    destX: Int, destZ: Int,
+    res: MovementResult
   ) {
     val precomputed = ctx.precomputedData
     val bsa = ctx.bsa
@@ -94,14 +94,15 @@ object MovementWalk {
     }
 
     res.cost = baseCost + ctx.wdc.getPathPenalty(destX, y + 1, destZ)
+    res.cost = baseCost + ctx.wdc.getPathPenalty(destX, y + 1, destZ) + ctx.getFluidPenalty(destX, y + 1, destZ)
   }
 
   @JvmStatic
   fun descend(
-      ctx: CalculationContext,
-      x: Int, y: Int, z: Int,
-      destX: Int, destZ: Int,
-      res: MovementResult
+    ctx: CalculationContext,
+    x: Int, y: Int, z: Int,
+    destX: Int, destZ: Int,
+    res: MovementResult
   ) {
     val precomputed = ctx.precomputedData
     val bsa = ctx.bsa
@@ -137,7 +138,7 @@ object MovementWalk {
         val excess = fallDist - 3
         totalCost += excess * excess * 2.0
       }
-      totalCost += ctx.wdc.getPathPenalty(destX, destY, destZ)
+      totalCost += ctx.wdc.getPathPenalty(destX, destY, destZ) + ctx.getFluidPenalty(destX, destY, destZ)
 
       res.cost = totalCost
       return

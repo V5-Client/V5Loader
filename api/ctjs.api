@@ -3701,6 +3701,7 @@ public final class com/v5/swift/finder/movement/CalculationContext {
 	public final fun get (III)Lnet/minecraft/block/BlockState;
 	public final fun getBsa ()Lcom/v5/swift/finder/helper/BlockStateAccessor;
 	public final fun getCost ()Lcom/v5/swift/finder/costs/ActionCosts;
+	public final fun getFluidPenalty (III)D
 	public final fun getMaxFallHeight ()I
 	public final fun getMc ()Lnet/minecraft/client/MinecraftClient;
 	public final fun getPrecomputedData ()Lcom/v5/swift/finder/precompute/PrecomputedData;
@@ -3818,6 +3819,7 @@ public final class com/v5/swift/finder/precompute/PrecomputedData {
 	public static final field CARPET_LIKE I
 	public static final field COMPUTED I
 	public static final field Companion Lcom/v5/swift/finder/precompute/PrecomputedData$Companion;
+	public static final field FLUID I
 	public static final field FLY_PASSABLE I
 	public static final field FULL_CUBE I
 	public static final field PASSABLE I
@@ -3832,6 +3834,8 @@ public final class com/v5/swift/finder/precompute/PrecomputedData {
 	public static synthetic fun isBottomSlab$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isCarpetLike (IIILnet/minecraft/block/BlockState;)Z
 	public static synthetic fun isCarpetLike$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public final fun isFluid (IIILnet/minecraft/block/BlockState;)Z
+	public static synthetic fun isFluid$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isFullCube (IIILnet/minecraft/block/BlockState;)Z
 	public static synthetic fun isFullCube$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isPassable (IIILnet/minecraft/block/BlockState;)Z

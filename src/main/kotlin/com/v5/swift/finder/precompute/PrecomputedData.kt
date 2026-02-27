@@ -19,6 +19,7 @@ class PrecomputedData(private val bsa: BlockStateAccessor) {
     const val CARPET_LIKE = 1 shl 5
     const val BLOCKING_WALL = 1 shl 6
     const val FLY_PASSABLE = 1 shl 7
+    const val FLUID = 1 shl 8
   }
 
   private fun compute(id: Int, state: BlockState, x: Int, y: Int, z: Int): Int {
@@ -30,6 +31,10 @@ class PrecomputedData(private val bsa: BlockStateAccessor) {
 
     var data = COMPUTED
     val block = state.block
+
+    if (!state.fluidState.isEmpty) {
+      data = data or FLUID
+    }
 
     if (block is CarpetBlock) {
       data = data or PASSABLE or CARPET_LIKE
@@ -130,4 +135,6 @@ class PrecomputedData(private val bsa: BlockStateAccessor) {
   fun isCarpetLike(x: Int, y: Int, z: Int, state: BlockState = bsa.get(x, y, z)): Boolean =
     (getData(x, y, z, state) and CARPET_LIKE) != 0
 
+  fun isFluid(x: Int, y: Int, z: Int, state: BlockState = bsa.get(x, y, z)): Boolean =
+    (getData(x, y, z, state) and FLUID) != 0
 }

@@ -31,6 +31,13 @@ class CalculationContext {
 
   @JvmField var cruiseY: Int = 0
 
+  fun getFluidPenalty(x: Int, y: Int, z: Int): Double {
+    var penalty = 0.0
+    if (precomputedData.isFluid(x, y, z)) penalty += 20.0
+    if (precomputedData.isFluid(x, y + 1, z)) penalty += 20.0
+    return penalty
+  }
+
   fun setFlightParameters(sx: Int, sy: Int, sz: Int, gx: Int, gy: Int, gz: Int) {
     startX = sx
     startY = sy
