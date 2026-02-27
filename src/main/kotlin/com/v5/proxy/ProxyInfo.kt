@@ -1,7 +1,9 @@
 package com.v5.proxy
 
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import java.io.File
 
 object ProxyInfo {
@@ -24,16 +26,13 @@ object ProxyInfo {
 
         cachedProxies.clear()
         if (text.isNotBlank()) {
-            val loaded: List<Proxy>? = gson.fromJson(text, object : TypeToken<List<Proxy>>() {}.type)
-            if (loaded != null) {
-                cachedProxies.addAll(loaded)
-            }
+            cachedProxies.addAll(parseProxies(text))
         }
         isLoaded = true
     }
 
     private fun saveProxies() {
-        getProxyConfigFile().writeText(gson.toJson(cachedProxies))
+        getProxyConfigFile().writeText(serializeProxies(cachedProxies))
     }
 
     fun addProxy(proxy: Proxy) {
@@ -93,5 +92,60 @@ object ProxyInfo {
         }
 
         return config
+    }
+
+    private fun parseProxies(text: String): List<Proxy> {
+        val element = runCatching { JsonParser.parseString(text) }.getOrNull() ?: return emptyList()
+        if (!element.isJsonArray) return emptyList()
+
+        return element.asJsonArray.mapNotNull { entry ->
+            val obj = entry.takeIf { it.isJsonObject }?.asJsonObject ?: return@mapNotNull null
+            jsonToProxy(obj)
+        }
+    }
+
+    private fun serializeProxies(proxies: List<Proxy>): String {
+        val json = JsonArray()
+        proxies.forEach { proxy ->
+            json.add(proxyToJson(proxy))
+        }
+        return gson.toJson(json)
+    }
+
+    private fun jsonToProxy(obj: JsonObject): Proxy {
+        return Proxy(
+            ip = obj.getString("ip", ""),
+            port = obj.getInt("port", 1080),
+            name = obj.getString("name", "Proxy"),
+            username = obj.getString("username", ""),
+            password = obj.getString("password", ""),
+            isEnabled = obj.getBoolean("isEnabled", false)
+        )
+    }
+
+    private fun proxyToJson(proxy: Proxy): JsonObject {
+        return JsonObject().apply {
+            addProperty("ip", proxy.ip)
+            addProperty("port", proxy.port)
+            addProperty("name", proxy.name)
+            addProperty("username", proxy.username)
+            addProperty("password", proxy.password)
+            addProperty("isEnabled", proxy.isEnabled)
+        }
+    }
+
+    private fun JsonObject.getString(key: String, fallback: String): String {
+        val value = this.get(key)
+        return if (value != null && !value.isJsonNull) value.asString else fallback
+    }
+
+    private fun JsonObject.getInt(key: String, fallback: Int): Int {
+        val value = this.get(key)
+        return if (value != null && !value.isJsonNull) runCatching { value.asInt }.getOrDefault(fallback) else fallback
+    }
+
+    private fun JsonObject.getBoolean(key: String, fallback: Boolean): Boolean {
+        val value = this.get(key)
+        return if (value != null && !value.isJsonNull) runCatching { value.asBoolean }.getOrDefault(fallback) else fallback
     }
 }
