@@ -1,6 +1,8 @@
 package com.v5.api
 
 object V5Auth {
+    private const val TOKEN_PROPERTY_KEY = "v5.token"
+
     @Volatile
     var internalToken: String? = null
 
@@ -12,9 +14,9 @@ object V5Auth {
         if (!didConsumeInitialPropertyToken) {
             synchronized(this) {
                 if (!didConsumeInitialPropertyToken) {
-                    val propertyToken = System.getProperty(v5.token)
+                    val propertyToken = System.getProperty(TOKEN_PROPERTY_KEY)
                     internalToken = propertyToken?.takeIf { it.isNotBlank() }
-                    System.clearProperty(v5.token)
+                    System.clearProperty(TOKEN_PROPERTY_KEY)
                     didConsumeInitialPropertyToken = true
                 }
             }
