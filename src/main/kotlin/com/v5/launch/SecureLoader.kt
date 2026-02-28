@@ -15,6 +15,7 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.FileInputStream
 import java.lang.management.ManagementFactory
 import java.net.HttpURLConnection
 import java.net.URL
@@ -108,6 +109,71 @@ object SecureLoader {
         val entryPath = "$VIRTUAL_MODULE_PREFIX/$mixinEntry"
         JSLoader.loadVirtualMixin(entryPath)
         areMixinsApplied = true
+    }
+
+    fun V5ModLoaderCheck(): Boolean {
+        val modsfile = java.io.File("./mods")
+        val a = modsfile.walk().filter { file -> file.isFile && file.extension.equals("jar", ignoreCase = true) && (file.name.startsWith("v5-", true) || file.name.startsWith("V5ModLoader", true))}.toList()
+        if (a.size != 1) {println("[V5] Why do you have multiple loaders?? make sure you only have one."); shutDownHard()}
+        val hash = calculateFileSha256(a.first())
+        val token = V5Auth.getJwtToken() ?: return false
+
+        val url = URL("$BACKEND_URL/api/hash/modloader?hash=$hash")
+        val connection = url.openConnection() as HttpURLConnection
+
+        return try {
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Authorization", "Bearer $token")
+            connection.setRequestProperty("User-Agent", "V5Loader/1.0")
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.connectTimeout = 10000
+            connection.readTimeout = 10000
+            connection.doOutput = true
+            connection.outputStream.use { }
+
+            val responseCode = connection.responseCode
+            val stream = if (responseCode in 200..299)
+                connection.inputStream
+            else
+                connection.errorStream
+
+            val responseText = stream?.bufferedReader()?.use { it.readText() } ?: ""
+
+            if (responseCode != 200) {
+                println("[V5] check failed ($responseCode): $responseText")
+                return false
+            }
+
+            val json = jsonParser.parseToJsonElement(responseText).jsonObject
+            val valid = json["valid"]?.jsonPrimitive?.booleanOrNull ?: false
+
+            if (!valid) {
+                //println("[V5] Invalid.")
+                shutDownHard()
+            }
+
+            valid
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    fun calculateFileSha256(file: File): String {
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+
+        FileInputStream(file).use { fis ->
+            val buffer = ByteArray(8192)
+            var read: Int
+
+            while (fis.read(buffer).also { read = it } != -1) {
+                digest.update(buffer, 0, read)
+            }
+        }
+
+        return digest.digest().joinToString("") { "%02x".format(it) }
     }
 
     fun onInitialize() {

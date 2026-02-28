@@ -3015,6 +3015,8 @@ public final class com/v5/launch/HWID {
 
 public final class com/v5/launch/SecureLoader {
 	public static final field INSTANCE Lcom/v5/launch/SecureLoader;
+	public final fun V5ModLoaderCheck ()Z
+	public final fun calculateFileSha256 (Ljava/io/File;)Ljava/lang/String;
 	public final fun isLoaded ()Z
 	public final fun onCTMixinApplication ()V
 	public final fun onInitialize ()V
