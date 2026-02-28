@@ -69,7 +69,6 @@ object SecureLoader {
                 println("[V5] Auto-login failed. No token passed from native loader.")
                 shutDownHard()
             }
-            V5Auth.setJwtToken(token)
 
             if (isDevMode) {
                 println("[V5] Hi Dev! Skipping loader step.")

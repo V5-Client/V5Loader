@@ -4,19 +4,23 @@ object V5Auth {
     @Volatile
     var internalToken: String? = null
 
+    @Volatile
+    private var didConsumeInitialPropertyToken = false
+
     @JvmStatic
     fun getJwtToken(): String? {
-        val token = internalToken
-        if (!token.isNullOrBlank()) return token
-
-        val propertyToken = System.getProperty("v5.token")
-        if (!propertyToken.isNullOrBlank()) {
-            internalToken = propertyToken
-            System.clearProperty("v5.token")
-            return propertyToken
+        if (!didConsumeInitialPropertyToken) {
+            synchronized(this) {
+                if (!didConsumeInitialPropertyToken) {
+                    val propertyToken = System.getProperty(v5.token)
+                    internalToken = propertyToken?.takeIf { it.isNotBlank() }
+                    System.clearProperty(v5.token)
+                    didConsumeInitialPropertyToken = true
+                }
+            }
         }
 
-        return null
+        return internalToken
     }
 
     @JvmStatic
