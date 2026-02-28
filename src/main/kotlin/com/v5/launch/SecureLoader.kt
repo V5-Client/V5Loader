@@ -120,6 +120,8 @@ object SecureLoader {
             return
         }
 
+        performHeartbeat()
+
         val metadata = rootMetadata
         if (metadata != null) {
             metadata.requires?.forEach { dependency ->
