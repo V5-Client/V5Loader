@@ -68,7 +68,7 @@ object SecureLoader {
 
     fun onMixinPlugin() {
         if (isPluginLoaded) return
-        V5ModLoaderCheck();
+        V5ModLoaderCheck()
         println("[V5] Stage: onMixinPlugin")
         try {
             val token = V5Auth.getJwtToken()
@@ -123,7 +123,7 @@ object SecureLoader {
         val connection = url.openConnection() as HttpURLConnection
 
         return try {
-            connection.requestMethod = "POST"
+            connection.requestMethod = "GET"
             connection.setRequestProperty("Authorization", "Bearer $token")
             connection.setRequestProperty("User-Agent", "V5Loader/1.0")
             connection.setRequestProperty("Content-Type", "application/json")
