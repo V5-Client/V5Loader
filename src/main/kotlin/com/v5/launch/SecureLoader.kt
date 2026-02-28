@@ -1,11 +1,11 @@
 package com.v5.launch
 
-import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
 import com.chattriggers.ctjs.internal.engine.module.ModuleMetadata
 import com.v5.api.V5Auth
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
@@ -43,6 +43,11 @@ object SecureLoader {
     private const val DEFAULT_HEARTBEAT_INTERVAL_MS = 150_000L // 2 minutes 30 seconds
     private const val DOWNLOAD_KDF_INFO = "v5-download-kek-v2"
     private val rng = SecureRandom()
+
+    private val jsonParser = Json {
+        useAlternativeNames = true
+        ignoreUnknownKeys = true
+    }
 
     @Volatile private var isDevMode = false
     @Volatile private var isPluginLoaded = false
@@ -174,7 +179,7 @@ object SecureLoader {
             val responseCode = connection.responseCode
             if (responseCode == 200) {
                 val responseText = connection.inputStream.bufferedReader().readText()
-                val json = CTJS.Companion.json.parseToJsonElement(responseText).jsonObject
+                val json = jsonParser.parseToJsonElement(responseText).jsonObject
                 val newToken = json["access_token"]?.jsonPrimitive?.contentOrNull
                     ?: json["token"]?.jsonPrimitive?.contentOrNull
 
@@ -218,7 +223,7 @@ object SecureLoader {
         }
 
         val json = try {
-            CTJS.Companion.json.parseToJsonElement(responseText).jsonObject
+            jsonParser.parseToJsonElement(responseText).jsonObject
         } catch (e: Exception) {
             null
         }
@@ -337,8 +342,7 @@ object SecureLoader {
         JSLoader.clearVirtualFiles()
 
         val zipStream = ZipInputStream(ByteArrayInputStream(zipData))
-        val tempAssetsDir = CTJS.Companion.assetsDir
-        tempAssetsDir.mkdirs()
+        val tempAssetsDir = File(File("./config"), "ChatTriggers/assets/").apply { mkdirs() }
 
         try {
             var entry: ZipEntry? = zipStream.nextEntry
@@ -390,7 +394,7 @@ object SecureLoader {
                 var metadata: ModuleMetadata? = null
                 if (isRootMetadata) {
                     metadata = try {
-                        CTJS.Companion.json.decodeFromString<ModuleMetadata>(content)
+                        jsonParser.decodeFromString<ModuleMetadata>(content)
                     } catch (e: Exception) {
                         null
                     }

@@ -118,7 +118,9 @@
     "Exclusion": [
       "com/chattriggers/",
       "org/mozilla/",
-      "gg/essential/"
+      "gg/essential/",
+      "com/v5/launch/",
+      "com/v5/api/"
     ]
   },
   "NumberEncrypt": {
@@ -128,7 +130,9 @@
     "Arrayed": false,
     "MaxInsnSize": 16384,
     "Exclusion": [
-      "com/chattriggers/"
+      "com/chattriggers/",
+      "com/v5/launch/",
+      "com/v5/api/"
     ]
   },
   "ArithmeticEncrypt": {
@@ -136,7 +140,9 @@
     "Intensity": 1,
     "MaxInsnSize": 16384,
     "Exclusion": [
-      "com/chattriggers/"
+      "com/chattriggers/",
+      "com/v5/launch/",
+      "com/v5/api/"
     ]
   },
   "Controlflow": {
@@ -173,10 +179,7 @@
       "com/chattriggers/",
       "org/mozilla/",
       "com/v5/launch/",
-      "com/v5/launch/SecureLoader",
-      "com/v5/launch/SecureLoader$**",
-      "com/v5/launch/HWID",
-      "com/v5/launch/HWID$**"
+      "com/v5/api/"
     ]
   },
   "ConstBuilder": {
@@ -200,7 +203,9 @@
     "DontScramble": true,
     "NativeAnnotation": false,
     "Exclusion": [
-      "com/chattriggers/"
+      "com/chattriggers/",
+      "com/v5/launch/",
+      "com/v5/api/"
     ]
   },
   "RedirectStringEquals": {
@@ -389,7 +394,9 @@
     "EnhancedFlowReobf": true,
     "BSMNativeAnnotation": true,
     "Exclusion": [
-      "com/chattriggers/"
+      "com/chattriggers/",
+      "com/v5/launch/",
+      "com/v5/api/"
     ]
   },
   "ShuffleMembers": {
@@ -406,7 +413,9 @@
     "Enabled": true,
     "Random": false,
     "Exclusion": [
-      "com/chattriggers/"
+      "com/chattriggers/",
+      "com/v5/launch/",
+      "com/v5/api/"
     ]
   },
   "Watermark": {
