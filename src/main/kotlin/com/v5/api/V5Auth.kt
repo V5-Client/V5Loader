@@ -11,11 +11,16 @@ object V5Auth {
 
     @JvmStatic
     fun getJwtToken(): String? {
+        val token = internalToken
+        if (!token.isNullOrBlank()) return token
+
         if (!didConsumeInitialPropertyToken) {
             synchronized(this) {
                 if (!didConsumeInitialPropertyToken) {
                     val propertyToken = System.getProperty(TOKEN_PROPERTY_KEY)
-                    internalToken = propertyToken?.takeIf { it.isNotBlank() }
+                    if (!propertyToken.isNullOrBlank()) {
+                        internalToken = propertyToken
+                    }
                     System.clearProperty(TOKEN_PROPERTY_KEY)
                     didConsumeInitialPropertyToken = true
                 }
