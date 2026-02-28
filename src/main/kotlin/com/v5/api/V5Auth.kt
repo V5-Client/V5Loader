@@ -4,7 +4,7 @@ object V5Auth {
     private const val TOKEN_PROPERTY_KEY = "v5.token"
 
     @Volatile
-    var internalToken: String? = null
+    private var internalToken: String? = null
 
     @Volatile
     private var didConsumeInitialPropertyToken = false

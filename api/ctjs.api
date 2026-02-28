@@ -2980,9 +2980,7 @@ public final class com/v5/Entrypoint : net/fabricmc/api/ClientModInitializer {
 
 public final class com/v5/api/V5Auth {
 	public static final field INSTANCE Lcom/v5/api/V5Auth;
-	public final fun getInternalToken ()Ljava/lang/String;
 	public static final fun getJwtToken ()Ljava/lang/String;
-	public final fun setInternalToken (Ljava/lang/String;)V
 	public static final fun setJwtToken (Ljava/lang/String;)V
 }
 
