@@ -129,8 +129,8 @@ object SecureLoader {
             connection.setRequestProperty("Content-Type", "application/json")
             connection.connectTimeout = 10000
             connection.readTimeout = 10000
-            connection.doOutput = true
-            connection.outputStream.use { }
+         //   connection.doOutput = true
+           // connection.outputStream.use { }
 
             val responseCode = connection.responseCode
             val stream = if (responseCode in 200..299)
