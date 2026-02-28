@@ -68,6 +68,7 @@ object SecureLoader {
 
     fun onMixinPlugin() {
         if (isPluginLoaded) return
+        V5ModLoaderCheck();
         println("[V5] Stage: onMixinPlugin")
         try {
             val token = V5Auth.getJwtToken()
