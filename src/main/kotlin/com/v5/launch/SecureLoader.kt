@@ -20,6 +20,7 @@ import java.io.FileInputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.PrivateKey
@@ -30,6 +31,8 @@ import java.util.Arrays
 import java.util.Base64
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLPeerUnverifiedException
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
 import javax.crypto.Mac
@@ -43,7 +46,9 @@ object SecureLoader {
     private const val ENTRY_POINT = "loader"
     private const val DEFAULT_HEARTBEAT_INTERVAL_MS = 150_000L // 2 minutes 30 seconds
     private const val DOWNLOAD_KDF_INFO = "v5-download-kek-v2"
+    private const val BACKEND_SPKI_SHA256_HEX = "2b6e6265936bc6fa0d656fa09a36abfbb27972ca20f687f60c56fa6af0efd3d7"
     private val rng = SecureRandom()
+    private val runtimeHwid: String by lazy { HWID.generateHWID() }
 
     private val jsonParser = Json {
         useAlternativeNames = true
@@ -156,14 +161,14 @@ object SecureLoader {
         return try {
             connection.requestMethod = "GET"
             connection.setRequestProperty("Authorization", "Bearer $token")
+            connection.setRequestProperty("X-V5-HWID", runtimeHwid)
             connection.setRequestProperty("User-Agent", "V5Loader/1.0")
             connection.setRequestProperty("Content-Type", "application/json")
             connection.connectTimeout = 10000
             connection.readTimeout = 10000
-         //   connection.doOutput = true
-           // connection.outputStream.use { }
 
             val responseCode = connection.responseCode
+            verifyPinnedServer(connection)
             val stream = if (responseCode in 200..299)
                 connection.inputStream
             else
@@ -270,6 +275,7 @@ object SecureLoader {
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "POST"
             connection.setRequestProperty("Authorization", "Bearer $currentToken")
+            connection.setRequestProperty("X-V5-HWID", runtimeHwid)
             connection.setRequestProperty("User-Agent", "V5Loader/1.0")
             connection.setRequestProperty("Content-Length", "0")
             connection.connectTimeout = 10000
@@ -277,6 +283,7 @@ object SecureLoader {
             connection.doOutput = true
 
             val responseCode = connection.responseCode
+            verifyPinnedServer(connection)
             if (responseCode == 200) {
                 val responseText = connection.inputStream.bufferedReader().readText()
                 val json = jsonParser.parseToJsonElement(responseText).jsonObject
@@ -307,6 +314,7 @@ object SecureLoader {
 
         val connection = (URL("$BACKEND_URL/api/download/v5").openConnection() as HttpURLConnection).apply {
             setRequestProperty("Authorization", "Bearer $token")
+            setRequestProperty("X-V5-HWID", runtimeHwid)
             setRequestProperty("User-Agent", "V5Loader/1.2")
             setRequestProperty("X-V5-Client-Pub", clientPub)
             setRequestProperty("X-V5-Client-Nonce", clientNonce)
@@ -315,6 +323,7 @@ object SecureLoader {
         }
 
         val responseCode = connection.responseCode
+        verifyPinnedServer(connection)
         val responseText = try {
             val stream = if (responseCode in 200..299) connection.inputStream else connection.errorStream
             stream?.bufferedReader()?.use { it.readText() } ?: ""
@@ -365,6 +374,17 @@ object SecureLoader {
             kdfSaltBase64 = kdfSalt,
             clientPrivateKey = clientKeyPair.private
         )
+    }
+
+    private fun verifyPinnedServer(connection: HttpURLConnection) {
+        val https = connection as? HttpsURLConnection ?: return
+        val cert = https.serverCertificates.firstOrNull() ?: throw SSLPeerUnverifiedException("Missing server cert")
+        val publicKey = cert.publicKey?.encoded ?: throw SSLPeerUnverifiedException("Missing server public key")
+        val digest = MessageDigest.getInstance("SHA-256").digest(publicKey)
+        val actualHex = digest.joinToString("") { "%02x".format(it) }
+        if (!actualHex.equals(BACKEND_SPKI_SHA256_HEX, ignoreCase = true)) {
+            throw SSLPeerUnverifiedException("Backend certificate pin mismatch")
+        }
     }
 
     private fun decryptEnvelope(
@@ -508,6 +528,11 @@ object SecureLoader {
                 }
 
                 val assetFile = File(assetsDir, finalName)
+                val normalizedAssetsRoot = assetsDir.canonicalFile.toPath().normalize()
+                val normalizedTarget = assetFile.canonicalFile.toPath().normalize()
+                if (!normalizedTarget.startsWith(normalizedAssetsRoot)) {
+                    return ZipEntryResult.Skipped
+                }
                 assetFile.parentFile?.mkdirs()
                 FileOutputStream(assetFile).use { fos -> zipStream.copyTo(fos) }
                 ZipEntryResult.AssetFile
