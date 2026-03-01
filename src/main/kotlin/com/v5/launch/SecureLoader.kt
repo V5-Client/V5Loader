@@ -68,7 +68,10 @@ object SecureLoader {
 
     fun onMixinPlugin() {
         if (isPluginLoaded) return
-     //   V5ModLoaderCheck()
+        if (!V5ModLoaderCheck()) {
+            println("[V5] ModLoader integrity check failed.")
+            shutDownHard()
+        }
         println("[V5] Stage: onMixinPlugin")
         try {
             val token = V5Auth.getJwtToken()
@@ -113,11 +116,39 @@ object SecureLoader {
     }
 
     fun V5ModLoaderCheck(): Boolean {
-        val modsfile = java.io.File("./mods")
-        val a = modsfile.walk().filter { file -> file.isFile && file.extension.equals("jar", ignoreCase = true) && (file.name.startsWith("v5-", true) || file.name.startsWith("V5ModLoader", true))}.toList()
-        if (a.size != 1) {println("[V5] Why do you have multiple loaders?? make sure you only have one."); shutDownHard()}
-        val hash = calculateFileSha256(a.first())
-        val token = V5Auth.getJwtToken() ?: return false
+        val modsDir = File("./mods")
+        if (!modsDir.exists()) {
+            println("[V5] Mods directory not found.")
+            return false
+        }
+
+        val candidates = modsDir.walk()
+            .filter { file ->
+                file.isFile &&
+                    file.extension.equals("jar", ignoreCase = true) &&
+                    (
+                        file.name.startsWith("V5ModLoader", ignoreCase = true) ||
+                        file.name.equals("V5ModLoader.jar", ignoreCase = true)
+                    )
+            }
+            .toList()
+
+        if (candidates.size != 1) {
+            println("[V5] Expected one V5ModLoader jar in mods, found ${candidates.size}.")
+            return false
+        }
+
+        val hash = calculateFileSha256(candidates.first())
+        if (hash.isBlank()) {
+            println("[V5] Failed to compute V5ModLoader hash.")
+            return false
+        }
+
+        val token = V5Auth.getJwtToken()
+        if (token.isNullOrBlank()) {
+            println("[V5] Missing auth token for modloader integrity check.")
+            return false
+        }
 
         val url = URL("$BACKEND_URL/api/hash/modloader?hash=$hash")
         val connection = url.openConnection() as HttpURLConnection
