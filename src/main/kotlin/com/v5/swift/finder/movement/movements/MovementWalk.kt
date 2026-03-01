@@ -93,7 +93,6 @@ object MovementWalk {
       else -> ctx.cost.JUMP_UP_ONE_BLOCK_TIME
     }
 
-    res.cost = baseCost + ctx.wdc.getPathPenalty(destX, y + 1, destZ)
     res.cost = baseCost + ctx.wdc.getPathPenalty(destX, y + 1, destZ) + ctx.getFluidPenalty(destX, y + 1, destZ)
   }
 
@@ -125,11 +124,11 @@ object MovementWalk {
       if ((data and PrecomputedData.Companion.SOLID) == 0) return
 
       val destY = checkY + 1
+      val destFeetState = bsa.get(destX, destY, destZ)
+      if (!precomputed.isPassable(destX, destY, destZ, destFeetState)) return
 
-      if (fallDist > 1) {
-        val headState = bsa.get(destX, destY + 1, destZ)
-        if (!precomputed.isPassable(destX, destY + 1, destZ, headState)) return
-      }
+      val destHeadState = bsa.get(destX, destY + 1, destZ)
+      if (!precomputed.isPassable(destX, destY + 1, destZ, destHeadState)) return
 
       res.set(destX, destY, destZ)
 
@@ -179,7 +178,8 @@ object MovementWalk {
     res.cost = cost.JUMP_PENALTY +
       (cost.SPRINT_ONE_BLOCK_TIME * dist) +
       cost.GAP_JUMP_REWARD_OFFSET +
-      ctx.wdc.getPathPenalty(destX, y, destZ)
+      ctx.wdc.getPathPenalty(destX, y, destZ) +
+      ctx.getFluidPenalty(destX, y, destZ)
   }
 
 }

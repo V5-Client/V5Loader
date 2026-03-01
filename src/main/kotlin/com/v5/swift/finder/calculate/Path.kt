@@ -15,6 +15,7 @@ class Path(
 
   val points: List<BlockPos>
   val keyNodes: List<BlockPos>
+  val isFlyPath: Boolean get() = isFly
 
   val nanosPerNode: Double get() = if (nodesExplored > 0) (timeTaken * 1_000_000.0) / nodesExplored else 0.0
 

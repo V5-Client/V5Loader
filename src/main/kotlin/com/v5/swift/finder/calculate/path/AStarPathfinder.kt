@@ -79,6 +79,7 @@ class AStarPathfinder(
 
   private fun seedStartNodes(openSet: PooledHeap, weight: Double) {
     for ((index, point) in startPoints.withIndex()) {
+      if (point.size < 3) continue
       val x = point[0]
       val y = point[1]
       val z = point[2]
@@ -106,8 +107,15 @@ class AStarPathfinder(
 
   fun findPath(): Path? {
     CachedWorld.waitForLoad()
+    if (Thread.currentThread().isInterrupted) {
+      Thread.currentThread().interrupt()
+      return null
+    }
 
     if (startPoints.isEmpty() || startPoints.any { it.size < 3 }) {
+      return null
+    }
+    if (maxIterations <= 0) {
       return null
     }
 
@@ -136,11 +144,15 @@ class AStarPathfinder(
     var iterations = 0
 
     while (openSet.isNotEmpty() && iterations < maxIterations) {
-      if (Thread.interrupted()) return null
+      if (Thread.currentThread().isInterrupted) {
+        Thread.currentThread().interrupt()
+        return null
+      }
 
       iterations++
 
       val currIdx = openSet.poll()
+      if (currIdx < 0) break
       val currX = nodeX[currIdx]
       val currY = nodeY[currIdx]
       val currZ = nodeZ[currIdx]
@@ -219,7 +231,10 @@ class AStarPathfinder(
     }
 
     fun relocate(nodeIdx: Int) {
-      siftUp(pf.nodeHeapPos[nodeIdx])
+      val pos = pf.nodeHeapPos[nodeIdx]
+      if (pos <= 0) return
+      siftUp(pos)
+      siftDown(pos)
     }
 
     private fun siftUp(startPos: Int) {
@@ -244,6 +259,7 @@ class AStarPathfinder(
     }
 
     fun poll(): Int {
+      if (size <= 0) return -1
       val result = items[1]
       pf.nodeHeapPos[result] = -1
 
@@ -261,9 +277,9 @@ class AStarPathfinder(
       return result
     }
 
-    private fun siftDown() {
-      var pos = 1
-      val nodeIdx = items[1]
+    private fun siftDown(startPos: Int = 1) {
+      var pos = startPos
+      val nodeIdx = items[pos]
       val cost = pf.nodeFCost[nodeIdx]
       val halfSize = size ushr 1
 

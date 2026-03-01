@@ -11,7 +11,7 @@ import net.minecraft.client.MinecraftClient
 class CalculationContext {
 
   val mc: MinecraftClient = MinecraftClient.getInstance()
-  val world = mc.world!!
+  val world = requireNotNull(mc.world) { "World is not loaded" }
 
   val bsa = BlockStateAccessor(world)
   val cost = ActionCosts()

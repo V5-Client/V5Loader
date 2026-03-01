@@ -15,7 +15,7 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
 
   companion object {
     const val MAX_DIST = 6 // DO NOT LOWER. 6 IS THE PERFECT NUMBER, 4 MAKES SHITTY ZIGZAG PATHS. 5 ISN'T AMAZING.
-    private const val OPEN_SPACE_SOFT_CAP = MAX_DIST - 1
+    private const val OPEN_SPACE_SOFT_CAP = MAX_DIST
 
     @JvmField val EDGE_PENALTIES = doubleArrayOf(
       24.0,  // edge
@@ -213,8 +213,8 @@ class WallDistanceCalculator(private val ctx: CalculationContext) {
   }
 
   private fun combinedPenalty(edgeDist: Int, wallDist: Int): Double {
-    val edgeIdx = edgeDist.coerceAtMost(OPEN_SPACE_SOFT_CAP)
-    val wallIdx = wallDist.coerceAtMost(OPEN_SPACE_SOFT_CAP)
+    val edgeIdx = edgeDist.coerceIn(0, OPEN_SPACE_SOFT_CAP)
+    val wallIdx = wallDist.coerceIn(0, OPEN_SPACE_SOFT_CAP)
     return EDGE_PENALTIES[edgeIdx] + WALL_PENALTIES[wallIdx]
   }
 

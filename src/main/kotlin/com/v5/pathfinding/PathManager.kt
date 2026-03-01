@@ -65,6 +65,11 @@ object PathManager {
         lastError = null
         currentPath = null
 
+        if (maxIterations <= 0) {
+            lastError = "maxIterations must be > 0"
+            return false
+        }
+
         val startValidation = validatePoints("Start points", startPoints)
         if (startValidation != null) {
             lastError = startValidation
@@ -96,38 +101,47 @@ object PathManager {
         val currentId = searchId.incrementAndGet()
         isSearching = true
 
-        currentTask = Swift.executor.submit {
-            try {
-                val pathfinder = AStarPathfinder(
-                    startPoints = startPoints,
-                    goal = goal,
-                    ctx = ctx,
-                    maxIterations = maxIterations,
-                    nonPrimaryStartPenalty = if (isFly) 0.0 else NON_PRIMARY_START_PENALTY,
-                    isFly = isFly
-                )
-                val path = pathfinder.findPath()
+        try {
+            currentTask = Swift.executor.submit {
+                try {
+                    val pathfinder = AStarPathfinder(
+                        startPoints = startPoints,
+                        goal = goal,
+                        ctx = ctx,
+                        maxIterations = maxIterations,
+                        nonPrimaryStartPenalty = if (isFly) 0.0 else NON_PRIMARY_START_PENALTY,
+                        isFly = isFly
+                    )
+                    val path = pathfinder.findPath()
 
-                if (searchId.get() == currentId) {
-                    currentPath = path
-                    if (path == null) {
-                        lastError = "No path found to destination"
+                    if (searchId.get() == currentId) {
+                        currentPath = path
+                        if (path == null) {
+                            lastError = "No path found to destination"
+                        }
+                    }
+                } catch (e: InterruptedException) {
+                    if (searchId.get() == currentId) {
+                        lastError = "Pathfinding was cancelled"
+                    }
+                    Thread.currentThread().interrupt()
+                } catch (e: Exception) {
+                    if (searchId.get() == currentId) {
+                        lastError = e.message ?: "Unknown error during pathfinding"
+                        e.printStackTrace()
+                    }
+                } finally {
+                    if (searchId.get() == currentId) {
+                        isSearching = false
                     }
                 }
-            } catch (e: InterruptedException) {
-                if (searchId.get() == currentId) {
-                    lastError = "Pathfinding was cancelled"
-                }
-            } catch (e: Exception) {
-                if (searchId.get() == currentId) {
-                    lastError = e.message ?: "Unknown error during pathfinding"
-                    e.printStackTrace()
-                }
-            } finally {
-                if (searchId.get() == currentId) {
-                    isSearching = false
-                }
             }
+        } catch (e: Exception) {
+            if (searchId.get() == currentId) {
+                isSearching = false
+                lastError = e.message ?: "Failed to submit pathfinding task"
+            }
+            return false
         }
 
         return true
@@ -214,10 +228,11 @@ object PathManager {
         val path = currentPath ?: return IntArray(0)
         val points = path.points
         val result = IntArray(points.size * 3)
+        val yOffset = if (path.isFlyPath) 0 else -1
         var idx = 0
         for (point in points) {
             result[idx++] = point.x
-            result[idx++] = point.y - 1
+            result[idx++] = point.y + yOffset
             result[idx++] = point.z
         }
         return result
@@ -228,10 +243,11 @@ object PathManager {
         val path = currentPath ?: return IntArray(0)
         val keyNodes = path.keyNodes
         val result = IntArray(keyNodes.size * 3)
+        val yOffset = if (path.isFlyPath) 0 else -1
         var idx = 0
         for (point in keyNodes) {
             result[idx++] = point.x
-            result[idx++] = point.y - 1
+            result[idx++] = point.y + yOffset
             result[idx++] = point.z
         }
         return result
