@@ -3582,6 +3582,7 @@ public final class com/v5/swift/finder/calculate/Path {
 	public final fun getNodesExplored ()I
 	public final fun getPoints ()Ljava/util/List;
 	public final fun getTimeTaken ()J
+	public final fun isFlyPath ()Z
 }
 
 public final class com/v5/swift/finder/calculate/PathNode {
