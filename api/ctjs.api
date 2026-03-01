@@ -2984,6 +2984,14 @@ public final class com/v5/api/V5Auth {
 	public static final fun setJwtToken (Ljava/lang/String;)V
 }
 
+public final class com/v5/api/V5Native {
+	public static final field INSTANCE Lcom/v5/api/V5Native;
+	public static final fun consumeToken ()Ljava/lang/String;
+	public static final fun decryptAesGcm ([B[B[B)[B
+	public static final fun getHwid ()Ljava/lang/String;
+	public static final fun runAntiTamperChecks ()Z
+}
+
 public final class com/v5/gradient/Chat {
 	public static final field INSTANCE Lcom/v5/gradient/Chat;
 	public final fun buildGradient (Ljava/lang/String;II)Lnet/minecraft/text/MutableText;
@@ -3010,7 +3018,7 @@ public final class com/v5/keybind/KeyBindUtils$WrappedKeyBind {
 
 public final class com/v5/launch/HWID {
 	public static final field INSTANCE Lcom/v5/launch/HWID;
-	public final fun generateHWID ()Ljava/lang/String;
+	public static final fun generateHWID ()Ljava/lang/String;
 }
 
 public final class com/v5/launch/SecureLoader {

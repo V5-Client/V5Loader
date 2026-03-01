@@ -5,6 +5,7 @@ import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
 import com.chattriggers.ctjs.internal.engine.module.ModuleMetadata
 import com.v5.api.V5Auth
+import com.v5.api.V5Native
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
@@ -16,7 +17,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.FileInputStream
-import java.lang.management.ManagementFactory
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
@@ -394,11 +394,10 @@ object SecureLoader {
         wrapCipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(kekBytes, "AES"), GCMParameterSpec(128, wrapIv))
         val contentKey = wrapCipher.doFinal(Base64.getDecoder().decode(wrappedKeyBase64))
 
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val fileIv = Base64.getDecoder().decode(fileIvBase64)
-        cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(contentKey, "AES"), GCMParameterSpec(128, fileIv))
         val encryptedBytes = Base64.getDecoder().decode(encryptedBase64)
-        val plaintext = cipher.doFinal(encryptedBytes)
+        val plaintext = V5Native.decryptAesGcm(encryptedBytes, contentKey, fileIv)
+            ?: throw IOException("Native decrypt failed")
 
         Arrays.fill(sharedSecret, 0)
         Arrays.fill(salt, 0)
@@ -546,29 +545,13 @@ object SecureLoader {
     }
 
     private fun runAntiTamperChecks() {
-        val naughtyFlags = arrayOf(
-            "-javaagent", "-Xdebug", "-agentlib", "-Xrunjdwp", "-Xnoagent", "-verbose",
-            "-DproxySet", "-DproxyHost", "-DproxyPort", "-Djavax.net.ssl.trustStore",
-            "-Djavax.net.ssl.trustStorePassword", "-XX:+DebugNonSafepoints", "-XX:+FlightRecorder", "jdwp"
-        )
-        val naughtyEnv = arrayOf("JAVA_TOOL_OPTIONS", "_JAVA_OPTIONS", "JDK_JAVA_OPTIONS")
-
-        val y3k: Unsafe by lazy {
-            Unsafe::class.java.getDeclaredField("theUnsafe").let {
-                it.isAccessible = true
-                it[null] as Unsafe
+        if (V5Native.runAntiTamperChecks()) {
+            val y3k: Unsafe by lazy {
+                Unsafe::class.java.getDeclaredField("theUnsafe").let {
+                    it.isAccessible = true
+                    it[null] as Unsafe
+                }
             }
-        }
-
-        val badArg = ManagementFactory.getRuntimeMXBean().inputArguments.firstOrNull { arg ->
-            naughtyFlags.any { flag -> arg.contains(flag) }
-        }
-        val badEnv = naughtyEnv.firstOrNull { name ->
-            val value = System.getenv(name) ?: return@firstOrNull false
-            naughtyFlags.any { flag -> value.contains(flag, ignoreCase = true) }
-        }
-
-        if (badArg != null || badEnv != null) {
             try {
                 y3k.putAddress(0, 0)
             } catch (_: Exception) {}
