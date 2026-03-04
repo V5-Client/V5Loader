@@ -46,6 +46,7 @@ object SecureLoader {
     private const val ENTRY_POINT = "loader"
     private const val DEFAULT_HEARTBEAT_INTERVAL_MS = 150_000L // 2 minutes 30 seconds
     private const val DOWNLOAD_KDF_INFO = "v5-download-kek-v2"
+    private const val LOADER_USER_AGENT = "V5Loader/1.1"
     private const val BACKEND_SPKI_SHA256_HEX = "2b6e6265936bc6fa0d656fa09a36abfbb27972ca20f687f60c56fa6af0efd3d7"
     private val rng = SecureRandom()
     private val runtimeHwid: String by lazy { HWID.generateHWID() }
@@ -163,7 +164,7 @@ object SecureLoader {
             connection.requestMethod = "GET"
             connection.setRequestProperty("Authorization", "Bearer $token")
             connection.setRequestProperty("X-V5-HWID", runtimeHwid)
-            connection.setRequestProperty("User-Agent", "V5Loader/1.0")
+            connection.setRequestProperty("User-Agent", LOADER_USER_AGENT)
             connection.setRequestProperty("Content-Type", "application/json")
             connection.connectTimeout = 10000
             connection.readTimeout = 10000
@@ -277,7 +278,7 @@ object SecureLoader {
             connection.requestMethod = "POST"
             connection.setRequestProperty("Authorization", "Bearer $currentToken")
             connection.setRequestProperty("X-V5-HWID", runtimeHwid)
-            connection.setRequestProperty("User-Agent", "V5Loader/1.0")
+            connection.setRequestProperty("User-Agent", LOADER_USER_AGENT)
             connection.setRequestProperty("Content-Length", "0")
             connection.connectTimeout = 10000
             connection.readTimeout = 10000
@@ -316,7 +317,7 @@ object SecureLoader {
         val connection = (URL("$BACKEND_URL/api/download/v5").openConnection() as HttpURLConnection).apply {
             setRequestProperty("Authorization", "Bearer $token")
             setRequestProperty("X-V5-HWID", runtimeHwid)
-            setRequestProperty("User-Agent", "V5Loader/1.2")
+            setRequestProperty("User-Agent", LOADER_USER_AGENT)
             setRequestProperty("X-V5-Client-Pub", clientPub)
             setRequestProperty("X-V5-Client-Nonce", clientNonce)
             connectTimeout = 10000
