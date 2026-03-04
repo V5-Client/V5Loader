@@ -35,7 +35,7 @@
     },
     "breaks": {
         "smoothboot": "*",
-        "chattriggers": "*",
+        "ctjs": "*",
         "stfu": "*",
         "nvidium": "*"
     },
