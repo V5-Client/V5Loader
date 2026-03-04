@@ -136,7 +136,7 @@ class WelcomeScreen : Screen(Text.literal("Welcome Screen")) {
             Text.literal("⚠ IF YOU DOWNLOADED THIS FROM ANYWHERE ELSE, IT MAY BE A VIRUS! ⚠").formatted(Formatting.RED),
             Text.empty(),
             Text.literal("BEWARE OF FAKE RELEASES:").formatted(Formatting.RED),
-            Text.literal("If you did not download this from the official GitHub,"),
+            Text.literal("If you did not download this from the official Discord,"),
             Text.literal("your account may be at risk!"),
             Text.literal("Click \"Read the Guide\" to learn how to protect your account."),
             Text.empty(),
