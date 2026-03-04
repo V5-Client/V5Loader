@@ -34,7 +34,10 @@
         "fabric-language-kotlin": ">=$fabric_kotlin_version"
     },
     "breaks": {
-        "smoothboot": "*"
+        "smoothboot": "*",
+        "chattriggers": "*",
+        "stfu": "*",
+        "nvidium": "*"
     },
     "custom": {
         "ctjs:yarn-mappings": "$yarn_mappings",
