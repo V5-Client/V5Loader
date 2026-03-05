@@ -42,13 +42,26 @@ jobs:
         id: sha
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache global npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-global-${{ runner.os }}
+          restore-keys: |
+            npm-global-${{ runner.os }}
+
+      - name: Install latest Wrangler
+        run: npm install -g wrangler@latest --prefer-offline
+
       - name: Upload Loader to Cloudflare R2
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '3'
-          command: >
-            r2 object put v5-builds/V5-Loader.jar
-            --file V5-Loader.jar
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          wrangler r2 object put v5-builds/V5-Loader.jar --file V5-Loader.jar
