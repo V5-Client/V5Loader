@@ -7,6 +7,7 @@ import com.chattriggers.ctjs.internal.engine.module.ModuleMetadata
 import com.v5.api.V5Auth
 import com.v5.api.V5Native
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
@@ -44,12 +45,20 @@ object SecureLoader {
     private const val BACKEND_URL = "https://backend.rdbt.top"
     private const val VIRTUAL_MODULE_PREFIX = "V5"
     private const val ENTRY_POINT = "loader"
-    private const val DEFAULT_HEARTBEAT_INTERVAL_MS = 150_000L // 2 minutes 30 seconds
+    private const val DEFAULT_HEARTBEAT_INTERVAL_MS = 90_000L // 90 seconds
+    private const val MIN_HEARTBEAT_INTERVAL_MS = 30_000L
+    private const val MAX_HEARTBEAT_INTERVAL_MS = 90_000L
+    private const val HEARTBEAT_MAX_RETRIES = 2
     private const val DOWNLOAD_KDF_INFO = "v5-download-kek-v2"
     private const val LOADER_USER_AGENT = "V5Loader/1.1"
     private const val BACKEND_SPKI_SHA256_HEX = "2b6e6265936bc6fa0d656fa09a36abfbb27972ca20f687f60c56fa6af0efd3d7"
     private val rng = SecureRandom()
     private val runtimeHwid: String by lazy { HWID.generateHWID() }
+    private val retryableHeartbeatAuthErrors = setOf(
+        "SESSION_INACTIVE",
+        "JWT_EXPIRED",
+        "UNAUTHORIZED"
+    )
 
     private val jsonParser = Json {
         useAlternativeNames = true
@@ -61,8 +70,21 @@ object SecureLoader {
     @Volatile private var areMixinsApplied = false
     @Volatile private var isLoaded = false
     @Volatile private var rootMetadata: ModuleMetadata? = null
+    @Volatile private var heartbeatIntervalMs = DEFAULT_HEARTBEAT_INTERVAL_MS
 
     private var heartbeatThread: Thread? = null
+
+    private enum class HeartbeatStatus {
+        SUCCESS,
+        RETRYABLE_AUTH_FAILURE,
+        FATAL_AUTH_FAILURE,
+        TRANSIENT_FAILURE
+    }
+
+    private data class HeartbeatAttemptResult(
+        val status: HeartbeatStatus,
+        val errorCode: String? = null
+    )
 
     fun run() {
         runAntiTamperChecks()
@@ -225,7 +247,9 @@ object SecureLoader {
             return
         }
 
-        performHeartbeat()
+        if (!performHeartbeat()) {
+            shutDownHard()
+        }
 
         val metadata = rootMetadata
         if (metadata != null) {
@@ -259,8 +283,11 @@ object SecureLoader {
         heartbeatThread = thread(start = true, isDaemon = true, name = "V5-Heartbeat") {
             while (isLoaded) {
                 try {
-                    performHeartbeat()
-                    Thread.sleep(DEFAULT_HEARTBEAT_INTERVAL_MS)
+                    if (!performHeartbeat()) {
+                        shutDownHard()
+                        break
+                    }
+                    Thread.sleep(heartbeatIntervalMs)
                 } catch (e: InterruptedException) {
                     break
                 } catch (e: Exception) {
@@ -269,37 +296,161 @@ object SecureLoader {
         }
     }
 
-    private fun performHeartbeat() {
-        val currentToken = V5Auth.getJwtToken() ?: return
+    private fun performHeartbeat(): Boolean {
+        var lastErrorCode: String? = null
+        val maxAttempts = HEARTBEAT_MAX_RETRIES + 1
+        for (attempt in 0 until maxAttempts) {
+            val result = performHeartbeatOnce()
+            when (result.status) {
+                HeartbeatStatus.SUCCESS -> return true
+                HeartbeatStatus.TRANSIENT_FAILURE -> return true
+                HeartbeatStatus.FATAL_AUTH_FAILURE -> {
+                    lastErrorCode = result.errorCode
+                    break
+                }
+                HeartbeatStatus.RETRYABLE_AUTH_FAILURE -> {
+                    lastErrorCode = result.errorCode
+                    if (attempt >= HEARTBEAT_MAX_RETRIES) break
+                    try {
+                        Thread.sleep(heartbeatRetryBackoffMs(attempt))
+                    } catch (_: InterruptedException) {
+                        return false
+                    }
+                }
+            }
+        }
+
+        if (!lastErrorCode.isNullOrBlank()) {
+            println("[V5] Heartbeat auth failed: $lastErrorCode")
+        }
+        println("[V5] Session expired or revoked. Exiting.")
+        return false
+    }
+
+    private fun heartbeatRetryBackoffMs(attempt: Int): Long =
+        when (attempt) {
+            0 -> 3_000L
+            1 -> 7_000L
+            else -> 10_000L
+        }
+
+    private fun performHeartbeatOnce(): HeartbeatAttemptResult {
+        val currentToken = V5Auth.getJwtToken()
+            ?: return HeartbeatAttemptResult(
+                HeartbeatStatus.FATAL_AUTH_FAILURE,
+                "MISSING_TOKEN"
+            )
+
+        val connection = try {
+            val url = URL("$BACKEND_URL/api/auth/heartbeat")
+            (url.openConnection() as HttpURLConnection).apply {
+                requestMethod = "POST"
+                setRequestProperty("Authorization", "Bearer $currentToken")
+                setRequestProperty("X-V5-HWID", runtimeHwid)
+                setRequestProperty("User-Agent", LOADER_USER_AGENT)
+                setRequestProperty("Content-Length", "0")
+                connectTimeout = 10000
+                readTimeout = 10000
+                doOutput = true
+            }
+        } catch (_: Exception) {
+            return HeartbeatAttemptResult(HeartbeatStatus.TRANSIENT_FAILURE)
+        }
 
         try {
-            val url = URL("$BACKEND_URL/api/auth/heartbeat")
-            val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Authorization", "Bearer $currentToken")
-            connection.setRequestProperty("X-V5-HWID", runtimeHwid)
-            connection.setRequestProperty("User-Agent", LOADER_USER_AGENT)
-            connection.setRequestProperty("Content-Length", "0")
-            connection.connectTimeout = 10000
-            connection.readTimeout = 10000
-            connection.doOutput = true
-
             val responseCode = connection.responseCode
             verifyPinnedServer(connection)
+            val responseText = readHttpResponse(connection, responseCode)
             if (responseCode == 200) {
-                val responseText = connection.inputStream.bufferedReader().readText()
-                val json = jsonParser.parseToJsonElement(responseText).jsonObject
+                val json = parseJsonObject(responseText)
+                    ?: return HeartbeatAttemptResult(HeartbeatStatus.TRANSIENT_FAILURE)
                 val newToken = json["access_token"]?.jsonPrimitive?.contentOrNull
                     ?: json["token"]?.jsonPrimitive?.contentOrNull
 
                 if (newToken != null) {
                     V5Auth.setJwtToken(newToken)
                 }
-            } else if (responseCode == 401 || responseCode == 403) {
-                println("[V5] Session expired or revoked. Exiting.")
-                shutDownHard()
+                updateHeartbeatInterval(json)
+                return HeartbeatAttemptResult(HeartbeatStatus.SUCCESS)
             }
-        } catch (e: Exception) {}
+            if (responseCode == 401 || responseCode == 403) {
+                val errorCode = parseErrorCode(responseText)
+                if (isRetryableHeartbeatAuthFailure(responseCode, errorCode)) {
+                    return HeartbeatAttemptResult(
+                        HeartbeatStatus.RETRYABLE_AUTH_FAILURE,
+                        errorCode
+                    )
+                }
+                return HeartbeatAttemptResult(
+                    HeartbeatStatus.FATAL_AUTH_FAILURE,
+                    errorCode
+                )
+            }
+            return HeartbeatAttemptResult(HeartbeatStatus.TRANSIENT_FAILURE)
+        } catch (_: Exception) {
+            return HeartbeatAttemptResult(HeartbeatStatus.TRANSIENT_FAILURE)
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    private fun updateHeartbeatInterval(json: JsonObject) {
+        val serverIntervalSeconds =
+            json["heartbeat_interval_seconds"]?.jsonPrimitive?.contentOrNull
+                ?.toLongOrNull()
+                ?.takeIf { it > 0 }
+        val nowSeconds = System.currentTimeMillis() / 1000
+        val expiresAtSeconds =
+            json["expires_at"]?.jsonPrimitive?.contentOrNull
+                ?.toLongOrNull()
+                ?.takeIf { it > nowSeconds }
+
+        val serverIntervalMs = (serverIntervalSeconds ?: 90L) * 1000L
+        val halfTtlMs = expiresAtSeconds
+            ?.let { ((it - nowSeconds) * 1000L) / 2L }
+            ?: Long.MAX_VALUE
+        val targetMs = minOf(serverIntervalMs, halfTtlMs)
+        heartbeatIntervalMs = targetMs.coerceIn(
+            MIN_HEARTBEAT_INTERVAL_MS,
+            MAX_HEARTBEAT_INTERVAL_MS
+        )
+    }
+
+    private fun readHttpResponse(
+        connection: HttpURLConnection,
+        responseCode: Int
+    ): String {
+        val stream = if (responseCode in 200..299)
+            connection.inputStream
+        else
+            connection.errorStream
+        return stream?.bufferedReader()?.use { it.readText() } ?: ""
+    }
+
+    private fun parseJsonObject(raw: String): JsonObject? {
+        if (raw.isBlank()) return null
+        return try {
+            jsonParser.parseToJsonElement(raw).jsonObject
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun parseErrorCode(raw: String): String? {
+        val json = parseJsonObject(raw) ?: return null
+        return json["error"]?.jsonPrimitive?.contentOrNull
+            ?: json["message"]?.jsonPrimitive?.contentOrNull
+    }
+
+    private fun isRetryableHeartbeatAuthFailure(
+        responseCode: Int,
+        errorCode: String?
+    ): Boolean {
+        val normalizedError = errorCode?.trim()?.uppercase()
+        if (normalizedError != null && retryableHeartbeatAuthErrors.contains(normalizedError)) {
+            return true
+        }
+        return responseCode == 401 && normalizedError.isNullOrBlank()
     }
 
     private fun downloadZip(token: String): ByteArray? {
