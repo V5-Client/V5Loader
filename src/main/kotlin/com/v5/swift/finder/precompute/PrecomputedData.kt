@@ -20,6 +20,7 @@ class PrecomputedData(private val bsa: BlockStateAccessor) {
     const val BLOCKING_WALL = 1 shl 6
     const val FLY_PASSABLE = 1 shl 7
     const val FLUID = 1 shl 8
+    const val SLAB_TOP = 1 shl 9
   }
 
   private fun compute(id: Int, state: BlockState, x: Int, y: Int, z: Int): Int {
@@ -70,7 +71,7 @@ class PrecomputedData(private val bsa: BlockStateAccessor) {
         val slabType = state.get(SlabBlock.TYPE)!!
         data = data or SOLID or when (slabType) {
           SlabType.BOTTOM -> SLAB_BOTTOM
-          SlabType.TOP -> FULL_CUBE or BLOCKING_WALL
+          SlabType.TOP -> FULL_CUBE or BLOCKING_WALL or SLAB_TOP
           SlabType.DOUBLE -> FULL_CUBE or BLOCKING_WALL
         }
       }
@@ -129,6 +130,9 @@ class PrecomputedData(private val bsa: BlockStateAccessor) {
   fun isBottomSlab(x: Int, y: Int, z: Int, state: BlockState = bsa.get(x, y, z)): Boolean =
     (getData(x, y, z, state) and SLAB_BOTTOM) != 0
 
+  fun isTopSlab(x: Int, y: Int, z: Int, state: BlockState = bsa.get(x, y, z)): Boolean =
+    (getData(x, y, z, state) and SLAB_TOP) != 0
+
   fun isBlockingWall(x: Int, y: Int, z: Int, state: BlockState = bsa.get(x, y, z)): Boolean =
     !state.isAir && (getData(x, y, z, state) and BLOCKING_WALL) != 0
 
@@ -137,4 +141,14 @@ class PrecomputedData(private val bsa: BlockStateAccessor) {
 
   fun isFluid(x: Int, y: Int, z: Int, state: BlockState = bsa.get(x, y, z)): Boolean =
     (getData(x, y, z, state) and FLUID) != 0
+
+  fun isFlyColumnClear(x: Int, y: Int, z: Int): Boolean {
+    val feetState = bsa.get(x, y, z)
+    if (!isPassableForFlying(x, y, z, feetState)) return false
+
+    val headY = y + 1
+    val headState = bsa.get(x, headY, z)
+    if (isTopSlab(x, headY, z, headState)) return false
+    return isPassableForFlying(x, headY, z, headState)
+  }
 }

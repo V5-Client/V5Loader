@@ -50,20 +50,17 @@ object MovementFly {
     val destZ = z + dz
     val pre = ctx.precomputedData
 
-    if (!pre.isPassableForFlying(destX, destY, destZ)) return
-    if (!pre.isPassableForFlying(destX, destY + 1, destZ)) return
-    if (dy > 0 && !pre.isPassableForFlying(x, y + 2, z)) return
+    if (!pre.isFlyColumnClear(destX, destY, destZ)) return
+    if (dy > 0 && !pre.isFlyColumnClear(x, y + 1, z)) return
 
     val isDiagonalHorizontal = dx != 0 && dz != 0
     if (isDiagonalHorizontal) {
-      if (!pre.isPassableForFlying(x + dx, destY, z)) return
-      if (!pre.isPassableForFlying(x, destY, z + dz)) return
-      if (!pre.isPassableForFlying(x + dx, destY + 1, z)) return
-      if (!pre.isPassableForFlying(x, destY + 1, z + dz)) return
+      if (!pre.isFlyColumnClear(x + dx, destY, z)) return
+      if (!pre.isFlyColumnClear(x, destY, z + dz)) return
 
       if (dy != 0) {
-        if (!pre.isPassableForFlying(x + dx, y + dy, z)) return
-        if (!pre.isPassableForFlying(x, y + dy, z + dz)) return
+        if (!pre.isFlyColumnClear(x + dx, y, z)) return
+        if (!pre.isFlyColumnClear(x, y, z + dz)) return
       }
     }
 
@@ -151,47 +148,26 @@ object MovementFly {
 
     var minClearance = WALL_CHECK_DIST
 
-    for (d in 1..WALL_CHECK_DIST) {
-      if (!pre.isPassableForFlying(x, y, z - d) || !pre.isPassableForFlying(x, y + 1, z - d)) {
-        val clearance = d - 1
-        if (clearance < minClearance) minClearance = clearance
-        break
+    for (dir in CARDINAL_DIRECTIONS) {
+      for (d in 1..WALL_CHECK_DIST) {
+        val nx = x + dir[0] * d
+        val nz = z + dir[1] * d
+        if (!pre.isFlyColumnClear(nx, y, nz)) {
+          val clearance = d - 1
+          if (clearance < minClearance) minClearance = clearance
+          break
+        }
       }
+      if (minClearance == 0) return WALL_PENALTY_TOUCHING * scale
     }
-    if (minClearance == 0) return WALL_PENALTY_TOUCHING * scale
-
-    for (d in 1..WALL_CHECK_DIST) {
-      if (!pre.isPassableForFlying(x, y, z + d) || !pre.isPassableForFlying(x, y + 1, z + d)) {
-        val clearance = d - 1
-        if (clearance < minClearance) minClearance = clearance
-        break
-      }
-    }
-    if (minClearance == 0) return WALL_PENALTY_TOUCHING * scale
-
-    for (d in 1..WALL_CHECK_DIST) {
-      if (!pre.isPassableForFlying(x + d, y, z) || !pre.isPassableForFlying(x + d, y + 1, z)) {
-        val clearance = d - 1
-        if (clearance < minClearance) minClearance = clearance
-        break
-      }
-    }
-    if (minClearance == 0) return WALL_PENALTY_TOUCHING * scale
-
-    for (d in 1..WALL_CHECK_DIST) {
-      if (!pre.isPassableForFlying(x - d, y, z) || !pre.isPassableForFlying(x - d, y + 1, z)) {
-        val clearance = d - 1
-        if (clearance < minClearance) minClearance = clearance
-        break
-      }
-    }
-    if (minClearance == 0) return WALL_PENALTY_TOUCHING * scale
 
     if (minClearance > 0) {
-      if (!pre.isPassableForFlying(x + 1, y, z + 1) || !pre.isPassableForFlying(x + 1, y + 1, z + 1)) minClearance = 0
-      else if (!pre.isPassableForFlying(x + 1, y, z - 1) || !pre.isPassableForFlying(x + 1, y + 1, z - 1)) minClearance = 0
-      else if (!pre.isPassableForFlying(x - 1, y, z + 1) || !pre.isPassableForFlying(x - 1, y + 1, z + 1)) minClearance = 0
-      else if (!pre.isPassableForFlying(x - 1, y, z - 1) || !pre.isPassableForFlying(x - 1, y + 1, z - 1)) minClearance = 0
+      for (diag in DIAGONAL_DIRECTIONS) {
+        if (!pre.isFlyColumnClear(x + diag[0], y, z + diag[1])) {
+          minClearance = 0
+          break
+        }
+      }
     }
 
     val basePenalty = when (minClearance) {
@@ -203,4 +179,18 @@ object MovementFly {
 
     return basePenalty * scale
   }
+
+  private val CARDINAL_DIRECTIONS = arrayOf(
+      intArrayOf(0, -1),
+      intArrayOf(0, 1),
+      intArrayOf(1, 0),
+      intArrayOf(-1, 0),
+  )
+
+  private val DIAGONAL_DIRECTIONS = arrayOf(
+      intArrayOf(1, 1),
+      intArrayOf(1, -1),
+      intArrayOf(-1, 1),
+      intArrayOf(-1, -1),
+  )
 }

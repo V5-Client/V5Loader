@@ -122,14 +122,22 @@ class Path(
 
     val pre = ctx.precomputedData
 
-    for (i in 1 until steps) {
+    var lastX = Int.MIN_VALUE
+    var lastY = Int.MIN_VALUE
+    var lastZ = Int.MIN_VALUE
+
+    for (i in 1..steps) {
       val t = i.toDouble() / steps
       val x = floor(from.x + dx * t).toInt()
       val y = floor(from.y + dy * t).toInt()
       val z = floor(from.z + dz * t).toInt()
 
-      if (!pre.isPassableForFlying(x, y, z)) return false
-      if (!pre.isPassableForFlying(x, y + 1, z)) return false
+      if (x == lastX && y == lastY && z == lastZ) continue
+      if (!pre.isFlyColumnClear(x, y, z)) return false
+
+      lastX = x
+      lastY = y
+      lastZ = z
     }
 
     return true

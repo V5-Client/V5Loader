@@ -3833,6 +3833,7 @@ public final class com/v5/swift/finder/precompute/PrecomputedData {
 	public static final field FULL_CUBE I
 	public static final field PASSABLE I
 	public static final field SLAB_BOTTOM I
+	public static final field SLAB_TOP I
 	public static final field SOLID I
 	public final field states [I
 	public fun <init> (Lcom/v5/swift/finder/helper/BlockStateAccessor;)V
@@ -3845,6 +3846,7 @@ public final class com/v5/swift/finder/precompute/PrecomputedData {
 	public static synthetic fun isCarpetLike$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isFluid (IIILnet/minecraft/block/BlockState;)Z
 	public static synthetic fun isFluid$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public final fun isFlyColumnClear (III)Z
 	public final fun isFullCube (IIILnet/minecraft/block/BlockState;)Z
 	public static synthetic fun isFullCube$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isPassable (IIILnet/minecraft/block/BlockState;)Z
@@ -3853,6 +3855,8 @@ public final class com/v5/swift/finder/precompute/PrecomputedData {
 	public static synthetic fun isPassableForFlying$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 	public final fun isSolid (IIILnet/minecraft/block/BlockState;)Z
 	public static synthetic fun isSolid$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
+	public final fun isTopSlab (IIILnet/minecraft/block/BlockState;)Z
+	public static synthetic fun isTopSlab$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
 }
 
 public final class com/v5/swift/finder/precompute/PrecomputedData$Companion {
