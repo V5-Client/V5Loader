@@ -154,7 +154,11 @@ object SecureLoader {
             .filter { file ->
                 file.isFile &&
                     file.extension.equals("jar", ignoreCase = true) &&
-                    file.name.startsWith("V5ModLoader")
+                    (
+                        file.name.startsWith("V5ModLoader", ignoreCase = true) ||
+                        file.name.equals("V5ModLoader.jar", ignoreCase = true) ||
+                        file.name.startsWith("v5-", ignoreCase=true)
+                    )
             }
             .toList()
 
@@ -205,7 +209,6 @@ object SecureLoader {
             val valid = json["valid"]?.jsonPrimitive?.booleanOrNull ?: false
 
             if (!valid) {
-                println("[V5] Please redownload V5ModLoader from the Discord.")
                 return false
             }
 
