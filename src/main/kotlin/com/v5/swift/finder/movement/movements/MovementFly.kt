@@ -17,6 +17,10 @@ object MovementFly {
   private const val WALL_PENALTY_TOUCHING = 3.5
   private const val WALL_PENALTY_CLOSE = 1.8
   private const val WALL_PENALTY_NEAR = 0.6
+  private const val LOW_HEADROOM_PENALTY = 2.2
+  private const val TIGHT_HEADROOM_PENALTY = 0.8
+  private const val ENCLOSED_CARDINAL_PENALTY = 0.28
+  private const val ENCLOSED_TIGHT_BONUS = 0.9
 
   private const val PURE_VERTICAL_BASE = 1.2
   private const val DIAGONAL_VERTICAL_BASE = 0.2
@@ -130,6 +134,9 @@ object MovementFly {
     if (progress <= 0.88) {
       cost += getHorizontalClearanceCost(pre, destX, destY, destZ, progress)
     }
+    if (progress <= 0.94) {
+      cost += getEnclosureCost(pre, destX, destY, destZ, progress)
+    }
 
     res.cost = cost
   }
@@ -178,6 +185,41 @@ object MovementFly {
     }
 
     return basePenalty * scale
+  }
+
+  @JvmStatic
+  private fun getEnclosureCost(
+      pre: PrecomputedData,
+      x: Int, y: Int, z: Int,
+      progress: Double
+  ): Double {
+    val scale = when {
+      progress > 0.75 -> 0.45
+      progress > 0.60 -> 0.75
+      else -> 1.0
+    }
+
+    var penalty = 0.0
+
+    if (!pre.isPassableForFlying(x, y + 2, z)) {
+      penalty += LOW_HEADROOM_PENALTY
+    } else if (!pre.isPassableForFlying(x, y + 3, z)) {
+      penalty += TIGHT_HEADROOM_PENALTY
+    }
+
+    var blockedCardinals = 0
+    for (dir in CARDINAL_DIRECTIONS) {
+      if (!pre.isFlyColumnClear(x + dir[0], y, z + dir[1])) {
+        blockedCardinals++
+      }
+    }
+
+    penalty += blockedCardinals * ENCLOSED_CARDINAL_PENALTY
+    if (blockedCardinals >= 3) {
+      penalty += ENCLOSED_TIGHT_BONUS
+    }
+
+    return penalty * scale
   }
 
   private val CARDINAL_DIRECTIONS = arrayOf(
