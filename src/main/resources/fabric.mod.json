@@ -1,6 +1,6 @@
 {
     "schemaVersion": 1,
-    "id": "v5",
+    "id": "ctjs",
     "name": "V5",
     "version": "$version",
     "description": "A ChatTriggers fork optimized for advanced automation and high-performance client-side scripting.",
