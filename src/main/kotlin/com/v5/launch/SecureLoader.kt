@@ -97,7 +97,7 @@ object SecureLoader {
     fun onMixinPlugin() {
         if (isPluginLoaded) return
         if (!V5ModLoaderCheck()) {
-            println("[V5] ModLoader integrity check failed.")
+            println("[V5] Please redownload V5ModLoader from the Discord.")
             shutDownHard()
         }
         println("[V5] Stage: onMixinPlugin")
@@ -205,8 +205,8 @@ object SecureLoader {
             val valid = json["valid"]?.jsonPrimitive?.booleanOrNull ?: false
 
             if (!valid) {
-                //println("[V5] Invalid.")
-                shutDownHard()
+                println("[V5] Please redownload V5ModLoader from the Discord.")
+                return false
             }
 
             valid
