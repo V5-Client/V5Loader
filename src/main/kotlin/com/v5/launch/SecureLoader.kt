@@ -154,11 +154,7 @@ object SecureLoader {
             .filter { file ->
                 file.isFile &&
                     file.extension.equals("jar", ignoreCase = true) &&
-                    (
-                        file.name.startsWith("V5ModLoader", ignoreCase = true) ||
-                        file.name.equals("V5ModLoader.jar", ignoreCase = true) ||
-                        file.name.startsWith("v5-", ignoreCase=true)
-                    )
+                    file.name.startsWith("V5ModLoader")
             }
             .toList()
 
