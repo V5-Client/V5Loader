@@ -1,7 +1,9 @@
 package com.v5.swift.finder.precompute
 
+import com.v5.swift.finder.calculate.PathNode
 import com.v5.swift.finder.helper.BlockStateAccessor
 import com.v5.swift.finder.movement.MovementHelper
+import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap
 import net.minecraft.block.*
 import net.minecraft.block.enums.SlabType
 
@@ -9,6 +11,7 @@ class PrecomputedData(private val bsa: BlockStateAccessor) {
 
   @JvmField
   val states = IntArray(Block.STATE_IDS.size())
+  private val flyClearCache = Long2ByteOpenHashMap(16_384, 0.6f).apply { defaultReturnValue(FLY_CLEAR_UNKNOWN) }
 
   companion object {
     const val COMPUTED = 1 shl 0
@@ -21,6 +24,10 @@ class PrecomputedData(private val bsa: BlockStateAccessor) {
     const val FLY_PASSABLE = 1 shl 7
     const val FLUID = 1 shl 8
     const val SLAB_TOP = 1 shl 9
+
+    private const val FLY_CLEAR_UNKNOWN: Byte = -1
+    private const val FLY_CLEAR_FALSE: Byte = 0
+    private const val FLY_CLEAR_TRUE: Byte = 1
   }
 
   private fun compute(id: Int, state: BlockState, x: Int, y: Int, z: Int): Int {
@@ -143,12 +150,25 @@ class PrecomputedData(private val bsa: BlockStateAccessor) {
     (getData(x, y, z, state) and FLUID) != 0
 
   fun isFlyColumnClear(x: Int, y: Int, z: Int): Boolean {
+    val key = PathNode.coordKey(x, y, z)
+    val cached = flyClearCache.get(key)
+    if (cached != FLY_CLEAR_UNKNOWN) return cached == FLY_CLEAR_TRUE
+
     val feetState = bsa.get(x, y, z)
-    if (!isPassableForFlying(x, y, z, feetState)) return false
+    if (!isPassableForFlying(x, y, z, feetState)) {
+      flyClearCache.put(key, FLY_CLEAR_FALSE)
+      return false
+    }
 
     val headY = y + 1
     val headState = bsa.get(x, headY, z)
-    if (isTopSlab(x, headY, z, headState)) return false
-    return isPassableForFlying(x, headY, z, headState)
+    if (isTopSlab(x, headY, z, headState)) {
+      flyClearCache.put(key, FLY_CLEAR_FALSE)
+      return false
+    }
+
+    val clear = isPassableForFlying(x, headY, z, headState)
+    flyClearCache.put(key, if (clear) FLY_CLEAR_TRUE else FLY_CLEAR_FALSE)
+    return clear
   }
 }

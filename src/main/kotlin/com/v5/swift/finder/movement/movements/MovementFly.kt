@@ -13,14 +13,21 @@ object MovementFly {
   private const val MIN_VERTICAL_CLEARANCE = 2
   private const val VERTICAL_OBSTACLE_PENALTY = 5.0
 
-  private const val WALL_CHECK_DIST = 3
-  private const val WALL_PENALTY_TOUCHING = 3.5
-  private const val WALL_PENALTY_CLOSE = 1.8
-  private const val WALL_PENALTY_NEAR = 0.6
-  private const val LOW_HEADROOM_PENALTY = 2.2
-  private const val TIGHT_HEADROOM_PENALTY = 0.8
-  private const val ENCLOSED_CARDINAL_PENALTY = 0.28
-  private const val ENCLOSED_TIGHT_BONUS = 0.9
+  private const val WALL_CHECK_DIST = 5
+  private const val WALL_PENALTY_TOUCHING = 16.0
+  private const val WALL_PENALTY_CLOSE = 9.0
+  private const val WALL_PENALTY_NEAR = 4.0
+  private const val WALL_PENALTY_MID = 1.5
+  private const val LOW_HEADROOM_PENALTY = 10.0
+  private const val TIGHT_HEADROOM_PENALTY = 4.0
+  private const val ENCLOSED_CARDINAL_PENALTY = 2.2
+  private const val ENCLOSED_TIGHT_BONUS = 7.5
+  private const val ENCLOSED_FULL_BONUS = 12.0
+  private const val DIAGONAL_WALL_TOUCH_PENALTY = 3.5
+
+  private const val CONFINED_REJECT_PROGRESS = 0.92
+  private const val CONFINED_REJECT_CLEARANCE = 1
+  private const val CONFINED_REJECT_CARDINALS = 3
 
   private const val PURE_VERTICAL_BASE = 1.2
   private const val DIAGONAL_VERTICAL_BASE = 0.2
@@ -81,6 +88,8 @@ object MovementFly {
     val distToGoalSq = dxGoal * dxGoal + dzGoal * dzGoal
     val totalSq = distFromStartSq + distToGoalSq
     val progress = if (totalSq > 0) distFromStartSq.toDouble() / totalSq else 0.5
+
+    if (shouldRejectConfined(pre, destX, destY, destZ, progress)) return
 
     if (dy != 0) {
       cost += if (isDiagonalHorizontal || dx != 0 || dz != 0) DIAGONAL_VERTICAL_BASE else PURE_VERTICAL_BASE
@@ -148,8 +157,8 @@ object MovementFly {
       progress: Double
   ): Double {
     val scale = when {
-      progress > 0.75 -> 0.3
-      progress > 0.65 -> 0.6
+      progress > 0.84 -> 0.45
+      progress > 0.72 -> 0.7
       else -> 1.0
     }
 
@@ -168,11 +177,11 @@ object MovementFly {
       if (minClearance == 0) return WALL_PENALTY_TOUCHING * scale
     }
 
+    var diagonalTouchPenalty = 0.0
     if (minClearance > 0) {
       for (diag in DIAGONAL_DIRECTIONS) {
         if (!pre.isFlyColumnClear(x + diag[0], y, z + diag[1])) {
-          minClearance = 0
-          break
+          diagonalTouchPenalty += DIAGONAL_WALL_TOUCH_PENALTY
         }
       }
     }
@@ -181,10 +190,11 @@ object MovementFly {
       0 -> WALL_PENALTY_TOUCHING
       1 -> WALL_PENALTY_CLOSE
       2 -> WALL_PENALTY_NEAR
+      3 -> WALL_PENALTY_MID
       else -> 0.0
     }
 
-    return basePenalty * scale
+    return (basePenalty + diagonalTouchPenalty) * scale
   }
 
   @JvmStatic
@@ -194,8 +204,8 @@ object MovementFly {
       progress: Double
   ): Double {
     val scale = when {
-      progress > 0.75 -> 0.45
-      progress > 0.60 -> 0.75
+      progress > 0.84 -> 0.5
+      progress > 0.72 -> 0.75
       else -> 1.0
     }
 
@@ -218,8 +228,42 @@ object MovementFly {
     if (blockedCardinals >= 3) {
       penalty += ENCLOSED_TIGHT_BONUS
     }
+    if (blockedCardinals == 4) {
+      penalty += ENCLOSED_FULL_BONUS
+    }
 
     return penalty * scale
+  }
+
+  @JvmStatic
+  private fun shouldRejectConfined(
+      pre: PrecomputedData,
+      x: Int, y: Int, z: Int,
+      progress: Double
+  ): Boolean {
+    if (progress > CONFINED_REJECT_PROGRESS) return false
+
+    if (!pre.isPassableForFlying(x, y + 2, z)) return true
+
+    var blockedCardinals = 0
+    var minClearance = WALL_CHECK_DIST
+    for (dir in CARDINAL_DIRECTIONS) {
+      var blocked = false
+      for (d in 1..WALL_CHECK_DIST) {
+        val nx = x + dir[0] * d
+        val nz = z + dir[1] * d
+        if (!pre.isFlyColumnClear(nx, y, nz)) {
+          val clearance = d - 1
+          if (clearance < minClearance) minClearance = clearance
+          blocked = true
+          break
+        }
+      }
+      if (blocked) blockedCardinals++
+    }
+
+    if (blockedCardinals >= CONFINED_REJECT_CARDINALS) return true
+    return blockedCardinals >= 2 && minClearance <= CONFINED_REJECT_CLEARANCE
   }
 
   private val CARDINAL_DIRECTIONS = arrayOf(
