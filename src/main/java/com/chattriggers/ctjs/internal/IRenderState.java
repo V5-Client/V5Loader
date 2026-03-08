@@ -1,4 +1,4 @@
-package com.chattriggers.ctjs.internal.mixins;
+package com.chattriggers.ctjs.internal;
 
 import net.minecraft.entity.Entity;
 

@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.internal.mixins;
 
 
+import com.chattriggers.ctjs.internal.IRenderState;
 import net.minecraft.client.render.entity.state.EntityRenderState;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
