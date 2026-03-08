@@ -16,13 +16,13 @@
         "ClientConnectionProxyMixin",
         "MultiplayerScreenMixin",
         "TitleScreenRedirectMixin",
-        "RotatingCubeMapRendererMixin",
         "GameRendererMixin",
         "FirmamentModAnnouncerMixin",
         "DrawContextCapture",
         "GlStateManagerMixin",
         "FrustumInvoker",
-        "WorldRendererMixin"
+        "WorldRendererMixin",
+        "ScreenPanoramaMixin"
     ],
     "mixins": [
         "ClientConnectionMixin"

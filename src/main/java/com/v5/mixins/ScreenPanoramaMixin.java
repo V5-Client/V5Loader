@@ -1,6 +1,5 @@
 package com.v5.mixins;
 
-import com.v5.render.ShaderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -26,9 +25,5 @@ public abstract class ScreenPanoramaMixin {
 
         double scaledMouseX = client.mouse.getX() * (double) width / (double) window.getWidth();
         double scaledMouseY = client.mouse.getY() * (double) height / (double) window.getHeight();
-
-        if (ShaderUtils.INSTANCE.renderBackground(width, height, scaledMouseX, scaledMouseY)) {
-            ci.cancel();
-        }
     }
 }

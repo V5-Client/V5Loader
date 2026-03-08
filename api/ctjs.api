@@ -3096,10 +3096,6 @@ public abstract class com/v5/mixins/RenderLayersMixin {
 	public fun <init> ()V
 }
 
-public class com/v5/mixins/RotatingCubeMapRendererMixin {
-	public fun <init> ()V
-}
-
 public abstract class com/v5/mixins/ScreenPanoramaMixin {
 	protected field height I
 	protected field width I

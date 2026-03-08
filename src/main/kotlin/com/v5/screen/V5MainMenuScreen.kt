@@ -90,6 +90,8 @@ class V5MainMenuScreen : Screen(Text.literal("V5 Main Menu")) {
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        renderBackground(context, mouseX, mouseY, delta)
+
         NVGRenderer.beginFrame(width.toFloat(), height.toFloat())
         try {
             menuButtons.forEach { button ->
