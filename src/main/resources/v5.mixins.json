@@ -15,12 +15,14 @@
         "TranslationMixin",
         "ClientConnectionProxyMixin",
         "MultiplayerScreenMixin",
+        "TitleScreenRedirectMixin",
         "GameRendererMixin",
         "FirmamentModAnnouncerMixin",
         "DrawContextCapture",
         "GlStateManagerMixin",
         "FrustumInvoker",
-        "WorldRendererMixin"
+        "WorldRendererMixin",
+        "ScreenPanoramaMixin"
     ],
     "mixins": [
         "ClientConnectionMixin"
