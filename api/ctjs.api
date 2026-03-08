@@ -3097,8 +3097,6 @@ public abstract class com/v5/mixins/RenderLayersMixin {
 }
 
 public abstract class com/v5/mixins/ScreenPanoramaMixin {
-	protected field height I
-	protected field width I
 	public fun <init> ()V
 }
 
@@ -3374,7 +3372,7 @@ public final class com/v5/render/RenderUtils$Color {
 
 public final class com/v5/render/ShaderUtils {
 	public static final field INSTANCE Lcom/v5/render/ShaderUtils;
-	public final fun renderBackground (IIDD)Z
+	public static final fun renderBackground (DD)Z
 }
 
 public final class com/v5/render/helper/DrawContextHolder {

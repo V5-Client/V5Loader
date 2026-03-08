@@ -13,6 +13,7 @@ import org.lwjgl.nanovg.NVGPaint
 import org.lwjgl.nanovg.NanoVG.*
 import org.lwjgl.nanovg.NanoVGGL3.*
 import org.lwjgl.nanovg.NanoSVG.*
+import org.lwjgl.opengl.GL20C
 import org.lwjgl.opengl.GL30
 import org.lwjgl.opengl.GL33C
 import org.lwjgl.stb.STBImage.stbi_load_from_memory
@@ -169,6 +170,7 @@ object NVGRenderer {
         val prevFramebuffer = GL33C.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING)
         val prevViewport = IntArray(4)
         GL33C.glGetIntegerv(GL33C.GL_VIEWPORT, prevViewport)
+        val prevProgram = GL33C.glGetInteger(GL20C.GL_CURRENT_PROGRAM)
 
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, glFramebuffer)
         GlStateManager._viewport(0, 0, framebuffer.textureWidth, framebuffer.textureHeight)
@@ -183,10 +185,12 @@ object NVGRenderer {
 
         savedFramebuffer = prevFramebuffer
         savedViewport = prevViewport
+        savedProgram = prevProgram
     }
 
     private var savedFramebuffer = 0
     private var savedViewport = IntArray(4)
+    private var savedProgram = 0
 
     @JvmStatic
     fun endFrame() {
@@ -198,7 +202,7 @@ object NVGRenderer {
         GlStateManager._disableDepthTest()
         GlStateManager._enableBlend()
         GlStateManager._blendFuncSeparate(770, 771, 1, 0)
-        GlStateManager._glUseProgram(0)
+        GlStateManager._glUseProgram(savedProgram)
 
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, savedFramebuffer)
         GlStateManager._viewport(savedViewport[0], savedViewport[1], savedViewport[2], savedViewport[3])
