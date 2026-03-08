@@ -9,8 +9,11 @@ import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
 import net.minecraft.client.gui.screen.option.OptionsScreen
 import net.minecraft.client.gui.screen.world.SelectWorldScreen
 import net.minecraft.text.Text
+import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_BOTTOM
 import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER
+import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT
 import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_MIDDLE
+import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP
 
 class V5MainMenuScreen : Screen(Text.literal("V5 Main Menu")) {
     private data class MenuButton(
@@ -90,6 +93,9 @@ class V5MainMenuScreen : Screen(Text.literal("V5 Main Menu")) {
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        val username = client?.session?.username ?: "Unknown"
+        val multiplayerY = height / 2 - 10
+
         NVGRenderer.beginFrame(width.toFloat(), height.toFloat())
         try {
             menuButtons.forEach { button ->
@@ -102,14 +108,29 @@ class V5MainMenuScreen : Screen(Text.literal("V5 Main Menu")) {
                     button.isHovered(mouseX, mouseY)
                 )
             }
+
+            NVGRenderer.text(
+                "RDBT V5",
+                width / 2f,
+                (multiplayerY - 64).toFloat(),
+                30f,
+                0xF5F8FFFF.toInt(),
+                titleFont,
+                NVG_ALIGN_CENTER or NVG_ALIGN_TOP
+            )
+
+            NVGRenderer.text(
+                "Logged in as $username",
+                8f,
+                height - 8f,
+                8.7f,
+                0xE1E9F1FF.toInt(),
+                smallerFont,
+                NVG_ALIGN_LEFT or NVG_ALIGN_BOTTOM
+            )
         } finally {
             NVGRenderer.endFrame()
         }
-
-        val username = client?.session?.username ?: "Unknown"
-        val multiplayerY = height / 2 - 10
-        context.drawCenteredTextWithShadow(textRenderer, Text.literal("EPSILON V5"), width / 2, multiplayerY - 52, 0xF5F8FFFF.toInt())
-        context.drawTextWithShadow(textRenderer, Text.literal("Logged in as $username"), 8, height - 12, 0xE1E9F1FF.toInt())
     }
 
     override fun mouseClicked(click: Click, doubled: Boolean): Boolean {

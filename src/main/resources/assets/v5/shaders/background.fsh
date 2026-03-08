@@ -90,28 +90,14 @@ void main() {
     vec2 mouseUv = vec2(mouse.x / resolution.x, 1.0 - mouse.y / resolution.y);
     vec2 mouseP = vec2((mouseUv.x - 0.5) * aspect, mouseUv.y - 0.5);
 
-    vec2 mouseTarget = mouseP * 0.60;
-    float mouseRadius = length(mouseTarget);
-    vec2 mouseDirN = mouseRadius > 1e-5 ? mouseTarget / mouseRadius : vec2(0.0);
-
-    float maxParallax = 0.175;
-    float saturation = 1.0 - exp(-2.6 * mouseRadius);
-    float centerEase = smoothstep(0.05, 0.85, mouseRadius);
-    float parallaxAmt = maxParallax * saturation * (0.20 + 0.58 * centerEase);
-    vec2 mouseDir = mouseDirN * parallaxAmt;
-
-    vec2 farShift = mouseDir * 0.52;
-    vec2 nearShift = mouseDir * 1.02;
-
     float t = time * 0.18;
 
     vec2 cam = p;
-    cam += farShift * 0.12;
     cam += vec2(sin(t * 0.60), cos(t * 0.43)) * 0.015;
 
-    vec2 w0 = warp((cam + farShift * 0.20) * 0.95, t * 0.8);
-    vec2 w1 = warp((cam + mouseDir * 0.52) * 1.50 + vec2(2.0, -1.4), -t * 0.9);
-    vec2 w2 = warp((cam + nearShift * 0.72) * 2.35 + vec2(-3.4, 2.7), t * 1.1);
+    vec2 w0 = warp(cam * 0.95, t * 0.8);
+    vec2 w1 = warp(cam * 1.50 + vec2(2.0, -1.4), -t * 0.9);
+    vec2 w2 = warp(cam * 2.35 + vec2(-3.4, 2.7), t * 1.1);
 
     float f0 = ridgedFbm(w0 * 1.2 + vec2(t * 0.18, -t * 0.10));
     float f1 = ridgedFbm(w1 * 1.4 + vec2(-t * 0.26, t * 0.16));
