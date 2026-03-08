@@ -20,6 +20,8 @@
         "ClientWorldAccessor",
         "CreativeInventoryScreenMixin",
         "EntityRenderDispatcherMixin",
+        "EntityRenderStateAccessor",
+        "EntityRenderStateMixin",
         "GameOptionsAccessor",
         "GameOptionsMixin",
         "HandledScreenAccessor",
@@ -51,6 +53,7 @@
     "mixins": [
         "ChunkAccessor",
         "ClientConnectionMixin",
+        "EntityRendererMixin",
         "ItemStackMixin",
         "LivingEntityMixin",
         "NbtCompoundAccessor",
