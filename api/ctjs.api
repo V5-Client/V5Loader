@@ -3447,45 +3447,58 @@ public final class com/v5/render/objects/RenderPipelines {
 public final class com/v5/screen/ProxyEditScreen : net/minecraft/client/gui/screen/Screen {
 	public fun <init> (Lcom/v5/screen/ProxyManagerScreen;Lcom/v5/proxy/Proxy;)V
 	public fun close ()V
+	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
 	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+	public fun renderBackground (Lnet/minecraft/client/gui/DrawContext;IIF)V
 }
 
 public final class com/v5/screen/ProxyManagerScreen : net/minecraft/client/gui/screen/Screen {
 	public fun <init> (Lnet/minecraft/client/gui/screen/Screen;)V
 	public fun close ()V
+	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
+	public fun mouseScrolled (DDDD)Z
 	public final fun refreshList ()V
 	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+	public fun renderBackground (Lnet/minecraft/client/gui/DrawContext;IIF)V
 }
 
-public final class com/v5/screen/ProxyManagerScreen$ProxyListWidget : net/minecraft/client/gui/widget/ElementListWidget {
-	public fun <init> (Lcom/v5/screen/ProxyManagerScreen;Lnet/minecraft/client/MinecraftClient;IIII)V
-	public fun getRowWidth ()I
-	public final fun refresh ()V
+public final class com/v5/screen/ScreenHelper {
+	public static final field INSTANCE Lcom/v5/screen/ScreenHelper;
+	public static final field smallerFont Lcom/v5/render/helper/Font;
+	public static final field titleFont Lcom/v5/render/helper/Font;
+	public static final fun argb (IIII)I
+	public static final fun drawMenuButton (Ljava/lang/String;FFFFZLjava/lang/Integer;)V
+	public static synthetic fun drawMenuButton$default (Ljava/lang/String;FFFFZLjava/lang/Integer;ILjava/lang/Object;)V
 }
 
-public final class com/v5/screen/ProxyManagerScreen$ProxyListWidget$ProxyEntry : net/minecraft/client/gui/widget/ElementListWidget$Entry {
-	public fun <init> (Lcom/v5/screen/ProxyManagerScreen$ProxyListWidget;Lcom/v5/proxy/Proxy;)V
-	public fun children ()Ljava/util/List;
-	public fun render (Lnet/minecraft/client/gui/DrawContext;IIZF)V
-	public fun selectableChildren ()Ljava/util/List;
+public final class com/v5/screen/ScreenHelper$MenuButton {
+	public fun <init> (Ljava/lang/String;IIIILkotlin/jvm/functions/Function0;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun component5 ()I
+	public final fun component6 ()Lkotlin/jvm/functions/Function0;
+	public final fun copy (Ljava/lang/String;IIIILkotlin/jvm/functions/Function0;)Lcom/v5/screen/ScreenHelper$MenuButton;
+	public static synthetic fun copy$default (Lcom/v5/screen/ScreenHelper$MenuButton;Ljava/lang/String;IIIILkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/v5/screen/ScreenHelper$MenuButton;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()I
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getOnClick ()Lkotlin/jvm/functions/Function0;
+	public final fun getWidth ()I
+	public final fun getX ()I
+	public final fun getY ()I
+	public fun hashCode ()I
+	public final fun isHovered (II)Z
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/v5/screen/V5MainMenuScreen : net/minecraft/client/gui/screen/Screen {
-	public static final field Companion Lcom/v5/screen/V5MainMenuScreen$Companion;
-	public static final field smallerFont Lcom/v5/render/helper/Font;
-	public static final field titleFont Lcom/v5/render/helper/Font;
 	public fun <init> ()V
-	public static final fun argb (IIII)I
-	public static final fun drawV5Button (Ljava/lang/String;FFFFZ)V
 	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
 	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
 	public fun renderBackground (Lnet/minecraft/client/gui/DrawContext;IIF)V
 	public fun shouldCloseOnEsc ()Z
-}
-
-public final class com/v5/screen/V5MainMenuScreen$Companion {
-	public final fun argb (IIII)I
-	public final fun drawV5Button (Ljava/lang/String;FFFFZ)V
 }
 
 public final class com/v5/screen/WelcomeScreen : net/minecraft/client/gui/screen/Screen {
