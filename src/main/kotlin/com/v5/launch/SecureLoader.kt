@@ -56,7 +56,6 @@ object SecureLoader {
     private val runtimeHwid: String by lazy { HWID.generateHWID() }
     private val retryableHeartbeatAuthErrors = setOf(
         "SESSION_INACTIVE",
-        "JWT_EXPIRED",
         "UNAUTHORIZED"
     )
 
@@ -302,7 +301,14 @@ object SecureLoader {
             val result = performHeartbeatOnce()
             when (result.status) {
                 HeartbeatStatus.SUCCESS -> return true
-                HeartbeatStatus.TRANSIENT_FAILURE -> return true
+                HeartbeatStatus.TRANSIENT_FAILURE -> {
+                    if (attempt >= HEARTBEAT_MAX_RETRIES) return true
+                    try {
+                        Thread.sleep(heartbeatRetryBackoffMs(attempt))
+                    } catch (_: InterruptedException) {
+                        return false
+                    }
+                }
                 HeartbeatStatus.FATAL_AUTH_FAILURE -> {
                     lastErrorCode = result.errorCode
                     break
