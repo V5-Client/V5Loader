@@ -3096,6 +3096,20 @@ public abstract class com/v5/mixins/RenderLayersMixin {
 	public fun <init> ()V
 }
 
+public class com/v5/mixins/RotatingCubeMapRendererMixin {
+	public fun <init> ()V
+}
+
+public abstract class com/v5/mixins/ScreenPanoramaMixin {
+	protected field height I
+	protected field width I
+	public fun <init> ()V
+}
+
+public abstract class com/v5/mixins/TitleScreenRedirectMixin {
+	public fun <init> ()V
+}
+
 public class com/v5/mixins/TranslationMixin {
 	public fun <init> ()V
 }
@@ -3362,6 +3376,11 @@ public final class com/v5/render/RenderUtils$Color {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/v5/render/ShaderUtils {
+	public static final field INSTANCE Lcom/v5/render/ShaderUtils;
+	public final fun renderBackground (IIDD)Z
+}
+
 public final class com/v5/render/helper/DrawContextHolder {
 	public static final field INSTANCE Lcom/v5/render/helper/DrawContextHolder;
 	public static final fun getCurrentContext ()Lnet/minecraft/client/gui/DrawContext;
@@ -3433,11 +3452,13 @@ public final class com/v5/render/objects/RenderPipelines {
 
 public final class com/v5/screen/ProxyEditScreen : net/minecraft/client/gui/screen/Screen {
 	public fun <init> (Lcom/v5/screen/ProxyManagerScreen;Lcom/v5/proxy/Proxy;)V
+	public fun close ()V
 	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
 }
 
 public final class com/v5/screen/ProxyManagerScreen : net/minecraft/client/gui/screen/Screen {
 	public fun <init> (Lnet/minecraft/client/gui/screen/Screen;)V
+	public fun close ()V
 	public final fun refreshList ()V
 	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
 }
@@ -3453,6 +3474,24 @@ public final class com/v5/screen/ProxyManagerScreen$ProxyListWidget$ProxyEntry :
 	public fun children ()Ljava/util/List;
 	public fun render (Lnet/minecraft/client/gui/DrawContext;IIZF)V
 	public fun selectableChildren ()Ljava/util/List;
+}
+
+public final class com/v5/screen/V5MainMenuScreen : net/minecraft/client/gui/screen/Screen {
+	public static final field Companion Lcom/v5/screen/V5MainMenuScreen$Companion;
+	public static final field smallerFont Lcom/v5/render/helper/Font;
+	public static final field titleFont Lcom/v5/render/helper/Font;
+	public fun <init> ()V
+	public static final fun argb (IIII)I
+	public static final fun drawV5Button (Ljava/lang/String;FFFFZ)V
+	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
+	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+	public fun renderBackground (Lnet/minecraft/client/gui/DrawContext;IIF)V
+	public fun shouldCloseOnEsc ()Z
+}
+
+public final class com/v5/screen/V5MainMenuScreen$Companion {
+	public final fun argb (IIII)I
+	public final fun drawV5Button (Ljava/lang/String;FFFFZ)V
 }
 
 public final class com/v5/screen/WelcomeScreen : net/minecraft/client/gui/screen/Screen {

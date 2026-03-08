@@ -29,6 +29,10 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Text.literal("Prox
         }.dimensions(width / 2 + 2, height - 28, 100, 20).build())
     }
 
+    override fun close() {
+        client?.setScreen(parent)
+    }
+
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         super.render(context, mouseX, mouseY, delta)
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 15, 0xFFFFFFFF.toInt())
@@ -165,6 +169,10 @@ class ProxyEditScreen(
         addDrawableChild(ButtonWidget.builder(Text.literal("Cancel")) {
             client?.setScreen(parent)
         }.dimensions(centerX + 5, height - 40, 100, 20).build())
+    }
+
+    override fun close() {
+        client?.setScreen(parent)
     }
 
     private fun createField(centerX: Int, y: Int, placeholder: String, value: String?): TextFieldWidget {
