@@ -66,7 +66,6 @@ object SecureLoader {
 
     @Volatile private var isDevMode = false
     @Volatile private var isPluginLoaded = false
-    @Volatile private var areMixinsApplied = false
     @Volatile private var isLoaded = false
     @Volatile private var rootMetadata: ModuleMetadata? = null
     @Volatile private var heartbeatIntervalMs = DEFAULT_HEARTBEAT_INTERVAL_MS
@@ -87,9 +86,7 @@ object SecureLoader {
 
     fun run() {
         runAntiTamperChecks()
-
         onMixinPlugin()
-        onCTMixinApplication()
         onInitialize()
     }
 
@@ -128,18 +125,6 @@ object SecureLoader {
             e.printStackTrace()
             shutDownHard()
         }
-    }
-
-    fun onCTMixinApplication() {
-        if (areMixinsApplied) return
-        if (isDevMode) return
-
-        println("[V5] Stage: onCTMixinApplication")
-        val metadata = rootMetadata ?: return
-        val mixinEntry = metadata.mixinEntry ?: return
-        val entryPath = "$VIRTUAL_MODULE_PREFIX/$mixinEntry"
-        JSLoader.loadVirtualMixin(entryPath)
-        areMixinsApplied = true
     }
 
     fun V5ModLoaderCheck(): Boolean {
@@ -702,7 +687,6 @@ object SecureLoader {
     fun reload() {
         isLoaded = false
         isPluginLoaded = false
-        areMixinsApplied = false
         isDevMode = false
         rootMetadata = null
         heartbeatThread?.interrupt()

@@ -24,8 +24,6 @@ class CTMixinPlugin : IMixinConfigPlugin {
         MixinExtrasBootstrap.init()
 
         try {
-            SecureLoader.onCTMixinApplication()
-
             DynamicMixinManager.initialize()
             DynamicMixinManager.applyAccessWideners()
         } catch (e: Throwable) {

@@ -1,6 +1,7 @@
 package com.v5.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.v5.storage.V5MixinStorage;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.v5.swift.event.Context;
 import com.v5.swift.event.WorldRenderEvent;
@@ -57,5 +58,24 @@ public class WorldRendererMixin {
   private MatrixStack setInternalStack(MatrixStack original) {
     getCtx().setMatrixStack(original);
     return original;
+  }
+
+  @Inject(method = "method_62214", at = @At("HEAD"), cancellable = true)
+  private void v5$renderMain(
+          GpuBufferSlice gpuBufferSlice,
+          WorldRenderState worldRenderState,
+          Profiler profiler,
+          Matrix4f matrix4f,
+          Handle handle,
+          Handle handle2,
+          boolean bl,
+          Frustum frustum,
+          Handle handle3,
+          Handle handle4,
+          CallbackInfo ci) {
+    if (V5MixinStorage.getBoolean("macroEnabled", false)
+            && "No Render".equals(V5MixinStorage.getString("renderLimiter", "Off"))) {
+      ci.cancel();
+    }
   }
 }
