@@ -4055,3 +4055,12 @@ public final class com/v5/swift/util/setting/Settings {
 	public final fun setWorldCache (Z)V
 }
 
+public final class com/v5/visuals/StructureFinder {
+	public static final field INSTANCE Lcom/v5/visuals/StructureFinder;
+	public static final fun clear ()V
+	public static final fun getRenderBlocksArray ()[I
+	public static final fun shutdown ()V
+	public static final fun submitBlockUpdate (III)V
+	public static final fun submitChunkScan (II)V
+}
+
