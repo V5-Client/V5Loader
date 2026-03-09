@@ -16,7 +16,7 @@ class ActionCosts {
   @JvmField val SLAB_ASCENT_TIME = SPRINT_ONE_BLOCK_TIME * 1.1
   @JvmField val WALK_OFF_EDGE_TIME = SPRINT_ONE_BLOCK_TIME * 0.5
   @JvmField val LAND_RECOVERY_TIME = 2.0
-  @JvmField val JUMP_UP_ONE_BLOCK_TIME: Double = 18.0 + MOMENTUM_LOSS_PENALTY + SPRINT_ONE_BLOCK_TIME
+  @JvmField val JUMP_UP_ONE_BLOCK_TIME: Double = 28.0 + MOMENTUM_LOSS_PENALTY + SPRINT_ONE_BLOCK_TIME
 
   private val fallTimes: DoubleArray = generateFallTimes()
 

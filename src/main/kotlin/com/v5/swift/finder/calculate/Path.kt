@@ -10,7 +10,8 @@ class Path(
     endNode: PathNode,
     val timeTaken: Long,
     val nodesExplored: Int,
-    private val isFly: Boolean = false
+    private val isFly: Boolean = false,
+    val selectedStartIndex: Int = -1
 ) {
 
   val points: List<BlockPos>

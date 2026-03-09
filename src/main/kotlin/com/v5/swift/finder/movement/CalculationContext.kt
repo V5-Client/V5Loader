@@ -7,6 +7,8 @@ import com.v5.swift.finder.precompute.SafePositionCache
 import com.v5.swift.finder.precompute.WallDistanceCalculator
 import net.minecraft.block.BlockState
 import net.minecraft.client.MinecraftClient
+import kotlin.math.abs
+import kotlin.math.max
 
 class CalculationContext {
 
@@ -31,10 +33,47 @@ class CalculationContext {
 
   @JvmField var cruiseY: Int = 0
 
+  @Volatile
+  private var transientAvoidZones: Array<AvoidZone> = emptyArray()
+
+  data class AvoidZone(
+    val x: Int,
+    val y: Int,
+    val z: Int,
+    val radiusSq: Int,
+    val penalty: Double,
+    val maxYDiff: Int = 2
+  )
+
   fun getFluidPenalty(x: Int, y: Int, z: Int): Double {
     var penalty = 0.0
-    if (precomputedData.isFluid(x, y, z)) penalty += 20.0
-    if (precomputedData.isFluid(x, y + 1, z)) penalty += 20.0
+    if (precomputedData.isFluid(x, y, z, get(x, y, z))) penalty += 20.0
+    if (precomputedData.isFluid(x, y + 1, z, get(x, y + 1, z))) penalty += 20.0
+    return penalty
+  }
+
+  fun setTransientAvoidZones(zones: Array<AvoidZone>) {
+    transientAvoidZones = zones
+  }
+
+  fun getTransientAvoidPenalty(x: Int, y: Int, z: Int): Double {
+    val zones = transientAvoidZones
+    if (zones.isEmpty()) return 0.0
+
+    var penalty = 0.0
+    for (zone in zones) {
+      if (abs(y - zone.y) > zone.maxYDiff) continue
+
+      val dx = x - zone.x
+      val dz = z - zone.z
+      val distSq = dx * dx + dz * dz
+      if (distSq > zone.radiusSq) continue
+
+      val normalized = if (zone.radiusSq <= 1) 0.0 else distSq.toDouble() / zone.radiusSq.toDouble()
+      val falloff = max(0.2, 1.0 - normalized)
+      penalty += zone.penalty * falloff
+    }
+
     return penalty
   }
 

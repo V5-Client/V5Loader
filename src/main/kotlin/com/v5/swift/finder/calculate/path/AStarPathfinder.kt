@@ -22,6 +22,7 @@ class AStarPathfinder(
     private val heuristicWeight: Double = 1.05,
     private val nonPrimaryStartPenalty: Double = 0.0,
     private val isFly: Boolean = false,
+    private val moveOrderOffset: Int = 0,
 ) {
 
   private companion object {
@@ -43,6 +44,7 @@ class AStarPathfinder(
   private var nodeFCost = DoubleArray(INITIAL_NODE_CAPACITY)
 
   private var nodeParent = IntArray(INITIAL_NODE_CAPACITY) { -1 }
+  private var nodeStartIndex = IntArray(INITIAL_NODE_CAPACITY) { -1 }
 
   private var nodeHeapPos = IntArray(INITIAL_NODE_CAPACITY) { -1 }
 
@@ -61,6 +63,7 @@ class AStarPathfinder(
     nodeHCost = nodeHCost.copyOf(newCapacity)
     nodeFCost = nodeFCost.copyOf(newCapacity)
     nodeParent = nodeParent.copyOf(newCapacity).also { it.fill(-1, capacity, newCapacity) }
+    nodeStartIndex = nodeStartIndex.copyOf(newCapacity).also { it.fill(-1, capacity, newCapacity) }
     nodeHeapPos = nodeHeapPos.copyOf(newCapacity).also { it.fill(-1, capacity, newCapacity) }
   }
 
@@ -93,6 +96,7 @@ class AStarPathfinder(
 
       if (startPenalty < nodeGCost[nodeIdx]) {
         nodeParent[nodeIdx] = -1
+        nodeStartIndex[nodeIdx] = index
         nodeGCost[nodeIdx] = startPenalty
         nodeFCost[nodeIdx] = startPenalty + nodeHCost[nodeIdx] * weight
       }
@@ -138,6 +142,8 @@ class AStarPathfinder(
 
     val res = MovementResult()
     val moves = if (isFly) MovesFly.entries else Moves.entries
+    val moveCount = moves.size
+    val moveStart = if (moveCount <= 1) 0 else (moveOrderOffset and Int.MAX_VALUE) % moveCount
     val infCost = ctx.cost.INF_COST
 
     val startTime = System.nanoTime()
@@ -163,25 +169,28 @@ class AStarPathfinder(
       }
 
       val currGCost = nodeGCost[currIdx]
-      for (move in moves) {
+      for (moveIndex in 0 until moveCount) {
+        val move = moves[(moveIndex + moveStart) % moveCount]
         res.cost = infCost
         move.calculate(ctx, currX, currY, currZ, res)
 
         val moveCost = res.cost
         if (moveCost >= infCost) continue
 
-        val newCost = currGCost + moveCost
+        val newCost = currGCost + moveCost + ctx.getTransientAvoidPenalty(res.x, res.y, res.z)
         val neighbourKey = PathNode.Companion.coordKey(res.x, res.y, res.z)
         var neighbourIdx = coordToNode.get(neighbourKey)
 
         if (neighbourIdx == -1) {
           neighbourIdx = createNode(res.x, res.y, res.z)
           nodeParent[neighbourIdx] = currIdx
+          nodeStartIndex[neighbourIdx] = nodeStartIndex[currIdx]
           nodeGCost[neighbourIdx] = newCost
           nodeFCost[neighbourIdx] = newCost + nodeHCost[neighbourIdx] * weight
           openSet.add(neighbourIdx)
         } else if (newCost < nodeGCost[neighbourIdx]) {
           nodeParent[neighbourIdx] = currIdx
+          nodeStartIndex[neighbourIdx] = nodeStartIndex[currIdx]
           nodeGCost[neighbourIdx] = newCost
           nodeFCost[neighbourIdx] = newCost + nodeHCost[neighbourIdx] * weight
 
@@ -212,7 +221,7 @@ class AStarPathfinder(
       currIdx = nodeParent[currIdx]
     }
 
-    return Path(ctx, endNode, elapsed, iterations, isFly)
+    return Path(ctx, endNode, elapsed, iterations, isFly, nodeStartIndex[endIdx])
   }
 
   private class PooledHeap(private val pf: AStarPathfinder) {
