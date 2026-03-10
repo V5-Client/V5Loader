@@ -8,6 +8,7 @@ import com.v5.swift.event.WorldRenderEvent
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.render.Frustum
+import net.minecraft.client.render.VertexConsumer
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.VertexRendering
 import net.minecraft.client.util.BufferAllocator
@@ -16,35 +17,46 @@ import net.minecraft.entity.Entity
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 import org.joml.Quaternionf
-import org.joml.Vector3f
-import kotlin.math.abs
-import kotlin.math.pow
+import kotlin.math.sqrt
 
 object RenderUtils {
     private val client = MinecraftClient.getInstance()
+    private const val INV_255 = 1f / 255f
 
     private val bufferSource = VertexConsumerProvider.immediate(BufferAllocator(2 * 1024 * 1024))
 
     private const val MAX_BOXES = 8192
     private const val MAX_LINES = 4096
     private const val MAX_TEXTS = 1024
+    private const val BOX_KEY_COUNT = 514 // filled(depth/no depth) + wire(depth 0-255 thickness, no-depth 0-255 thickness)
+    private const val LINE_KEY_COUNT = 512 // depth(0-255 thickness) + no-depth(0-255 thickness)
 
     private val boxData = DoubleArray(MAX_BOXES * 6)
     private val boxColors = FloatArray(MAX_BOXES * 4)
     private val boxFlags = IntArray(MAX_BOXES)
+    private val boxOrder = IntArray(MAX_BOXES)
+    private val boxKeyCounts = IntArray(BOX_KEY_COUNT)
+    private val boxKeyOffsets = IntArray(BOX_KEY_COUNT)
+    private val boxKeyWrite = IntArray(BOX_KEY_COUNT)
     private var boxCount = 0
 
     private val lineData = DoubleArray(MAX_LINES * 6)
     private val lineColors = IntArray(MAX_LINES)
     private val lineFlags = IntArray(MAX_LINES)
+    private val lineOrder = IntArray(MAX_LINES)
+    private val lineVisibleIndices = IntArray(MAX_LINES)
+    private val lineVisibleKeys = IntArray(MAX_LINES)
+    private val lineKeyCounts = IntArray(LINE_KEY_COUNT)
+    private val lineKeyOffsets = IntArray(LINE_KEY_COUNT)
+    private val lineKeyWrite = IntArray(LINE_KEY_COUNT)
     private var lineCount = 0
 
     private val textData = DoubleArray(MAX_TEXTS * 3)
     private val textStrings = arrayOfNulls<String>(MAX_TEXTS)
-    private val textFlags = FloatArray(MAX_TEXTS * 4)
+    private val textScales = FloatArray(MAX_TEXTS)
+    private val textWidths = FloatArray(MAX_TEXTS)
+    private val textFlags = IntArray(MAX_TEXTS)
     private var textCount = 0
-
-    private val tmpVector3f = Vector3f()
 
     private var cameraX = 0.0
     private var cameraY = 0.0
@@ -52,11 +64,11 @@ object RenderUtils {
     private var cameraRotation: Quaternionf? = null
 
     data class Color(val r: Int, val g: Int, val b: Int, val a: Int) {
-        val rf: Float get() = r / 255f
-        val gf: Float get() = g / 255f
-        val bf: Float get() = b / 255f
-        val af: Float get() = a / 255f
-        val packed: Int get() = (a and 0xFF shl 24) or (r and 0xFF shl 16) or (g and 0xFF shl 8) or (b and 0xFF)
+        val rf: Float = r * INV_255
+        val gf: Float = g * INV_255
+        val bf: Float = b * INV_255
+        val af: Float = a * INV_255
+        val packed: Int = (a and 0xFF shl 24) or (r and 0xFF shl 16) or (g and 0xFF shl 8) or (b and 0xFF)
     }
 
     init {
@@ -84,7 +96,7 @@ object RenderUtils {
             matrices.translate(-cameraX.toFloat(), -cameraY.toFloat(), -cameraZ.toFloat())
 
             if (localBoxCount > 0) {
-                renderBoxBatch(matrices, frustum, localBoxCount)
+                renderBoxBatch(matrices, localBoxCount)
             }
 
             if (localLineCount > 0) {
@@ -102,32 +114,106 @@ object RenderUtils {
         }
     }
 
-    private fun renderBoxBatch(matrices: MatrixStack, frustum: Frustum?, count: Int) {
-        val indices = (0 until count).sortedWith { a, b ->
-            val aFlags = boxFlags[a]
-            val bFlags = boxFlags[b]
-            val aFilled = (aFlags and 1) != 0
-            val bFilled = (bFlags and 1) != 0
-            if (aFilled != bFilled) return@sortedWith if (bFilled) 1 else -1
+    private fun boxKey(flags: Int): Int {
+        val filled = (flags and 1) != 0
+        val depth = (flags and 2) != 0
+        if (filled) return if (depth) 0 else 1
+        val thickness = (flags ushr 3) and 0xFF
+        return if (depth) 2 + thickness else 2 + 256 + thickness
+    }
 
-            val aDepth = (aFlags and 2) != 0
-            val bDepth = (bFlags and 2) != 0
-            bDepth.compareTo(aDepth)
+    private fun lineKey(flags: Int): Int {
+        val depth = (flags and 1) != 0
+        val thickness = (flags ushr 2) and 0xFF
+        return if (depth) thickness else 256 + thickness
+    }
+
+    private fun buildBoxOrder(count: Int): Int {
+        java.util.Arrays.fill(boxKeyCounts, 0)
+
+        var total = 0
+        for (idx in 0 until count) {
+            val flags = boxFlags[idx]
+            boxKeyCounts[boxKey(flags)]++
+            total++
         }
+
+        if (total == 0) return 0
+
+        var offset = 0
+        for (k in 0 until BOX_KEY_COUNT) {
+            boxKeyOffsets[k] = offset
+            boxKeyWrite[k] = offset
+            offset += boxKeyCounts[k]
+        }
+
+        for (idx in 0 until count) {
+            val flags = boxFlags[idx]
+            val key = boxKey(flags)
+            boxOrder[boxKeyWrite[key]++] = idx
+        }
+
+        return total
+    }
+
+    private fun buildLineOrder(frustum: Frustum?, count: Int): Int {
+        java.util.Arrays.fill(lineKeyCounts, 0)
+
+        var visibleCount = 0
+        for (idx in 0 until count) {
+            val i = idx * 6
+            val flags = lineFlags[idx]
+            val isTracer = (flags and 2) != 0
+
+            if (!isTracer) {
+                val minX = kotlin.math.min(lineData[i], lineData[i + 3])
+                val minY = kotlin.math.min(lineData[i + 1], lineData[i + 4])
+                val minZ = kotlin.math.min(lineData[i + 2], lineData[i + 5])
+                val maxX = kotlin.math.max(lineData[i], lineData[i + 3])
+                val maxY = kotlin.math.max(lineData[i + 1], lineData[i + 4])
+                val maxZ = kotlin.math.max(lineData[i + 2], lineData[i + 5])
+                if (!FrustumUtils.isVisible(frustum, minX, minY, minZ, maxX, maxY, maxZ)) continue
+            }
+
+            val key = lineKey(flags)
+            lineVisibleIndices[visibleCount] = idx
+            lineVisibleKeys[visibleCount] = key
+            lineKeyCounts[key]++
+            visibleCount++
+        }
+
+        if (visibleCount == 0) return 0
+
+        var offset = 0
+        for (k in 0 until LINE_KEY_COUNT) {
+            lineKeyOffsets[k] = offset
+            lineKeyWrite[k] = offset
+            offset += lineKeyCounts[k]
+        }
+
+        for (visibleIdx in 0 until visibleCount) {
+            val key = lineVisibleKeys[visibleIdx]
+            lineOrder[lineKeyWrite[key]++] = lineVisibleIndices[visibleIdx]
+        }
+
+        return visibleCount
+    }
+
+    private fun renderBoxBatch(matrices: MatrixStack, count: Int) {
+        val visibleCount = buildBoxOrder(count)
+        if (visibleCount == 0) return
 
         var currentLayer: net.minecraft.client.render.RenderLayer? = null
         var currentLineWidth = -1f
+        val entry = matrices.peek()
 
-        for (idx in indices) {
-            val flags = boxFlags[idx]
-            val visible = (flags and 4) != 0
-            if (!visible) continue
+        for (key in 0 until BOX_KEY_COUNT) {
+            val start = boxKeyOffsets[key]
+            val end = if (key == BOX_KEY_COUNT - 1) visibleCount else boxKeyOffsets[key + 1]
+            if (start >= end) continue
 
-            val i = idx * 6
-            val ci = idx * 4
-
-            val filled = (flags and 1) != 0
-            val depth = (flags and 2) != 0
+            val filled = key < 2
+            val depth = if (filled) key == 0 else key < (2 + 256)
             val layer = when {
                 filled && depth -> RenderLayers.TRIANGLE_STRIP
                 filled -> RenderLayers.TRIANGLE_STRIP_ESP
@@ -142,37 +228,36 @@ object RenderUtils {
             }
 
             if (!filled) {
-                val thickness = ((flags shr 3) and 0xFF) / 10f
-                val dist = distanceSquared(
-                    (boxData[i] + boxData[i + 3]) * 0.5,
-                    (boxData[i + 1] + boxData[i + 4]) * 0.5,
-                    (boxData[i + 2] + boxData[i + 5]) * 0.5
-                )
-                val scaledWidth = (thickness / dist.coerceAtLeast(1.0).pow(0.1)).toFloat()
-
-                if (abs(scaledWidth - currentLineWidth) > 0.05f) {
+                val thicknessRaw = if (depth) key - 2 else key - (2 + 256)
+                val lineWidth = (thicknessRaw / 10f).coerceAtLeast(0.1f)
+                if (lineWidth != currentLineWidth) {
                     bufferSource.draw()
-                    RenderSystem.lineWidth(scaledWidth)
-                    currentLineWidth = scaledWidth
+                    RenderSystem.lineWidth(lineWidth)
+                    currentLineWidth = lineWidth
                 }
             }
 
             val buffer = bufferSource.getBuffer(layer)
+            for (pos in start until end) {
+                val idx = boxOrder[pos]
+                val i = idx * 6
+                val ci = idx * 4
 
-            if (filled) {
-                VertexRendering.drawFilledBox(
-                    matrices, buffer,
-                    boxData[i].toFloat(), boxData[i + 1].toFloat(), boxData[i + 2].toFloat(),
-                    boxData[i + 3].toFloat(), boxData[i + 4].toFloat(), boxData[i + 5].toFloat(),
-                    boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
-                )
-            } else {
-                VertexRendering.drawBox(
-                    matrices.peek(), buffer,
-                    boxData[i], boxData[i + 1], boxData[i + 2],
-                    boxData[i + 3], boxData[i + 4], boxData[i + 5],
-                    boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
-                )
+                if (filled) {
+                    VertexRendering.drawFilledBox(
+                        matrices, buffer,
+                        boxData[i].toFloat(), boxData[i + 1].toFloat(), boxData[i + 2].toFloat(),
+                        boxData[i + 3].toFloat(), boxData[i + 4].toFloat(), boxData[i + 5].toFloat(),
+                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
+                    )
+                } else {
+                    VertexRendering.drawBox(
+                        entry, buffer,
+                        boxData[i], boxData[i + 1], boxData[i + 2],
+                        boxData[i + 3], boxData[i + 4], boxData[i + 5],
+                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
+                    )
+                }
             }
         }
 
@@ -180,54 +265,65 @@ object RenderUtils {
     }
 
     private fun renderLineBatch(matrices: MatrixStack, frustum: Frustum?, count: Int) {
+        val visibleCount = buildLineOrder(frustum, count)
+        if (visibleCount == 0) return
+
         var currentLayer: net.minecraft.client.render.RenderLayer? = null
         var currentLineWidth = -1f
+        val entry = matrices.peek()
 
-        for (idx in 0 until count) {
-            val i = idx * 6
-            val flags = lineFlags[idx]
-            val depth = (flags and 1) != 0
-            val isTracer = (flags and 2) != 0
+        for (key in 0 until LINE_KEY_COUNT) {
+            val start = lineKeyOffsets[key]
+            val end = if (key == LINE_KEY_COUNT - 1) visibleCount else lineKeyOffsets[key + 1]
+            if (start >= end) continue
 
-            if (!isTracer) {
-                val minX = kotlin.math.min(lineData[i], lineData[i + 3])
-                val minY = kotlin.math.min(lineData[i + 1], lineData[i + 4])
-                val minZ = kotlin.math.min(lineData[i + 2], lineData[i + 5])
-                val maxX = kotlin.math.max(lineData[i], lineData[i + 3])
-                val maxY = kotlin.math.max(lineData[i + 1], lineData[i + 4])
-                val maxZ = kotlin.math.max(lineData[i + 2], lineData[i + 5])
-
-                if (!FrustumUtils.isVisible(frustum, minX, minY, minZ, maxX, maxY, maxZ)) continue
-            }
-
+            val depth = key < 256
             val layer = if (depth) RenderLayers.LINE_LIST else RenderLayers.LINE_LIST_ESP
+            val lineWidth = ((key and 0xFF) / 10f).coerceAtLeast(0.1f)
 
-            val thickness = ((flags shr 2) and 0xFF) / 10f
-            val dist = distanceSquared(lineData[i], lineData[i + 1], lineData[i + 2])
-            val scaledWidth = (kotlin.math.round((thickness / dist.coerceAtLeast(1.0).pow(0.1)).toFloat() * 10f) / 10f).coerceAtLeast(0.1f)
-
-            if (layer != currentLayer || abs(scaledWidth - currentLineWidth) > 0.01f) {
+            if (layer != currentLayer || lineWidth != currentLineWidth) {
                 bufferSource.draw()
-
                 currentLayer = layer
-                currentLineWidth = scaledWidth
-
-                RenderSystem.lineWidth(scaledWidth)
+                currentLineWidth = lineWidth
+                RenderSystem.lineWidth(lineWidth)
             }
 
             val buffer = bufferSource.getBuffer(layer)
+            for (pos in start until end) {
+                val idx = lineOrder[pos]
+                val i = idx * 6
 
-            tmpVector3f.set(lineData[i].toFloat(), lineData[i + 1].toFloat(), lineData[i + 2].toFloat())
-            val dir = Vec3d(
-                lineData[i + 3] - lineData[i],
-                lineData[i + 4] - lineData[i + 1],
-                lineData[i + 5] - lineData[i + 2]
-            )
-
-            VertexRendering.drawVector(matrices, buffer, tmpVector3f, dir, lineColors[idx])
+                writeLine(
+                    entry,
+                    buffer,
+                    lineData[i], lineData[i + 1], lineData[i + 2],
+                    lineData[i + 3], lineData[i + 4], lineData[i + 5],
+                    lineColors[idx]
+                )
+            }
         }
 
         bufferSource.draw()
+    }
+
+    private fun writeLine(
+        entry: MatrixStack.Entry,
+        buffer: VertexConsumer,
+        x1: Double, y1: Double, z1: Double,
+        x2: Double, y2: Double, z2: Double,
+        argb: Int
+    ) {
+        val dx = x2 - x1
+        val dy = y2 - y1
+        val dz = z2 - z1
+        val lenSq = dx * dx + dy * dy + dz * dz
+        val invLen = if (lenSq > 1.0E-12) 1.0 / sqrt(lenSq) else 0.0
+        val nx = (dx * invLen).toFloat()
+        val ny = (dy * invLen).toFloat()
+        val nz = (dz * invLen).toFloat()
+
+        buffer.vertex(entry, x1.toFloat(), y1.toFloat(), z1.toFloat()).color(argb).normal(entry, nx, ny, nz)
+        buffer.vertex(entry, x2.toFloat(), y2.toFloat(), z2.toFloat()).color(argb).normal(entry, nx, ny, nz)
     }
 
     private fun renderTextBatch(matrices: MatrixStack, count: Int) {
@@ -241,10 +337,9 @@ object RenderUtils {
 
             if (!FrustumUtils.isVisible(frustum, x - 0.5, y - 0.5, z - 0.5, x + 0.5, y + 0.5, z + 0.5)) continue
 
-            val fi = idx * 4
-            val scale = textFlags[fi]
-            val width = textFlags[fi + 1]
-            val flags = textFlags[fi + 2].toInt()
+            val scale = textScales[idx]
+            val width = textWidths[idx]
+            val flags = textFlags[idx]
             val seeThrough = (flags and 1) != 0
             val backgroundBox = (flags and 2) != 0
             val increase = (flags and 4) != 0
@@ -285,13 +380,6 @@ object RenderUtils {
 
             matrices.pop()
         }
-    }
-
-    private fun distanceSquared(x: Double, y: Double, z: Double): Double {
-        val dx = x - cameraX
-        val dy = y - cameraY
-        val dz = z - cameraZ
-        return dx * dx + dy * dy + dz * dz
     }
 
     @JvmStatic
@@ -355,28 +443,31 @@ object RenderUtils {
     fun drawTracer(targetPos: Vec3d, color: Color, thickness: Float = 2f, depth: Boolean = false) {
         if (lineCount >= MAX_LINES) return
         val camera = client.gameRenderer.camera
-        val lookVec = Vec3d.fromPolar(camera.pitch, camera.yaw)
-        val start = camera.pos.add(lookVec.multiply(0.1))
-        addLine(start.x, start.y, start.z, targetPos.x, targetPos.y, targetPos.z, color.packed, thickness, depth, true)
+        val yawRad = Math.toRadians(camera.yaw.toDouble())
+        val pitchRad = Math.toRadians(camera.pitch.toDouble())
+        val cosPitch = kotlin.math.cos(pitchRad)
+        val startX = camera.pos.x + (-kotlin.math.sin(yawRad) * cosPitch) * 0.1
+        val startY = camera.pos.y + (-kotlin.math.sin(pitchRad)) * 0.1
+        val startZ = camera.pos.z + (kotlin.math.cos(yawRad) * cosPitch) * 0.1
+        addLine(startX, startY, startZ, targetPos.x, targetPos.y, targetPos.z, color.packed, thickness, depth, true)
     }
 
     @JvmStatic
     fun drawText(text: String, pos: Vec3d, scale: Float = 1f, backgroundBox: Boolean = false, increase: Boolean = false, seeThrough: Boolean = false, translate: Boolean = true) {
         if (textCount >= MAX_TEXTS) return
         val i = textCount * 3
-        val fi = textCount * 4
 
         textData[i] = pos.x
         textData[i + 1] = pos.y
         textData[i + 2] = pos.z
 
         textStrings[textCount] = text
-        textFlags[fi] = scale
-        textFlags[fi + 1] = client.textRenderer.getWidth(text).toFloat()
-        textFlags[fi + 2] = ((if (seeThrough) 1 else 0) or
+        textScales[textCount] = scale
+        textWidths[textCount] = client.textRenderer.getWidth(text).toFloat()
+        textFlags[textCount] = (if (seeThrough) 1 else 0) or
                 (if (backgroundBox) 2 else 0) or
                 (if (increase) 4 else 0) or
-                (if (translate) 8 else 0)).toFloat()
+                (if (translate) 8 else 0)
 
         textCount++
     }
@@ -396,7 +487,6 @@ object RenderUtils {
 
         boxFlags[boxCount] = (if (filled) 1 else 0) or
                 (if (depth) 2 else 0) or
-                4 or // visible
                 ((thickness * 10).toInt().coerceIn(0, 255) shl 3)
 
         boxCount++
