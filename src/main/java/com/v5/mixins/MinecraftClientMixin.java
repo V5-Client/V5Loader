@@ -7,6 +7,7 @@ import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.Perspective;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -86,11 +87,13 @@ public class MinecraftClientMixin {
         int currentDist = options.getViewDistance().getValue();
         Perspective currentPerspective = options.getPerspective();
         int currentFps = options.getMaxFps().getValue();
+        float currentMasterVolume = options.getSoundVolume(SoundCategory.MASTER);
 
         boolean macroEnabled = V5MixinStorage.getBoolean("macroEnabled", false);
         String renderLimiter = V5MixinStorage.getString("renderLimiter", "Off");
         boolean forcePerspective = V5MixinStorage.getBoolean("forcePerspective", false);
         boolean limitFps = V5MixinStorage.getBoolean("limitFps", false);
+        boolean muteGame = V5MixinStorage.getBoolean("muteGame", false);
 
         if (macroEnabled) {
             if (V5MixinStorage.get("savedDistance", null) == null) {
@@ -101,6 +104,22 @@ public class MinecraftClientMixin {
             }
             if (V5MixinStorage.get("savedFps", null) == null) {
                 V5MixinStorage.set("savedFps", currentFps);
+            }
+
+            Object savedMasterVolumeObj = V5MixinStorage.get("savedMasterVolume", null);
+            if (muteGame) {
+                if (savedMasterVolumeObj == null) {
+                    V5MixinStorage.set("savedMasterVolume", currentMasterVolume);
+                }
+                if (Float.compare(currentMasterVolume, 0.0F) != 0) {
+                    options.getSoundVolumeOption(SoundCategory.MASTER).setValue(0.0D);
+                }
+            } else if (savedMasterVolumeObj instanceof Number savedMasterVolumeNum) {
+                float savedMasterVolume = savedMasterVolumeNum.floatValue();
+                if (Float.compare(currentMasterVolume, savedMasterVolume) != 0) {
+                    options.getSoundVolumeOption(SoundCategory.MASTER).setValue((double) savedMasterVolume);
+                }
+                V5MixinStorage.set("savedMasterVolume", null);
             }
 
             if ("Limit Chunks".equals(renderLimiter) && currentDist != 2) {
@@ -120,6 +139,7 @@ public class MinecraftClientMixin {
         Object savedDistanceObj = V5MixinStorage.get("savedDistance", null);
         Object savedPerspectiveObj = V5MixinStorage.get("savedPerspective", null);
         Object savedFpsObj = V5MixinStorage.get("savedFps", null);
+        Object savedMasterVolumeObj = V5MixinStorage.get("savedMasterVolume", null);
 
         if ("Limit Chunks".equals(renderLimiter) && savedDistanceObj instanceof Number savedDistanceNum) {
             int savedDistance = savedDistanceNum.intValue();
@@ -143,6 +163,14 @@ public class MinecraftClientMixin {
                 options.getMaxFps().setValue(restoreValue);
             }
             V5MixinStorage.set("savedFps", null);
+        }
+
+        if (savedMasterVolumeObj instanceof Number savedMasterVolumeNum) {
+            float savedMasterVolume = savedMasterVolumeNum.floatValue();
+            if (Float.compare(currentMasterVolume, savedMasterVolume) != 0) {
+                options.getSoundVolumeOption(SoundCategory.MASTER).setValue((double) savedMasterVolume);
+            }
+            V5MixinStorage.set("savedMasterVolume", null);
         }
     }
 }
