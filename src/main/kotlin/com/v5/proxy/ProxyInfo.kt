@@ -13,11 +13,11 @@ object ProxyInfo {
     private val cachedProxies = mutableListOf<Proxy>()
     private var isLoaded = false
 
-    fun getProxies(): MutableList<Proxy> {
+    fun getProxies(): List<Proxy> {
         if (!isLoaded) {
             loadProxies()
         }
-        return cachedProxies
+        return cachedProxies.map { it.copy() }
     }
 
     private fun loadProxies() {
@@ -26,7 +26,13 @@ object ProxyInfo {
 
         cachedProxies.clear()
         if (text.isNotBlank()) {
-            cachedProxies.addAll(parseProxies(text))
+            val parsed = parseProxies(text)
+            val normalized = normalizeProxies(parsed)
+            cachedProxies.addAll(normalized)
+
+            if (normalized != parsed) {
+                saveProxies()
+            }
         }
         isLoaded = true
     }
@@ -42,26 +48,29 @@ object ProxyInfo {
             cachedProxies.forEach { it.isEnabled = false }
         }
 
-        cachedProxies.add(proxy)
+        cachedProxies.add(proxy.copy())
         saveProxies()
     }
 
     fun removeProxy(proxy: Proxy) {
         if (!isLoaded) loadProxies()
-        cachedProxies.remove(proxy)
-        saveProxies()
+        val index = cachedProxies.indexOfFirst { it.sameIdentity(proxy) }
+        if (index != -1) {
+            cachedProxies.removeAt(index)
+            saveProxies()
+        }
     }
 
     fun updateProxy(original: Proxy, newProxy: Proxy) {
         if (!isLoaded) loadProxies()
 
-        val index = cachedProxies.indexOf(original)
+        val index = cachedProxies.indexOfFirst { it.sameIdentity(original) }
         if (index != -1) {
-            if (newProxy.isEnabled && !original.isEnabled) {
+            if (newProxy.isEnabled && !cachedProxies[index].isEnabled) {
                 cachedProxies.forEach { it.isEnabled = false }
             }
 
-            cachedProxies[index] = newProxy
+            cachedProxies[index] = newProxy.copy()
             saveProxies()
         }
     }
@@ -69,12 +78,13 @@ object ProxyInfo {
     fun setProxyEnabled(proxy: Proxy, enabled: Boolean) {
         if (!isLoaded) loadProxies()
 
-        val target = cachedProxies.find { it == proxy } ?: return
+        val targetIndex = cachedProxies.indexOfFirst { it.sameIdentity(proxy) }
+        if (targetIndex == -1) return
 
         if (enabled) {
             cachedProxies.forEach { it.isEnabled = false }
         }
-        target.isEnabled = enabled
+        cachedProxies[targetIndex].isEnabled = enabled
         saveProxies()
     }
 
@@ -102,6 +112,32 @@ object ProxyInfo {
             val obj = entry.takeIf { it.isJsonObject }?.asJsonObject ?: return@mapNotNull null
             jsonToProxy(obj)
         }
+    }
+
+    private fun normalizeProxies(input: List<Proxy>): List<Proxy> {
+        if (input.isEmpty()) return emptyList()
+
+        val deduped = LinkedHashMap<ProxyIdentity, Proxy>()
+        input.forEach { proxy ->
+            val key = proxy.identity()
+            val existing = deduped[key]
+            if (existing == null) {
+                deduped[key] = proxy.copy()
+            } else if (proxy.isEnabled) {
+                existing.isEnabled = true
+            }
+        }
+
+        var enabledSeen = false
+        deduped.values.forEach { proxy ->
+            if (proxy.isEnabled && !enabledSeen) {
+                enabledSeen = true
+            } else {
+                proxy.isEnabled = false
+            }
+        }
+
+        return deduped.values.toList()
     }
 
     private fun serializeProxies(proxies: List<Proxy>): String {
@@ -148,4 +184,26 @@ object ProxyInfo {
         val value = this.get(key)
         return if (value != null && !value.isJsonNull) runCatching { value.asBoolean }.getOrDefault(fallback) else fallback
     }
+
+    private fun Proxy.sameIdentity(other: Proxy): Boolean {
+        return this.identity() == other.identity()
+    }
+
+    private fun Proxy.identity(): ProxyIdentity {
+        return ProxyIdentity(
+            ip = ip,
+            port = port,
+            name = name,
+            username = username,
+            password = password
+        )
+    }
+
+    private data class ProxyIdentity(
+        val ip: String,
+        val port: Int,
+        val name: String,
+        val username: String,
+        val password: String
+    )
 }
