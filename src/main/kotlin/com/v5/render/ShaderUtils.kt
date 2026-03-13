@@ -2,9 +2,11 @@ package com.v5.render
 
 import com.mojang.blaze3d.opengl.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import com.v5.screen.V5MainMenuScreen
 import net.minecraft.client.gl.GlBackend
 import net.minecraft.client.texture.GlTexture
 import net.minecraft.client.MinecraftClient
+import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11C
 import org.lwjgl.opengl.GL20C
 import org.lwjgl.opengl.GL30C
@@ -46,6 +48,7 @@ object ShaderUtils {
     private val programs = mutableMapOf<Int, ShaderProgram>()
     private val failedShaders = mutableSetOf<Int>()
     private var currentShaderIndex = 0
+    private var wasPrimaryMouseDown = false
     private val startNanos = System.nanoTime()
 
     @JvmStatic
@@ -59,6 +62,8 @@ object ShaderUtils {
         val resolutionX = window.framebufferWidth.toFloat()
         val resolutionY = window.framebufferHeight.toFloat()
         val elapsedSeconds = (System.nanoTime() - startNanos) / 1_000_000_000.0f
+
+        handleHiddenShaderSwitch(mouseX.toFloat(), mouseY.toFloat())
 
         val previousFramebuffer = GL11C.glGetInteger(GL30C.GL_FRAMEBUFFER_BINDING)
         val previousProgram = GL11C.glGetInteger(GL20C.GL_CURRENT_PROGRAM)
@@ -114,26 +119,6 @@ object ShaderUtils {
         return true
     }
 
-    @JvmStatic
-    fun cycleBackgroundShader(): String {
-        if (shaders.size <= 1) return currentBackgroundShaderName()
-
-        val originalIndex = currentShaderIndex
-        repeat(shaders.size - 1) {
-            val nextIndex = (currentShaderIndex + 1) % shaders.size
-            currentShaderIndex = nextIndex
-            if (ensureProgram(nextIndex) != null) return shaders[nextIndex].displayName
-        }
-
-        currentShaderIndex = originalIndex
-        return shaders[originalIndex].displayName
-    }
-
-    @JvmStatic
-    fun currentBackgroundShaderName(): String {
-        return shaders[currentShaderIndex].displayName
-    }
-
     private fun resolveActiveProgram(): ShaderProgram? {
         ensureProgram(currentShaderIndex)?.let { return it }
 
@@ -145,6 +130,40 @@ object ShaderUtils {
         }
 
         return null
+    }
+
+    private fun handleHiddenShaderSwitch(mouseX: Float, mouseY: Float) {
+        val client = MinecraftClient.getInstance()
+        if (client.currentScreen !is V5MainMenuScreen) {
+            wasPrimaryMouseDown = false
+            return
+        }
+
+        val primaryMouseDown = GLFW.glfwGetMouseButton(client.window.handle, GLFW.GLFW_MOUSE_BUTTON_1) == GLFW.GLFW_PRESS
+        val justClicked = primaryMouseDown && !wasPrimaryMouseDown
+        wasPrimaryMouseDown = primaryMouseDown
+
+        if (!justClicked || !isTitleHitbox(mouseX, mouseY, client.window.scaledWidth, client.window.scaledHeight)) {
+            return
+        }
+
+        val originalIndex = currentShaderIndex
+        repeat(shaders.size - 1) {
+            val nextIndex = (currentShaderIndex + 1) % shaders.size
+            currentShaderIndex = nextIndex
+            if (ensureProgram(nextIndex) != null) return
+        }
+
+        currentShaderIndex = originalIndex
+    }
+
+    private fun isTitleHitbox(mouseX: Float, mouseY: Float, screenWidth: Int, screenHeight: Int): Boolean {
+        val centerX = screenWidth / 2f
+        val titleY = screenHeight / 2f - 74f
+        val halfWidth = 86f
+        val top = titleY - 6f
+        val bottom = titleY + 38f
+        return mouseX in (centerX - halfWidth)..(centerX + halfWidth) && mouseY in top..bottom
     }
 
     private fun ensureProgram(index: Int): ShaderProgram? {

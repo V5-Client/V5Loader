@@ -105,11 +105,6 @@ class V5MainMenuScreen : Screen(Text.literal("V5 Main Menu")) {
     }
 
     override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
-        if (titleBounds.contains(click.x.toFloat(), click.y.toFloat())) {
-            com.v5.render.ShaderUtils.cycleBackgroundShader()
-            return true
-        }
-
         val clicked = menuButtons.firstOrNull { it.isHovered(click.x.toInt(), click.y.toInt()) }
         if (clicked != null) {
             clicked.onClick()

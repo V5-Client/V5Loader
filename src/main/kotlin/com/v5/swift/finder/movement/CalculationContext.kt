@@ -18,8 +18,6 @@ class CalculationContext {
   val bsa = BlockStateAccessor(world)
   val cost = ActionCosts()
   val maxFallHeight = 20
-  val flyMinY = world.bottomY
-  val flyMaxY = world.topYInclusive - 1
 
   val precomputedData = PrecomputedData(bsa)
   val safeCache = SafePositionCache(this)

@@ -60,12 +60,14 @@ object MovementFly {
     val destY = y + dy
     val destZ = z + dz
     val pre = ctx.precomputedData
-    if (destY < ctx.flyMinY || destY > ctx.flyMaxY) return
+    val flyMinY = ctx.world.bottomY
+    val flyMaxY = ctx.world.topYInclusive - 1
+    if (destY < flyMinY || destY > flyMaxY) return
 
     if (!pre.isFlyColumnClear(destX, destY, destZ)) return
     if (dy > 0) {
       val aboveY = y + 1
-      if (aboveY < ctx.flyMinY || aboveY > ctx.flyMaxY) return
+      if (aboveY < flyMinY || aboveY > flyMaxY) return
       if (!pre.isFlyColumnClear(x, aboveY, z)) return
     }
 
@@ -94,7 +96,7 @@ object MovementFly {
     val totalSq = distFromStartSq + distToGoalSq
     val progress = if (totalSq > 0) distFromStartSq.toDouble() / totalSq else 0.5
 
-    if (shouldRejectConfined(pre, destX, destY, destZ, progress)) return
+    if (shouldRejectConfined(pre, ctx, destX, destY, destZ, progress)) return
 
     if (dy != 0) {
       cost += if (isDiagonalHorizontal || dx != 0 || dz != 0) DIAGONAL_VERTICAL_BASE else PURE_VERTICAL_BASE
@@ -138,9 +140,9 @@ object MovementFly {
     }
 
     var vertCost = 0.0
-    if (!pre.isPassableForFlying(destX, destY - 1, destZ)) {
+    if (!pre.isPassableForFlying(destX, destY - 1, destZ, ctx.get(destX, destY - 1, destZ))) {
       vertCost = VERTICAL_OBSTACLE_PENALTY * MIN_VERTICAL_CLEARANCE
-    } else if (!pre.isPassableForFlying(destX, destY - 2, destZ)) {
+    } else if (!pre.isPassableForFlying(destX, destY - 2, destZ, ctx.get(destX, destY - 2, destZ))) {
       vertCost = VERTICAL_OBSTACLE_PENALTY * (MIN_VERTICAL_CLEARANCE - 1)
     }
     cost += vertCost
@@ -149,7 +151,7 @@ object MovementFly {
       cost += getHorizontalClearanceCost(pre, destX, destY, destZ, progress)
     }
     if (progress <= 0.94) {
-      cost += getEnclosureCost(pre, destX, destY, destZ, progress)
+      cost += getEnclosureCost(pre, ctx, destX, destY, destZ, progress)
     }
 
     res.cost = cost
@@ -207,6 +209,7 @@ object MovementFly {
   @JvmStatic
   private fun getEnclosureCost(
       pre: PrecomputedData,
+      ctx: CalculationContext,
       x: Int, y: Int, z: Int,
       progress: Double
   ): Double {
@@ -218,9 +221,9 @@ object MovementFly {
 
     var penalty = 0.0
 
-    if (!pre.isPassableForFlying(x, y + 2, z)) {
+    if (!pre.isPassableForFlying(x, y + 2, z, ctx.get(x, y + 2, z))) {
       penalty += LOW_HEADROOM_PENALTY
-    } else if (!pre.isPassableForFlying(x, y + 3, z)) {
+    } else if (!pre.isPassableForFlying(x, y + 3, z, ctx.get(x, y + 3, z))) {
       penalty += TIGHT_HEADROOM_PENALTY
     }
 
@@ -245,12 +248,13 @@ object MovementFly {
   @JvmStatic
   private fun shouldRejectConfined(
       pre: PrecomputedData,
+      ctx: CalculationContext,
       x: Int, y: Int, z: Int,
       progress: Double
   ): Boolean {
     if (progress > CONFINED_REJECT_PROGRESS) return false
 
-    if (!pre.isPassableForFlying(x, y + 2, z)) return true
+    if (!pre.isPassableForFlying(x, y + 2, z, ctx.get(x, y + 2, z))) return true
 
     var blockedCardinals = 0
     var minClearance = WALL_CHECK_DIST
