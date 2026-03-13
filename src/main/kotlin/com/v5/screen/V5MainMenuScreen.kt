@@ -14,15 +14,7 @@ import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT
 import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP
 
 class V5MainMenuScreen : Screen(Text.literal("V5 Main Menu")) {
-    private data class TitleBounds(val left: Float, val top: Float, val right: Float, val bottom: Float) {
-        fun contains(mouseX: Float, mouseY: Float): Boolean {
-            return mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom
-        }
-    }
-
-    private val titleText = "RDBT V5"
     private val menuButtons = mutableListOf<ScreenHelper.MenuButton>()
-    private var titleBounds = TitleBounds(0f, 0f, 0f, 0f)
 
     override fun init() {
         menuButtons.clear()
@@ -55,19 +47,9 @@ class V5MainMenuScreen : Screen(Text.literal("V5 Main Menu")) {
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val username = client?.session?.username ?: "Unknown"
         val multiplayerY = height / 2 - 10
-        val titleY = (multiplayerY - 64).toFloat()
 
         NVGRenderer.beginFrame(width.toFloat(), height.toFloat())
         try {
-            val titleWidth = NVGRenderer.textWidth(titleText, 30f, ScreenHelper.titleFont)
-            titleBounds = TitleBounds(
-                width / 2f - titleWidth / 2f - 10f,
-                titleY - 6f,
-                width / 2f + titleWidth / 2f + 10f,
-                titleY + 38f
-            )
-            val titleHovered = titleBounds.contains(mouseX.toFloat(), mouseY.toFloat())
-
             menuButtons.forEach { button ->
                 ScreenHelper.drawMenuButton(
                     button.label,
@@ -81,11 +63,11 @@ class V5MainMenuScreen : Screen(Text.literal("V5 Main Menu")) {
             }
 
             NVGRenderer.text(
-                titleText,
+                "RDBT V5",
                 width / 2f,
-                titleY,
+                (multiplayerY - 64).toFloat(),
                 30f,
-                if (titleHovered) ScreenHelper.argb(255, 255, 210, 210) else 0xF5F8FFFF.toInt(),
+                0xF5F8FFFF.toInt(),
                 ScreenHelper.titleFont,
                 NVG_ALIGN_CENTER or NVG_ALIGN_TOP
             )
@@ -105,11 +87,6 @@ class V5MainMenuScreen : Screen(Text.literal("V5 Main Menu")) {
     }
 
     override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
-        if (titleBounds.contains(click.x.toFloat(), click.y.toFloat())) {
-            com.v5.render.ShaderUtils.cycleBackgroundShader()
-            return true
-        }
-
         val clicked = menuButtons.firstOrNull { it.isHovered(click.x.toInt(), click.y.toInt()) }
         if (clicked != null) {
             clicked.onClick()
