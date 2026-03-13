@@ -53,11 +53,14 @@ object ShaderUtils {
         val shaderProgram = resolveActiveProgram() ?: return false
 
         val client = MinecraftClient.getInstance()
-        val window = client.window
         val framebuffer = client.framebuffer
 
-        val resolutionX = window.framebufferWidth.toFloat()
-        val resolutionY = window.framebufferHeight.toFloat()
+        val resolutionX = framebuffer.textureWidth.toFloat()
+        val resolutionY = framebuffer.textureHeight.toFloat()
+        val mouseScaleX = resolutionX / client.window.scaledWidth.toFloat()
+        val mouseScaleY = resolutionY / client.window.scaledHeight.toFloat()
+        val mousePixelX = mouseX.toFloat() * mouseScaleX
+        val mousePixelY = mouseY.toFloat() * mouseScaleY
         val elapsedSeconds = (System.nanoTime() - startNanos) / 1_000_000_000.0f
 
         val previousFramebuffer = GL11C.glGetInteger(GL30C.GL_FRAMEBUFFER_BINDING)
@@ -96,7 +99,7 @@ object ShaderUtils {
             GL20C.glUniform1f(shaderProgram.timeUniform, elapsedSeconds)
         }
         if (shaderProgram.mouseUniform >= 0) {
-            GL20C.glUniform2f(shaderProgram.mouseUniform, mouseX.toFloat(), mouseY.toFloat())
+            GL20C.glUniform2f(shaderProgram.mouseUniform, mousePixelX, mousePixelY)
         }
 
         GL11C.glDrawArrays(GL11C.GL_TRIANGLES, 0, 3)
