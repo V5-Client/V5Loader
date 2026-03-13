@@ -3434,6 +3434,8 @@ public final class com/v5/render/RenderUtils$Color {
 
 public final class com/v5/render/ShaderUtils {
 	public static final field INSTANCE Lcom/v5/render/ShaderUtils;
+	public static final fun currentBackgroundShaderName ()Ljava/lang/String;
+	public static final fun cycleBackgroundShader ()Ljava/lang/String;
 	public static final fun renderBackground (DD)Z
 }
 
