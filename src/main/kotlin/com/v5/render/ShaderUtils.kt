@@ -10,7 +10,24 @@ import org.lwjgl.opengl.GL20C
 import org.lwjgl.opengl.GL30C
 
 object ShaderUtils {
-    private const val FRAGMENT_SHADER_PATH = "/assets/v5/shaders/background.fsh"
+    private data class BackgroundShader(
+        val displayName: String,
+        val resourcePath: String
+    )
+
+    private data class ShaderProgram(
+        val programId: Int,
+        val vaoId: Int,
+        val resolutionUniform: Int,
+        val timeUniform: Int,
+        val mouseUniform: Int
+    )
+
+    private val shaders = listOf(
+        BackgroundShader("Contour Drift", "/assets/v5/shaders/background.fsh"),
+        BackgroundShader("Crimson Bloom", "/assets/v5/shaders/background_crimson.fsh"),
+        BackgroundShader("Neon Horizon", "/assets/v5/shaders/background_horizon.fsh")
+    )
 
     private val vertexShaderSource = """
         #version 150 core
@@ -26,19 +43,14 @@ object ShaderUtils {
         }
     """.trimIndent()
 
-    private var programId = 0
-    private var vaoId = 0
-
-    private var resolutionUniform = -1
-    private var timeUniform = -1
-    private var mouseUniform = -1
-
-    private var initFailed = false
+    private val programs = mutableMapOf<Int, ShaderProgram>()
+    private val failedShaders = mutableSetOf<Int>()
+    private var currentShaderIndex = 0
     private val startNanos = System.nanoTime()
 
     @JvmStatic
     fun renderBackground(mouseX: Double, mouseY: Double): Boolean {
-        if (initFailed || !ensureInitialized()) return false
+        val shaderProgram = resolveActiveProgram() ?: return false
 
         val client = MinecraftClient.getInstance()
         val window = client.window
@@ -74,12 +86,18 @@ object ShaderUtils {
         GlStateManager._disableDepthTest()
         GlStateManager._depthMask(false)
 
-        GlStateManager._glUseProgram(programId)
-        GlStateManager._glBindVertexArray(vaoId)
+        GlStateManager._glUseProgram(shaderProgram.programId)
+        GlStateManager._glBindVertexArray(shaderProgram.vaoId)
 
-        if (resolutionUniform >= 0) GL20C.glUniform2f(resolutionUniform, resolutionX, resolutionY)
-        if (timeUniform >= 0) GL20C.glUniform1f(timeUniform, elapsedSeconds)
-        if (mouseUniform >= 0) GL20C.glUniform2f(mouseUniform, mouseX.toFloat(), mouseY.toFloat())
+        if (shaderProgram.resolutionUniform >= 0) {
+            GL20C.glUniform2f(shaderProgram.resolutionUniform, resolutionX, resolutionY)
+        }
+        if (shaderProgram.timeUniform >= 0) {
+            GL20C.glUniform1f(shaderProgram.timeUniform, elapsedSeconds)
+        }
+        if (shaderProgram.mouseUniform >= 0) {
+            GL20C.glUniform2f(shaderProgram.mouseUniform, mouseX.toFloat(), mouseY.toFloat())
+        }
 
         GL11C.glDrawArrays(GL11C.GL_TRIANGLES, 0, 3)
 
@@ -96,11 +114,47 @@ object ShaderUtils {
         return true
     }
 
-    private fun ensureInitialized(): Boolean {
-        if (programId != 0) return true
+    @JvmStatic
+    fun cycleBackgroundShader(): String {
+        if (shaders.size <= 1) return currentBackgroundShaderName()
+
+        val originalIndex = currentShaderIndex
+        repeat(shaders.size - 1) {
+            val nextIndex = (currentShaderIndex + 1) % shaders.size
+            currentShaderIndex = nextIndex
+            if (ensureProgram(nextIndex) != null) return shaders[nextIndex].displayName
+        }
+
+        currentShaderIndex = originalIndex
+        return shaders[originalIndex].displayName
+    }
+
+    @JvmStatic
+    fun currentBackgroundShaderName(): String {
+        return shaders[currentShaderIndex].displayName
+    }
+
+    private fun resolveActiveProgram(): ShaderProgram? {
+        ensureProgram(currentShaderIndex)?.let { return it }
+
+        for (offset in 1 until shaders.size) {
+            val nextIndex = (currentShaderIndex + offset) % shaders.size
+            val shaderProgram = ensureProgram(nextIndex) ?: continue
+            currentShaderIndex = nextIndex
+            return shaderProgram
+        }
+
+        return null
+    }
+
+    private fun ensureProgram(index: Int): ShaderProgram? {
+        programs[index]?.let { return it }
+        if (failedShaders.contains(index)) return null
+
+        val shader = shaders[index]
 
         return try {
-            val fragmentSource = loadFragmentShaderSource()
+            val fragmentSource = loadFragmentShaderSource(shader.resourcePath)
             val vertexShader = compileShader(GL20C.GL_VERTEX_SHADER, vertexShaderSource, "vertex shader")
             val fragmentShader = compileShader(GL20C.GL_FRAGMENT_SHADER, fragmentSource, "fragment shader")
 
@@ -121,17 +175,18 @@ object ShaderUtils {
             GlStateManager.glDeleteShader(vertexShader)
             GlStateManager.glDeleteShader(fragmentShader)
 
-            programId = program
-            resolutionUniform = GL20C.glGetUniformLocation(programId, "resolution")
-            timeUniform = GL20C.glGetUniformLocation(programId, "time")
-            mouseUniform = GL20C.glGetUniformLocation(programId, "mouse")
-            vaoId = GL30C.glGenVertexArrays()
-            true
+            ShaderProgram(
+                programId = program,
+                vaoId = GL30C.glGenVertexArrays(),
+                resolutionUniform = GL20C.glGetUniformLocation(program, "resolution"),
+                timeUniform = GL20C.glGetUniformLocation(program, "time"),
+                mouseUniform = GL20C.glGetUniformLocation(program, "mouse")
+            ).also { programs[index] = it }
         } catch (t: Throwable) {
-            initFailed = true
-            System.err.println("[V5] Failed to initialize background shader: ${t.message}")
+            failedShaders += index
+            System.err.println("[V5] Failed to initialize background shader '${shader.displayName}': ${t.message}")
             t.printStackTrace()
-            false
+            null
         }
     }
 
@@ -150,9 +205,9 @@ object ShaderUtils {
         return shaderId
     }
 
-    private fun loadFragmentShaderSource(): String {
-        val stream = ShaderUtils::class.java.getResourceAsStream(FRAGMENT_SHADER_PATH)
-            ?: throw IllegalStateException("Could not find shader resource at $FRAGMENT_SHADER_PATH")
+    private fun loadFragmentShaderSource(resourcePath: String): String {
+        val stream = ShaderUtils::class.java.getResourceAsStream(resourcePath)
+            ?: throw IllegalStateException("Could not find shader resource at $resourcePath")
 
         return stream.bufferedReader(Charsets.UTF_8).use { it.readText() }
     }
