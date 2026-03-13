@@ -3828,6 +3828,8 @@ public final class com/v5/swift/finder/movement/CalculationContext {
 	public final fun getBsa ()Lcom/v5/swift/finder/helper/BlockStateAccessor;
 	public final fun getCost ()Lcom/v5/swift/finder/costs/ActionCosts;
 	public final fun getFluidPenalty (III)D
+	public final fun getFlyMaxY ()I
+	public final fun getFlyMinY ()I
 	public final fun getMaxFallHeight ()I
 	public final fun getMc ()Lnet/minecraft/client/MinecraftClient;
 	public final fun getPrecomputedData ()Lcom/v5/swift/finder/precompute/PrecomputedData;
