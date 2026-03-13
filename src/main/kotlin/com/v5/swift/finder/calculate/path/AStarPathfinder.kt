@@ -243,7 +243,8 @@ class AStarPathfinder(
       val pos = pf.nodeHeapPos[nodeIdx]
       if (pos <= 0) return
       siftUp(pos)
-      siftDown(pos)
+      val newPos = pf.nodeHeapPos[nodeIdx]
+      siftDown(newPos)
     }
 
     private fun siftUp(startPos: Int) {

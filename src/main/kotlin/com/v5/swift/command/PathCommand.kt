@@ -183,7 +183,7 @@ object PathCommand {
 
       val box = Box(
         pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(),
-        pos.x + 1.0, pos.y - 1.0, pos.z + 1.0
+        pos.x + 1.0, pos.y + 1.0, pos.z + 1.0
       )
 
       RenderUtils.drawBox(box, Color(255, 132, 94).toRenderColor())

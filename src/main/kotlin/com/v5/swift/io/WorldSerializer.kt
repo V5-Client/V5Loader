@@ -27,18 +27,17 @@ object WorldSerializer {
     }
 
     val file = File(CACHE_DIR, "$name.bin")
+    val readyChunks = chunks.filterValues { it.ready }
 
     DataOutputStream(BufferedOutputStream(GZIPOutputStream(FileOutputStream(file), 8192))).use { out ->
       out.writeInt(MAGIC)
       out.writeInt(VERSION)
-      out.writeInt(chunks.size)
+      out.writeInt(readyChunks.size)
 
       val byteBuffer = ByteBuffer.allocate(4096 * 4).order(ByteOrder.BIG_ENDIAN)
       val intBuffer = byteBuffer.asIntBuffer()
 
-      for ((key, chunk) in chunks) {
-        if (!chunk.ready) continue
-
+      for ((key, chunk) in readyChunks) {
         out.writeLong(key)
         out.writeInt(chunk.minY)
         out.writeInt(chunk.maxY)

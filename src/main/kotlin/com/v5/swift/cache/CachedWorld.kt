@@ -87,6 +87,9 @@ object CachedWorld {
           val chunk = chunks[key]
           if (chunk != null && chunk.ready) {
             chunk.set(pos.x and 15, pos.y, pos.z and 15, state)
+            if (cacheKey == key) {
+              cacheChunk = chunk
+            }
           }
         }
       }
@@ -175,6 +178,9 @@ object CachedWorld {
 
         if (loaded != null) {
           chunks = loaded
+          pendingChunks.clear()
+          cacheKey = Long.MIN_VALUE
+          cacheChunk = null
         }
       } catch (e: Exception) {
         e.printStackTrace()
