@@ -2,7 +2,7 @@ package com.v5.swift.finder.goal
 
 import com.v5.swift.finder.movement.CalculationContext
 import kotlin.math.abs
-import kotlin.math.sqrt
+import kotlin.math.hypot
 
 class GoalFly(
     val startX: Int,
@@ -29,13 +29,13 @@ class GoalFly(
   }
 
   override fun heuristic(x: Int, y: Int, z: Int): Double {
-    val dx = x - goalX
-    val dz = z - goalZ
+    val dx = (x - goalX).toDouble()
+    val dz = (z - goalZ).toDouble()
 
-    val horizontalDist = sqrt((dx * dx + dz * dz).toDouble())
+    val horizontalDist = hypot(dx, dz)
     val verticalCost = estimateVerticalCost(x, z, y)
     var h = (horizontalDist * flyCost) + verticalCost
-    val crossProduct = abs(dx * startToGoalDz - dz * startToGoalDx)
+    val crossProduct = abs(dx * startToGoalDz.toDouble() - dz * startToGoalDx.toDouble())
     h += crossProduct * CROSS_PRODUCT_WEIGHT
 
     return h
@@ -67,8 +67,8 @@ class GoalFly(
     val dxGoal = x - goalX
     val dzGoal = z - goalZ
 
-    val distFromStartSq = dxStart * dxStart + dzStart * dzStart
-    val distToGoalSq = dxGoal * dxGoal + dzGoal * dzGoal
+    val distFromStartSq = dxStart.toLong() * dxStart.toLong() + dzStart.toLong() * dzStart.toLong()
+    val distToGoalSq = dxGoal.toLong() * dxGoal.toLong() + dzGoal.toLong() * dzGoal.toLong()
     val totalSq = distFromStartSq + distToGoalSq
 
     return if (totalSq > 0) distFromStartSq.toDouble() / totalSq else 0.5

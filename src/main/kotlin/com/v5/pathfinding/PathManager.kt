@@ -39,7 +39,7 @@ object PathManager {
         val y: Int,
         val z: Int,
         val radius: Int,
-        val penalty: Double,
+        var penalty: Double,
         var ttlSearches: Int
     )
 
@@ -150,6 +150,12 @@ object PathManager {
             return false
         }
 
+        val heightValidation = validateHeights(startPoints, endPoints, ctx, isFly)
+        if (heightValidation != null) {
+            lastError = heightValidation
+            return false
+        }
+
         val goal = createGoal(startPoints, endPoints, ctx, isFly)
 
         val currentId = searchId.incrementAndGet()
@@ -189,6 +195,7 @@ object PathManager {
                 } finally {
                     if (searchId.get() == currentId) {
                         isSearching = false
+                        currentTask = null
                     }
                 }
             }
@@ -241,6 +248,36 @@ object PathManager {
         }
         if (points.any { it.size != 3 }) {
             return "$label must contain [x, y, z] points"
+        }
+        return null
+    }
+
+    private fun validateHeights(
+        startPoints: Array<IntArray>,
+        endPoints: Array<IntArray>,
+        ctx: CalculationContext,
+        isFly: Boolean
+    ): String? {
+        if (isFly) {
+            val minY = ctx.flyMinY
+            val maxY = ctx.flyMaxY
+
+            if (startPoints.any { it[1] !in minY..maxY }) {
+                return "Fly start Y must be between $minY and $maxY"
+            }
+            if (endPoints.any { it[1] !in minY..maxY }) {
+                return "Fly end Y must be between $minY and $maxY"
+            }
+            return null
+        }
+
+        val minFeetY = ctx.world.bottomY + 1
+        val maxFeetY = ctx.world.topYInclusive - 1
+        if (startPoints.any { it[1] !in minFeetY..maxFeetY }) {
+            return "Walk start Y must be between $minFeetY and $maxFeetY"
+        }
+        if (endPoints.any { it[1] !in minFeetY..maxFeetY }) {
+            return "Walk end Y must be between $minFeetY and $maxFeetY"
         }
         return null
     }
@@ -326,10 +363,7 @@ object PathManager {
             if (pre.isFluid(p.x, walkY + 1, p.z, ctx.get(p.x, walkY + 1, p.z))) flags = flags or FLAG_FLUID_HEAD
 
             if (!isFly) {
-                if (
-                    !pre.isPassable(p.x, walkY, p.z, ctx.get(p.x, walkY, p.z)) ||
-                    !pre.isPassable(p.x, walkY + 1, p.z, ctx.get(p.x, walkY + 1, p.z))
-                ) {
+                if (!pre.isPassable(p.x, walkY + 2, p.z, ctx.get(p.x, walkY + 2, p.z))) {
                     flags = flags or FLAG_LOW_HEADROOM
                 }
             }
@@ -454,6 +488,7 @@ object PathManager {
             val existing = transientAvoidEntries.find { it.x == x && it.y == y && it.z == z && it.radius == clampedRadius }
             if (existing != null) {
                 existing.ttlSearches = max(existing.ttlSearches, clampedTtl)
+                existing.penalty = max(existing.penalty, clampedPenalty)
             } else {
                 transientAvoidEntries.add(ManagedAvoidEntry(x, y, z, clampedRadius, clampedPenalty, clampedTtl))
             }

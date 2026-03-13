@@ -6,6 +6,7 @@ import com.v5.swift.finder.calculate.PathNode
 import com.v5.swift.finder.goal.GoalFly
 import com.v5.swift.finder.goal.IGoal
 import com.v5.swift.finder.movement.CalculationContext
+import com.v5.swift.finder.movement.IMove
 import com.v5.swift.finder.movement.MovementResult
 import com.v5.swift.finder.movement.Moves
 import com.v5.swift.finder.movement.MovesFly
@@ -136,14 +137,15 @@ class AStarPathfinder(
     }
 
     val openSet = PooledHeap(this)
-    val weight = heuristicWeight
+    val weight = if (heuristicWeight.isFinite() && heuristicWeight > 0.0) heuristicWeight else 1.0
 
     seedStartNodes(openSet, weight)
 
     val res = MovementResult()
-    val moves = if (isFly) MovesFly.entries else Moves.entries
+    val moves: List<out IMove> = if (isFly) MovesFly.entries else Moves.entries
     val moveCount = moves.size
     val moveStart = if (moveCount <= 1) 0 else (moveOrderOffset and Int.MAX_VALUE) % moveCount
+    val orderedMoves = Array(moveCount) { idx -> moves[(idx + moveStart) % moveCount] }
     val infCost = ctx.cost.INF_COST
 
     val startTime = System.nanoTime()
@@ -169,8 +171,7 @@ class AStarPathfinder(
       }
 
       val currGCost = nodeGCost[currIdx]
-      for (moveIndex in 0 until moveCount) {
-        val move = moves[(moveIndex + moveStart) % moveCount]
+      for (move in orderedMoves) {
         res.cost = infCost
         move.calculate(ctx, currX, currY, currZ, res)
 
@@ -230,7 +231,7 @@ class AStarPathfinder(
 
     fun add(nodeIdx: Int) {
       val newSize = size + 1
-      if (newSize >= items.size) {
+      if (newSize > items.size - 1) {
         items = items.copyOf(items.size * 2)
       }
       size = newSize
@@ -243,8 +244,6 @@ class AStarPathfinder(
       val pos = pf.nodeHeapPos[nodeIdx]
       if (pos <= 0) return
       siftUp(pos)
-      val newPos = pf.nodeHeapPos[nodeIdx]
-      siftDown(newPos)
     }
 
     private fun siftUp(startPos: Int) {

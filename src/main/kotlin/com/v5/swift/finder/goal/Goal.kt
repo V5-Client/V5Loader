@@ -26,23 +26,23 @@ class Goal(
   }
 
   override fun heuristic(x: Int, y: Int, z: Int): Double {
-    val dx = abs(x - goalX)
-    val dz = abs(z - goalZ)
-    val dy = y - goalY
+    val dx = abs(x.toLong() - goalX.toLong())
+    val dz = abs(z.toLong() - goalZ.toLong())
+    val dy = y.toLong() - goalY.toLong()
 
     val minHoriz = min(dx, dz)
     val maxHoriz = max(dx, dz)
 
-    val horizontal = minHoriz * diagonalCost + (maxHoriz - minHoriz) * sprintCost
+    val horizontal = minHoriz.toDouble() * diagonalCost + (maxHoriz - minHoriz).toDouble() * sprintCost
 
-    if (dy == 0) {
+    if (dy == 0L) {
       return horizontal
     }
 
-    val absDy = abs(dy)
+    val absDy = abs(dy).toDouble()
 
-    return horizontal + if (dy > 0) {
-      dy * fallCostPerBlock
+    return horizontal + if (dy > 0L) {
+      dy.toDouble() * fallCostPerBlock
     } else {
       absDy * jumpCostPerBlock
     } + absDy * verticalReluctance

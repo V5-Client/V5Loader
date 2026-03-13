@@ -18,6 +18,8 @@ class CalculationContext {
   val bsa = BlockStateAccessor(world)
   val cost = ActionCosts()
   val maxFallHeight = 20
+  val flyMinY = world.bottomY
+  val flyMaxY = world.topYInclusive - 1
 
   val precomputedData = PrecomputedData(bsa)
   val safeCache = SafePositionCache(this)
@@ -66,8 +68,8 @@ class CalculationContext {
 
       val dx = x - zone.x
       val dz = z - zone.z
-      val distSq = dx * dx + dz * dz
-      if (distSq > zone.radiusSq) continue
+      val distSq = dx.toLong() * dx.toLong() + dz.toLong() * dz.toLong()
+      if (distSq > zone.radiusSq.toLong()) continue
 
       val normalized = if (zone.radiusSq <= 1) 0.0 else distSq.toDouble() / zone.radiusSq.toDouble()
       val falloff = max(0.2, 1.0 - normalized)

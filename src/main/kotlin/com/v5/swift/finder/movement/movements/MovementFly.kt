@@ -60,9 +60,14 @@ object MovementFly {
     val destY = y + dy
     val destZ = z + dz
     val pre = ctx.precomputedData
+    if (destY < ctx.flyMinY || destY > ctx.flyMaxY) return
 
     if (!pre.isFlyColumnClear(destX, destY, destZ)) return
-    if (dy > 0 && !pre.isFlyColumnClear(x, y + 1, z)) return
+    if (dy > 0) {
+      val aboveY = y + 1
+      if (aboveY < ctx.flyMinY || aboveY > ctx.flyMaxY) return
+      if (!pre.isFlyColumnClear(x, aboveY, z)) return
+    }
 
     val isDiagonalHorizontal = dx != 0 && dz != 0
     if (isDiagonalHorizontal) {
@@ -84,8 +89,8 @@ object MovementFly {
     val dzStart = z - ctx.startZ
     val dxGoal = x - ctx.goalX
     val dzGoal = z - ctx.goalZ
-    val distFromStartSq = dxStart * dxStart + dzStart * dzStart
-    val distToGoalSq = dxGoal * dxGoal + dzGoal * dzGoal
+    val distFromStartSq = dxStart.toLong() * dxStart.toLong() + dzStart.toLong() * dzStart.toLong()
+    val distToGoalSq = dxGoal.toLong() * dxGoal.toLong() + dzGoal.toLong() * dzGoal.toLong()
     val totalSq = distFromStartSq + distToGoalSq
     val progress = if (totalSq > 0) distFromStartSq.toDouble() / totalSq else 0.5
 
@@ -165,9 +170,11 @@ object MovementFly {
     var minClearance = WALL_CHECK_DIST
 
     for (dir in CARDINAL_DIRECTIONS) {
+      var nx = x
+      var nz = z
       for (d in 1..WALL_CHECK_DIST) {
-        val nx = x + dir[0] * d
-        val nz = z + dir[1] * d
+        nx += dir[0]
+        nz += dir[1]
         if (!pre.isFlyColumnClear(nx, y, nz)) {
           val clearance = d - 1
           if (clearance < minClearance) minClearance = clearance
@@ -249,9 +256,11 @@ object MovementFly {
     var minClearance = WALL_CHECK_DIST
     for (dir in CARDINAL_DIRECTIONS) {
       var blocked = false
+      var nx = x
+      var nz = z
       for (d in 1..WALL_CHECK_DIST) {
-        val nx = x + dir[0] * d
-        val nz = z + dir[1] * d
+        nx += dir[0]
+        nz += dir[1]
         if (!pre.isFlyColumnClear(nx, y, nz)) {
           val clearance = d - 1
           if (clearance < minClearance) minClearance = clearance

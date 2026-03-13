@@ -115,15 +115,15 @@ object MovementWalk {
     val maxFall = ctx.maxFallHeight
     val cost = ctx.cost
 
-    for (fallDist in 1..maxFall) {
-      val checkY = y - fallDist
-      val state = bsa.get(destX, checkY, destZ)
-      val data = precomputed.getData(destX, checkY, destZ, state)
+    for (dropBlocks in 1..maxFall) {
+      val floorY = y - dropBlocks - 1
+      val state = bsa.get(destX, floorY, destZ)
+      val data = precomputed.getData(destX, floorY, destZ, state)
 
       if ((data and PrecomputedData.Companion.PASSABLE) != 0) continue
       if ((data and PrecomputedData.Companion.SOLID) == 0) return
 
-      val destY = checkY + 1
+      val destY = floorY + 1
       val destFeetState = bsa.get(destX, destY, destZ)
       if (!precomputed.isPassable(destX, destY, destZ, destFeetState)) return
 
@@ -132,9 +132,9 @@ object MovementWalk {
 
       res.set(destX, destY, destZ)
 
-      var totalCost = cost.WALK_OFF_EDGE_TIME + cost.getFallTime(fallDist)
-      if (fallDist > 3) {
-        val excess = fallDist - 3
+      var totalCost = cost.WALK_OFF_EDGE_TIME + cost.getFallTime(dropBlocks)
+      if (dropBlocks > 3) {
+        val excess = dropBlocks - 3
         totalCost += excess * excess * 2.0
       }
       totalCost += ctx.wdc.getPathPenalty(destX, destY, destZ) + ctx.getFluidPenalty(destX, destY, destZ)
@@ -157,6 +157,7 @@ object MovementWalk {
     val dx = destX - x
     val dz = destZ - z
     val dist = if (dx != 0) abs(dx) else abs(dz)
+    if (dist <= 1) return
 
     if (dx != 0 && dz != 0) return
 
