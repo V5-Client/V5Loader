@@ -9,7 +9,7 @@ uniform vec2 mouse;
 void main() {
     vec2 u = gl_FragCoord.xy;
     vec2 v = resolution.xy;
-    u = 0.12 * (u + u - v) / v.y;
+    u = 0.04 * (u + u - v) / v.y;
 
     vec4 o = vec4(1.0, 2.0, 3.0, 0.0);
     vec4 z = o;
@@ -44,7 +44,7 @@ void main() {
     vec3 highlightColor = vec3(1.2, 0.35, 0.35);
     vec3 color = mix(shadowColor, highlightColor, brightness);
 
-    float vignette = smoothstep(1.35, 0.12, length(u * vec2(0.72, 0.95)));
+    float vignette = smoothstep(1.85, 0.08, length(u * vec2(0.58, 0.82)));
     color *= vignette;
 
     fragColor = vec4(color, 1.0);
