@@ -9,9 +9,9 @@ class PathNode(
     goal: IGoal,
 ) {
 
-  @JvmField var gCost: Double = 1e6
+  @JvmField var gCost: Double = Double.POSITIVE_INFINITY
   @JvmField val hCost: Double = goal.heuristic(x, y, z)
-  @JvmField var fCost: Double = 1e6
+  @JvmField var fCost: Double = Double.POSITIVE_INFINITY
   @JvmField var heapPosition = -1
   @JvmField var parent: PathNode? = null
 

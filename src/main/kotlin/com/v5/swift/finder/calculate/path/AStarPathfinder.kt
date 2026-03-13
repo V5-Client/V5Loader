@@ -30,7 +30,7 @@ class AStarPathfinder(
     private const val INITIAL_HEAP_CAPACITY = 4_096
     private const val COORD_MAP_INITIAL_CAPACITY = 16_384
     private const val COORD_MAP_LOAD_FACTOR = 0.5f
-    private const val UNVISITED_COST = 1e6
+    private const val UNVISITED_COST = Double.POSITIVE_INFINITY
   }
 
   private var nodeCount = 0

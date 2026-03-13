@@ -5,7 +5,7 @@ class MovementResult {
   var x: Int = 0
   var y: Int = 0
   var z: Int = 0
-  var cost: Double = 1e6
+  var cost: Double = Double.POSITIVE_INFINITY
 
   fun set(x: Int, y: Int, z: Int) {
     this.x = x
@@ -17,7 +17,7 @@ class MovementResult {
     x = 0
     y = 0
     z = 0
-    cost = 1e6
+    cost = Double.POSITIVE_INFINITY
   }
 
 }
