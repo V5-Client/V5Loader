@@ -165,14 +165,13 @@ object PathManager {
             currentTask = Swift.executor.submit {
                 try {
                     val pathfinder = AStarPathfinder(
-                        startPoints,
-                        goal,
-                        ctx,
-                        maxIterations,
-                        1.05,
-                        if (isFly) 0.0 else NON_PRIMARY_START_PENALTY,
-                        isFly,
-                        if (isFly) 0 else searchVariantSeed
+                        startPoints = startPoints,
+                        goal = goal,
+                        ctx = ctx,
+                        maxIterations = maxIterations,
+                        nonPrimaryStartPenalty = if (isFly) 0.0 else NON_PRIMARY_START_PENALTY,
+                        isFly = isFly,
+                        moveOrderOffset = if (isFly) 0 else searchVariantSeed
                     )
                     val path = pathfinder.findPath()
 
@@ -260,8 +259,8 @@ object PathManager {
         isFly: Boolean
     ): String? {
         if (isFly) {
-            val minY = ctx.world.bottomY
-            val maxY = ctx.world.topYInclusive - 1
+            val minY = ctx.flyMinY
+            val maxY = ctx.flyMaxY
 
             if (startPoints.any { it[1] !in minY..maxY }) {
                 return "Fly start Y must be between $minY and $maxY"
