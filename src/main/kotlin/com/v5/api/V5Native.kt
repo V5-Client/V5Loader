@@ -9,38 +9,25 @@ object V5Native {
         }
     }
 
-    private fun findMethod(name: String, vararg parameterTypes: Class<*>): java.lang.reflect.Method? {
+    private fun call(name: String, vararg args: Any?): Any? {
         val cls = jniClass ?: return null
-        return try {
-            cls.getDeclaredMethod(name, *parameterTypes)
-        } catch (_: Throwable) {
-            null
-        }
+        val method = cls.methods.firstOrNull { m ->
+            m.name == name && m.parameterCount == args.size
+        } ?: return null
+        return method.invoke(null, *args)
     }
 
-    private val consumeTokenMethod by lazy { findMethod("consumeToken") }
-    private val getHwidMethod by lazy { findMethod("getHwid") }
-    private val decryptAesGcmMethod by lazy {
-        findMethod(
-            "decryptAesGcm",
-            ByteArray::class.java,
-            ByteArray::class.java,
-            ByteArray::class.java
-        )
-    }
-    private val antiTamperMethod by lazy { findMethod("runNativeAntiTamperChecks") }
+    @JvmStatic
+    fun consumeToken(): String? = call("consumeToken") as? String
 
     @JvmStatic
-    fun consumeToken(): String? = consumeTokenMethod?.invoke(null) as? String
-
-    @JvmStatic
-    fun getHwid(): String? = getHwidMethod?.invoke(null) as? String
+    fun getHwid(): String? = call("getHwid") as? String
 
     @JvmStatic
     fun decryptAesGcm(encryptedBytes: ByteArray, contentKey: ByteArray, fileIv: ByteArray): ByteArray? {
-        return decryptAesGcmMethod?.invoke(null, encryptedBytes, contentKey, fileIv) as? ByteArray
+        return call("decryptAesGcm", encryptedBytes, contentKey, fileIv) as? ByteArray
     }
 
     @JvmStatic
-    fun runAntiTamperChecks(): Boolean = (antiTamperMethod?.invoke(null) as? Boolean) ?: false
+    fun runAntiTamperChecks(): Boolean = (call("runNativeAntiTamperChecks") as? Boolean) ?: false
 }
