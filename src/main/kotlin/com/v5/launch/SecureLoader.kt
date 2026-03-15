@@ -18,14 +18,13 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.FileInputStream
-import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.PrivateKey
 import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.Arrays
@@ -33,7 +32,11 @@ import java.util.Base64
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLPeerUnverifiedException
+import javax.net.ssl.TrustManager
+import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.X509TrustManager
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
 import javax.crypto.Mac
@@ -63,6 +66,7 @@ object SecureLoader {
         useAlternativeNames = true
         ignoreUnknownKeys = true
     }
+    private val pinnedSslSocketFactory by lazy { buildPinnedSslSocketFactory() }
 
     @Volatile private var isDevMode = false
     @Volatile private var isPluginLoaded = false
@@ -163,8 +167,7 @@ object SecureLoader {
             return false
         }
 
-        val url = URL("$BACKEND_URL/api/hash/modloader?hash=$hash")
-        val connection = url.openConnection() as HttpURLConnection
+        val connection = openPinnedConnection("$BACKEND_URL/api/hash/modloader?hash=$hash")
 
         return try {
             connection.requestMethod = "GET"
@@ -176,7 +179,6 @@ object SecureLoader {
             connection.readTimeout = 10000
 
             val responseCode = connection.responseCode
-            verifyPinnedServer(connection)
             val stream = if (responseCode in 200..299)
                 connection.inputStream
             else
@@ -332,8 +334,7 @@ object SecureLoader {
             )
 
         val connection = try {
-            val url = URL("$BACKEND_URL/api/auth/heartbeat")
-            (url.openConnection() as HttpURLConnection).apply {
+            openPinnedConnection("$BACKEND_URL/api/auth/heartbeat").apply {
                 requestMethod = "POST"
                 setRequestProperty("Authorization", "Bearer $currentToken")
                 setRequestProperty("X-V5-HWID", runtimeHwid)
@@ -349,7 +350,6 @@ object SecureLoader {
 
         try {
             val responseCode = connection.responseCode
-            verifyPinnedServer(connection)
             val responseText = readHttpResponse(connection, responseCode)
             if (responseCode == 200) {
                 val json = parseJsonObject(responseText)
@@ -407,7 +407,7 @@ object SecureLoader {
     }
 
     private fun readHttpResponse(
-        connection: HttpURLConnection,
+        connection: HttpsURLConnection,
         responseCode: Int
     ): String {
         val stream = if (responseCode in 200..299)
@@ -455,7 +455,7 @@ object SecureLoader {
         rng.nextBytes(clientNonceBytes)
         val clientNonce = Base64.getEncoder().encodeToString(clientNonceBytes)
 
-        val connection = (URL("$BACKEND_URL/api/download/v5").openConnection() as HttpURLConnection).apply {
+        val connection = openPinnedConnection("$BACKEND_URL/api/download/v5").apply {
             setRequestProperty("Authorization", "Bearer $token")
             setRequestProperty("X-V5-HWID", runtimeHwid)
             setRequestProperty("User-Agent", LOADER_USER_AGENT)
@@ -466,7 +466,6 @@ object SecureLoader {
         }
 
         val responseCode = connection.responseCode
-        verifyPinnedServer(connection)
         val responseText = try {
             val stream = if (responseCode in 200..299) connection.inputStream else connection.errorStream
             stream?.bufferedReader()?.use { it.readText() } ?: ""
@@ -519,16 +518,40 @@ object SecureLoader {
         )
     }
 
-    private fun verifyPinnedServer(connection: HttpURLConnection) {
-        val https = connection as? HttpsURLConnection ?: return
-        val cert = https.serverCertificates.firstOrNull() ?: throw SSLPeerUnverifiedException("Missing server cert")
-        val publicKey = cert.publicKey?.encoded ?: throw SSLPeerUnverifiedException("Missing server public key")
-        val digest = MessageDigest.getInstance("SHA-256").digest(publicKey)
-        val actualHex = digest.joinToString("") { "%02x".format(it) }
-        if (!actualHex.equals(BACKEND_SPKI_SHA256_HEX, ignoreCase = true)) {
-            throw SSLPeerUnverifiedException("Backend certificate pin mismatch")
+    private fun openPinnedConnection(url: String): HttpsURLConnection {
+        return (URL(url).openConnection() as HttpsURLConnection).apply {
+            sslSocketFactory = pinnedSslSocketFactory
         }
     }
+
+    private fun buildPinnedSslSocketFactory() = SSLContext.getInstance("TLS").apply {
+        val trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+        trustFactory.init(null as java.security.KeyStore?)
+        val defaultTrust = trustFactory.trustManagers
+            .filterIsInstance<X509TrustManager>()
+            .firstOrNull()
+            ?: throw SSLPeerUnverifiedException("Default trust manager unavailable")
+        val pinnedTrust = object : X509TrustManager {
+            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+                defaultTrust.checkClientTrusted(chain, authType)
+            }
+
+            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+                defaultTrust.checkServerTrusted(chain, authType)
+                val leaf = chain?.firstOrNull() ?: throw SSLPeerUnverifiedException("Missing server cert")
+                val digest = java.security.MessageDigest.getInstance("SHA-256").digest(leaf.publicKey.encoded)
+                val actualHex = digest.joinToString("") { "%02x".format(it) }
+                if (!actualHex.equals(BACKEND_SPKI_SHA256_HEX, ignoreCase = true)) {
+                    throw SSLPeerUnverifiedException("Backend certificate pin mismatch")
+                }
+            }
+
+            override fun getAcceptedIssuers(): Array<X509Certificate> {
+                return defaultTrust.acceptedIssuers
+            }
+        }
+        init(null, arrayOf<TrustManager>(pinnedTrust), SecureRandom())
+    }.socketFactory
 
     private fun decryptEnvelope(
         encryptedBase64: String,
