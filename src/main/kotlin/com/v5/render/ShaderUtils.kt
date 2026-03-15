@@ -24,7 +24,7 @@ object ShaderUtils {
     )
 
     private val shaders = listOf(
-        BackgroundShader("Contour Drift", "/assets/v5/shaders/background.fsh"),
+        BackgroundShader("Epsilon's Storm", "/assets/v5/shaders/background_storm.fsh"),
         BackgroundShader("Crimson Bloom", "/assets/v5/shaders/background_crimson.fsh"),
         BackgroundShader("Neon Horizon", "/assets/v5/shaders/background_horizon.fsh")
     )
