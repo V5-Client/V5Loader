@@ -1,0 +1,119 @@
+name: Compile All JNI
+
+on:
+  push:
+    branches:
+      - "**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  detect-native:
+    runs-on: ubuntu-latest
+    outputs:
+      native_changed: ${{ steps.native.outputs.native_changed }}
+      should_build: ${{ steps.native.outputs.should_build }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect native or workflow changes
+        id: native
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "native_changed=true" >> "$GITHUB_OUTPUT"
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+          HEAD_MSG="$(git log -1 --pretty=%B "$AFTER")"
+
+          if echo "$HEAD_MSG" | grep -q '\[skip-native-auto\]'; then
+            echo "native_changed=false" >> "$GITHUB_OUTPUT"
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -z "$BEFORE" || "$BEFORE" == "0000000000000000000000000000000000000000" ]]; then
+            if git rev-parse "${AFTER}^" >/dev/null 2>&1; then
+              BEFORE="${AFTER}^"
+            else
+              echo "native_changed=true" >> "$GITHUB_OUTPUT"
+              echo "should_build=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+
+          echo "Diff range: $BEFORE -> $AFTER"
+
+          CHANGED="$(git diff --name-only "$BEFORE" "$AFTER" --)"
+
+          if echo "$CHANGED" | grep -Eq '^NativeSrc/|^\.github/workflows/'; then
+            echo "native_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "native_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "should_build=true" >> "$GITHUB_OUTPUT"
+
+  linux:
+    needs: detect-native
+    if: ${{ needs['detect-native'].outputs.native_changed == 'true' }}
+    uses: ./.github/workflows/native-linux-builder.yml
+
+  macos:
+    needs:
+      - detect-native
+      - linux
+    if: ${{ needs['detect-native'].outputs.native_changed == 'true' }}
+    uses: ./.github/workflows/native-macos-builder.yml
+
+  windows:
+    needs:
+      - detect-native
+      - macos
+    if: ${{ needs['detect-native'].outputs.native_changed == 'true' }}
+    uses: ./.github/workflows/native-windows-builder.yml
+
+  commit:
+    needs:
+      - detect-native
+      - linux
+      - macos
+      - windows
+    if: ${{ always() && needs['detect-native'].outputs.should_build == 'true' && (needs['detect-native'].outputs.native_changed == 'false' || needs.windows.result == 'success') }}
+    runs-on: ubuntu-latest
+    outputs:
+      head_sha: ${{ steps.resolve_sha.outputs.head_sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve latest branch HEAD SHA
+        id: resolve_sha
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="${{ github.ref_name }}"
+          git fetch origin "$BRANCH" --depth=50
+          echo "head_sha=$(git rev-parse "origin/$BRANCH")" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: commit
+    if: ${{ always() && needs.commit.result == 'success' }}
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+    with:
+      sha: ${{ needs.commit.outputs.head_sha }}

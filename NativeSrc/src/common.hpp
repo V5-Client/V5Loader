@@ -1,0 +1,84 @@
+#pragma once
+
+#include <array>
+#include <chrono>
+#include <cmath>
+#include <cstdint>
+#include <limits>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+namespace v5pf {
+
+enum VoxelFlags : uint16_t {
+  VF_PASSABLE = 1u << 0,
+  VF_SOLID = 1u << 1,
+  VF_PASSABLE_FLY = 1u << 2,
+  VF_BLOCKING_WALL = 1u << 3,
+  VF_FLUID = 1u << 4,
+  VF_SLAB_BOTTOM = 1u << 5,
+  VF_SLAB_TOP = 1u << 6,
+  VF_FENCE_LIKE = 1u << 7,
+  VF_STAIRS_BOTTOM = 1u << 8,
+  VF_CARPET_LIKE = 1u << 9,
+};
+
+constexpr uint16_t VF_AIR_DEFAULT = VF_PASSABLE | VF_PASSABLE_FLY;
+
+struct Int3 {
+  int x;
+  int y;
+  int z;
+};
+
+inline uint64_t coordKey(const int x, const int y, const int z) {
+  const uint64_t px = (static_cast<uint64_t>(x + 33554432) & 0x3FFFFFFULL);
+  const uint64_t py = (static_cast<uint64_t>(y + 2048) & 0xFFFULL);
+  const uint64_t pz = (static_cast<uint64_t>(z + 33554432) & 0x3FFFFFFULL);
+  return (px << 38) | (py << 26) | pz;
+}
+
+inline int64_t chunkKey(const int x, const int z) {
+  return (static_cast<int64_t>(x) << 32) | (static_cast<uint32_t>(z));
+}
+
+struct ActionCosts {
+  static constexpr double INF_COST = 1e6;
+  static constexpr double FLY_ONE_BLOCK_TIME = 1.0 / 0.7;
+  static constexpr double SPRINT_ONE_BLOCK_TIME = 1.0 / 0.2806;
+  static constexpr double SPRINT_DIAGONAL_TIME = SPRINT_ONE_BLOCK_TIME * 1.4142135623730951;
+  static constexpr double MOMENTUM_LOSS_PENALTY = 6.0;
+  static constexpr double JUMP_PENALTY = 2.0;
+  static constexpr double GAP_JUMP_REWARD_OFFSET = 1.5;
+  static constexpr double SLAB_ASCENT_TIME = SPRINT_ONE_BLOCK_TIME * 1.1;
+  static constexpr double WALK_OFF_EDGE_TIME = SPRINT_ONE_BLOCK_TIME * 0.5;
+  static constexpr double LAND_RECOVERY_TIME = 2.0;
+  static constexpr double JUMP_UP_ONE_BLOCK_TIME = 28.0 + MOMENTUM_LOSS_PENALTY + SPRINT_ONE_BLOCK_TIME;
+
+  std::array<double, 257> fallTimes{};
+
+  ActionCosts() {
+    double currentDistance = 0.0;
+    int tick = 0;
+    double velocity = 0.0;
+
+    for (int targetDistance = 1; targetDistance <= 256; targetDistance++) {
+      while (currentDistance < targetDistance) {
+        velocity = (velocity - 0.08) * 0.98;
+        currentDistance -= velocity;
+        tick++;
+      }
+      fallTimes[static_cast<size_t>(targetDistance)] = static_cast<double>(tick);
+    }
+  }
+
+  [[nodiscard]] double getFallTime(const int blocks) const {
+    if (blocks <= 0) return 0.0;
+    if (blocks >= static_cast<int>(fallTimes.size())) return INF_COST;
+    return fallTimes[static_cast<size_t>(blocks)] + LAND_RECOVERY_TIME;
+  }
+};
+
+} // namespace v5pf

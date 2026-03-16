@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.v5.render.helper.FrustumHolder
 import com.v5.render.helper.FrustumUtils
 import com.v5.render.objects.RenderLayers
-import com.v5.swift.event.WorldRenderEvent
+import com.v5.event.WorldRenderEvent
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.render.Frustum

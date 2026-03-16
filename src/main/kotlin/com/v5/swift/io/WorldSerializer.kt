@@ -12,7 +12,7 @@ import kotlin.collections.iterator
 object WorldSerializer {
 
   private const val MAGIC = 0x5CAFEBAB
-  private const val VERSION = 1
+  private const val VERSION = 3
   private val CACHE_DIR = File("pathfinder_cache")
 
   init {
@@ -61,17 +61,6 @@ object WorldSerializer {
           }
         }
 
-        val validDistances = ArrayList<Pair<Int, ByteArray>>()
-        for (y in chunk.minY until chunk.maxY) {
-          val dist = chunk.getDistanceData(y)
-          if (dist != null) validDistances.add((y - chunk.minY) to dist)
-        }
-
-        out.writeInt(validDistances.size)
-        for ((yIndex, data) in validDistances) {
-          out.writeShort(yIndex)
-          out.write(data)
-        }
       }
     }
   }
@@ -88,8 +77,6 @@ object WorldSerializer {
         val count = input.readInt()
         val map = ConcurrentHashMap<Long, CachedChunk>(count)
 
-        val byteBuffer = ByteBuffer.allocate(4096 * 4).order(ByteOrder.BIG_ENDIAN)
-        val intBuffer = byteBuffer.asIntBuffer()
         val rawBytes = ByteArray(4096 * 4)
 
         for (k in 0 until count) {
@@ -109,14 +96,6 @@ object WorldSerializer {
               ByteBuffer.wrap(rawBytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer().get(intData)
               chunk.setSection(i, intData)
             }
-          }
-
-          val distCount = input.readInt()
-          for (d in 0 until distCount) {
-            val yIndex = input.readShort().toInt()
-            val data = ByteArray(256)
-            input.readFully(data)
-            chunk.setDistanceDataByIndex(yIndex, data)
           }
 
           chunk.ready = true

@@ -39,6 +39,7 @@ object HypixelManager {
           CachedWorld.clear()
         }
 
+        CachedWorld.setWorldKey(newLobby)
         CachedWorld.load(newLobby)
         currentLobby = newLobby
       }
@@ -52,5 +53,7 @@ object HypixelManager {
     } else {
       CachedWorld.clear()
     }
+
+    CachedWorld.setWorldKey(null)
   }
 }

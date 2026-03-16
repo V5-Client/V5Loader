@@ -1,0 +1,59 @@
+name: Build macOS Native Pathfinder JNI
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  macos-builder:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build native library
+        run: |
+          cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build NativeSrc/build --config Release -j
+
+      - name: Copy native library
+        run: |
+          mkdir -p src/main/resources/assets/v5
+          cp NativeSrc/build/V5PathJNI.dylib src/main/resources/assets/v5/V5PathJNI.dylib
+
+      - name: Commit macOS JNI
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          USER_NAME="$(git log -1 --pretty=%an "${{ github.sha }}")"
+          USER_EMAIL="$(git log -1 --pretty=%ae "${{ github.sha }}")"
+          git config user.name "$USER_NAME"
+          git config user.email "$USER_EMAIL"
+
+          git add src/main/resources/assets/v5/V5PathJNI.dylib
+
+          if ! git diff --cached --quiet; then
+            git log -1 --pretty=%B "${{ github.sha }}" > .git/JNI_COMMIT_MSG
+            echo "" >> .git/JNI_COMMIT_MSG
+            echo "[skip-native-auto]" >> .git/JNI_COMMIT_MSG
+            git commit -F .git/JNI_COMMIT_MSG
+            rm -f .git/JNI_COMMIT_MSG
+            BRANCH="${{ github.ref_name }}"
+            git fetch origin "$BRANCH" --depth=50
+            git rebase "origin/$BRANCH"
+            git push origin HEAD:"$BRANCH"
+          fi

@@ -3021,6 +3021,44 @@ public final class com/v5/api/V5Native {
 	public static final fun runAntiTamperChecks ()Z
 }
 
+public final class com/v5/event/Context {
+	public field camera Lnet/minecraft/client/render/Camera;
+	public field consumers Lnet/minecraft/client/render/VertexConsumerProvider;
+	public field frustum Lnet/minecraft/client/render/Frustum;
+	public fun <init> ()V
+	public final fun getCamera ()Lnet/minecraft/client/render/Camera;
+	public final fun getConsumers ()Lnet/minecraft/client/render/VertexConsumerProvider;
+	public final fun getFrustum ()Lnet/minecraft/client/render/Frustum;
+	public final fun getMatrixStack ()Lnet/minecraft/client/util/math/MatrixStack;
+	public final fun setCamera (Lnet/minecraft/client/render/Camera;)V
+	public final fun setConsumers (Lnet/minecraft/client/render/VertexConsumerProvider;)V
+	public final fun setFrustum (Lnet/minecraft/client/render/Frustum;)V
+	public final fun setMatrixStack (Lnet/minecraft/client/util/math/MatrixStack;)V
+}
+
+public final class com/v5/event/PacketEvent {
+	public static final field INSTANCE Lcom/v5/event/PacketEvent;
+	public static final field RECEIVE Lnet/fabricmc/fabric/api/event/Event;
+}
+
+public abstract interface class com/v5/event/PacketEvent$ReceiveEvent {
+	public abstract fun trigger (Lnet/minecraft/network/packet/Packet;)V
+}
+
+public final class com/v5/event/WorldRenderEvent {
+	public static final field INSTANCE Lcom/v5/event/WorldRenderEvent;
+	public static final field LAST Lnet/fabricmc/fabric/api/event/Event;
+	public static final field START Lnet/fabricmc/fabric/api/event/Event;
+}
+
+public abstract interface class com/v5/event/WorldRenderEvent$LastEvent {
+	public abstract fun trigger (Lcom/v5/event/Context;)V
+}
+
+public abstract interface class com/v5/event/WorldRenderEvent$StartEvent {
+	public abstract fun trigger (Lcom/v5/event/Context;)V
+}
+
 public final class com/v5/gradient/Chat {
 	public static final field INSTANCE Lcom/v5/gradient/Chat;
 	public final fun buildGradient (Ljava/lang/String;II)Lnet/minecraft/text/MutableText;
@@ -3613,9 +3651,10 @@ public final class com/v5/storage/V5MixinStorage {
 }
 
 public final class com/v5/swift/Swift : net/fabricmc/api/ClientModInitializer {
+	public static final field CHUNKS_PER_TICK I
 	public static final field Companion Lcom/v5/swift/Swift$Companion;
+	public static final field MAXIMUM_CACHED_CHUNKS I
 	public static final field executor Ljava/util/concurrent/ExecutorService;
-	public static final field settings Lcom/v5/swift/util/setting/Settings;
 	public fun <init> ()V
 	public fun onInitializeClient ()V
 }
@@ -3632,13 +3671,10 @@ public final class com/v5/swift/cache/CachedChunk {
 	public field ready Z
 	public fun <init> (II)V
 	public final fun get (III)Lnet/minecraft/block/BlockState;
-	public final fun getDistanceData (I)[B
 	public final fun getSectionData (I)[I
 	public final fun getStateId (III)I
 	public final fun hasSection (I)Z
 	public final fun set (IIILnet/minecraft/block/BlockState;)V
-	public final fun setDistanceData (I[B)V
-	public final fun setDistanceDataByIndex (I[B)V
 	public final fun setSection (I[I)V
 }
 
@@ -3655,406 +3691,8 @@ public final class com/v5/swift/cache/CachedWorld {
 	public final fun onPacketReceive (Lnet/minecraft/network/packet/Packet;)V
 	public final fun processPendingChunks ()V
 	public final fun saveAndClear (Ljava/lang/String;)V
+	public final fun setWorldKey (Ljava/lang/String;)V
 	public final fun waitForLoad ()V
-}
-
-public final class com/v5/swift/command/HeatmapCommand {
-	public static final field INSTANCE Lcom/v5/swift/command/HeatmapCommand;
-	public final fun dispatch ()V
-	public final fun onRender (Lcom/v5/swift/event/Context;)V
-}
-
-public final class com/v5/swift/command/HeatmapCommand$Mode : java/lang/Enum {
-	public static final field EDGE Lcom/v5/swift/command/HeatmapCommand$Mode;
-	public static final field PENALTY Lcom/v5/swift/command/HeatmapCommand$Mode;
-	public static final field WALL Lcom/v5/swift/command/HeatmapCommand$Mode;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lcom/v5/swift/command/HeatmapCommand$Mode;
-	public static fun values ()[Lcom/v5/swift/command/HeatmapCommand$Mode;
-}
-
-public final class com/v5/swift/command/PathCommand {
-	public static final field INSTANCE Lcom/v5/swift/command/PathCommand;
-	public final fun dispatch ()V
-	public final fun onRender (Lcom/v5/swift/event/Context;)V
-}
-
-public final class com/v5/swift/event/Context {
-	public field camera Lnet/minecraft/client/render/Camera;
-	public field consumers Lnet/minecraft/client/render/VertexConsumerProvider;
-	public field frustum Lnet/minecraft/client/render/Frustum;
-	public fun <init> ()V
-	public final fun getCamera ()Lnet/minecraft/client/render/Camera;
-	public final fun getConsumers ()Lnet/minecraft/client/render/VertexConsumerProvider;
-	public final fun getFrustum ()Lnet/minecraft/client/render/Frustum;
-	public final fun getMatrixStack ()Lnet/minecraft/client/util/math/MatrixStack;
-	public final fun setCamera (Lnet/minecraft/client/render/Camera;)V
-	public final fun setConsumers (Lnet/minecraft/client/render/VertexConsumerProvider;)V
-	public final fun setFrustum (Lnet/minecraft/client/render/Frustum;)V
-	public final fun setMatrixStack (Lnet/minecraft/client/util/math/MatrixStack;)V
-}
-
-public final class com/v5/swift/event/PacketEvent {
-	public static final field INSTANCE Lcom/v5/swift/event/PacketEvent;
-	public static final field RECEIVE Lnet/fabricmc/fabric/api/event/Event;
-}
-
-public abstract interface class com/v5/swift/event/PacketEvent$ReceiveEvent {
-	public abstract fun trigger (Lnet/minecraft/network/packet/Packet;)V
-}
-
-public final class com/v5/swift/event/WorldRenderEvent {
-	public static final field INSTANCE Lcom/v5/swift/event/WorldRenderEvent;
-	public static final field LAST Lnet/fabricmc/fabric/api/event/Event;
-	public static final field START Lnet/fabricmc/fabric/api/event/Event;
-}
-
-public abstract interface class com/v5/swift/event/WorldRenderEvent$LastEvent {
-	public abstract fun trigger (Lcom/v5/swift/event/Context;)V
-}
-
-public abstract interface class com/v5/swift/event/WorldRenderEvent$StartEvent {
-	public abstract fun trigger (Lcom/v5/swift/event/Context;)V
-}
-
-public final class com/v5/swift/finder/calculate/Path {
-	public fun <init> (Lcom/v5/swift/finder/movement/CalculationContext;Lcom/v5/swift/finder/calculate/PathNode;JIZI)V
-	public synthetic fun <init> (Lcom/v5/swift/finder/movement/CalculationContext;Lcom/v5/swift/finder/calculate/PathNode;JIZIILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getKeyNodes ()Ljava/util/List;
-	public final fun getNanosPerNode ()D
-	public final fun getNodesExplored ()I
-	public final fun getPoints ()Ljava/util/List;
-	public final fun getSelectedStartIndex ()I
-	public final fun getTimeTaken ()J
-	public final fun isFlyPath ()Z
-}
-
-public final class com/v5/swift/finder/calculate/PathNode {
-	public static final field Companion Lcom/v5/swift/finder/calculate/PathNode$Companion;
-	public field fCost D
-	public field gCost D
-	public final field hCost D
-	public field heapPosition I
-	public field parent Lcom/v5/swift/finder/calculate/PathNode;
-	public final field x I
-	public final field y I
-	public final field z I
-	public fun <init> (IIILcom/v5/swift/finder/goal/IGoal;)V
-	public static final fun coordKey (III)J
-	public fun equals (Ljava/lang/Object;)Z
-	public fun hashCode ()I
-}
-
-public final class com/v5/swift/finder/calculate/PathNode$Companion {
-	public final fun coordKey (III)J
-}
-
-public final class com/v5/swift/finder/calculate/openset/BinaryHeapOpenSet {
-	public field size I
-	public fun <init> ()V
-	public fun <init> (I)V
-	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun add (Lcom/v5/swift/finder/calculate/PathNode;)V
-	public final fun clear ()V
-	public final fun isEmpty ()Z
-	public final fun isNotEmpty ()Z
-	public final fun poll ()Lcom/v5/swift/finder/calculate/PathNode;
-	public final fun relocate (Lcom/v5/swift/finder/calculate/PathNode;)V
-}
-
-public final class com/v5/swift/finder/calculate/path/AStarPathfinder {
-	public fun <init> ([[ILcom/v5/swift/finder/goal/IGoal;Lcom/v5/swift/finder/movement/CalculationContext;IDDZI)V
-	public synthetic fun <init> ([[ILcom/v5/swift/finder/goal/IGoal;Lcom/v5/swift/finder/movement/CalculationContext;IDDZIILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun findPath ()Lcom/v5/swift/finder/calculate/Path;
-}
-
-public final class com/v5/swift/finder/costs/ActionCosts {
-	public final field FLY_ONE_BLOCK_TIME D
-	public final field GAP_JUMP_REWARD_OFFSET D
-	public final field JUMP_PENALTY D
-	public final field JUMP_UP_ONE_BLOCK_TIME D
-	public final field LAND_RECOVERY_TIME D
-	public final field MOMENTUM_LOSS_PENALTY D
-	public final field SLAB_ASCENT_TIME D
-	public final field SPRINT_DIAGONAL_TIME D
-	public final field SPRINT_ONE_BLOCK_TIME D
-	public final field WALK_OFF_EDGE_TIME D
-	public fun <init> ()V
-	public final fun getFallTime (I)D
-	public final fun getINF_COST ()D
-}
-
-public final class com/v5/swift/finder/goal/Goal : com/v5/swift/finder/goal/IGoal {
-	public fun <init> (IIIIILcom/v5/swift/finder/movement/CalculationContext;)V
-	public final fun getGoalX ()I
-	public final fun getGoalY ()I
-	public final fun getGoalZ ()I
-	public final fun getStartX ()I
-	public final fun getStartZ ()I
-	public fun heuristic (III)D
-	public fun isAtGoal (III)Z
-}
-
-public final class com/v5/swift/finder/goal/GoalFly : com/v5/swift/finder/goal/IGoal {
-	public static final field Companion Lcom/v5/swift/finder/goal/GoalFly$Companion;
-	public fun <init> (IIIIIILcom/v5/swift/finder/movement/CalculationContext;)V
-	public final fun getCtx ()Lcom/v5/swift/finder/movement/CalculationContext;
-	public final fun getGoalX ()I
-	public final fun getGoalY ()I
-	public final fun getGoalZ ()I
-	public final fun getStartX ()I
-	public final fun getStartY ()I
-	public final fun getStartZ ()I
-	public fun heuristic (III)D
-	public fun isAtGoal (III)Z
-}
-
-public final class com/v5/swift/finder/goal/GoalFly$Companion {
-}
-
-public abstract interface class com/v5/swift/finder/goal/IGoal {
-	public abstract fun heuristic (III)D
-	public abstract fun isAtGoal (III)Z
-}
-
-public final class com/v5/swift/finder/goal/MultiGoal : com/v5/swift/finder/goal/IGoal {
-	public fun <init> (Ljava/util/List;)V
-	public fun heuristic (III)D
-	public fun isAtGoal (III)Z
-}
-
-public final class com/v5/swift/finder/helper/BlockStateAccessor {
-	public final field access Lcom/v5/swift/finder/helper/BlockViewWrapper;
-	public final field mutablePos Lnet/minecraft/util/math/BlockPos$Mutable;
-	public fun <init> (Lnet/minecraft/world/World;)V
-	public final fun get (III)Lnet/minecraft/block/BlockState;
-	public final fun getWorld ()Lnet/minecraft/world/World;
-}
-
-public final class com/v5/swift/finder/helper/BlockViewWrapper : net/minecraft/world/BlockView {
-	public fun <init> (Lcom/v5/swift/finder/helper/BlockStateAccessor;)V
-	public fun getBlockEntity (Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/entity/BlockEntity;
-	public fun getBlockState (Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;
-	public fun getBottomY ()I
-	public fun getFluidState (Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/fluid/FluidState;
-	public fun getHeight ()I
-}
-
-public final class com/v5/swift/finder/movement/CalculationContext {
-	public static final field CRUISE_BUFFER I
-	public static final field Companion Lcom/v5/swift/finder/movement/CalculationContext$Companion;
-	public field cruiseY I
-	public field goalX I
-	public field goalY I
-	public field goalZ I
-	public field startX I
-	public field startY I
-	public field startZ I
-	public fun <init> ()V
-	public final fun get (III)Lnet/minecraft/block/BlockState;
-	public final fun getBsa ()Lcom/v5/swift/finder/helper/BlockStateAccessor;
-	public final fun getCost ()Lcom/v5/swift/finder/costs/ActionCosts;
-	public final fun getFluidPenalty (III)D
-	public final fun getFlyMaxY ()I
-	public final fun getFlyMinY ()I
-	public final fun getMaxFallHeight ()I
-	public final fun getMc ()Lnet/minecraft/client/MinecraftClient;
-	public final fun getPrecomputedData ()Lcom/v5/swift/finder/precompute/PrecomputedData;
-	public final fun getSafeCache ()Lcom/v5/swift/finder/precompute/SafePositionCache;
-	public final fun getTransientAvoidPenalty (III)D
-	public final fun getWdc ()Lcom/v5/swift/finder/precompute/WallDistanceCalculator;
-	public final fun getWorld ()Lnet/minecraft/client/world/ClientWorld;
-	public final fun setFlightParameters (IIIIII)V
-	public final fun setTransientAvoidZones ([Lcom/v5/swift/finder/movement/CalculationContext$AvoidZone;)V
-}
-
-public final class com/v5/swift/finder/movement/CalculationContext$AvoidZone {
-	public fun <init> (IIIIDI)V
-	public synthetic fun <init> (IIIIDIILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()I
-	public final fun component2 ()I
-	public final fun component3 ()I
-	public final fun component4 ()I
-	public final fun component5 ()D
-	public final fun component6 ()I
-	public final fun copy (IIIIDI)Lcom/v5/swift/finder/movement/CalculationContext$AvoidZone;
-	public static synthetic fun copy$default (Lcom/v5/swift/finder/movement/CalculationContext$AvoidZone;IIIIDIILjava/lang/Object;)Lcom/v5/swift/finder/movement/CalculationContext$AvoidZone;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getMaxYDiff ()I
-	public final fun getPenalty ()D
-	public final fun getRadiusSq ()I
-	public final fun getX ()I
-	public final fun getY ()I
-	public final fun getZ ()I
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/v5/swift/finder/movement/CalculationContext$Companion {
-}
-
-public abstract interface class com/v5/swift/finder/movement/IMove {
-	public abstract fun calculate (Lcom/v5/swift/finder/movement/CalculationContext;IIILcom/v5/swift/finder/movement/MovementResult;)V
-}
-
-public final class com/v5/swift/finder/movement/MovementHelper {
-	public static final field INSTANCE Lcom/v5/swift/finder/movement/MovementHelper;
-	public static final field SHAPE_CONTEXT Lnet/minecraft/block/ShapeContext;
-	public static final fun isPassableState (Lcom/v5/swift/finder/helper/BlockStateAccessor;IIILnet/minecraft/block/BlockState;)Z
-	public static final fun isSolidState (Lcom/v5/swift/finder/helper/BlockStateAccessor;IIILnet/minecraft/block/BlockState;)Z
-}
-
-public final class com/v5/swift/finder/movement/MovementResult {
-	public fun <init> ()V
-	public final fun getCost ()D
-	public final fun getX ()I
-	public final fun getY ()I
-	public final fun getZ ()I
-	public final fun reset ()V
-	public final fun set (III)V
-	public final fun setCost (D)V
-	public final fun setX (I)V
-	public final fun setY (I)V
-	public final fun setZ (I)V
-}
-
-public abstract class com/v5/swift/finder/movement/Moves : java/lang/Enum, com/v5/swift/finder/movement/IMove {
-	public static final field ASCEND_EAST Lcom/v5/swift/finder/movement/Moves;
-	public static final field ASCEND_NORTH Lcom/v5/swift/finder/movement/Moves;
-	public static final field ASCEND_SOUTH Lcom/v5/swift/finder/movement/Moves;
-	public static final field ASCEND_WEST Lcom/v5/swift/finder/movement/Moves;
-	public static final field DESCEND_EAST Lcom/v5/swift/finder/movement/Moves;
-	public static final field DESCEND_NORTH Lcom/v5/swift/finder/movement/Moves;
-	public static final field DESCEND_SOUTH Lcom/v5/swift/finder/movement/Moves;
-	public static final field DESCEND_WEST Lcom/v5/swift/finder/movement/Moves;
-	public static final field DIAGONAL_NORTHEAST Lcom/v5/swift/finder/movement/Moves;
-	public static final field DIAGONAL_NORTHWEST Lcom/v5/swift/finder/movement/Moves;
-	public static final field DIAGONAL_SOUTHEAST Lcom/v5/swift/finder/movement/Moves;
-	public static final field DIAGONAL_SOUTHWEST Lcom/v5/swift/finder/movement/Moves;
-	public static final field TRAVERSE_EAST Lcom/v5/swift/finder/movement/Moves;
-	public static final field TRAVERSE_NORTH Lcom/v5/swift/finder/movement/Moves;
-	public static final field TRAVERSE_SOUTH Lcom/v5/swift/finder/movement/Moves;
-	public static final field TRAVERSE_WEST Lcom/v5/swift/finder/movement/Moves;
-	public synthetic fun <init> (Ljava/lang/String;IIILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public final fun getOffsetX ()I
-	public final fun getOffsetZ ()I
-	public static fun valueOf (Ljava/lang/String;)Lcom/v5/swift/finder/movement/Moves;
-	public static fun values ()[Lcom/v5/swift/finder/movement/Moves;
-}
-
-public final class com/v5/swift/finder/movement/MovesFly : java/lang/Enum, com/v5/swift/finder/movement/IMove {
-	public static final field DOWN Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field DOWN_EAST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field DOWN_NORTH Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field DOWN_NORTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field DOWN_NORTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field DOWN_SOUTH Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field DOWN_SOUTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field DOWN_SOUTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field DOWN_WEST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field EAST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field NORTH Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field NORTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field NORTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field SOUTH Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field SOUTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field SOUTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field UP Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field UP_EAST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field UP_NORTH Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field UP_NORTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field UP_NORTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field UP_SOUTH Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field UP_SOUTH_EAST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field UP_SOUTH_WEST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field UP_WEST Lcom/v5/swift/finder/movement/MovesFly;
-	public static final field WEST Lcom/v5/swift/finder/movement/MovesFly;
-	public fun calculate (Lcom/v5/swift/finder/movement/CalculationContext;IIILcom/v5/swift/finder/movement/MovementResult;)V
-	public final fun getDx ()I
-	public final fun getDy ()I
-	public final fun getDz ()I
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lcom/v5/swift/finder/movement/MovesFly;
-	public static fun values ()[Lcom/v5/swift/finder/movement/MovesFly;
-}
-
-public final class com/v5/swift/finder/movement/movements/MovementFly {
-	public static final field INSTANCE Lcom/v5/swift/finder/movement/movements/MovementFly;
-	public static final fun calculate (Lcom/v5/swift/finder/movement/CalculationContext;IIIIIILcom/v5/swift/finder/movement/MovementResult;)V
-}
-
-public final class com/v5/swift/finder/movement/movements/MovementWalk {
-	public static final field INSTANCE Lcom/v5/swift/finder/movement/movements/MovementWalk;
-	public static final fun ascend (Lcom/v5/swift/finder/movement/CalculationContext;IIIIILcom/v5/swift/finder/movement/MovementResult;)V
-	public static final fun descend (Lcom/v5/swift/finder/movement/CalculationContext;IIIIILcom/v5/swift/finder/movement/MovementResult;)V
-	public static final fun diagonal (Lcom/v5/swift/finder/movement/CalculationContext;IIIIILcom/v5/swift/finder/movement/MovementResult;)V
-	public static final fun jumpGap (Lcom/v5/swift/finder/movement/CalculationContext;IIIIILcom/v5/swift/finder/movement/MovementResult;)V
-	public static final fun traverse (Lcom/v5/swift/finder/movement/CalculationContext;IIIIILcom/v5/swift/finder/movement/MovementResult;)V
-}
-
-public final class com/v5/swift/finder/precompute/PrecomputedData {
-	public static final field BLOCKING_WALL I
-	public static final field CARPET_LIKE I
-	public static final field COMPUTED I
-	public static final field Companion Lcom/v5/swift/finder/precompute/PrecomputedData$Companion;
-	public static final field FLUID I
-	public static final field FLY_PASSABLE I
-	public static final field FULL_CUBE I
-	public static final field PASSABLE I
-	public static final field SLAB_BOTTOM I
-	public static final field SLAB_TOP I
-	public static final field SOLID I
-	public final field states [I
-	public fun <init> (Lcom/v5/swift/finder/helper/BlockStateAccessor;)V
-	public final fun getData (IIILnet/minecraft/block/BlockState;)I
-	public final fun isBlockingWall (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isBlockingWall$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
-	public final fun isBottomSlab (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isBottomSlab$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
-	public final fun isCarpetLike (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isCarpetLike$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
-	public final fun isFluid (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isFluid$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
-	public final fun isFlyColumnClear (III)Z
-	public final fun isFullCube (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isFullCube$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
-	public final fun isPassable (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isPassable$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
-	public final fun isPassableForFlying (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isPassableForFlying$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
-	public final fun isSolid (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isSolid$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
-	public final fun isTopSlab (IIILnet/minecraft/block/BlockState;)Z
-	public static synthetic fun isTopSlab$default (Lcom/v5/swift/finder/precompute/PrecomputedData;IIILnet/minecraft/block/BlockState;ILjava/lang/Object;)Z
-}
-
-public final class com/v5/swift/finder/precompute/PrecomputedData$Companion {
-}
-
-public final class com/v5/swift/finder/precompute/SafePositionCache {
-	public static final field Companion Lcom/v5/swift/finder/precompute/SafePositionCache$Companion;
-	public fun <init> (Lcom/v5/swift/finder/movement/CalculationContext;)V
-	public final fun clear ()V
-	public final fun isSafe (III)Z
-}
-
-public final class com/v5/swift/finder/precompute/SafePositionCache$Companion {
-}
-
-public final class com/v5/swift/finder/precompute/WallDistanceCalculator {
-	public static final field Companion Lcom/v5/swift/finder/precompute/WallDistanceCalculator$Companion;
-	public static final field EDGE_PENALTIES [D
-	public static final field MAX_DIST I
-	public static final field WALL_PENALTIES [D
-	public fun <init> (Lcom/v5/swift/finder/movement/CalculationContext;)V
-	public final fun clearCache ()V
-	public final fun getEdgeDistance (III)I
-	public final fun getPathPenalty (III)D
-	public final fun getWallDistance (III)I
-}
-
-public final class com/v5/swift/finder/precompute/WallDistanceCalculator$Companion {
 }
 
 public final class com/v5/swift/integration/HypixelManager {
@@ -4069,19 +3707,91 @@ public final class com/v5/swift/io/WorldSerializer {
 	public final fun save (Ljava/lang/String;Ljava/util/Map;)V
 }
 
-public final class com/v5/swift/util/PlayerUtils {
-	public static final field INSTANCE Lcom/v5/swift/util/PlayerUtils;
-	public final fun getBlockStandingOn ()Lnet/minecraft/util/math/BlockPos;
+public final class com/v5/swift/nativepath/NativePathResult {
+	public final field keyNodeFlags [I
+	public final field keyNodeMetrics [I
+	public final field keyPath [I
+	public final field nodesExplored I
+	public final field path [I
+	public final field pathFlags [I
+	public final field pathSignature Ljava/lang/String;
+	public final field selectedStartIndex I
+	public final field timeMs J
+	public fun <init> ([I[IJII[I[I[ILjava/lang/String;)V
 }
 
-public final class com/v5/swift/util/setting/Settings {
-	public fun <init> ()V
-	public final fun getChunksPerTick ()I
-	public final fun getMaximumCachedChunks ()I
-	public final fun getWorldCache ()Z
-	public final fun setChunksPerTick (I)V
-	public final fun setMaximumCachedChunks (I)V
-	public final fun setWorldCache (Z)V
+public final class com/v5/swift/nativepath/NativePathfinderBridge {
+	public static final field INSTANCE Lcom/v5/swift/nativepath/NativePathfinderBridge;
+	public static final fun applyBlockUpdates ([I)V
+	public static final fun cancelSearch ()V
+	public static final fun clearWorld ()V
+	public static final fun findPath (Lcom/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest;)Lcom/v5/swift/nativepath/NativePathResult;
+	public static final fun getLastError ()Ljava/lang/String;
+	public static final fun isAvailable ()Z
+	public static final fun setWorld (Ljava/lang/String;II)V
+	public static final fun upsertChunk (IIIIJ[S)V
+}
+
+public final class com/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest {
+	public fun <init> ([I[IZIDDI[I[D)V
+	public final fun component1 ()[I
+	public final fun component2 ()[I
+	public final fun component3 ()Z
+	public final fun component4 ()I
+	public final fun component5 ()D
+	public final fun component6 ()D
+	public final fun component7 ()I
+	public final fun component8 ()[I
+	public final fun component9 ()[D
+	public final fun copy ([I[IZIDDI[I[D)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest;
+	public static synthetic fun copy$default (Lcom/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest;[I[IZIDDI[I[DILjava/lang/Object;)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAvoidMeta ()[I
+	public final fun getAvoidPenalty ()[D
+	public final fun getEndPoints ()[I
+	public final fun getHeuristicWeight ()D
+	public final fun getMaxIterations ()I
+	public final fun getMoveOrderOffset ()I
+	public final fun getNonPrimaryStartPenalty ()D
+	public final fun getStartPoints ()[I
+	public fun hashCode ()I
+	public final fun isFly ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/v5/swift/nativepath/NativePathfinderJNI {
+	public static final field INSTANCE Lcom/v5/swift/nativepath/NativePathfinderJNI;
+	public static final fun applyBlockUpdates ([I)V
+	public static final fun cancelSearch ()V
+	public static final fun clearWorld ()V
+	public static final fun findPath ([I[IZIDDI[I[D)Lcom/v5/swift/nativepath/NativePathResult;
+	public static final fun getLoadError ()Ljava/lang/String;
+	public static final fun initNative ()Z
+	public static final fun initialize ()Z
+	public static final fun isAvailable ()Z
+	public static final fun setWorld (Ljava/lang/String;II)V
+	public static final fun upsertChunk (IIIIJ[S)V
+}
+
+public final class com/v5/swift/nativepath/NativeStateEncoder {
+	public static final field INSTANCE Lcom/v5/swift/nativepath/NativeStateEncoder;
+	public static final fun flagsForState (Lnet/minecraft/block/BlockState;)I
+	public static final fun flagsForStateId (I)I
+	public static final fun flagsShortForStateId (I)S
+}
+
+public final class com/v5/swift/nativepath/NativeVoxelFlags {
+	public static final field BLOCKING_WALL I
+	public static final field CARPET_LIKE I
+	public static final field FENCE_LIKE I
+	public static final field FLUID I
+	public static final field INSTANCE Lcom/v5/swift/nativepath/NativeVoxelFlags;
+	public static final field PASSABLE I
+	public static final field PASSABLE_FLY I
+	public static final field SLAB_BOTTOM I
+	public static final field SLAB_TOP I
+	public static final field SOLID I
+	public static final field STAIRS_BOTTOM I
 }
 
 public final class com/v5/visuals/StructureFinder {
