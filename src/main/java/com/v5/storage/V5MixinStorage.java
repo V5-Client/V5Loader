@@ -3,6 +3,7 @@ package com.v5.storage;
 import com.chattriggers.ctjs.internal.engine.JSLoader;
 import java.util.HashMap;
 import org.mozilla.javascript.Callable;
+import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Undefined;
 
 public final class V5MixinStorage {
@@ -30,12 +31,47 @@ public final class V5MixinStorage {
 
     public static boolean getBoolean(String key, boolean defaultValue) {
         Object value = get(key, defaultValue);
-        return value instanceof Boolean bool ? bool : defaultValue;
+        if (value == null || value == Undefined.instance) {
+            return defaultValue;
+        }
+
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+
+        if (value instanceof Number number) {
+            return number.doubleValue() != 0.0D;
+        }
+
+        if (value instanceof CharSequence sequence) {
+            String normalized = sequence.toString().trim().toLowerCase();
+            if ("true".equals(normalized)) return true;
+            if ("false".equals(normalized)) return false;
+            return defaultValue;
+        }
+
+        try {
+            return ScriptRuntime.toBoolean(value);
+        } catch (Throwable ignored) {
+            return defaultValue;
+        }
     }
 
     public static String getString(String key, String defaultValue) {
         Object value = get(key, defaultValue);
-        return value instanceof String str ? str : defaultValue;
+        if (value == null || value == Undefined.instance) {
+            return defaultValue;
+        }
+
+        if (value instanceof String str) {
+            return str;
+        }
+
+        try {
+            return ScriptRuntime.toString(value);
+        } catch (Throwable ignored) {
+            return defaultValue;
+        }
     }
 
     public static void set(String key, Object value) {
