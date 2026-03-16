@@ -5,6 +5,8 @@ import com.chattriggers.ctjs.api.client.Client
 class StepTrigger(method: Any) : Trigger(method, TriggerType.STEP) {
     private var fps: Long = 60L
     private var delay: Long = -1
+    private var fpsIntervalMs: Long = 1000L / fps
+    private var delayIntervalMs: Long = -1L
     private var systemTime: Long = Client.getSystemTime()
     private var elapsed: Long = 0L
 
@@ -16,7 +18,8 @@ class StepTrigger(method: Any) : Trigger(method, TriggerType.STEP) {
      */
     fun setFps(fps: Long) = apply {
         this.fps = if (fps < 1) 1L else fps
-        systemTime = Client.getSystemTime() + 1000 / this.fps
+        fpsIntervalMs = 1000L / this.fps
+        systemTime = Client.getSystemTime() + fpsIntervalMs
     }
 
     /**
@@ -27,7 +30,8 @@ class StepTrigger(method: Any) : Trigger(method, TriggerType.STEP) {
      */
     fun setDelay(delay: Long) = apply {
         this.delay = if (delay < 1) 1L else delay
-        systemTime = Client.getSystemTime() - this.delay * 1000
+        delayIntervalMs = this.delay * 1000L
+        systemTime = Client.getSystemTime() - delayIntervalMs
     }
 
     override fun register(): Trigger {
@@ -36,17 +40,24 @@ class StepTrigger(method: Any) : Trigger(method, TriggerType.STEP) {
     }
 
     override fun trigger(args: Array<out Any?>) {
+        val now = Client.getSystemTime()
+
         if (delay < 0) {
             // run trigger based on set fps value (60 per second by default)
-            while (systemTime < Client.getSystemTime() + 1000 / fps) {
+            val interval = fpsIntervalMs
+            val targetTime = now + interval
+
+            while (systemTime < targetTime) {
                 callMethod(arrayOf(++elapsed))
-                systemTime += 1000 / fps
+                systemTime += interval
             }
         } else {
             // run trigger based on set delay in seconds
-            while (Client.getSystemTime() > systemTime + delay * 1000) {
+            val interval = delayIntervalMs
+
+            while (now > systemTime + interval) {
                 callMethod(arrayOf(++elapsed))
-                systemTime += delay * 1000
+                systemTime += interval
             }
         }
     }

@@ -5,8 +5,16 @@ import com.chattriggers.ctjs.internal.engine.JSLoader
 sealed interface ITriggerType {
     val name: String
 
+    fun triggerAll() {
+        JSLoader.execNoArgs(this)
+    }
+
     fun triggerAll(vararg args: Any?) {
-        JSLoader.exec(this, args)
+        if (args.isEmpty()) {
+            JSLoader.execNoArgs(this)
+        } else {
+            JSLoader.exec(this, args)
+        }
     }
 }
 

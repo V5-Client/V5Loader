@@ -32,9 +32,15 @@ import org.lwjgl.glfw.GLFW
 import org.mozilla.javascript.Context
 
 object ClientListener : Initializer {
+    private const val HISTORY_LIMIT = 1000
+
     private var ticksPassed: Int = 0
-    val chatHistory = mutableListOf<TextComponent>()
-    val actionBarHistory = mutableListOf<TextComponent>()
+    private val chatHistoryBuffer = ArrayDeque<TextComponent>(HISTORY_LIMIT)
+    private val actionBarHistoryBuffer = ArrayDeque<TextComponent>(HISTORY_LIMIT)
+    val chatHistory: List<TextComponent>
+        get() = chatHistoryBuffer.toList()
+    val actionBarHistory: List<TextComponent>
+        get() = actionBarHistoryBuffer.toList()
     private val tasks = mutableListOf<Task>()
     private lateinit var packetContext: Context
 
@@ -54,11 +60,13 @@ object ClientListener : Initializer {
 
         ClientTickEvents.START_CLIENT_TICK.register {
             synchronized(tasks) {
-                tasks.removeAll {
-                    if (it.delay-- <= 0) {
-                        Client.getMinecraft().submit(it.callback)
-                        true
-                    } else false
+                val iter = tasks.iterator()
+                while (iter.hasNext()) {
+                    val task = iter.next()
+                    if (task.delay-- <= 0) {
+                        Client.getMinecraft().submit(task.callback)
+                        iter.remove()
+                    }
                 }
             }
 
@@ -72,6 +80,8 @@ object ClientListener : Initializer {
         }
 
         ClientSendMessageEvents.ALLOW_CHAT.register { message ->
+            if (!JSLoader.hasTriggers(TriggerType.MESSAGE_SENT)) return@register true
+
             val event = CancellableEvent()
             TriggerType.MESSAGE_SENT.triggerAll(message, event)
 
@@ -79,6 +89,8 @@ object ClientListener : Initializer {
         }
 
         ClientSendMessageEvents.ALLOW_COMMAND.register { message ->
+            if (!JSLoader.hasTriggers(TriggerType.MESSAGE_SENT)) return@register true
+
             val event = CancellableEvent()
             TriggerType.MESSAGE_SENT.triggerAll("/$message", event)
 
@@ -88,6 +100,7 @@ object ClientListener : Initializer {
         ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
             // TODO: Why does Renderer.drawString not work in here?
             ScreenEvents.beforeRender(screen).register { _, stack, mouseX, mouseY, partialTicks ->
+                if (!JSLoader.hasTriggers(TriggerType.GUI_RENDER)) return@register
                 Renderer.withMatrix(UMatrixStack(stack.matrices).toMC(), partialTicks) {
                     TriggerType.GUI_RENDER.triggerAll(mouseX, mouseY, screen)
                 }
@@ -95,6 +108,7 @@ object ClientListener : Initializer {
 
             // TODO: Why does Renderer.drawString not work in here?
             ScreenEvents.afterRender(screen).register { _, stack, mouseX, mouseY, partialTicks ->
+                if (!JSLoader.hasTriggers(TriggerType.POST_GUI_RENDER)) return@register
                 stack.matrices
                 Renderer.withMatrix(UMatrixStack(stack.matrices).toMC(), partialTicks) {
                     TriggerType.POST_GUI_RENDER.triggerAll(mouseX, mouseY, screen, partialTicks)
@@ -102,6 +116,7 @@ object ClientListener : Initializer {
             }
 
             ScreenKeyboardEvents.allowKeyPress(screen).register { _, input ->
+                if (!JSLoader.hasTriggers(TriggerType.GUI_KEY)) return@register true
                 val event = CancellableEvent()
                 TriggerType.GUI_KEY.triggerAll(GLFW.glfwGetKeyName(input.key, input.scancode), input.key, screen, event)
                 !event.isCancelled()
@@ -110,33 +125,39 @@ object ClientListener : Initializer {
 
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
             ScreenEvents.remove(screen).register {
+                if (!JSLoader.hasTriggers(TriggerType.GUI_CLOSED)) return@register
                 TriggerType.GUI_CLOSED.triggerAll(screen)
             }
         }
 
         CTEvents.PACKET_RECEIVED.register { packet, ctx ->
+            if (!JSLoader.hasTriggers(TriggerType.PACKET_RECEIVED)) return@register
             JSLoader.wrapInContext(packetContext) {
                 TriggerType.PACKET_RECEIVED.triggerAll(packet, ctx)
             }
         }
 
         CTEvents.RENDER_TICK.register {
+            if (!JSLoader.hasTriggers(TriggerType.STEP)) return@register
             TriggerType.STEP.triggerAll()
         }
 
         CTEvents.RENDER_OVERLAY.register { ctx, stack, partialTicks ->
+            if (!JSLoader.hasTriggers(TriggerType.RENDER_OVERLAY)) return@register
             Renderer.withMatrix(stack, partialTicks) {
                 TriggerType.RENDER_OVERLAY.triggerAll(ctx)
             }
         }
 
         CTEvents.RENDER_ENTITY.register { stack, entity, partialTicks, ci ->
+            if (!JSLoader.hasTriggers(TriggerType.RENDER_ENTITY)) return@register
             Renderer.withMatrix(stack, partialTicks) {
                 TriggerType.RENDER_ENTITY.triggerAll(Entity.fromMC(entity), partialTicks, ci)
             }
         }
 
         CTEvents.RENDER_BLOCK_ENTITY.register { stack, blockEntity, partialTicks, ci ->
+            if (!JSLoader.hasTriggers(TriggerType.RENDER_BLOCK_ENTITY)) return@register
             Renderer.withMatrix(stack, partialTicks) {
                 TriggerType.RENDER_BLOCK_ENTITY.triggerAll(BlockEntity(blockEntity), partialTicks, ci)
             }
@@ -144,6 +165,7 @@ object ClientListener : Initializer {
 
         AttackBlockCallback.EVENT.register { player, _, _, pos, direction ->
             if (!player.entityWorld.isClient) return@register ActionResult.PASS
+            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register ActionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -157,6 +179,7 @@ object ClientListener : Initializer {
 
         AttackEntityCallback.EVENT.register { player, _, _, entity, _ ->
             if (!player.entityWorld.isClient) return@register ActionResult.PASS
+            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register ActionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -169,6 +192,7 @@ object ClientListener : Initializer {
         }
 
         CTEvents.BREAK_BLOCK.register { pos ->
+            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register
             val event = CancellableEvent()
             TriggerType.PLAYER_INTERACT.triggerAll(PlayerInteraction.BreakBlock, World.getBlockAt(BlockPos(pos)), event)
 
@@ -179,6 +203,7 @@ object ClientListener : Initializer {
 
         UseBlockCallback.EVENT.register { player, _, hand, hitResult ->
             if (!player.entityWorld.isClient) return@register ActionResult.PASS
+            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register ActionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -192,6 +217,7 @@ object ClientListener : Initializer {
 
         UseEntityCallback.EVENT.register { player, _, hand, entity, _ ->
             if (!player.entityWorld.isClient) return@register ActionResult.PASS
+            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register ActionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -205,6 +231,7 @@ object ClientListener : Initializer {
 
         UseItemCallback.EVENT.register { player, _, hand ->
             if (!player.entityWorld.isClient) return@register ActionResult.PASS
+            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register ActionResult.PASS
             val event = CancellableEvent()
 
             val stack = player.getStackInHand(hand)
@@ -227,23 +254,29 @@ object ClientListener : Initializer {
 
     private fun handleChatMessage(message: Text, actionBar: Boolean): Boolean {
         val textComponent = TextComponent(message)
-        val event = ChatTrigger.Event(textComponent)
 
         return if (actionBar) {
-            actionBarHistory += textComponent
-            if (actionBarHistory.size > 1000)
-                actionBarHistory.removeAt(0)
+            pushHistory(actionBarHistoryBuffer, textComponent)
 
+            if (!JSLoader.hasTriggers(TriggerType.ACTION_BAR)) return true
+            val event = ChatTrigger.Event(textComponent)
             TriggerType.ACTION_BAR.triggerAll(event)
             !event.isCancelled()
         } else {
-            chatHistory += textComponent
-            if (chatHistory.size > 1000)
-                chatHistory.removeAt(0)
+            pushHistory(chatHistoryBuffer, textComponent)
 
+            if (!JSLoader.hasTriggers(TriggerType.CHAT)) return true
+            val event = ChatTrigger.Event(textComponent)
             TriggerType.CHAT.triggerAll(event)
 
             !event.isCancelled()
         }
+    }
+
+    private fun pushHistory(buffer: ArrayDeque<TextComponent>, message: TextComponent) {
+        if (buffer.size >= HISTORY_LIMIT) {
+            buffer.removeFirst()
+        }
+        buffer.addLast(message)
     }
 }

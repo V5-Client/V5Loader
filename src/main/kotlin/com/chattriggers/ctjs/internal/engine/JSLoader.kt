@@ -33,7 +33,15 @@ import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider
 
 @OptIn(ExperimentalContracts::class)
 object JSLoader {
-    private val triggers = ConcurrentHashMap<ITriggerType, ConcurrentSkipListSet<Trigger>>()
+    private class TriggerBucket {
+        val ordered = ConcurrentSkipListSet<Trigger>()
+        @Volatile var snapshot: Array<Trigger> = emptyArray()
+        @Volatile var dirty: Boolean = false
+    }
+
+    private val triggers = ConcurrentHashMap<ITriggerType, TriggerBucket>()
+    private val emptyArgs = emptyArray<Any?>()
+    private val dispatchContext = ThreadLocal<Context?>()
 
     private lateinit var moduleScope: Scriptable
     private lateinit var evalScope: Scriptable
@@ -448,11 +456,31 @@ $exportStatements
     }
 
     fun exec(type: ITriggerType, args: Array<out Any?>) {
-        triggers[type]?.forEach { it.trigger(args) }
+        val snapshot = getSnapshot(type) ?: return
+        if (snapshot.isEmpty()) return
+
+        execSnapshot(snapshot, args)
+    }
+
+    fun execNoArgs(type: ITriggerType) {
+        val snapshot = getSnapshot(type) ?: return
+        if (snapshot.isEmpty()) return
+
+        execSnapshot(snapshot, emptyArgs)
+    }
+
+    fun hasTriggers(type: ITriggerType): Boolean {
+        val bucket = triggers[type] ?: return false
+        if (!bucket.dirty) return bucket.snapshot.isNotEmpty()
+        if (bucket.ordered.isEmpty()) return false
+        return getSnapshot(type)?.isNotEmpty() == true
     }
 
     fun addTrigger(trigger: Trigger) {
-        triggers.getOrPut(trigger.type, ::ConcurrentSkipListSet).add(trigger)
+        val bucket = triggers.getOrPut(trigger.type) { TriggerBucket() }
+        if (bucket.ordered.add(trigger)) {
+            bucket.dirty = true
+        }
     }
 
     fun clearTriggers() {
@@ -460,7 +488,16 @@ $exportStatements
     }
 
     fun removeTrigger(trigger: Trigger) {
-        triggers[trigger.type]?.remove(trigger)
+        val bucket = triggers[trigger.type] ?: return
+        if (!bucket.ordered.remove(trigger)) return
+
+        if (bucket.ordered.isEmpty()) {
+            bucket.snapshot = emptyArray()
+            bucket.dirty = false
+            triggers.remove(trigger.type, bucket)
+        } else {
+            bucket.dirty = true
+        }
     }
 
     internal inline fun <T> wrapInContext(
@@ -503,7 +540,7 @@ $exportStatements
     }
 
     fun invoke(method: Callable, args: Array<out Any?>, thisObj: Scriptable = moduleScope): Any? {
-        return wrapInContext {
+        return wrapInContext(dispatchContext.get()) {
             Context.jsToJava(method.call(it, moduleScope, thisObj, args), Any::class.java)
         }
     }
@@ -517,6 +554,36 @@ $exportStatements
         } catch (e: Throwable) {
             e.printTraceToConsole()
             removeTrigger(trigger)
+        }
+    }
+
+    private fun execSnapshot(snapshot: Array<Trigger>, args: Array<out Any?>) {
+        wrapInContext {
+            val previous = dispatchContext.get()
+            dispatchContext.set(it)
+            try {
+                var i = 0
+                while (i < snapshot.size) {
+                    snapshot[i].trigger(args)
+                    i++
+                }
+            } finally {
+                if (previous == null) dispatchContext.remove()
+                else dispatchContext.set(previous)
+            }
+        }
+    }
+
+    private fun getSnapshot(type: ITriggerType): Array<Trigger>? {
+        val bucket = triggers[type] ?: return null
+        if (!bucket.dirty) return bucket.snapshot
+
+        synchronized(bucket) {
+            if (bucket.dirty) {
+                bucket.snapshot = bucket.ordered.toTypedArray()
+                bucket.dirty = false
+            }
+            return bucket.snapshot
         }
     }
 

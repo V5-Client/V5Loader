@@ -2157,6 +2157,7 @@ public final class com/chattriggers/ctjs/api/triggers/CustomTriggerType : com/ch
 	public fun getName ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+	public fun triggerAll ()V
 	public fun triggerAll ([Ljava/lang/Object;)V
 }
 
@@ -2168,10 +2169,12 @@ public final class com/chattriggers/ctjs/api/triggers/EventTrigger : com/chattri
 
 public abstract interface class com/chattriggers/ctjs/api/triggers/ITriggerType {
 	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun triggerAll ()V
 	public abstract fun triggerAll ([Ljava/lang/Object;)V
 }
 
 public final class com/chattriggers/ctjs/api/triggers/ITriggerType$DefaultImpls {
+	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;)V
 	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;[Ljava/lang/Object;)V
 }
 
@@ -2278,6 +2281,7 @@ public final class com/chattriggers/ctjs/api/triggers/TriggerType : java/lang/En
 	public static final field WORLD_UNLOAD Lcom/chattriggers/ctjs/api/triggers/TriggerType;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public synthetic fun getName ()Ljava/lang/String;
+	public fun triggerAll ()V
 	public fun triggerAll ([Ljava/lang/Object;)V
 	public static fun valueOf (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/triggers/TriggerType;
 	public static fun values ()[Lcom/chattriggers/ctjs/api/triggers/TriggerType;

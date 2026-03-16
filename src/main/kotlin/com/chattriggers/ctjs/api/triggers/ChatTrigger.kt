@@ -10,6 +10,10 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
     private var caseInsensitive: Boolean = false
     private lateinit var criteriaPattern: Regex
     private val parameters = mutableListOf<Parameter?>()
+    private var needsContains = false
+    private var needsStart = false
+    private var needsEnd = false
+    private var needsExact = true
     private var triggerIfCanceled: Boolean = true
 
     /**
@@ -104,6 +108,7 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
      */
     fun addParameter(parameter: String) = apply {
         parameters.add(Parameter.getParameterByName(parameter))
+        rebuildParameterMode()
     }
 
     /**
@@ -156,6 +161,7 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
      */
     fun setExact() = apply {
         parameters.clear()
+        rebuildParameterMode()
     }
 
     /**
@@ -193,16 +199,22 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
     }
 
     // helper method to get the proper chat message based on the presence of color codes
-    private fun getChatMessage(chatMessage: TextComponent) =
-        if (formatted)
-            chatMessage.formattedText.replace("\u00a7", "&")
-        else chatMessage.unformattedText
+    private fun getChatMessage(chatMessage: TextComponent): String {
+        if (!formatted) return chatMessage.unformattedText
+
+        val formattedText = chatMessage.formattedText
+        return if ('\u00a7' in formattedText) formattedText.replace("\u00a7", "&") else formattedText
+    }
 
     // helper method to get the variables to pass through
-    private fun getVariables(chatMessage: String) =
-        if (::criteriaPattern.isInitialized)
-            matchesChatCriteria(chatMessage.replace("\n", "->newLine<-"))
-        else ArrayList()
+    private fun getVariables(chatMessage: String): MutableList<Any>? {
+        if (!::criteriaPattern.isInitialized) return ArrayList()
+
+        val normalizedMessage =
+            if ('\n' in chatMessage) chatMessage.replace("\n", "->newLine<-") else chatMessage
+
+        return matchesChatCriteria(normalizedMessage)
+    }
 
     /**
      * A method to check whether a received chat message
@@ -213,27 +225,40 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
      */
     private fun matchesChatCriteria(chat: String): MutableList<Any>? {
         val regex = criteriaPattern
+        var fullMatch: MatchResult? = null
+        val first = regex.find(chat)
 
-        if (parameters.isEmpty()) {
-            if (!(regex matches chat)) return null
-        } else {
-            parameters.forEach { parameter ->
-                val first = try {
-                    regex.find(chat)?.groups?.get(0)
-                } catch (e: IndexOutOfBoundsException) {
-                    return null
-                }
-
-                when (parameter) {
-                    Parameter.CONTAINS -> if (first == null) return null
-                    Parameter.START -> if (first == null || first.range.first != 0) return null
-                    Parameter.END -> if (first?.range?.last != chat.length) return null
-                    null -> if (!(regex matches chat)) return null
-                }
-            }
+        if (needsExact) {
+            fullMatch = regex.matchEntire(chat)
+            if (fullMatch == null) return null
         }
 
-        return regex.find(chat)?.groupValues?.drop(1)?.toMutableList()
+        if (needsContains && first == null) return null
+        if (needsStart && (first == null || first.range.first != 0)) return null
+        if (needsEnd && (first?.range?.last != chat.length)) return null
+
+        if (!needsExact && !needsContains && !needsStart && !needsEnd && first == null) {
+            return null
+        }
+
+        val groups = (fullMatch ?: first)?.groupValues ?: return mutableListOf()
+        return groups.drop(1).toMutableList()
+    }
+
+    private fun rebuildParameterMode() {
+        needsContains = false
+        needsStart = false
+        needsEnd = false
+        needsExact = parameters.isEmpty()
+
+        parameters.forEach { parameter ->
+            when (parameter) {
+                Parameter.CONTAINS -> needsContains = true
+                Parameter.START -> needsStart = true
+                Parameter.END -> needsEnd = true
+                null -> needsExact = true
+            }
+        }
     }
 
     /**

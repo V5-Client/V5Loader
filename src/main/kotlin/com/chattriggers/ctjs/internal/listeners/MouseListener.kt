@@ -5,6 +5,7 @@ import com.chattriggers.ctjs.api.triggers.CancellableEvent
 import com.chattriggers.ctjs.api.triggers.TriggerType
 import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.internal.engine.CTEvents
+import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
@@ -18,6 +19,7 @@ internal object MouseListener : Initializer {
 
     override fun init() {
         CTEvents.RENDER_TICK.register {
+            if (!JSLoader.hasTriggers(TriggerType.DRAGGED)) return@register
             if (!World.isLoaded())
                 return@register
 
@@ -51,6 +53,7 @@ internal object MouseListener : Initializer {
 
         ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
             ScreenMouseEvents.allowMouseClick(screen).register { _, click ->
+                if (!JSLoader.hasTriggers(TriggerType.GUI_MOUSE_CLICK)) return@register true
                 val event = CancellableEvent()
                 TriggerType.GUI_MOUSE_CLICK.triggerAll(click.x, click.y, click.button(), true, screen, event)
 
@@ -58,6 +61,7 @@ internal object MouseListener : Initializer {
             }
 
             ScreenMouseEvents.allowMouseRelease(screen).register { _, click ->
+                if (!JSLoader.hasTriggers(TriggerType.GUI_MOUSE_CLICK)) return@register true
                 val event = CancellableEvent()
                 TriggerType.GUI_MOUSE_CLICK.triggerAll(click.x, click.y, click.button(), false, screen, event)
 
@@ -92,6 +96,7 @@ internal object MouseListener : Initializer {
 
     @JvmStatic
     fun onRawMouseScroll(dy: Double) {
+        if (!JSLoader.hasTriggers(TriggerType.SCROLLED)) return
         CTEvents.MOUSE_SCROLLED.invoker().process(Client.getMouseX(), Client.getMouseY(), dy)
     }
 }
