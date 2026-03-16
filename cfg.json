@@ -225,7 +225,8 @@
     "GenerateOuterClass": false,
     "NativeAnnotation": false,
     "ExcludedClasses": [
-      "com/chattriggers/"
+      "com/chattriggers/",
+      "com/v5/swift/nativepath/"
     ],
     "ExcludedFieldName": []
   },
@@ -236,7 +237,8 @@
     "RandomCall": true,
     "NativeAnnotation": false,
     "ExcludedClasses": [
-      "com/chattriggers/"
+      "com/chattriggers/",
+      "com/v5/swift/nativepath/"
     ],
     "ExcludedMethodName": []
   },
@@ -277,6 +279,7 @@
     "Reversed": false,
     "Exclusion": [
       "com/chattriggers/",
+      "com/v5/swift/nativepath/",
       "com/v5/api/V5Auth",
       "com/v5/qol/DiscordRPC",
       "com/v5/keybind/KeyBindUtils",
@@ -307,6 +310,7 @@
     "Reversed": false,
     "Exclusion": [
       "com/chattriggers/",
+      "com/v5/swift/nativepath/",
       "com/v5/api/V5Auth",
       "com/v5/qol/DiscordRPC",
       "com/v5/keybind/KeyBindUtils",
@@ -337,6 +341,7 @@
     "CorruptedNameExclusion": [],
     "Exclusion": [
       "com/chattriggers/**",
+      "com/v5/swift/nativepath/**",
       "com/v5/api/V5Auth",
       "com/v5/api/V5Auth$**",
       "com/v5/qol/DiscordRPC",
