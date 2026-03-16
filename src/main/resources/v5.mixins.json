@@ -10,7 +10,6 @@
         "HorizontalConnectingBlockMixin",
         "MinecraftClientMixin",
         "MouseMixin",
-        "PlayerActionC2SPacketMixin",
         "PlayerListHudMixin",
         "RenderLayersMixin",
         "LightTextureManagerMixin",

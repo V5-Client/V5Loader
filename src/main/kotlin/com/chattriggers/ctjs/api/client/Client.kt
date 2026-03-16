@@ -19,11 +19,13 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
 import net.minecraft.client.network.ClientPlayNetworkHandler
+import net.minecraft.client.network.SequencedPacketCreator
 import net.minecraft.client.network.ServerAddress
 import net.minecraft.client.network.ServerInfo
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 import net.minecraft.network.packet.Packet
+import net.minecraft.network.listener.ServerPlayPacketListener
 import net.minecraft.text.Text
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -200,6 +202,18 @@ object Client {
     @JvmStatic
     fun sendPacket(packet: Packet<*>) {
         getConnection()?.connection?.send(packet)
+    }
+
+    @JvmStatic
+    fun sendSequencedPacket(packetFactory: (Int) -> Packet<*>) {
+        val minecraft = getMinecraft()
+        val interactionManager = minecraft.interactionManager ?: return
+        val world = minecraft.world ?: return
+
+        interactionManager.sendSequencedPacket(world, SequencedPacketCreator { sequence ->
+            @Suppress("UNCHECKED_CAST")
+            packetFactory(sequence) as Packet<ServerPlayPacketListener>
+        })
     }
 
     /**
