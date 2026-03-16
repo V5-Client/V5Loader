@@ -15,6 +15,7 @@
         "ClientChunkManagerAccessor",
         "ClientChunkMapAccessor",
         "ClientPlayerEntityMixin",
+        "ClientPlayerInteractionManagerAccessor",
         "ClientPlayerInteractionManagerMixin",
         "ClientPlayNetworkHandlerAccessor",
         "ClientWorldAccessor",

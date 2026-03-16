@@ -5,6 +5,7 @@ import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.internal.listeners.ClientListener
 import com.chattriggers.ctjs.internal.mixins.ChatScreenAccessor
+import com.chattriggers.ctjs.internal.mixins.ClientPlayerInteractionManagerAccessor
 import com.chattriggers.ctjs.internal.mixins.HandledScreenAccessor
 import com.chattriggers.ctjs.internal.mixins.KeyBindingAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
@@ -210,7 +211,7 @@ object Client {
         val interactionManager = minecraft.interactionManager ?: return
         val world = minecraft.world ?: return
 
-        interactionManager.sendSequencedPacket(world, SequencedPacketCreator { sequence ->
+        interactionManager.asMixin<ClientPlayerInteractionManagerAccessor>().invokeSendSequencedPacket(world, SequencedPacketCreator { sequence ->
             @Suppress("UNCHECKED_CAST")
             packetFactory(sequence) as Packet<ServerPlayPacketListener>
         })
