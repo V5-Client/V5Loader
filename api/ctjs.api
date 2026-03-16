@@ -2158,6 +2158,11 @@ public final class com/chattriggers/ctjs/api/triggers/CustomTriggerType : com/ch
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 	public fun triggerAll ()V
+	public fun triggerAll (Ljava/lang/Object;)V
+	public fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
 	public fun triggerAll ([Ljava/lang/Object;)V
 }
 
@@ -2170,11 +2175,21 @@ public final class com/chattriggers/ctjs/api/triggers/EventTrigger : com/chattri
 public abstract interface class com/chattriggers/ctjs/api/triggers/ITriggerType {
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun triggerAll ()V
+	public abstract fun triggerAll (Ljava/lang/Object;)V
+	public abstract fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;)V
+	public abstract fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
+	public abstract fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
+	public abstract fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
 	public abstract fun triggerAll ([Ljava/lang/Object;)V
 }
 
 public final class com/chattriggers/ctjs/api/triggers/ITriggerType$DefaultImpls {
 	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;)V
+	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;Ljava/lang/Object;)V
+	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;Ljava/lang/Object;Ljava/lang/Object;)V
+	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
+	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
+	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
 	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;[Ljava/lang/Object;)V
 }
 
@@ -2205,11 +2220,15 @@ public final class com/chattriggers/ctjs/api/triggers/SoundPlayTrigger : com/cha
 }
 
 public final class com/chattriggers/ctjs/api/triggers/StepTrigger : com/chattriggers/ctjs/api/triggers/Trigger {
+	public static final field Companion Lcom/chattriggers/ctjs/api/triggers/StepTrigger$Companion;
 	public fun <init> (Ljava/lang/Object;)V
 	public fun register ()Lcom/chattriggers/ctjs/api/triggers/Trigger;
 	public final fun setDelay (J)Lcom/chattriggers/ctjs/api/triggers/StepTrigger;
 	public final fun setFps (J)Lcom/chattriggers/ctjs/api/triggers/StepTrigger;
 	public fun trigger$ctjs ([Ljava/lang/Object;)V
+}
+
+public final class com/chattriggers/ctjs/api/triggers/StepTrigger$Companion {
 }
 
 public abstract class com/chattriggers/ctjs/api/triggers/Trigger : java/lang/Comparable {
@@ -2282,6 +2301,11 @@ public final class com/chattriggers/ctjs/api/triggers/TriggerType : java/lang/En
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public synthetic fun getName ()Ljava/lang/String;
 	public fun triggerAll ()V
+	public fun triggerAll (Ljava/lang/Object;)V
+	public fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun triggerAll (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
 	public fun triggerAll ([Ljava/lang/Object;)V
 	public static fun valueOf (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/triggers/TriggerType;
 	public static fun values ()[Lcom/chattriggers/ctjs/api/triggers/TriggerType;

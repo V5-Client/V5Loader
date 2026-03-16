@@ -12,8 +12,9 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import org.lwjgl.glfw.GLFW
 
 internal object MouseListener : Initializer {
-    private val mouseState = mutableMapOf<Int, Int>()
-    private val draggedState = mutableMapOf<Int, State>()
+    private val mouseState = IntArray(5) { Int.MIN_VALUE }
+    private val draggedState = arrayOfNulls<State>(5)
+    private val extraMouseState = mutableMapOf<Int, Int>()
 
     private class State(val x: Double, val y: Double)
 
@@ -24,18 +25,17 @@ internal object MouseListener : Initializer {
                 return@register
 
             for (button in 0..4) {
-                if (button !in draggedState)
-                    continue
+                val previousState = draggedState[button] ?: continue
 
                 val x = Client.getMouseX()
                 val y = Client.getMouseY()
 
-                if (x == draggedState[button]?.x && y == draggedState[button]?.y)
+                if (x == previousState.x && y == previousState.y)
                     continue
 
                 CTEvents.MOUSE_DRAGGED.invoker().process(
-                    x - (draggedState[button]?.x ?: 0.0),
-                    y - (draggedState[button]?.y ?: 0.0),
+                    x - previousState.x,
+                    y - previousState.y,
                     x,
                     y,
                     button,
@@ -73,24 +73,36 @@ internal object MouseListener : Initializer {
     @JvmStatic
     fun onRawMouseInput(button: Int, action: Int) {
         if (!World.isLoaded()) {
-            mouseState.clear()
-            draggedState.clear()
+            for (buttonIndex in 0..4) {
+                mouseState[buttonIndex] = Int.MIN_VALUE
+                draggedState[buttonIndex] = null
+            }
+            extraMouseState.clear()
             return
         }
 
-        if (button == -1 || action == mouseState[button])
+        if (button == -1)
+            return
+
+        if ((button in 0..4 && action == mouseState[button]) || (button !in 0..4 && action == extraMouseState[button]))
             return
 
         val x = Client.getMouseX()
         val y = Client.getMouseY()
 
         CTEvents.MOUSE_CLICKED.invoker().process(x, y, button, action == GLFW.GLFW_PRESS)
+
+        if (button !in 0..4) {
+            extraMouseState[button] = action
+            return
+        }
+
         mouseState[button] = action
 
         if (action == GLFW.GLFW_PRESS) {
             draggedState[button] = State(x, y)
         } else {
-            draggedState.remove(button)
+            draggedState[button] = null
         }
     }
 

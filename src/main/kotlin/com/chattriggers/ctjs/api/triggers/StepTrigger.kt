@@ -3,12 +3,17 @@ package com.chattriggers.ctjs.api.triggers
 import com.chattriggers.ctjs.api.client.Client
 
 class StepTrigger(method: Any) : Trigger(method, TriggerType.STEP) {
+    companion object {
+        private const val MAX_CATCH_UP_INVOCATIONS = 120L
+    }
+
     private var fps: Long = 60L
     private var delay: Long = -1
     private var fpsIntervalMs: Long = 1000L / fps
     private var delayIntervalMs: Long = -1L
     private var systemTime: Long = Client.getSystemTime()
     private var elapsed: Long = 0L
+    private val elapsedArg = arrayOfNulls<Any?>(1)
 
     /**
      * Sets the frames per second that the trigger activates.
@@ -47,18 +52,41 @@ class StepTrigger(method: Any) : Trigger(method, TriggerType.STEP) {
             val interval = fpsIntervalMs
             val targetTime = now + interval
 
-            while (systemTime < targetTime) {
-                callMethod(arrayOf(++elapsed))
+            var invocations = 0L
+            while (systemTime < targetTime && invocations < MAX_CATCH_UP_INVOCATIONS) {
+                invokeElapsed()
                 systemTime += interval
+                invocations++
+            }
+
+            if (systemTime < targetTime) {
+                val skipped = ((targetTime - systemTime) + interval - 1) / interval
+                if (skipped > 0) {
+                    elapsed += skipped
+                    systemTime += skipped * interval
+                }
             }
         } else {
             // run trigger based on set delay in seconds
             val interval = delayIntervalMs
 
-            while (now > systemTime + interval) {
-                callMethod(arrayOf(++elapsed))
+            var invocations = 0L
+            while (now > systemTime + interval && invocations < MAX_CATCH_UP_INVOCATIONS) {
+                invokeElapsed()
                 systemTime += interval
+                invocations++
+            }
+
+            if (now > systemTime + interval) {
+                val skipped = (now - systemTime - 1) / interval
+                elapsed += skipped
+                systemTime += skipped * interval
             }
         }
+    }
+
+    private fun invokeElapsed() {
+        elapsedArg[0] = ++elapsed
+        callMethod(elapsedArg)
     }
 }

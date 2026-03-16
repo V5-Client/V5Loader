@@ -27,7 +27,7 @@ abstract class Trigger protected constructor(
     fun setPriority(priority: Priority) = apply {
         this.priority = priority
 
-        // Re-register so the position in the ConcurrentSkipListSet gets updated
+        // Re-register so trigger ordering gets updated
         unregister()
         register()
     }
@@ -60,16 +60,16 @@ abstract class Trigger protected constructor(
 
     protected fun callMethod(args: Array<out Any?>) {
         if (CTJS.isLoaded)
-            JSLoader.trigger(this, method, args)
+            JSLoader.triggerVoid(this, method, args)
     }
 
     internal abstract fun trigger(args: Array<out Any?>)
 
     override fun compareTo(other: Trigger): Int {
-        val ordCmp = priority.ordinal - other.priority.ordinal
-        return if (ordCmp == 0)
-            hashCode() - other.hashCode()
-        else ordCmp
+        val ordCmp = priority.ordinal.compareTo(other.priority.ordinal)
+        return if (ordCmp == 0) {
+            hashCode().compareTo(other.hashCode())
+        } else ordCmp
     }
 
     enum class Priority {

@@ -18,8 +18,9 @@ import java.lang.invoke.MethodType
 import java.net.URI
 import java.net.URL
 import java.nio.charset.Charset
+import java.util.ArrayDeque
+import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentSkipListSet
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -34,14 +35,20 @@ import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider
 @OptIn(ExperimentalContracts::class)
 object JSLoader {
     private class TriggerBucket {
-        val ordered = ConcurrentSkipListSet<Trigger>()
+        val ordered = ArrayList<Trigger>()
         @Volatile var snapshot: Array<Trigger> = emptyArray()
         @Volatile var dirty: Boolean = false
     }
 
     private val triggers = ConcurrentHashMap<ITriggerType, TriggerBucket>()
+    private val hasTriggerCache = ConcurrentHashMap<ITriggerType, Boolean>()
     private val emptyArgs = emptyArray<Any?>()
     private val dispatchContext = ThreadLocal<Context?>()
+    private val oneArgPool = ThreadLocal.withInitial { ArrayDeque<Array<Any?>>() }
+    private val twoArgPool = ThreadLocal.withInitial { ArrayDeque<Array<Any?>>() }
+    private val threeArgPool = ThreadLocal.withInitial { ArrayDeque<Array<Any?>>() }
+    private val fourArgPool = ThreadLocal.withInitial { ArrayDeque<Array<Any?>>() }
+    private val fiveArgPool = ThreadLocal.withInitial { ArrayDeque<Array<Any?>>() }
 
     private lateinit var moduleScope: Scriptable
     private lateinit var evalScope: Scriptable
@@ -462,6 +469,66 @@ $exportStatements
         execSnapshot(snapshot, args)
     }
 
+    fun exec(type: ITriggerType, arg0: Any?) {
+        val snapshot = getSnapshot(type) ?: return
+        if (snapshot.isEmpty()) return
+
+        withArgs(oneArgPool, 1) { args ->
+            args[0] = arg0
+            execSnapshot(snapshot, args)
+        }
+    }
+
+    fun exec(type: ITriggerType, arg0: Any?, arg1: Any?) {
+        val snapshot = getSnapshot(type) ?: return
+        if (snapshot.isEmpty()) return
+
+        withArgs(twoArgPool, 2) { args ->
+            args[0] = arg0
+            args[1] = arg1
+            execSnapshot(snapshot, args)
+        }
+    }
+
+    fun exec(type: ITriggerType, arg0: Any?, arg1: Any?, arg2: Any?) {
+        val snapshot = getSnapshot(type) ?: return
+        if (snapshot.isEmpty()) return
+
+        withArgs(threeArgPool, 3) { args ->
+            args[0] = arg0
+            args[1] = arg1
+            args[2] = arg2
+            execSnapshot(snapshot, args)
+        }
+    }
+
+    fun exec(type: ITriggerType, arg0: Any?, arg1: Any?, arg2: Any?, arg3: Any?) {
+        val snapshot = getSnapshot(type) ?: return
+        if (snapshot.isEmpty()) return
+
+        withArgs(fourArgPool, 4) { args ->
+            args[0] = arg0
+            args[1] = arg1
+            args[2] = arg2
+            args[3] = arg3
+            execSnapshot(snapshot, args)
+        }
+    }
+
+    fun exec(type: ITriggerType, arg0: Any?, arg1: Any?, arg2: Any?, arg3: Any?, arg4: Any?) {
+        val snapshot = getSnapshot(type) ?: return
+        if (snapshot.isEmpty()) return
+
+        withArgs(fiveArgPool, 5) { args ->
+            args[0] = arg0
+            args[1] = arg1
+            args[2] = arg2
+            args[3] = arg3
+            args[4] = arg4
+            execSnapshot(snapshot, args)
+        }
+    }
+
     fun execNoArgs(type: ITriggerType) {
         val snapshot = getSnapshot(type) ?: return
         if (snapshot.isEmpty()) return
@@ -470,33 +537,42 @@ $exportStatements
     }
 
     fun hasTriggers(type: ITriggerType): Boolean {
-        val bucket = triggers[type] ?: return false
-        if (!bucket.dirty) return bucket.snapshot.isNotEmpty()
-        if (bucket.ordered.isEmpty()) return false
-        return getSnapshot(type)?.isNotEmpty() == true
+        return hasTriggerCache[type] == true
     }
 
     fun addTrigger(trigger: Trigger) {
         val bucket = triggers.getOrPut(trigger.type) { TriggerBucket() }
-        if (bucket.ordered.add(trigger)) {
+        synchronized(bucket) {
+            val existing = Collections.binarySearch(bucket.ordered, trigger)
+            if (existing >= 0) return
+            val insertAt = -existing - 1
+            bucket.ordered.add(insertAt, trigger)
             bucket.dirty = true
+            hasTriggerCache[trigger.type] = true
         }
     }
 
     fun clearTriggers() {
         triggers.clear()
+        hasTriggerCache.clear()
     }
 
     fun removeTrigger(trigger: Trigger) {
         val bucket = triggers[trigger.type] ?: return
-        if (!bucket.ordered.remove(trigger)) return
+        synchronized(bucket) {
+            val index = Collections.binarySearch(bucket.ordered, trigger)
+            if (index < 0) return
+            bucket.ordered.removeAt(index)
 
-        if (bucket.ordered.isEmpty()) {
-            bucket.snapshot = emptyArray()
-            bucket.dirty = false
-            triggers.remove(trigger.type, bucket)
-        } else {
-            bucket.dirty = true
+            if (bucket.ordered.isEmpty()) {
+                bucket.snapshot = emptyArray()
+                bucket.dirty = false
+                triggers.remove(trigger.type, bucket)
+                hasTriggerCache.remove(trigger.type)
+            } else {
+                bucket.dirty = true
+                hasTriggerCache[trigger.type] = true
+            }
         }
     }
 
@@ -540,9 +616,20 @@ $exportStatements
     }
 
     fun invoke(method: Callable, args: Array<out Any?>, thisObj: Scriptable = moduleScope): Any? {
-        return wrapInContext(dispatchContext.get()) {
-            Context.jsToJava(method.call(it, moduleScope, thisObj, args), Any::class.java)
+        val cx = dispatchContext.get()
+        if (cx != null) return invokeInContext(cx, method, args, thisObj)
+
+        return wrapInContext { invokeInContext(it, method, args, thisObj) }
+    }
+
+    fun invokeVoid(method: Callable, args: Array<out Any?>, thisObj: Scriptable = moduleScope) {
+        val cx = dispatchContext.get()
+        if (cx != null) {
+            invokeVoidInContext(cx, method, args, thisObj)
+            return
         }
+
+        wrapInContext { invokeVoidInContext(it, method, args, thisObj) }
     }
 
     fun trigger(trigger: Trigger, method: Any, args: Array<out Any?>) {
@@ -551,6 +638,18 @@ $exportStatements
                 "Need to pass actual function to the register function, not the name!"
             }
             invoke(method, args)
+        } catch (e: Throwable) {
+            e.printTraceToConsole()
+            removeTrigger(trigger)
+        }
+    }
+
+    fun triggerVoid(trigger: Trigger, method: Any, args: Array<out Any?>) {
+        try {
+            require(method is Callable) {
+                "Need to pass actual function to the register function, not the name!"
+            }
+            invokeVoid(method, args)
         } catch (e: Throwable) {
             e.printTraceToConsole()
             removeTrigger(trigger)
@@ -582,8 +681,47 @@ $exportStatements
             if (bucket.dirty) {
                 bucket.snapshot = bucket.ordered.toTypedArray()
                 bucket.dirty = false
+                if (bucket.snapshot.isEmpty()) hasTriggerCache.remove(type)
+                else hasTriggerCache[type] = true
             }
             return bucket.snapshot
+        }
+    }
+
+    private fun invokeInContext(
+            context: Context,
+            method: Callable,
+            args: Array<out Any?>,
+            thisObj: Scriptable = moduleScope
+    ): Any? {
+        return Context.jsToJava(method.call(context, moduleScope, thisObj, args), Any::class.java)
+    }
+
+    private fun invokeVoidInContext(
+            context: Context,
+            method: Callable,
+            args: Array<out Any?>,
+            thisObj: Scriptable = moduleScope
+    ) {
+        method.call(context, moduleScope, thisObj, args)
+    }
+
+    private inline fun withArgs(
+            poolRef: ThreadLocal<ArrayDeque<Array<Any?>>>,
+            size: Int,
+            block: (Array<Any?>) -> Unit
+    ) {
+        val pool = poolRef.get()
+        val args = if (pool.isEmpty()) arrayOfNulls<Any?>(size) else pool.removeLast()
+        try {
+            block(args)
+        } finally {
+            var i = 0
+            while (i < size) {
+                args[i] = null
+                i++
+            }
+            pool.addLast(args)
         }
     }
 

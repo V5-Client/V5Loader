@@ -1,17 +1,18 @@
 package com.chattriggers.ctjs.engine
 
 import com.chattriggers.ctjs.api.triggers.*
+import java.util.Locale
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object Register {
     private val methodMap = Register::class.java.methods.filter {
         it.name.startsWith("register") && it.name.length > "register".length
     }.associateBy {
-        it.name.lowercase().drop("register".length)
+        it.name.lowercase(Locale.ROOT).drop("register".length)
     }
-    private val customTriggers = mutableSetOf<CustomTriggerType>()
+    private val customTriggerNames = mutableSetOf<String>()
 
-    internal fun clearCustomTriggers() = customTriggers.clear()
+    internal fun clearCustomTriggers() = customTriggerNames.clear()
 
     /**
      * Helper method register a trigger.
@@ -26,22 +27,23 @@ object Register {
      */
     @JvmStatic
     fun register(triggerType: String, method: Any): Trigger {
-        val type = triggerType.lowercase()
+        val type = triggerType.lowercase(Locale.ROOT)
 
         methodMap[type]?.let { return it.invoke(this, method) as Trigger }
 
-        val customType = CustomTriggerType(type)
-        if (customType in customTriggers)
-            return RegularTrigger(method, customType)
+        if (type in customTriggerNames) {
+            return RegularTrigger(method, CustomTriggerType(type))
+        }
 
         throw NoSuchMethodException("No trigger type named '$triggerType'")
     }
 
     @JvmStatic
     fun createCustomTrigger(name: String): Any {
-        val customType = CustomTriggerType(name.lowercase())
-        require(customType !in customTriggers) { "Cannot register duplicate custom trigger \"$name\"" }
-        customTriggers.add(customType)
+        val normalized = name.lowercase(Locale.ROOT)
+        require(normalized !in customTriggerNames) { "Cannot register duplicate custom trigger \"$name\"" }
+        customTriggerNames.add(normalized)
+        val customType = CustomTriggerType(normalized)
 
         return object {
             fun trigger(vararg args: Any?) = customType.triggerAll(*args)

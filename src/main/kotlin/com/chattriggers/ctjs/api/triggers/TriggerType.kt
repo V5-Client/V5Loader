@@ -9,6 +9,27 @@ sealed interface ITriggerType {
         JSLoader.execNoArgs(this)
     }
 
+    // THESE ARE HERE FOR BACKWARDS COMPATABILITY. we should probably look to remove deprecated stuff right?
+    fun triggerAll(arg0: Any?) {
+        JSLoader.exec(this, arg0)
+    }
+
+    fun triggerAll(arg0: Any?, arg1: Any?) {
+        JSLoader.exec(this, arg0, arg1)
+    }
+
+    fun triggerAll(arg0: Any?, arg1: Any?, arg2: Any?) {
+        JSLoader.exec(this, arg0, arg1, arg2)
+    }
+
+    fun triggerAll(arg0: Any?, arg1: Any?, arg2: Any?, arg3: Any?) {
+        JSLoader.exec(this, arg0, arg1, arg2, arg3)
+    }
+
+    fun triggerAll(arg0: Any?, arg1: Any?, arg2: Any?, arg3: Any?, arg4: Any?) {
+        JSLoader.exec(this, arg0, arg1, arg2, arg3, arg4)
+    }
+
     fun triggerAll(vararg args: Any?) {
         if (args.isEmpty()) {
             JSLoader.execNoArgs(this)

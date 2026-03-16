@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.api.triggers
 
 import com.chattriggers.ctjs.api.message.TextComponent
+import java.util.HashMap
 import org.mozilla.javascript.regexp.NativeRegExp
 
 class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
@@ -225,24 +226,28 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
      */
     private fun matchesChatCriteria(chat: String): MutableList<Any>? {
         val regex = criteriaPattern
-        var fullMatch: MatchResult? = null
-        val first = regex.find(chat)
+        val match =
+            if (needsExact) {
+                regex.matchEntire(chat) ?: return null
+            } else {
+                regex.find(chat) ?: return null
+            }
 
-        if (needsExact) {
-            fullMatch = regex.matchEntire(chat)
-            if (fullMatch == null) return null
-        }
+        if (needsStart && match.range.first != 0) return null
+        if (needsEnd && match.range.last != chat.length) return null
 
-        if (needsContains && first == null) return null
-        if (needsStart && (first == null || first.range.first != 0)) return null
-        if (needsEnd && (first?.range?.last != chat.length)) return null
-
-        if (!needsExact && !needsContains && !needsStart && !needsEnd && first == null) {
+        if (!needsExact && !needsContains && !needsStart && !needsEnd) {
             return null
         }
 
-        val groups = (fullMatch ?: first)?.groupValues ?: return mutableListOf()
-        return groups.drop(1).toMutableList()
+        val groups = match.groupValues
+        if (groups.size <= 1) return mutableListOf()
+
+        val extracted = ArrayList<Any>(groups.size - 1)
+        for (i in 1 until groups.size) {
+            extracted.add(groups[i])
+        }
+        return extracted
     }
 
     private fun rebuildParameterMode() {
@@ -276,10 +281,14 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
         var names: List<String> = names.asList()
 
         companion object {
-            fun getParameterByName(name: String) =
-                entries.find { param ->
-                    param.names.any { it.lowercase() == name }
+            private val byName = HashMap<String, Parameter>().apply {
+                Parameter.entries.forEach { parameter ->
+                    parameter.names.forEach { this[it.lowercase()] = parameter }
                 }
+            }
+
+            fun getParameterByName(name: String) =
+                byName[name.lowercase()]
         }
     }
 
