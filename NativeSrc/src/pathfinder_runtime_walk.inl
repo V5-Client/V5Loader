@@ -70,6 +70,7 @@ inline bool Runtime::moveDescend(const Int3& current, const int dx, const int dz
 
   if (!isPassable(destX, current.y + 1, destZ)) return false;
   if (!isPassable(destX, current.y, destZ)) return false;
+  if (!isPassable(destX, current.y - 1, destZ)) return false;
 
   constexpr int maxFallHeight = 20;
 
