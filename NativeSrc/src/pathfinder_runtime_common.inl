@@ -79,7 +79,7 @@ inline bool Runtime::isSolid(const int x, const int y, const int z) const {
 
 inline bool Runtime::isPassable(const int x, const int y, const int z) const {
   const uint16_t flags = flagsAt(x, y, z);
-  return hasFlag(flags, VF_PASSABLE) || !hasFlag(flags, VF_SOLID);
+  return hasFlag(flags, VF_PASSABLE) || hasFlag(flags, VF_CARPET_LIKE);
 }
 
 inline bool Runtime::isPassableForFlying(const int x, const int y, const int z) const {

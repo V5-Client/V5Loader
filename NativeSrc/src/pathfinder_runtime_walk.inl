@@ -20,10 +20,10 @@ inline bool Runtime::moveDiagonal(const Int3& current, const int dx, const int d
 
   if (!isSafe(destX, current.y, destZ)) return false;
 
-  if (isSolid(destX, current.y, current.z)) return false;
-  if (isSolid(current.x, current.y, destZ)) return false;
-  if (isSolid(destX, current.y + 1, current.z)) return false;
-  if (isSolid(current.x, current.y + 1, destZ)) return false;
+  if (!isPassable(destX, current.y, current.z)) return false;
+  if (!isPassable(current.x, current.y, destZ)) return false;
+  if (!isPassable(destX, current.y + 1, current.z)) return false;
+  if (!isPassable(current.x, current.y + 1, destZ)) return false;
 
   out.pos = {destX, current.y, destZ};
   out.cost = ActionCosts::SPRINT_DIAGONAL_TIME +
