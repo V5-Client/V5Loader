@@ -54,7 +54,7 @@ uint16_t WorldSnapshot::getFlags(const int x, const int y, const int z) const {
   const int chunkZ = z >> 4;
   const auto it = chunks.find(chunkKey(chunkX, chunkZ));
   if (it == chunks.end()) {
-    return VF_AIR_DEFAULT;
+    return VF_SOLID | VF_BLOCKING_WALL;
   }
 
   return it->second.getFlags(x & 15, y, z & 15);
