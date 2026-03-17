@@ -28,7 +28,7 @@ jobs:
         shell: pwsh
         run: |
           $outputName = "V5PathJNI-windows-x86_64"
-          cmake -S NativeSrc -B NativeSrc/build -A x64 -DCMAKE_BUILD_TYPE=Release -DV5PATHJNI_OUTPUT_NAME=$outputName
+          cmake -S NativeSrc -B NativeSrc/build -A x64 -DCMAKE_BUILD_TYPE=Release "-DV5PATHJNI_OUTPUT_NAME=$outputName"
           cmake --build NativeSrc/build --config Release --parallel
 
       - name: Copy native library
@@ -41,7 +41,7 @@ jobs:
             $sourcePath = "NativeSrc/build/$outputName.dll"
           }
           if (Test-Path $sourcePath) {
-            Copy-Item $sourcePath src/main/resources/assets/v5/$outputName.dll -Force
+            Copy-Item $sourcePath "src/main/resources/assets/v5/$outputName.dll" -Force
             Copy-Item $sourcePath src/main/resources/assets/v5/V5PathJNI.dll -Force
           } else {
             throw "Windows native pathfinder library not found: $sourcePath"
