@@ -44,19 +44,20 @@ import kotlin.io.path.Path
  */
 object ConsoleHostProcess : Initializer {
     private var PORT = 9002
-    private var running = true
+    @Volatile
+    private var running = false
+    @Volatile
+    private var started = false
     private lateinit var socketOut: PrintWriter
-    private lateinit var process: Process
+    private var process: Process? = null
+    private var serverSocket: ServerSocket? = null
+    private val stateLock = Any()
 
     // We will buffer all message that are attempted to be sent until we connect to a
     // client socket. This allows us to handle early events (e.g. errors that happen during
     // dynamic mixin application)
     private var connected = false
     private val pendingMessages = mutableListOf<H2CMessage>()
-
-    init {
-        thread { hostMain() }
-    }
 
     override fun init() {
         val keybind = KeyBindingHelper.registerKeyBinding(
@@ -99,7 +100,9 @@ object ConsoleHostProcess : Initializer {
             .start()
 
         while (running) {
-            ServerSocket(PORT).accept().use { socket ->
+            val server = ServerSocket(PORT)
+            serverSocket = server
+            server.accept().use { socket ->
                 socketOut = PrintWriter(socket.outputStream, true, Charsets.UTF_8)
                 val socketIn = BufferedReader(InputStreamReader(socket.inputStream, Charsets.UTF_8))
                 connected = true
@@ -144,8 +147,12 @@ object ConsoleHostProcess : Initializer {
                 }
             }
 
+            serverSocket = null
             connected = false
         }
+
+        process?.destroy()
+        process = null
     }
 
     fun clear() = trySendMessage(ClearConsoleMessage)
@@ -169,20 +176,48 @@ object ConsoleHostProcess : Initializer {
     fun show() = trySendMessage(OpenMessage)
 
     fun close() {
-        trySendMessage(TerminateMessage)
-        process.destroy()
+        synchronized(stateLock) {
+            if (!started)
+                return
+
+            running = false
+        }
+
+        if (connected)
+            trySendMessage(TerminateMessage, startIfNeeded = false)
+
+        serverSocket?.close()
+        process?.destroy()
+        process = null
     }
 
     fun onConsoleSettingsChanged(settings: Config.ConsoleSettings) =
         trySendMessage(ConfigUpdateMessage.constructFromConfig(settings))
 
-    private fun trySendMessage(message: H2CMessage) {
+    private fun trySendMessage(message: H2CMessage, startIfNeeded: Boolean = true) {
+        if (startIfNeeded)
+            ensureStarted()
+
         if (connected) {
             synchronized(socketOut) {
                 socketOut.println(Json.encodeToString(message))
             }
         } else {
             pendingMessages.add(message)
+        }
+    }
+
+    private fun ensureStarted() {
+        if (started)
+            return
+
+        synchronized(stateLock) {
+            if (started)
+                return
+
+            running = true
+            started = true
+            thread(isDaemon = true, name = "CTJS Console Host") { hostMain() }
         }
     }
 }
