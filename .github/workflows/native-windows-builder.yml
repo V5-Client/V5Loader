@@ -27,17 +27,24 @@ jobs:
       - name: Configure and build
         shell: pwsh
         run: |
-          cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release
+          $outputName = "V5PathJNI-windows-x86_64"
+          cmake -S NativeSrc -B NativeSrc/build -A x64 -DCMAKE_BUILD_TYPE=Release -DV5PATHJNI_OUTPUT_NAME=$outputName
           cmake --build NativeSrc/build --config Release --parallel
 
       - name: Copy native library
         shell: pwsh
         run: |
+          $outputName = "V5PathJNI-windows-x86_64"
           New-Item -ItemType Directory -Force -Path src/main/resources/assets/v5 | Out-Null
-          if (Test-Path "NativeSrc/build/Release/V5PathJNI.dll") {
-            Copy-Item NativeSrc/build/Release/V5PathJNI.dll src/main/resources/assets/v5/V5PathJNI.dll -Force
+          $sourcePath = "NativeSrc/build/Release/$outputName.dll"
+          if (-not (Test-Path $sourcePath)) {
+            $sourcePath = "NativeSrc/build/$outputName.dll"
+          }
+          if (Test-Path $sourcePath) {
+            Copy-Item $sourcePath src/main/resources/assets/v5/$outputName.dll -Force
+            Copy-Item $sourcePath src/main/resources/assets/v5/V5PathJNI.dll -Force
           } else {
-            Copy-Item NativeSrc/build/V5PathJNI.dll src/main/resources/assets/v5/V5PathJNI.dll -Force
+            throw "Windows native pathfinder library not found: $sourcePath"
           }
 
       - name: Commit Windows JNI
@@ -50,7 +57,7 @@ jobs:
           git config user.name "$USER_NAME"
           git config user.email "$USER_EMAIL"
 
-          git add src/main/resources/assets/v5/V5PathJNI.dll
+          git add src/main/resources/assets/v5/V5PathJNI-windows-x86_64.dll src/main/resources/assets/v5/V5PathJNI.dll
 
           if ! git diff --cached --quiet; then
             git log -1 --pretty=%B "${{ github.sha }}" > .git/JNI_COMMIT_MSG

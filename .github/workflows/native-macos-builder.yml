@@ -26,13 +26,19 @@ jobs:
 
       - name: Build native library
         run: |
-          cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release
+          set -euo pipefail
+          output_name="V5PathJNI-macos-universal"
+          cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DV5PATHJNI_OUTPUT_NAME="$output_name"
           cmake --build NativeSrc/build --config Release -j
+          file "NativeSrc/build/${output_name}.dylib"
+          lipo -info "NativeSrc/build/${output_name}.dylib"
 
       - name: Copy native library
         run: |
+          output_name="V5PathJNI-macos-universal"
           mkdir -p src/main/resources/assets/v5
-          cp NativeSrc/build/V5PathJNI.dylib src/main/resources/assets/v5/V5PathJNI.dylib
+          cp "NativeSrc/build/${output_name}.dylib" "src/main/resources/assets/v5/${output_name}.dylib"
+          cp "NativeSrc/build/${output_name}.dylib" "src/main/resources/assets/v5/V5PathJNI.dylib"
 
       - name: Commit macOS JNI
         shell: bash
@@ -44,7 +50,7 @@ jobs:
           git config user.name "$USER_NAME"
           git config user.email "$USER_EMAIL"
 
-          git add src/main/resources/assets/v5/V5PathJNI.dylib
+          git add src/main/resources/assets/v5/V5PathJNI-macos-universal.dylib src/main/resources/assets/v5/V5PathJNI.dylib
 
           if ! git diff --cached --quiet; then
             git log -1 --pretty=%B "${{ github.sha }}" > .git/JNI_COMMIT_MSG
