@@ -23,3 +23,8 @@ Output libraries are:
 For bundling into V5Loader, copy the built library into:
 - `src/main/resources/assets/v5/`
 (for prod release [commit], this is automatically done by github action)
+
+For modifying pf, I just use this command to automatically compile, then move, then kotlin build (linux):
+```bash
+cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release && cmake --build NativeSrc/build --config Release -j && cp ./NativeSrc/build/V5PathJNI.so ./src/main/resources/assets/v5/V5PathJNI.so && ./gradlew apiDump && ./gradlew build
+```

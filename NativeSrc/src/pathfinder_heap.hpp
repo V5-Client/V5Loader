@@ -15,6 +15,14 @@ class Heap {
     return size_ == 0;
   }
 
+  void reserve(const int capacity) {
+    if (capacity <= 0) return;
+    const size_t needed = static_cast<size_t>(capacity + 1);
+    if (items_.size() < needed) {
+      items_.resize(needed, -1);
+    }
+  }
+
   void add(const int nodeIdx) {
     if (static_cast<int>(items_.size()) <= size_ + 1) {
       items_.resize(items_.size() * 2 + 1, -1);

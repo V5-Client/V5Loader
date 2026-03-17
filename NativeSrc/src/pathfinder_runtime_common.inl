@@ -11,6 +11,24 @@ inline Runtime::Runtime(const WorldSnapshot& world, const SearchParams& params)
     params_(params),
     walkStartX_(params.starts.empty() ? 0 : params.starts.front().x),
     walkStartZ_(params.starts.empty() ? 0 : params.starts.front().z) {
+  const int reserveTarget = std::clamp(params_.maxIterations / 2, 4096, 262144);
+  cacheReserve_ = static_cast<size_t>(reserveTarget);
+  flagsCacheEnabled_ = params_.isFly;
+  avoidPenaltyCacheEnabled_ = params_.avoidZones.size() >= 3;
+
+  if (flagsCacheEnabled_) {
+    flagsCache_.reserve(cacheReserve_);
+  }
+  safeCache_.reserve(cacheReserve_);
+  flyClearCache_.reserve(cacheReserve_);
+  penaltyCache_.reserve(cacheReserve_);
+  if (avoidPenaltyCacheEnabled_) {
+    avoidPenaltyCache_.reserve(cacheReserve_);
+  }
+
+  flyMinY_ = world_.minY;
+  flyMaxY_ = world_.maxY - 2;
+
   if (params_.isFly && !params_.starts.empty() && !params_.goals.empty()) {
     startFly_ = params_.starts.front();
     goalFly_ = params_.goals.front();
@@ -34,6 +52,31 @@ inline double Runtime::heuristic(const int x, const int y, const int z) const {
 }
 
 inline double Runtime::transientAvoidPenalty(const int x, const int y, const int z) const {
+  if (params_.avoidZones.empty()) return 0.0;
+
+  if (!avoidPenaltyCacheEnabled_) {
+    double penalty = 0.0;
+    for (const auto& zone : params_.avoidZones) {
+      if (std::abs(y - zone.y) > zone.maxYDiff) continue;
+
+      const int dx = x - zone.x;
+      const int dz = z - zone.z;
+      const long long distSq = static_cast<long long>(dx) * dx + static_cast<long long>(dz) * dz;
+      if (distSq > zone.radiusSq) continue;
+
+      const double normalized = zone.radiusSq <= 1 ? 0.0 : static_cast<double>(distSq) / static_cast<double>(zone.radiusSq);
+      const double falloff = std::max(0.2, 1.0 - normalized);
+      penalty += zone.penalty * falloff;
+    }
+    return penalty;
+  }
+
+  const uint64_t key = coordKey(x, y, z);
+  const auto cached = avoidPenaltyCache_.find(key);
+  if (cached != avoidPenaltyCache_.end()) {
+    return cached->second;
+  }
+
   double penalty = 0.0;
   for (const auto& zone : params_.avoidZones) {
     if (std::abs(y - zone.y) > zone.maxYDiff) continue;
@@ -47,7 +90,12 @@ inline double Runtime::transientAvoidPenalty(const int x, const int y, const int
     const double falloff = std::max(0.2, 1.0 - normalized);
     penalty += zone.penalty * falloff;
   }
+  avoidPenaltyCache_.emplace(key, penalty);
   return penalty;
+}
+
+inline double Runtime::flyHorizontalProgress(const int x, const int z) const {
+  return calculateProgress(x, z);
 }
 
 inline bool Runtime::walkMove(const Int3& current, const Int3& delta, MoveOut& out) {
@@ -66,11 +114,27 @@ inline bool Runtime::walkMove(const Int3& current, const Int3& delta, MoveOut& o
 }
 
 inline bool Runtime::flyMove(const Int3& current, const Int3& delta, MoveOut& out) {
-  return moveFly(current, delta.x, delta.y, delta.z, out);
+  return moveFly(current, delta.x, delta.y, delta.z, calculateProgress(current.x, current.z), out);
+}
+
+inline bool Runtime::flyMove(const Int3& current, const Int3& delta, const double progress, MoveOut& out) {
+  return moveFly(current, delta.x, delta.y, delta.z, progress, out);
 }
 
 inline uint16_t Runtime::flagsAt(const int x, const int y, const int z) const {
-  return world_.getFlags(x, y, z);
+  if (!flagsCacheEnabled_) {
+    return world_.getFlags(x, y, z);
+  }
+
+  const uint64_t key = coordKey(x, y, z);
+  const auto it = flagsCache_.find(key);
+  if (it != flagsCache_.end()) {
+    return it->second;
+  }
+
+  const uint16_t flags = world_.getFlags(x, y, z);
+  flagsCache_.emplace(key, flags);
+  return flags;
 }
 
 inline bool Runtime::isSolid(const int x, const int y, const int z) const {
@@ -263,9 +327,8 @@ inline int Runtime::scanForWall(const int x, const int y, const int z, const int
   return MAX_DIST;
 }
 
-inline int Runtime::edgeDistance(const int x, const int y, const int z) {
+inline int Runtime::edgeDistanceWithMask(const int x, const int y, const int z, const int mask) {
   int dist = MAX_DIST;
-  const int mask = directionMask(x, y, z);
   for (int dir = 0; dir < 8; dir++) {
     if ((mask & (1 << dir)) == 0) continue;
     const int d = scanForEdge(x, y, z, DX[static_cast<size_t>(dir)], DZ[static_cast<size_t>(dir)]);
@@ -275,9 +338,8 @@ inline int Runtime::edgeDistance(const int x, const int y, const int z) {
   return dist;
 }
 
-inline int Runtime::wallDistance(const int x, const int y, const int z) {
+inline int Runtime::wallDistanceWithMask(const int x, const int y, const int z, const int mask) {
   int dist = MAX_DIST;
-  const int mask = directionMask(x, y, z);
   for (int dir = 0; dir < 8; dir++) {
     if ((mask & (1 << dir)) == 0) continue;
     const int d = scanForWall(x, y, z, DX[static_cast<size_t>(dir)], DZ[static_cast<size_t>(dir)]);
@@ -285,6 +347,14 @@ inline int Runtime::wallDistance(const int x, const int y, const int z) {
     if (dist == 0) break;
   }
   return dist;
+}
+
+inline int Runtime::edgeDistance(const int x, const int y, const int z) {
+  return edgeDistanceWithMask(x, y, z, directionMask(x, y, z));
+}
+
+inline int Runtime::wallDistance(const int x, const int y, const int z) {
+  return wallDistanceWithMask(x, y, z, directionMask(x, y, z));
 }
 
 inline double Runtime::combinedPenalty(const int edgeDist, const int wallDist) const {
@@ -300,8 +370,9 @@ inline double Runtime::pathPenalty(const int x, const int y, const int z) {
     return cached->second;
   }
 
-  const int edgeDist = edgeDistance(x, y, z);
-  const int wallDist = wallDistance(x, y, z);
+  const int mask = directionMask(x, y, z);
+  const int edgeDist = edgeDistanceWithMask(x, y, z, mask);
+  const int wallDist = wallDistanceWithMask(x, y, z, mask);
   const double value = combinedPenalty(edgeDist, wallDist);
   penaltyCache_[key] = value;
   return value;

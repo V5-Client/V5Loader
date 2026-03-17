@@ -51,20 +51,18 @@ inline double Runtime::calculateProgress(const int x, const int z) const {
   return totalSq > 0 ? static_cast<double>(distFromStartSq) / static_cast<double>(totalSq) : 0.5;
 }
 
-inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, const int dz, MoveOut& out) {
+inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, const int dz, const double progress, MoveOut& out) {
   const int destX = current.x + dx;
   const int destY = current.y + dy;
   const int destZ = current.z + dz;
 
-  const int flyMinY = world_.minY;
-  const int flyMaxY = world_.maxY - 2;
-  if (destY < flyMinY || destY > flyMaxY) return false;
+  if (destY < flyMinY_ || destY > flyMaxY_) return false;
 
   if (!isFlyColumnClear(destX, destY, destZ)) return false;
 
   if (dy > 0) {
     const int aboveY = current.y + 1;
-    if (aboveY < flyMinY || aboveY > flyMaxY) return false;
+    if (aboveY < flyMinY_ || aboveY > flyMaxY_) return false;
     if (!isFlyColumnClear(current.x, aboveY, current.z)) return false;
   }
 
@@ -82,15 +80,6 @@ inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, co
   const int axisCount = (dx != 0 ? 1 : 0) + (dy != 0 ? 1 : 0) + (dz != 0 ? 1 : 0);
   static constexpr std::array<double, 4> baseDistances = {0.0, 1.0, 1.4142135623730951, 1.7320508075688772};
   double cost = baseDistances[static_cast<size_t>(axisCount)] * ActionCosts::FLY_ONE_BLOCK_TIME;
-
-  const long long dxStart = static_cast<long long>(current.x - startFly_.x);
-  const long long dzStart = static_cast<long long>(current.z - startFly_.z);
-  const long long dxGoal = static_cast<long long>(current.x - goalFly_.x);
-  const long long dzGoal = static_cast<long long>(current.z - goalFly_.z);
-  const long long distFromStartSq = dxStart * dxStart + dzStart * dzStart;
-  const long long distToGoalSq = dxGoal * dxGoal + dzGoal * dzGoal;
-  const long long totalSq = distFromStartSq + distToGoalSq;
-  const double progress = totalSq > 0 ? static_cast<double>(distFromStartSq) / static_cast<double>(totalSq) : 0.5;
 
   if (shouldRejectConfined(destX, destY, destZ, progress)) return false;
 

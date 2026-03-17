@@ -7,6 +7,7 @@
 #include "pathfinder_runtime.hpp"
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <limits>
@@ -35,6 +36,9 @@ std::optional<SearchResult> findPath(
 
   detail::Runtime runtime(world, params);
 
+  const int reserveTarget = std::clamp(params.maxIterations / 2, 16384, 262144);
+  const size_t reserveSize = static_cast<size_t>(reserveTarget);
+
   std::vector<int> nodeX;
   std::vector<int> nodeY;
   std::vector<int> nodeZ;
@@ -45,18 +49,18 @@ std::optional<SearchResult> findPath(
   std::vector<int> nodeStartIndex;
   std::vector<int> nodeHeapPos;
 
-  nodeX.reserve(16384);
-  nodeY.reserve(16384);
-  nodeZ.reserve(16384);
-  nodeG.reserve(16384);
-  nodeH.reserve(16384);
-  nodeF.reserve(16384);
-  nodeParent.reserve(16384);
-  nodeStartIndex.reserve(16384);
-  nodeHeapPos.reserve(16384);
+  nodeX.reserve(reserveSize);
+  nodeY.reserve(reserveSize);
+  nodeZ.reserve(reserveSize);
+  nodeG.reserve(reserveSize);
+  nodeH.reserve(reserveSize);
+  nodeF.reserve(reserveSize);
+  nodeParent.reserve(reserveSize);
+  nodeStartIndex.reserve(reserveSize);
+  nodeHeapPos.reserve(reserveSize);
 
   std::unordered_map<uint64_t, int> coordToNode;
-  coordToNode.reserve(16384);
+  coordToNode.reserve(reserveSize);
 
   auto createNode = [&](const int x, const int y, const int z) {
     const int idx = static_cast<int>(nodeX.size());
@@ -74,10 +78,21 @@ std::optional<SearchResult> findPath(
   };
 
   detail::Heap heap(nodeF, nodeHeapPos);
+  heap.reserve(reserveTarget);
 
   const double weight = (std::isfinite(params.heuristicWeight) && params.heuristicWeight > 0.0)
     ? params.heuristicWeight
     : 1.0;
+  const bool isFly = params.isFly;
+
+  std::array<Int3, 16> walkMovesOrdered = detail::WALK_MOVES;
+  const int walkOffset = params.moveOrderOffset >= 0 ? (params.moveOrderOffset % static_cast<int>(walkMovesOrdered.size())) : 0;
+  if (walkOffset != 0) {
+    for (int i = 0; i < static_cast<int>(walkMovesOrdered.size()); i++) {
+      walkMovesOrdered[static_cast<size_t>(i)] =
+        detail::WALK_MOVES[static_cast<size_t>((i + walkOffset) % static_cast<int>(walkMovesOrdered.size()))];
+    }
+  }
 
   for (size_t i = 0; i < params.starts.size(); i++) {
     const auto& start = params.starts[i];
@@ -150,10 +165,13 @@ std::optional<SearchResult> findPath(
 
     const double currCost = nodeG[static_cast<size_t>(currIdx)];
 
-    if (params.isFly) {
+    const int currStartIdx = nodeStartIndex[static_cast<size_t>(currIdx)];
+
+    if (isFly) {
+      const double currFlyProgress = runtime.flyHorizontalProgress(curr.x, curr.z);
       for (const auto& move : detail::FLY_MOVES) {
         detail::MoveOut out;
-        if (!runtime.flyMove(curr, move, out)) continue;
+        if (!runtime.flyMove(curr, move, currFlyProgress, out)) continue;
         if (out.cost >= ActionCosts::INF_COST) continue;
 
         const double newCost = currCost + out.cost + runtime.transientAvoidPenalty(out.pos.x, out.pos.y, out.pos.z);
@@ -164,7 +182,7 @@ std::optional<SearchResult> findPath(
         if (it == coordToNode.end()) {
           nIdx = createNode(out.pos.x, out.pos.y, out.pos.z);
           nodeParent[static_cast<size_t>(nIdx)] = currIdx;
-          nodeStartIndex[static_cast<size_t>(nIdx)] = nodeStartIndex[static_cast<size_t>(currIdx)];
+          nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;
           nodeG[static_cast<size_t>(nIdx)] = newCost;
           nodeF[static_cast<size_t>(nIdx)] = newCost + nodeH[static_cast<size_t>(nIdx)] * weight;
           heap.add(nIdx);
@@ -172,7 +190,7 @@ std::optional<SearchResult> findPath(
           nIdx = it->second;
           if (newCost < nodeG[static_cast<size_t>(nIdx)]) {
             nodeParent[static_cast<size_t>(nIdx)] = currIdx;
-            nodeStartIndex[static_cast<size_t>(nIdx)] = nodeStartIndex[static_cast<size_t>(currIdx)];
+            nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;
             nodeG[static_cast<size_t>(nIdx)] = newCost;
             nodeF[static_cast<size_t>(nIdx)] = newCost + nodeH[static_cast<size_t>(nIdx)] * weight;
 
@@ -187,10 +205,7 @@ std::optional<SearchResult> findPath(
       continue;
     }
 
-    const int offset = params.moveOrderOffset >= 0 ? (params.moveOrderOffset % static_cast<int>(detail::WALK_MOVES.size())) : 0;
-    for (int i = 0; i < static_cast<int>(detail::WALK_MOVES.size()); i++) {
-      const auto& move = detail::WALK_MOVES[static_cast<size_t>((i + offset) % static_cast<int>(detail::WALK_MOVES.size()))];
-
+    for (const auto& move : walkMovesOrdered) {
       detail::MoveOut out;
       if (!runtime.walkMove(curr, move, out)) continue;
       if (out.cost >= ActionCosts::INF_COST) continue;
@@ -203,7 +218,7 @@ std::optional<SearchResult> findPath(
       if (it == coordToNode.end()) {
         nIdx = createNode(out.pos.x, out.pos.y, out.pos.z);
         nodeParent[static_cast<size_t>(nIdx)] = currIdx;
-        nodeStartIndex[static_cast<size_t>(nIdx)] = nodeStartIndex[static_cast<size_t>(currIdx)];
+        nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;
         nodeG[static_cast<size_t>(nIdx)] = newCost;
         nodeF[static_cast<size_t>(nIdx)] = newCost + nodeH[static_cast<size_t>(nIdx)] * weight;
         heap.add(nIdx);
@@ -211,7 +226,7 @@ std::optional<SearchResult> findPath(
         nIdx = it->second;
         if (newCost < nodeG[static_cast<size_t>(nIdx)]) {
           nodeParent[static_cast<size_t>(nIdx)] = currIdx;
-          nodeStartIndex[static_cast<size_t>(nIdx)] = nodeStartIndex[static_cast<size_t>(currIdx)];
+          nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;
           nodeG[static_cast<size_t>(nIdx)] = newCost;
           nodeF[static_cast<size_t>(nIdx)] = newCost + nodeH[static_cast<size_t>(nIdx)] * weight;
 

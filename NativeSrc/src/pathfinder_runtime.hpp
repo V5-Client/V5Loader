@@ -67,18 +67,26 @@ class Runtime {
   [[nodiscard]] bool isAtGoal(int x, int y, int z) const;
   [[nodiscard]] double heuristic(int x, int y, int z) const;
   [[nodiscard]] double transientAvoidPenalty(int x, int y, int z) const;
+  [[nodiscard]] double flyHorizontalProgress(int x, int z) const;
 
   [[nodiscard]] bool walkMove(const Int3& current, const Int3& delta, MoveOut& out);
   [[nodiscard]] bool flyMove(const Int3& current, const Int3& delta, MoveOut& out);
+  [[nodiscard]] bool flyMove(const Int3& current, const Int3& delta, double progress, MoveOut& out);
 
  private:
   const WorldSnapshot& world_;
   const SearchParams& params_;
   ActionCosts costs_{};
 
+  mutable std::unordered_map<uint64_t, uint16_t> flagsCache_;
   std::unordered_map<uint64_t, uint8_t> safeCache_;
   std::unordered_map<uint64_t, uint8_t> flyClearCache_;
   std::unordered_map<uint64_t, double> penaltyCache_;
+  mutable std::unordered_map<uint64_t, double> avoidPenaltyCache_;
+
+  size_t cacheReserve_ = 0;
+  bool flagsCacheEnabled_ = false;
+  bool avoidPenaltyCacheEnabled_ = false;
 
   int walkStartX_ = 0;
   int walkStartZ_ = 0;
@@ -86,6 +94,8 @@ class Runtime {
   Int3 startFly_{0, 0, 0};
   Int3 goalFly_{0, 0, 0};
   int cruiseY_ = 0;
+  int flyMinY_ = 0;
+  int flyMaxY_ = 0;
   int startToGoalDx_ = 0;
   int startToGoalDz_ = 0;
 
@@ -120,6 +130,8 @@ class Runtime {
 
   [[nodiscard]] int edgeDistance(int x, int y, int z);
   [[nodiscard]] int wallDistance(int x, int y, int z);
+  [[nodiscard]] int edgeDistanceWithMask(int x, int y, int z, int mask);
+  [[nodiscard]] int wallDistanceWithMask(int x, int y, int z, int mask);
   [[nodiscard]] double combinedPenalty(int edgeDist, int wallDist) const;
   [[nodiscard]] double pathPenalty(int x, int y, int z);
 
@@ -128,7 +140,7 @@ class Runtime {
   [[nodiscard]] bool moveAscend(const Int3& current, int dx, int dz, MoveOut& out);
   [[nodiscard]] bool moveDescend(const Int3& current, int dx, int dz, MoveOut& out);
 
-  [[nodiscard]] bool moveFly(const Int3& current, int dx, int dy, int dz, MoveOut& out);
+  [[nodiscard]] bool moveFly(const Int3& current, int dx, int dy, int dz, double progress, MoveOut& out);
   [[nodiscard]] bool shouldRejectConfined(int x, int y, int z, double progress);
   [[nodiscard]] double horizontalClearanceCost(int x, int y, int z, double progress);
   [[nodiscard]] double enclosureCost(int x, int y, int z, double progress);
