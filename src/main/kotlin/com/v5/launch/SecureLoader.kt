@@ -8,6 +8,7 @@ import com.v5.api.V5Auth
 import com.v5.api.V5Native
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
@@ -52,6 +53,7 @@ object SecureLoader {
     private const val MIN_HEARTBEAT_INTERVAL_MS = 30_000L
     private const val MAX_HEARTBEAT_INTERVAL_MS = 90_000L
     private const val HEARTBEAT_MAX_RETRIES = 2
+    private const val HEARTBEAT_REAUTH_MAX_RETRIES = 2
     private const val DOWNLOAD_KDF_INFO = "v5-download-kek-v2"
     private const val LOADER_USER_AGENT = "V5Loader/1.1"
     private const val BACKEND_SPKI_SHA256_HEX = "2b6e6265936bc6fa0d656fa09a36abfbb27972ca20f687f60c56fa6af0efd3d7"
@@ -75,6 +77,7 @@ object SecureLoader {
     @Volatile private var heartbeatIntervalMs = DEFAULT_HEARTBEAT_INTERVAL_MS
 
     private var heartbeatThread: Thread? = null
+    private val heartbeatRecoveryLock = Any()
 
     private enum class HeartbeatStatus {
         SUCCESS,
@@ -83,8 +86,25 @@ object SecureLoader {
         TRANSIENT_FAILURE
     }
 
+    private enum class ReauthStatus {
+        SUCCESS,
+        FATAL_FAILURE,
+        TRANSIENT_FAILURE
+    }
+
+    private enum class HeartbeatRecoveryStatus {
+        REAUTHENTICATED,
+        RETRY_LATER,
+        SHUTDOWN
+    }
+
     private data class HeartbeatAttemptResult(
         val status: HeartbeatStatus,
+        val errorCode: String? = null
+    )
+
+    private data class ReauthAttemptResult(
+        val status: ReauthStatus,
         val errorCode: String? = null
     )
 
@@ -282,41 +302,59 @@ object SecureLoader {
     }
 
     private fun performHeartbeat(): Boolean {
-        var lastErrorCode: String? = null
-        val maxAttempts = HEARTBEAT_MAX_RETRIES + 1
-        for (attempt in 0 until maxAttempts) {
-            val result = performHeartbeatOnce()
-            when (result.status) {
-                HeartbeatStatus.SUCCESS -> return true
-                HeartbeatStatus.TRANSIENT_FAILURE -> {
-                    if (attempt >= HEARTBEAT_MAX_RETRIES) return true
-                    try {
-                        Thread.sleep(heartbeatRetryBackoffMs(attempt))
-                    } catch (_: InterruptedException) {
-                        return false
+        var reauthAttempted = false
+
+        while (true) {
+            var lastErrorCode: String? = null
+            val maxAttempts = HEARTBEAT_MAX_RETRIES + 1
+            for (attempt in 0 until maxAttempts) {
+                val result = performHeartbeatOnce()
+                when (result.status) {
+                    HeartbeatStatus.SUCCESS -> return true
+                    HeartbeatStatus.TRANSIENT_FAILURE -> {
+                        if (attempt >= HEARTBEAT_MAX_RETRIES) return true
+                        try {
+                            Thread.sleep(heartbeatRetryBackoffMs(attempt))
+                        } catch (_: InterruptedException) {
+                            return false
+                        }
                     }
-                }
-                HeartbeatStatus.FATAL_AUTH_FAILURE -> {
-                    lastErrorCode = result.errorCode
-                    break
-                }
-                HeartbeatStatus.RETRYABLE_AUTH_FAILURE -> {
-                    lastErrorCode = result.errorCode
-                    if (attempt >= HEARTBEAT_MAX_RETRIES) break
-                    try {
-                        Thread.sleep(heartbeatRetryBackoffMs(attempt))
-                    } catch (_: InterruptedException) {
-                        return false
+                    HeartbeatStatus.FATAL_AUTH_FAILURE -> {
+                        lastErrorCode = result.errorCode
+                        break
+                    }
+                    HeartbeatStatus.RETRYABLE_AUTH_FAILURE -> {
+                        lastErrorCode = result.errorCode
+                        if (attempt >= HEARTBEAT_MAX_RETRIES) break
+                        try {
+                            Thread.sleep(heartbeatRetryBackoffMs(attempt))
+                        } catch (_: InterruptedException) {
+                            return false
+                        }
                     }
                 }
             }
-        }
 
-        if (!lastErrorCode.isNullOrBlank()) {
-            println("[V5] Heartbeat auth failed: $lastErrorCode")
+            if (!reauthAttempted) {
+                when (recoverHeartbeatSession(lastErrorCode)) {
+                    HeartbeatRecoveryStatus.REAUTHENTICATED -> {
+                        reauthAttempted = true
+                        continue
+                    }
+                    HeartbeatRecoveryStatus.RETRY_LATER -> {
+                        heartbeatIntervalMs = MIN_HEARTBEAT_INTERVAL_MS
+                        return true
+                    }
+                    HeartbeatRecoveryStatus.SHUTDOWN -> {}
+                }
+            }
+
+            if (!lastErrorCode.isNullOrBlank()) {
+                println("[V5] Heartbeat auth failed: $lastErrorCode")
+            }
+            println("[V5] Session expired or revoked. Exiting.")
+            return false
         }
-        println("[V5] Session expired or revoked. Exiting.")
-        return false
     }
 
     private fun heartbeatRetryBackoffMs(attempt: Int): Long =
@@ -325,6 +363,32 @@ object SecureLoader {
             1 -> 7_000L
             else -> 10_000L
         }
+
+    private fun recoverHeartbeatSession(errorCode: String?): HeartbeatRecoveryStatus {
+        if (!errorCode.isNullOrBlank()) {
+            println("[V5] Heartbeat auth failed: $errorCode")
+        }
+        println("[V5] Attempting HWID re-authentication before shutdown.")
+
+        val result = reauthenticateWithHwid()
+        return when (result.status) {
+            ReauthStatus.SUCCESS -> {
+                println("[V5] HWID re-authentication succeeded. Retrying heartbeat.")
+                HeartbeatRecoveryStatus.REAUTHENTICATED
+            }
+            ReauthStatus.TRANSIENT_FAILURE -> {
+                val detail = result.errorCode?.let { ": $it" }.orEmpty()
+                println("[V5] HWID re-authentication unavailable$detail. Will retry later.")
+                HeartbeatRecoveryStatus.RETRY_LATER
+            }
+            ReauthStatus.FATAL_FAILURE -> {
+                if (!result.errorCode.isNullOrBlank()) {
+                    println("[V5] HWID re-authentication failed: ${result.errorCode}")
+                }
+                HeartbeatRecoveryStatus.SHUTDOWN
+            }
+        }
+    }
 
     private fun performHeartbeatOnce(): HeartbeatAttemptResult {
         val currentToken = V5Auth.getJwtToken()
@@ -382,6 +446,84 @@ object SecureLoader {
         } finally {
             connection.disconnect()
         }
+    }
+
+    private fun reauthenticateWithHwid(): ReauthAttemptResult {
+        synchronized(heartbeatRecoveryLock) {
+            val requestBody = JsonObject(
+                mapOf("hwid" to JsonPrimitive(runtimeHwid))
+            ).toString().toByteArray(StandardCharsets.UTF_8)
+            val maxAttempts = HEARTBEAT_REAUTH_MAX_RETRIES + 1
+            var lastTransientError: String? = null
+
+            for (attempt in 0 until maxAttempts) {
+                val connection = try {
+                    openPinnedConnection("$BACKEND_URL/api/auth/login-hwid").apply {
+                        requestMethod = "POST"
+                        setRequestProperty("Content-Type", "application/json")
+                        setRequestProperty("Accept", "application/json")
+                        setRequestProperty("X-V5-HWID", runtimeHwid)
+                        setRequestProperty("User-Agent", LOADER_USER_AGENT)
+                        connectTimeout = 10000
+                        readTimeout = 10000
+                        doOutput = true
+                    }
+                } catch (_: Exception) {
+                    lastTransientError = "CONNECT_FAILED"
+                    if (attempt >= HEARTBEAT_REAUTH_MAX_RETRIES) {
+                        return ReauthAttemptResult(ReauthStatus.TRANSIENT_FAILURE, lastTransientError)
+                    }
+                    try {
+                        Thread.sleep(heartbeatRetryBackoffMs(attempt))
+                    } catch (_: InterruptedException) {
+                        return ReauthAttemptResult(ReauthStatus.TRANSIENT_FAILURE, "INTERRUPTED")
+                    }
+                    continue
+                }
+
+                try {
+                    connection.outputStream.use { it.write(requestBody) }
+                    val responseCode = connection.responseCode
+                    val responseText = readHttpResponse(connection, responseCode)
+                    val json = parseJsonObject(responseText)
+
+                    if (responseCode == 200) {
+                        val success = json?.get("success")?.jsonPrimitive?.booleanOrNull
+                        val newToken = json?.get("access_token")?.jsonPrimitive?.contentOrNull
+                            ?: json?.get("token")?.jsonPrimitive?.contentOrNull
+                        if (success != false && !newToken.isNullOrBlank()) {
+                            V5Auth.setJwtToken(newToken)
+                            return ReauthAttemptResult(ReauthStatus.SUCCESS)
+                        }
+
+                        val errorCode = parseErrorCode(responseText) ?: "MISSING_TOKEN"
+                        return ReauthAttemptResult(ReauthStatus.FATAL_FAILURE, errorCode)
+                    }
+
+                    if (responseCode == 408 || responseCode == 425 || responseCode == 429 || responseCode in 500..599) {
+                        lastTransientError = parseErrorCode(responseText) ?: "HTTP_$responseCode"
+                    } else {
+                        val errorCode = parseErrorCode(responseText) ?: "HTTP_$responseCode"
+                        return ReauthAttemptResult(ReauthStatus.FATAL_FAILURE, errorCode)
+                    }
+                } catch (_: Exception) {
+                    lastTransientError = "REQUEST_FAILED"
+                } finally {
+                    connection.disconnect()
+                }
+
+                if (attempt >= HEARTBEAT_REAUTH_MAX_RETRIES) {
+                    return ReauthAttemptResult(ReauthStatus.TRANSIENT_FAILURE, lastTransientError)
+                }
+                try {
+                    Thread.sleep(heartbeatRetryBackoffMs(attempt))
+                } catch (_: InterruptedException) {
+                    return ReauthAttemptResult(ReauthStatus.TRANSIENT_FAILURE, "INTERRUPTED")
+                }
+            }
+        }
+
+        return ReauthAttemptResult(ReauthStatus.TRANSIENT_FAILURE, "UNKNOWN")
     }
 
     private fun updateHeartbeatInterval(json: JsonObject) {
