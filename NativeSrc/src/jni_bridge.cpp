@@ -288,7 +288,7 @@ JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findP
     return nullptr;
   }
 
-  jmethodID ctor = env->GetMethodID(resultClass, "<init>", "([I[IJII[I[I[ILjava/lang/String;)V");
+  jmethodID ctor = env->GetMethodID(resultClass, "<init>", "([I[IJIDI[I[I[ILjava/lang/String;)V");
   if (ctor == nullptr) {
     return nullptr;
   }
@@ -300,6 +300,7 @@ JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findP
     keyPathArray,
     static_cast<jlong>(result->timeMs),
     static_cast<jint>(result->nodesExplored),
+    static_cast<jdouble>(result->nanosecondsPerNode),
     static_cast<jint>(result->selectedStartIndex),
     pathFlagsArray,
     keyNodeFlagsArray,

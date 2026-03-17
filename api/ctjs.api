@@ -3259,6 +3259,7 @@ public final class com/v5/pathfinding/PathManager {
 	public static final fun getKeyNodesArray ()[I
 	public static final fun getLastError ()Ljava/lang/String;
 	public static final fun getLastTimeMs ()J
+	public static final fun getNanosecondsPerNode ()D
 	public static final fun getNodesExplored ()I
 	public static final fun getPathArray ()[I
 	public static final fun getPathFlagBits ()[I
@@ -3711,13 +3712,14 @@ public final class com/v5/swift/nativepath/NativePathResult {
 	public final field keyNodeFlags [I
 	public final field keyNodeMetrics [I
 	public final field keyPath [I
+	public final field nanosecondsPerNode D
 	public final field nodesExplored I
 	public final field path [I
 	public final field pathFlags [I
 	public final field pathSignature Ljava/lang/String;
 	public final field selectedStartIndex I
 	public final field timeMs J
-	public fun <init> ([I[IJII[I[I[ILjava/lang/String;)V
+	public fun <init> ([I[IJIDI[I[I[ILjava/lang/String;)V
 }
 
 public final class com/v5/swift/nativepath/NativePathfinderBridge {

@@ -130,7 +130,7 @@ std::optional<SearchResult> findPath(
       }
       std::reverse(path.begin(), path.end());
 
-      const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+      const auto elapsedNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
         std::chrono::steady_clock::now() - startTime
       ).count();
 
@@ -141,8 +141,9 @@ std::optional<SearchResult> findPath(
       result.keyNodeFlags = encodeNodeFlags(world, result.keyPoints, params.isFly, true);
       result.keyNodeMetrics = encodeKeyMetrics(world, result.keyPoints);
       result.signatureHex = buildPathSignatureHex(result.points);
-      result.timeMs = elapsed;
+      result.timeMs = elapsedNs / 1000000LL;
       result.nodesExplored = iterations;
+      result.nanosecondsPerNode = iterations > 0 ? static_cast<double>(elapsedNs) / static_cast<double>(iterations) : 0.0;
       result.selectedStartIndex = nodeStartIndex[static_cast<size_t>(currIdx)];
       return result;
     }

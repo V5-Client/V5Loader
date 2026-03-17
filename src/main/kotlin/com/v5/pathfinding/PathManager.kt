@@ -52,6 +52,7 @@ object PathManager {
     val isFly: Boolean,
     val timeMs: Long,
     val nodesExplored: Int,
+    val nanosecondsPerNode: Double,
     val selectedStartIndex: Int
   )
 
@@ -204,6 +205,7 @@ object PathManager {
               isFly = isFly,
               timeMs = result.timeMs,
               nodesExplored = result.nodesExplored,
+              nanosecondsPerNode = result.nanosecondsPerNode,
               selectedStartIndex = result.selectedStartIndex
             )
             currentAnnotations = PathAnnotations(
@@ -503,6 +505,9 @@ object PathManager {
 
   @JvmStatic
   fun getNodesExplored(): Int = currentPath?.nodesExplored ?: 0
+
+  @JvmStatic
+  fun getNanosecondsPerNode(): Double = currentPath?.nanosecondsPerNode ?: 0.0
 
   @JvmStatic
   fun getSelectedStartIndex(): Int = currentPath?.selectedStartIndex ?: -1

@@ -5,6 +5,7 @@ class NativePathResult(
   @JvmField val keyPath: IntArray,
   @JvmField val timeMs: Long,
   @JvmField val nodesExplored: Int,
+  @JvmField val nanosecondsPerNode: Double,
   @JvmField val selectedStartIndex: Int,
   @JvmField val pathFlags: IntArray,
   @JvmField val keyNodeFlags: IntArray,

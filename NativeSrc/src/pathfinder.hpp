@@ -36,6 +36,7 @@ struct SearchResult {
   std::string signatureHex;
   long long timeMs = 0;
   int nodesExplored = 0;
+  double nanosecondsPerNode = 0.0;
   int selectedStartIndex = -1;
 };
 
