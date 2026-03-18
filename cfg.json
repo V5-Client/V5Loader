@@ -119,7 +119,6 @@
       "com/chattriggers/",
       "org/mozilla/",
       "gg/essential/",
-      "com/v5/launch/",
       "com/v5/api/"
     ]
   },
@@ -131,7 +130,6 @@
     "MaxInsnSize": 16384,
     "Exclusion": [
       "com/chattriggers/",
-      "com/v5/launch/",
       "com/v5/api/"
     ]
   },
@@ -141,7 +139,6 @@
     "MaxInsnSize": 16384,
     "Exclusion": [
       "com/chattriggers/",
-      "com/v5/launch/",
       "com/v5/api/"
     ]
   },
@@ -178,7 +175,6 @@
     "Exclusion": [
       "com/chattriggers/",
       "org/mozilla/",
-      "com/v5/launch/",
       "com/v5/api/"
     ]
   },
@@ -204,7 +200,6 @@
     "NativeAnnotation": false,
     "Exclusion": [
       "com/chattriggers/",
-      "com/v5/launch/",
       "com/v5/api/"
     ]
   },
@@ -404,7 +399,6 @@
     "BSMNativeAnnotation": true,
     "Exclusion": [
       "com/chattriggers/",
-      "com/v5/launch/",
       "com/v5/api/"
     ]
   },
@@ -423,7 +417,6 @@
     "Random": false,
     "Exclusion": [
       "com/chattriggers/",
-      "com/v5/launch/",
       "com/v5/api/"
     ]
   },
