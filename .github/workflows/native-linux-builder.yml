@@ -26,13 +26,13 @@ jobs:
 
       - name: Build native library
         run: |
-          set -euo pipefail
-          output_name="V5PathJNI-linux-x86_64"
-          cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release -DV5PATHJNI_OUTPUT_NAME="$output_name"
+          cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release
           cmake --build NativeSrc/build --config Release -j
+
+      - name: Copy native library
+        run: |
           mkdir -p src/main/resources/assets/v5
-          cp "NativeSrc/build/${output_name}.so" "src/main/resources/assets/v5/${output_name}.so"
-          cp "NativeSrc/build/${output_name}.so" "src/main/resources/assets/v5/V5PathJNI.so"
+          cp NativeSrc/build/V5PathJNI.so src/main/resources/assets/v5/V5PathJNI.so
 
       - name: Commit Linux JNI
         shell: bash
@@ -44,7 +44,7 @@ jobs:
           git config user.name "$USER_NAME"
           git config user.email "$USER_EMAIL"
 
-          git add src/main/resources/assets/v5/V5PathJNI-linux-x86_64.so src/main/resources/assets/v5/V5PathJNI.so
+          git add src/main/resources/assets/v5/V5PathJNI.so
 
           if ! git diff --cached --quiet; then
             git log -1 --pretty=%B "${{ github.sha }}" > .git/JNI_COMMIT_MSG

@@ -17,13 +17,11 @@ add_library(V5PathJNI SHARED
   src/path_signature.cpp
 )
 
-set(V5PATHJNI_OUTPUT_NAME "V5PathJNI" CACHE STRING "Output base name for the V5PathJNI shared library")
-
 target_include_directories(V5PathJNI PRIVATE ${JNI_INCLUDE_DIRS} src)
 target_link_libraries(V5PathJNI PRIVATE ${JNI_LIBRARIES})
 
 set_target_properties(V5PathJNI PROPERTIES
-  OUTPUT_NAME "${V5PATHJNI_OUTPUT_NAME}"
+  OUTPUT_NAME "V5PathJNI"
   PREFIX ""
   CXX_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN YES
