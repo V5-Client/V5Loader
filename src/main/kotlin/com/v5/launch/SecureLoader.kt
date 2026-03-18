@@ -110,18 +110,22 @@ object SecureLoader {
     fun killClientHard(): Nothing = shutDownHard()
 
     private fun refreshTokenSingleFlight(currentToken: String): String? {
-        synchronized(refreshLock) {
-            if (refreshInProgress) {
-                while (refreshInProgress) {
-                    try {
-                        Thread.sleep(50L)
-                    } catch (_: InterruptedException) {
-                        return internalToken ?: currentToken.takeUnless { isExpired(it) }
-                    }
+        while (true) {
+            var acquired = false
+            synchronized(refreshLock) {
+                if (!refreshInProgress) {
+                    refreshInProgress = true
+                    acquired = true
+                } else {
+                    internalToken?.let { return it }
                 }
+            }
+            if (acquired) break
+            try {
+                Thread.sleep(50L)
+            } catch (_: InterruptedException) {
                 return internalToken ?: currentToken.takeUnless { isExpired(it) }
             }
-            refreshInProgress = true
         }
 
         try {
