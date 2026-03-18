@@ -1,4 +1,4 @@
-package com.v5.api
+package com.v5.launch
 
 object V5Native {
     private const val XOR_KEY = 0x5A

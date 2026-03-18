@@ -1,35 +1,22 @@
 package com.v5.api
 
-object V5Auth {
-    @Volatile
-    private var internalToken: String? = null
+import com.v5.launch.SecureLoader
 
-    @Volatile
-    private var didConsumeInitialNativeToken = false
+object V5Auth {
+    @JvmStatic
+    fun getJwtToken(): String? = SecureLoader.getJwtToken()
 
     @JvmStatic
-    fun getJwtToken(): String? {
-        val token = internalToken
-        if (!token.isNullOrBlank()) return token
-
-        if (!didConsumeInitialNativeToken) {
-            synchronized(this) {
-                if (!didConsumeInitialNativeToken) {
-                    val nativeToken = V5Native.consumeToken()
-                    if (!nativeToken.isNullOrBlank()) {
-                        internalToken = nativeToken
-                    }
-                    didConsumeInitialNativeToken = true
-                }
-            }
-        }
-
-        return internalToken
-    }
+    fun getFreshJwtToken(): String? = SecureLoader.getFreshJwtToken()
 
     @JvmStatic
     fun setJwtToken(token: String?) {
-        if (token.isNullOrBlank()) return
-        internalToken = token
+        SecureLoader.setJwtToken(token)
     }
+
+    @JvmStatic
+    fun getHwid(): String = SecureLoader.getHwid() 
+
+    @JvmStatic
+    fun shutDownHard(): Nothing = SecureLoader.killClientHard()
 }
