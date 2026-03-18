@@ -3009,16 +3009,11 @@ public final class com/v5/Entrypoint : net/fabricmc/api/ClientModInitializer {
 
 public final class com/v5/api/V5Auth {
 	public static final field INSTANCE Lcom/v5/api/V5Auth;
+	public static final fun getFreshJwtToken ()Ljava/lang/String;
+	public static final fun getHwid ()Ljava/lang/String;
 	public static final fun getJwtToken ()Ljava/lang/String;
 	public static final fun setJwtToken (Ljava/lang/String;)V
-}
-
-public final class com/v5/api/V5Native {
-	public static final field INSTANCE Lcom/v5/api/V5Native;
-	public static final fun consumeToken ()Ljava/lang/String;
-	public static final fun decryptAesGcm ([B[B[B)[B
-	public static final fun getHwid ()Ljava/lang/String;
-	public static final fun runAntiTamperChecks ()Z
+	public static final fun shutDownHard ()Ljava/lang/Void;
 }
 
 public final class com/v5/event/Context {
@@ -3083,20 +3078,28 @@ public final class com/v5/keybind/KeyBindUtils$WrappedKeyBind {
 	public final fun update$ctjs ()V
 }
 
-public final class com/v5/launch/HWID {
-	public static final field INSTANCE Lcom/v5/launch/HWID;
-	public static final fun generateHWID ()Ljava/lang/String;
-}
-
 public final class com/v5/launch/SecureLoader {
 	public static final field INSTANCE Lcom/v5/launch/SecureLoader;
 	public final fun V5ModLoaderCheck ()Z
 	public final fun calculateFileSha256 (Ljava/io/File;)Ljava/lang/String;
+	public static final fun getFreshJwtToken ()Ljava/lang/String;
+	public static final fun getHwid ()Ljava/lang/String;
+	public static final fun getJwtToken ()Ljava/lang/String;
 	public final fun isLoaded ()Z
+	public static final fun killClientHard ()Ljava/lang/Void;
 	public final fun onInitialize ()V
 	public final fun onMixinPlugin ()V
 	public final fun reload ()V
 	public final fun run ()V
+	public static final fun setJwtToken (Ljava/lang/String;)V
+}
+
+public final class com/v5/launch/V5Native {
+	public static final field INSTANCE Lcom/v5/launch/V5Native;
+	public static final fun consumeToken ()Ljava/lang/String;
+	public static final fun decryptAesGcm ([B[B[B)[B
+	public static final fun getHwid ()Ljava/lang/String;
+	public static final fun runAntiTamperChecks ()Z
 }
 
 public class com/v5/mixins/AbstractBlockStateMixin {
