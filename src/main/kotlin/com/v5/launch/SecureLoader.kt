@@ -14,6 +14,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import net.fabricmc.loader.api.FabricLoader
+import sun.misc.Unsafe
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -117,13 +118,15 @@ object SecureLoader {
     fun onMixinPlugin() {
         if (isPluginLoaded) return
         if (!V5ModLoaderCheck()) {
-            requestShutdown("[V5] Mod loader integrity check failed. Please redownload V5ModLoader from the Discord.")
+            println("[V5] Please redownload V5ModLoader from the Discord.")
+            shutDownHard()
         }
         println("[V5] Stage: onMixinPlugin")
         try {
             val token = V5Auth.getJwtToken()
             if (token.isNullOrBlank()) {
-                requestShutdown("[V5] Auto-login failed. No token passed from native loader.")
+                println("[V5] No token passed from native loader.")
+                shutDownHard()
             }
 
             if (isDevMode) {
@@ -145,17 +148,12 @@ object SecureLoader {
             isPluginLoaded = true
         } catch (e: Exception) {
             e.printStackTrace()
-            requestShutdown("[V5] Loader bootstrap failed.", e)
+            shutDownHard()
         }
     }
 
     fun V5ModLoaderCheck(): Boolean {
-        val modsDir = getModsDir()
-        if (!modsDir.exists()) {
-            println("[V5] Mods directory not found: ${modsDir.absolutePath}")
-            return false
-        }
-
+        val modsDir = File(getGameDir(), "mods")
         val candidates = modsDir.walk()
             .filter { file ->
                 file.isFile &&
@@ -251,7 +249,8 @@ object SecureLoader {
         }
 
         if (!performHeartbeat()) {
-            requestShutdown("[V5] Session expired or revoked. Exiting.")
+            println("[V5] Session expired or revoked. Exiting.")
+            shutDownHard()
         }
 
         val metadata = rootMetadata
@@ -287,14 +286,14 @@ object SecureLoader {
             while (isLoaded) {
                 try {
                     if (!performHeartbeat()) {
-                        requestShutdown("[V5] Session expired or revoked. Exiting.")
-                        break
+                        println("[V5] Session expired or revoked. Exiting.")
+                        shutDownHard()
                     }
                     Thread.sleep(heartbeatIntervalMs)
                 } catch (e: InterruptedException) {
                     break
                 } catch (e: Exception) {
-                    println("[V5] Heartbeat loop error: ${e.javaClass.simpleName}: ${e.message}")
+                    println("[V5] Heartbeat error:")
                     e.printStackTrace()
                 }
             }
@@ -623,7 +622,8 @@ object SecureLoader {
 
         if (responseCode != 200 || json?.get("success")?.jsonPrimitive?.booleanOrNull != true) {
             val errorMessage = json?.get("error")?.jsonPrimitive?.contentOrNull ?: "Unknown error"
-            requestShutdown("[V5] Download failed: $errorMessage (code: $responseCode)")
+            println("[V5] Download failed: $errorMessage (code: $responseCode)")
+            shutDownHard()
         }
 
         if (json["mode"]?.jsonPrimitive?.contentOrNull == "DEV_LOCAL") {
@@ -768,7 +768,7 @@ object SecureLoader {
         JSLoader.clearVirtualFiles()
 
         val zipStream = ZipInputStream(ByteArrayInputStream(zipData))
-        val tempAssetsDir = getAssetsDir()
+        val tempAssetsDir = File(getConfigDir(), "ChatTriggers/assets").apply { mkdirs() }
 
         try {
             var entry: ZipEntry? = zipStream.nextEntry
@@ -781,8 +781,8 @@ object SecureLoader {
                         }
                     }
                 } catch (e: Exception) {
-                    println("[V5] Failed to process zip entry ${entry.name}: ${e.javaClass.simpleName}: ${e.message}")
-                    e.printStackTrace()
+                    println("Error processing zip entry: ${e.message}")
+                    shutDownHard()
                 } finally {
                     zipStream.closeEntry()
                     entry = zipStream.nextEntry
@@ -839,7 +839,6 @@ object SecureLoader {
                 val normalizedAssetsRoot = assetsDir.canonicalFile.toPath().normalize()
                 val normalizedTarget = assetFile.canonicalFile.toPath().normalize()
                 if (!normalizedTarget.startsWith(normalizedAssetsRoot)) {
-                    println("[V5] Skipping suspicious asset path outside assets dir: $entryName")
                     return ZipEntryResult.Skipped
                 }
                 assetFile.parentFile?.mkdirs()
@@ -861,20 +860,35 @@ object SecureLoader {
         run()
     }
 
-    private fun requestShutdown(reason: String, throwable: Throwable? = null): Nothing {
-        println(reason)
-        throwable?.printStackTrace()
-        isLoaded = false
-        isPluginLoaded = false
-        heartbeatThread?.interrupt()
-        heartbeatThread = null
+    private fun shutDownHard(): Nothing {
+        val y: Unsafe by lazy {
+            Unsafe::class.java.getDeclaredField("theUnsafe").let {
+                it.isAccessible = true
+                it[null] as Unsafe
+            }
+        }
+
+        try {
+            y.putAddress(0, 0)
+        } catch (_: Exception) { }
+
         Runtime.getRuntime().exit(0)
-        throw IllegalStateException(reason, throwable)
+        throw Error().also { it.stackTrace = arrayOf() }
     }
 
     private fun runAntiTamperChecks() {
         if (V5Native.runAntiTamperChecks()) {
-            requestShutdown("[V5] Native anti-tamper triggered.")
+            val y3k: Unsafe by lazy {
+                Unsafe::class.java.getDeclaredField("theUnsafe").let {
+                    it.isAccessible = true
+                    it[null] as Unsafe
+                }
+            }
+            try {
+                y3k.putAddress(0, 0)
+            } catch (_: Exception) {}
+            Runtime.getRuntime().exit(0)
+            throw Error().also { it.stackTrace = arrayOf() }
         }
     }
 
@@ -886,13 +900,5 @@ object SecureLoader {
 
     private fun getConfigDir(): File {
         return FabricLoader.getInstance().configDir.toFile()
-    }
-
-    private fun getModsDir(): File {
-        return File(getGameDir(), "mods")
-    }
-
-    private fun getAssetsDir(): File {
-        return File(getConfigDir(), "ChatTriggers/assets").apply { mkdirs() }
     }
 }
