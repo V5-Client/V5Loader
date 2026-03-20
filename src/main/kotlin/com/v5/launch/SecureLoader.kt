@@ -65,9 +65,6 @@ object SecureLoader {
     @Volatile private var rootMetadata: ModuleMetadata? = null
     @Volatile private var internalToken: String? = null
     @Volatile private var didConsumeInitialNativeToken = false
-    @Volatile private var refreshInProgress = false
-
-    private val refreshLock = Any()
 
     @JvmStatic
     fun getJwtToken(): String? {
@@ -109,96 +106,41 @@ object SecureLoader {
     @JvmStatic
     fun killClientHard(): Nothing = shutDownHard()
 
+    @Synchronized
     private fun refreshTokenSingleFlight(currentToken: String): String? {
-        while (true) {
-            var acquired = false
-            synchronized(refreshLock) {
-                if (!refreshInProgress) {
-                    refreshInProgress = true
-                    acquired = true
-                } else {
-                    internalToken?.let { return it }
-                }
-            }
-            if (acquired) break
-            try {
-                Thread.sleep(50L)
-            } catch (_: InterruptedException) {
-                return internalToken ?: currentToken.takeUnless { isExpired(it) }
-            }
+        internalToken?.let { latest ->
+            if (!isNearExpiry(latest)) return latest
         }
-
-        try {
-            val refreshed = tryRenewToken(currentToken) ?: fallbackHwidLogin()
-            if (!refreshed.isNullOrBlank()) {
-                internalToken = refreshed
-                return refreshed
-            }
-            return internalToken ?: currentToken.takeUnless { isExpired(it) }
-        } finally {
-            synchronized(refreshLock) {
-                refreshInProgress = false
-            }
+        val refreshed = fallbackHwidLogin()
+        if (!refreshed.isNullOrBlank()) {
+            internalToken = refreshed
+            return refreshed
         }
+        return internalToken ?: currentToken.takeUnless { isExpired(it) }
     }
 
     private fun isNearExpiry(token: String): Boolean {
-        return try {
-            val parts = token.split(".")
-            if (parts.size != 3) return true
-            val payloadBytes = Base64.getUrlDecoder().decode(parts[1])
-            val payload =
-                jsonParser.parseToJsonElement(String(payloadBytes, StandardCharsets.UTF_8)).jsonObject
-            val exp = payload["exp"]?.jsonPrimitive?.longOrNull ?: return true
-            val now = System.currentTimeMillis() / 1000L
-            exp <= now + TOKEN_EXPIRY_SKEW_SECONDS
-        } catch (_: Exception) {
-            true
-        }
+        val exp = parseTokenExpiry(token) ?: return true
+        val now = System.currentTimeMillis() / 1000L
+        return exp <= now + TOKEN_EXPIRY_SKEW_SECONDS
     }
 
     private fun isExpired(token: String): Boolean {
+        val exp = parseTokenExpiry(token) ?: return true
+        val now = System.currentTimeMillis() / 1000L
+        return exp <= now
+    }
+
+    private fun parseTokenExpiry(token: String): Long? {
         return try {
             val parts = token.split(".")
-            if (parts.size != 3) return true
+            if (parts.size != 3) return null
             val payloadBytes = Base64.getUrlDecoder().decode(parts[1])
             val payload =
                 jsonParser.parseToJsonElement(String(payloadBytes, StandardCharsets.UTF_8)).jsonObject
-            val exp = payload["exp"]?.jsonPrimitive?.longOrNull ?: return true
-            val now = System.currentTimeMillis() / 1000L
-            exp <= now
-        } catch (_: Exception) {
-            true
-        }
-    }
-
-    private fun tryRenewToken(currentToken: String): String? {
-        val connection = try {
-            openPinnedConnection("$BACKEND_URL/api/auth/renew").apply {
-                requestMethod = "POST"
-                setRequestProperty("Authorization", "Bearer $currentToken")
-                setRequestProperty("X-V5-HWID", runtimeHwid)
-                setRequestProperty("User-Agent", LOADER_USER_AGENT)
-                setRequestProperty("Content-Length", "0")
-                connectTimeout = 10000
-                readTimeout = 10000
-                doOutput = true
-            }
-        } catch (_: Exception) {
-            return null
-        }
-
-        return try {
-            val responseCode = connection.responseCode
-            val responseText = readResponseText(connection, responseCode)
-            if (responseCode != 200) return null
-            val obj = jsonParser.parseToJsonElement(responseText).jsonObject
-            obj["access_token"]?.jsonPrimitive?.contentOrNull
-                ?: obj["token"]?.jsonPrimitive?.contentOrNull
+            payload["exp"]?.jsonPrimitive?.longOrNull
         } catch (_: Exception) {
             null
-        } finally {
-            connection.disconnect()
         }
     }
 
@@ -225,7 +167,10 @@ object SecureLoader {
             connection.outputStream.use { it.write(requestBody) }
             val responseCode = connection.responseCode
             if (responseCode != 200) return null
-            val responseText = readResponseText(connection, responseCode)
+            val responseText = connection.inputStream
+                ?.bufferedReader()
+                ?.use { it.readText() }
+                ?: ""
             val obj = jsonParser.parseToJsonElement(responseText).jsonObject
             if (obj["success"]?.jsonPrimitive?.booleanOrNull == false) return null
             obj["access_token"]?.jsonPrimitive?.contentOrNull
@@ -484,18 +429,6 @@ object SecureLoader {
         return (URL(url).openConnection() as HttpsURLConnection).apply {
             sslSocketFactory = pinnedSslSocketFactory
         }
-    }
-
-    private fun readResponseText(
-        connection: HttpsURLConnection,
-        responseCode: Int
-    ): String {
-        val stream = if (responseCode in 200..299) {
-            connection.inputStream
-        } else {
-            connection.errorStream
-        }
-        return stream?.bufferedReader()?.use { it.readText() } ?: ""
     }
 
     private fun buildPinnedSslSocketFactory() = SSLContext.getInstance("TLS").apply {
