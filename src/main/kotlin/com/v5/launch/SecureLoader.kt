@@ -562,7 +562,7 @@ object SecureLoader {
         lines += "if not exist ${cmdQuote(targetJar.parentFile.canonicalPath)} mkdir ${cmdQuote(targetJar.parentFile.canonicalPath)}"
         lines += "if exist ${cmdQuote(targetJar.absolutePath)} move /y ${cmdQuote(targetJar.absolutePath)} ${cmdQuote(backupJar.absolutePath)} >nul 2>nul"
         lines += "move /y ${cmdQuote(sourceJar.absolutePath)} ${cmdQuote(targetJar.absolutePath)} >nul 2>nul"
-        lines += "if exist ${cmdQuote(targetJar.absolutePath)} goto cleanup"
+        lines += "if not errorlevel 1 if exist ${cmdQuote(targetJar.absolutePath)} if not exist ${cmdQuote(sourceJar.absolutePath)} goto cleanup"
         lines += "if exist ${cmdQuote(backupJar.absolutePath)} move /y ${cmdQuote(backupJar.absolutePath)} ${cmdQuote(targetJar.absolutePath)} >nul 2>nul"
         lines += "set /a ATTEMPTS+=1"
         lines += "if !ATTEMPTS! geq $MOD_LOADER_REPLACE_RETRY_COUNT exit /b 1"
