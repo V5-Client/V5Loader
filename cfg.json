@@ -3,11 +3,7 @@
     "Input": "build/libs/v5-1.0.0.jar",
     "Output": "V5-Loader.jar",
     "Libraries": [],
-    "Exclusions": [
-      "com/chattriggers/",
-      "org/mozilla/",
-      "gg/essential/"
-    ],
+    "Exclusions": [],
     "MixinPackage": [
       "com/v5/mixins/",
       "com/chattriggers/ctjs/internal/mixins/"
@@ -39,19 +35,17 @@
     ]
   },
   "Shrinking": {
-    "Enabled": false,
+    "Enabled": true,
     "RemoveInnerClass": true,
     "RemoveUnusedLabel": true,
     "RemoveNOP": false,
     "AnnotationRemovals": [
       "Ljava/lang/Override;"
     ],
-    "Exclusion": [
-      "com/chattriggers/"
-    ]
+    "Exclusion": []
   },
   "KotlinOptimizer": {
-    "Enabled": false,
+    "Enabled": true,
     "Annotations": true,
     "Intrinsics": true,
     "IntrinsicsRemoval": [
@@ -64,12 +58,10 @@
     ],
     "ReplaceLdc": true,
     "IntrinsicsExclusion": [],
-    "MetadataExclusion": [
-      "com/chattriggers/"
-    ]
+    "MetadataExclusion": []
   },
   "EnumOptimize": {
-    "Enabled": false,
+    "Enabled": true,
     "Exclusion": []
   },
   "DeadCodeRemove": {
@@ -101,7 +93,7 @@
     "Exclusion": []
   },
   "HideDeclaredFields": {
-    "Enabled": false,
+    "Enabled": true,
     "Exclusion": []
   },
   "ReflectionSupport": {
@@ -116,35 +108,30 @@
     "Arrayed": false,
     "ReplaceInvokeDynamics": true,
     "Exclusion": [
-      "com/chattriggers/",
-      "org/mozilla/",
-      "gg/essential/",
       "com/v5/api/"
     ]
   },
   "NumberEncrypt": {
     "Enabled": true,
-    "Intensity": 1,
+    "Intensity": 2,
     "FloatingPoint": true,
     "Arrayed": false,
     "MaxInsnSize": 16384,
     "Exclusion": [
-      "com/chattriggers/",
       "com/v5/api/"
     ]
   },
   "ArithmeticEncrypt": {
     "Enabled": true,
-    "Intensity": 1,
+    "Intensity": 2,
     "MaxInsnSize": 16384,
     "Exclusion": [
-      "com/chattriggers/",
       "com/v5/api/"
     ]
   },
   "Controlflow": {
     "Enabled": true,
-    "Intensity": 1,
+    "Intensity": 2,
     "ExecuteBeforeEncrypt": false,
     "SwitchExtractor": true,
     "ExtractRate": 30,
@@ -165,12 +152,12 @@
     "TrappedSwitchCase": true,
     "TrapChance": 50,
     "ArithmeticExprBuilder": true,
-    "BuilderIntensity": 1,
+    "BuilderIntensity": 2,
     "JunkBuilderParameter": true,
     "BuilderNativeAnnotation": false,
     "UseLocalVar": true,
     "JunkCode": true,
-    "MaxJunkCode": 2,
+    "MaxJunkCode": 5,
     "ExpandedJunkCode": true,
     "Exclusion": [
       "com/chattriggers/",
@@ -189,7 +176,7 @@
     "Exclusion": []
   },
   "ConstPollEncrypt": {
-    "Enabled": true,
+    "Enabled": false,
     "Integer": true,
     "Long": true,
     "Float": true,
@@ -220,7 +207,6 @@
     "GenerateOuterClass": false,
     "NativeAnnotation": false,
     "ExcludedClasses": [
-      "com/chattriggers/",
       "com/v5/swift/nativepath/"
     ],
     "ExcludedFieldName": []
@@ -232,7 +218,6 @@
     "RandomCall": true,
     "NativeAnnotation": false,
     "ExcludedClasses": [
-      "com/chattriggers/",
       "com/v5/swift/nativepath/"
     ],
     "ExcludedMethodName": []
@@ -382,25 +367,18 @@
     "TargetMixinPackage": "net/spartanb312/obf/mixins/",
     "MixinFile": "mixins.example.json",
     "RefmapFile": "mixins.example.refmap.json",
-    "Exclusion": [
-      "net/spartanb312/Example",
-      "net/spartanb312/component/Component",
-      "net/spartanb312/package/"
-    ]
+    "Exclusion": []
   },
   "InvokeDynamic": {
     "Enabled": true,
     "ReplacePercentage": 10,
-    "HeavyProtection": true,
+    "HeavyProtection": false,
     "MetadataClass": "net/spartanb312/grunt/GruntMetadata",
     "MassiveRandomBlank": true,
     "Reobfuscate": false,
     "EnhancedFlowReobf": true,
     "BSMNativeAnnotation": true,
-    "Exclusion": [
-      "com/chattriggers/",
-      "com/v5/api/"
-    ]
+    "Exclusion": []
   },
   "ShuffleMembers": {
     "Enabled": true,
@@ -408,15 +386,12 @@
     "Fields": true,
     "Annotations": true,
     "Exceptions": true,
-    "Exclusion": [
-      "com/chattriggers/"
-    ]
+    "Exclusion": []
   },
   "Crasher": {
     "Enabled": true,
     "Random": false,
     "Exclusion": [
-      "com/chattriggers/",
       "com/v5/api/"
     ]
   },
