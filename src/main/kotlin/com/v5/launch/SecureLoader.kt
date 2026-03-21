@@ -422,9 +422,12 @@ object SecureLoader {
         val sourceJar = File(updaterDir, "V5ModLoader-$pid.jar.new").canonicalFile
         val targetJar = selectModLoaderTarget(modsDir, candidates)
         val backupJar = File(updaterDir, "V5ModLoader-$pid.jar.bak").canonicalFile
-        val staleTargets = candidates.map { it.canonicalFile }
+        val targetPath = targetJar.toPath().toAbsolutePath().normalize()
+        val staleTargets = candidates
+            .map { it.toPath().toAbsolutePath().normalize() }
             .distinct()
-            .filter { it != targetJar }
+            .filter { it != targetPath }
+            .map { it.toFile() }
         val relaunchCommand = buildRelaunchCommand()
 
         FileOutputStream(sourceJar).use { it.write(modLoaderBytes) }
