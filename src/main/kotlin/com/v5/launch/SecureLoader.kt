@@ -385,11 +385,12 @@ object SecureLoader {
         }
 
         try {
-            val relaunchPlanned = stageModLoaderUpdateAndRelaunch(modLoaderBytes, result.candidates)
-            if (relaunchPlanned) {
+            val stageResult = stageModLoaderUpdateAndRelaunch(modLoaderBytes, result.candidates)
+            if (stageResult.autoRelaunchPlanned) {
                 println("[V5] V5ModLoader update staged. Relaunching Minecraft.")
             } else {
-                println("[V5] V5ModLoader update staged. Please relaunch Minecraft.")
+                println("[V5] V5ModLoader update staged. Waiting for Minecraft to close so the helper can swap jars.")
+                println("[V5] If Minecraft does not reopen automatically, wait a few minutes, then relaunch it manually.")
             }
         } catch (e: Exception) {
             println("[V5] Failed to stage V5ModLoader update.")
@@ -407,7 +408,7 @@ object SecureLoader {
     private fun stageModLoaderUpdateAndRelaunch(
         modLoaderBytes: ByteArray,
         candidates: List<File>
-    ): Boolean {
+    ): ModLoaderUpdater.StageResult {
         return ModLoaderUpdater.stageUpdateAndRelaunch(
             gameDir = getGameDir(),
             modLoaderBytes = modLoaderBytes,

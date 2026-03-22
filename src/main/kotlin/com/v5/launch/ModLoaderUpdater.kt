@@ -13,7 +13,7 @@ internal object ModLoaderUpdater {
         gameDir: File,
         modLoaderBytes: ByteArray,
         candidates: List<File>
-    ): Boolean {
+    ): StageResult {
         val updatePaths = prepareUpdatePaths(gameDir, candidates)
         val relaunchCommand = buildRelaunchCommand()
 
@@ -26,7 +26,7 @@ internal object ModLoaderUpdater {
         }
 
         startUpdateHelper(updatePaths.gameDir, helperScript)
-        return relaunchCommand != null
+        return StageResult(autoRelaunchPlanned = relaunchCommand != null)
     }
 
     private fun prepareUpdatePaths(gameDir: File, candidates: List<File>): UpdatePaths {
@@ -204,5 +204,9 @@ internal object ModLoaderUpdater {
     private data class RelaunchCommand(
         val command: String,
         val arguments: List<String>
+    )
+
+    data class StageResult(
+        val autoRelaunchPlanned: Boolean
     )
 }
