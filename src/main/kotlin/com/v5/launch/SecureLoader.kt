@@ -14,9 +14,9 @@ import net.fabricmc.loader.api.FabricLoader
 import sun.misc.Unsafe
 import java.io.ByteArrayInputStream
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.KeyFactory
@@ -65,6 +65,19 @@ object SecureLoader {
     @Volatile private var rootMetadata: ModuleMetadata? = null
     @Volatile private var internalToken: String? = null
     @Volatile private var didConsumeInitialNativeToken = false
+
+    private enum class ModLoaderStatus {
+        VALID,
+        OUTDATED,
+        INVALID_INSTALLATION,
+        CHECK_FAILED
+    }
+
+    private data class ModLoaderCheckResult(
+        val status: ModLoaderStatus,
+        val candidates: List<File>,
+        val message: String
+    )
 
     @JvmStatic
     fun getJwtToken(): String? {
@@ -190,8 +203,7 @@ object SecureLoader {
 
     fun onMixinPlugin() {
         if (isPluginLoaded) return
-        if (!V5ModLoaderCheck()) {
-            println("[V5] Please redownload V5ModLoader from the Discord.")
+        if (!ensureV5ModLoaderInstalled()) {
             shutDownHard()
         }
         println("[V5] Stage: onMixinPlugin")
@@ -225,7 +237,29 @@ object SecureLoader {
         }
     }
 
+    private fun ensureV5ModLoaderInstalled(): Boolean {
+        val result = checkV5ModLoader()
+        return when (result.status) {
+            ModLoaderStatus.VALID -> true
+            ModLoaderStatus.OUTDATED,
+            ModLoaderStatus.INVALID_INSTALLATION -> {
+                println("[V5] ${result.message}")
+                tryAutoUpdateModLoader(result)
+                false
+            }
+            ModLoaderStatus.CHECK_FAILED -> {
+                println("[V5] ${result.message}")
+                false
+            }
+        }
+    }
+
+    @Suppress("FunctionName")
     fun V5ModLoaderCheck(): Boolean {
+        return checkV5ModLoader().status == ModLoaderStatus.VALID
+    }
+
+    private fun checkV5ModLoader(): ModLoaderCheckResult {
         val modsDir = File(getGameDir(), "mods")
         val candidates = modsDir.walk()
             .filter { file ->
@@ -240,20 +274,29 @@ object SecureLoader {
             .toList()
 
         if (candidates.size != 1) {
-            println("[V5] Expected one V5ModLoader jar in mods, found ${candidates.size}.")
-            return false
+            return ModLoaderCheckResult(
+                status = ModLoaderStatus.INVALID_INSTALLATION,
+                candidates = candidates,
+                message = "Expected one V5ModLoader jar in mods, found ${candidates.size}. Repairing install."
+            )
         }
 
         val hash = calculateFileSha256(candidates.first())
         if (hash.isBlank()) {
-            println("[V5] Failed to compute V5ModLoader hash.")
-            return false
+            return ModLoaderCheckResult(
+                status = ModLoaderStatus.INVALID_INSTALLATION,
+                candidates = candidates,
+                message = "Failed to compute V5ModLoader hash. Repairing install."
+            )
         }
 
         val token = getFreshJwtToken()
         if (token.isNullOrBlank()) {
-            println("[V5] Missing auth token for modloader integrity check.")
-            return false
+            return ModLoaderCheckResult(
+                status = ModLoaderStatus.CHECK_FAILED,
+                candidates = candidates,
+                message = "Missing auth token for modloader integrity check."
+            )
         }
 
         val connection = openPinnedConnection("$BACKEND_URL/api/hash/modloader?hash=$hash")
@@ -276,21 +319,36 @@ object SecureLoader {
             val responseText = stream?.bufferedReader()?.use { it.readText() } ?: ""
 
             if (responseCode != 200) {
-                println("[V5] check failed ($responseCode): $responseText")
-                return false
+                return ModLoaderCheckResult(
+                    status = ModLoaderStatus.CHECK_FAILED,
+                    candidates = candidates,
+                    message = "Modloader integrity check failed ($responseCode): $responseText"
+                )
             }
 
             val json = jsonParser.parseToJsonElement(responseText).jsonObject
             val valid = json["valid"]?.jsonPrimitive?.booleanOrNull ?: false
 
-            if (!valid) {
-                return false
+            if (valid) {
+                ModLoaderCheckResult(
+                    status = ModLoaderStatus.VALID,
+                    candidates = candidates,
+                    message = "V5ModLoader is current."
+                )
+            } else {
+                ModLoaderCheckResult(
+                    status = ModLoaderStatus.OUTDATED,
+                    candidates = candidates,
+                    message = "V5ModLoader is outdated. Downloading the latest build from backend."
+                )
             }
-
-            valid
         } catch (e: Exception) {
             e.printStackTrace()
-            false
+            ModLoaderCheckResult(
+                status = ModLoaderStatus.CHECK_FAILED,
+                candidates = candidates,
+                message = "Failed to verify V5ModLoader against backend."
+            )
         } finally {
             connection.disconnect()
         }
@@ -309,6 +367,53 @@ object SecureLoader {
         }
 
         return digest.digest().joinToString("") { "%02x".format(it) }
+    }
+
+    private fun tryAutoUpdateModLoader(result: ModLoaderCheckResult) {
+        val token = getFreshJwtToken()
+        if (token.isNullOrBlank()) {
+            println("[V5] Missing auth token for automatic V5ModLoader repair.")
+            return
+        }
+
+        val modLoaderBytes = try {
+            downloadModLoaderJar(token)
+        } catch (e: Exception) {
+            println("[V5] Failed to download the latest V5ModLoader.")
+            e.printStackTrace()
+            return
+        }
+
+        try {
+            val stageResult = stageModLoaderUpdateAndRelaunch(modLoaderBytes, result.candidates)
+            if (stageResult.autoRelaunchPlanned) {
+                println("[V5] V5ModLoader update staged. Relaunching Minecraft.")
+            } else {
+                println("[V5] V5ModLoader update staged. Waiting for Minecraft to close so the helper can swap jars.")
+                println("[V5] If Minecraft does not reopen automatically, wait a few minutes, then relaunch it manually.")
+            }
+        } catch (e: Exception) {
+            println("[V5] Failed to stage V5ModLoader update.")
+            e.printStackTrace()
+        } finally {
+            Arrays.fill(modLoaderBytes, 0)
+        }
+    }
+
+    private fun downloadModLoaderJar(token: String): ByteArray {
+        return downloadEncryptedAsset("/api/download/modloader", token)
+            ?: throw IOException("Backend returned DEV_LOCAL for modloader download")
+    }
+
+    private fun stageModLoaderUpdateAndRelaunch(
+        modLoaderBytes: ByteArray,
+        candidates: List<File>
+    ): ModLoaderUpdater.StageResult {
+        return ModLoaderUpdater.stageUpdateAndRelaunch(
+            gameDir = getGameDir(),
+            modLoaderBytes = modLoaderBytes,
+            candidates = candidates
+        )
     }
 
     fun onInitialize() {
@@ -351,6 +456,10 @@ object SecureLoader {
     }
 
     private fun downloadZip(token: String): ByteArray? {
+        return downloadEncryptedAsset("/api/download/v5", token)
+    }
+
+    private fun downloadEncryptedAsset(endpointPath: String, token: String): ByteArray? {
         runAntiTamperChecks()
 
         val keyGen = KeyPairGenerator.getInstance("EC")
@@ -362,7 +471,7 @@ object SecureLoader {
         rng.nextBytes(clientNonceBytes)
         val clientNonce = Base64.getEncoder().encodeToString(clientNonceBytes)
 
-        val connection = openPinnedConnection("$BACKEND_URL/api/download/v5").apply {
+        val connection = openPinnedConnection("$BACKEND_URL$endpointPath").apply {
             setRequestProperty("Authorization", "Bearer $token")
             setRequestProperty("X-V5-HWID", runtimeHwid)
             setRequestProperty("User-Agent", LOADER_USER_AGENT)
@@ -372,57 +481,60 @@ object SecureLoader {
             readTimeout = 30000
         }
 
-        val responseCode = connection.responseCode
-        val responseText = try {
-            val stream = if (responseCode in 200..299) connection.inputStream else connection.errorStream
-            stream?.bufferedReader()?.use { it.readText() } ?: ""
-        } catch (e: Exception) {
-            ""
+        try {
+            val responseCode = connection.responseCode
+            val responseText = try {
+                val stream = if (responseCode in 200..299) connection.inputStream else connection.errorStream
+                stream?.bufferedReader()?.use { it.readText() } ?: ""
+            } catch (_: Exception) {
+                ""
+            }
+
+            val json = try {
+                jsonParser.parseToJsonElement(responseText).jsonObject
+            } catch (_: Exception) {
+                null
+            }
+
+            if (responseCode != 200 || json?.get("success")?.jsonPrimitive?.booleanOrNull != true) {
+                val errorMessage = json?.get("error")?.jsonPrimitive?.contentOrNull ?: "Unknown error"
+                throw IOException("Download failed: $errorMessage (code: $responseCode)")
+            }
+
+            if (json["mode"]?.jsonPrimitive?.contentOrNull == "DEV_LOCAL") {
+                return null
+            }
+
+            val payload = json["payload"]?.jsonObject ?: throw IOException("Missing payload")
+            val version = payload["version"]?.jsonPrimitive?.contentOrNull
+            val serverPub = payload["server_pub_key"]?.jsonPrimitive?.contentOrNull
+            val serverNonce = payload["server_nonce"]?.jsonPrimitive?.contentOrNull
+            val kdfSalt = payload["kdf_salt"]?.jsonPrimitive?.contentOrNull
+            val wrapIv = payload["wrap_iv"]?.jsonPrimitive?.contentOrNull
+            val wrappedKey = payload["wrapped_key"]?.jsonPrimitive?.contentOrNull
+            val fileIv = payload["file_iv"]?.jsonPrimitive?.contentOrNull
+            val contentStr = payload["content"]?.jsonPrimitive?.contentOrNull
+
+            if (
+                version != "2" || serverPub == null || serverNonce == null ||
+                kdfSalt == null || wrapIv == null || wrappedKey == null ||
+                fileIv == null || contentStr == null
+            ) {
+                throw IOException("Invalid payload structure")
+            }
+
+            return decryptEnvelope(
+                encryptedBase64 = contentStr,
+                fileIvBase64 = fileIv,
+                wrappedKeyBase64 = wrappedKey,
+                wrapIvBase64 = wrapIv,
+                serverPublicKeyBase64 = serverPub,
+                kdfSaltBase64 = kdfSalt,
+                clientPrivateKey = clientKeyPair.private
+            )
+        } finally {
+            connection.disconnect()
         }
-
-        val json = try {
-            jsonParser.parseToJsonElement(responseText).jsonObject
-        } catch (e: Exception) {
-            null
-        }
-
-        if (responseCode != 200 || json?.get("success")?.jsonPrimitive?.booleanOrNull != true) {
-            val errorMessage = json?.get("error")?.jsonPrimitive?.contentOrNull ?: "Unknown error"
-            println("[V5] Download failed: $errorMessage (code: $responseCode)")
-            shutDownHard()
-        }
-
-        if (json["mode"]?.jsonPrimitive?.contentOrNull == "DEV_LOCAL") {
-            return null
-        }
-
-        val payload = json["payload"]?.jsonObject ?: throw IOException("Missing payload")
-        val version = payload["version"]?.jsonPrimitive?.contentOrNull
-        val serverPub = payload["server_pub_key"]?.jsonPrimitive?.contentOrNull
-        val serverNonce = payload["server_nonce"]?.jsonPrimitive?.contentOrNull
-        val kdfSalt = payload["kdf_salt"]?.jsonPrimitive?.contentOrNull
-        val wrapIv = payload["wrap_iv"]?.jsonPrimitive?.contentOrNull
-        val wrappedKey = payload["wrapped_key"]?.jsonPrimitive?.contentOrNull
-        val fileIv = payload["file_iv"]?.jsonPrimitive?.contentOrNull
-        val contentStr = payload["content"]?.jsonPrimitive?.contentOrNull
-
-        if (
-            version != "2" || serverPub == null || serverNonce == null ||
-            kdfSalt == null || wrapIv == null || wrappedKey == null ||
-            fileIv == null || contentStr == null
-        ) {
-            throw IOException("Invalid payload structure")
-        }
-
-        return decryptEnvelope(
-            encryptedBase64 = contentStr,
-            fileIvBase64 = fileIv,
-            wrappedKeyBase64 = wrappedKey,
-            wrapIvBase64 = wrapIv,
-            serverPublicKeyBase64 = serverPub,
-            kdfSaltBase64 = kdfSalt,
-            clientPrivateKey = clientKeyPair.private
-        )
     }
 
     private fun openPinnedConnection(url: String): HttpsURLConnection {
