@@ -3078,6 +3078,11 @@ public final class com/v5/keybind/KeyBindUtils$WrappedKeyBind {
 	public final fun update$ctjs ()V
 }
 
+public final class com/v5/launch/ModLoaderUpdater {
+	public static final field INSTANCE Lcom/v5/launch/ModLoaderUpdater;
+	public final fun stageUpdateAndRelaunch (Ljava/io/File;[BLjava/util/List;)Z
+}
+
 public final class com/v5/launch/SecureLoader {
 	public static final field INSTANCE Lcom/v5/launch/SecureLoader;
 	public final fun V5ModLoaderCheck ()Z
