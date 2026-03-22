@@ -129,7 +129,8 @@ object SecureLoader {
             internalToken = refreshed
             return refreshed
         }
-        return internalToken ?: currentToken.takeUnless { isExpired(it) }
+        return internalToken?.takeUnless { isExpired(it) }
+            ?: currentToken.takeUnless { isExpired(it) }
     }
 
     private fun isNearExpiry(token: String): Boolean {
