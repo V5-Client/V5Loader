@@ -3135,6 +3135,11 @@ public class com/v5/mixins/BlockModelRendererMixin {
 	public fun <init> ()V
 }
 
+public abstract class com/v5/mixins/CameraMixin {
+	public fun <init> ()V
+	protected abstract fun setPos (Lnet/minecraft/util/math/Vec3d;)V
+}
+
 public class com/v5/mixins/ChatHudMixin {
 	public fun <init> ()V
 }
@@ -3181,6 +3186,10 @@ public class com/v5/mixins/GlStateManagerMixin {
 }
 
 public class com/v5/mixins/HorizontalConnectingBlockMixin {
+	public fun <init> ()V
+}
+
+public abstract class com/v5/mixins/KeyboardInputMixin : net/minecraft/client/input/Input {
 	public fun <init> ()V
 }
 
