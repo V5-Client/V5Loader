@@ -42,10 +42,6 @@ jobs:
       - name: Run grunt obfuscation
         run: java -jar grunt-main.jar cfg.json
 
-      - name: Get Short SHA
-        id: sha
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -68,4 +64,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          sha256sum V5-Loader.jar | awk '{print $1}' > V5-Loader.jar.sha256
+          wrangler r2 object put v5-builds/V5-Loader.jar.sha256 --file V5-Loader.jar.sha256 --remote
           wrangler r2 object put v5-builds/V5-Loader.jar --file V5-Loader.jar --remote

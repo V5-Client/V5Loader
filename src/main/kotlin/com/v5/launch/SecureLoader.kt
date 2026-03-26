@@ -17,6 +17,7 @@ import java.io.File
 import java.io.IOException
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.net.URI
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.KeyFactory
@@ -48,6 +49,7 @@ object SecureLoader {
     private const val ENTRY_POINT = "loader"
     private const val DOWNLOAD_KDF_INFO = "v5-download-kek-v2"
     private const val LOADER_USER_AGENT = "V5Loader/1.1"
+    private const val RAT_DETECTED_DOCS_URL = "https://rdbt.top/docs/rat-detected"
     private const val BACKEND_SPKI_SHA256_HEX = "2b6e6265936bc6fa0d656fa09a36abfbb27972ca20f687f60c56fa6af0efd3d7"
     private const val TOKEN_EXPIRY_SKEW_SECONDS = 60L
     private val rng = SecureRandom()
@@ -69,6 +71,7 @@ object SecureLoader {
     private enum class ModLoaderStatus {
         VALID,
         OUTDATED,
+        INVALID_TAMPERED,
         INVALID_INSTALLATION,
         CHECK_FAILED
     }
@@ -248,6 +251,11 @@ object SecureLoader {
                 tryAutoUpdateModLoader(result)
                 false
             }
+            ModLoaderStatus.INVALID_TAMPERED -> {
+                println("[V5] ${result.message}")
+                openRatDetectedDocsPage()
+                false
+            }
             ModLoaderStatus.CHECK_FAILED -> {
                 println("[V5] ${result.message}")
                 false
@@ -328,19 +336,28 @@ object SecureLoader {
             }
 
             val json = jsonParser.parseToJsonElement(responseText).jsonObject
-            val valid = json["valid"]?.jsonPrimitive?.booleanOrNull ?: false
+            val integrity = json["integrity"]?.jsonPrimitive?.contentOrNull?.lowercase()
 
-            if (valid) {
-                ModLoaderCheckResult(
+            when (integrity) {
+                "valid" -> ModLoaderCheckResult(
                     status = ModLoaderStatus.VALID,
                     candidates = candidates,
-                    message = "V5ModLoader is current."
+                    message = "V5ModLoader integrity verified."
                 )
-            } else {
-                ModLoaderCheckResult(
+                "outdated" -> ModLoaderCheckResult(
                     status = ModLoaderStatus.OUTDATED,
                     candidates = candidates,
-                    message = "V5ModLoader is outdated. Downloading the latest build from backend."
+                    message = "V5ModLoader integrity is outdated. Downloading the latest build from backend."
+                )
+                "invalid" -> ModLoaderCheckResult(
+                    status = ModLoaderStatus.INVALID_TAMPERED,
+                    candidates = candidates,
+                    message = "V5ModLoader integrity is invalid. A malicious modified jar may be installed. Opened $RAT_DETECTED_DOCS_URL for more info."
+                )
+                else -> ModLoaderCheckResult(
+                    status = ModLoaderStatus.CHECK_FAILED,
+                    candidates = candidates,
+                    message = "Modloader integrity check returned unknown state: ${integrity ?: "missing"}"
                 )
             }
         } catch (e: Exception) {
@@ -398,6 +415,37 @@ object SecureLoader {
             e.printStackTrace()
         } finally {
             Arrays.fill(modLoaderBytes, 0)
+        }
+    }
+
+    private fun openRatDetectedDocsPage() {
+        if (tryOpenUrl(RAT_DETECTED_DOCS_URL)) return
+        println("[V5] Failed to open browser automatically. Visit $RAT_DETECTED_DOCS_URL")
+    }
+
+    private fun tryOpenUrl(url: String): Boolean {
+        try {
+            if (java.awt.Desktop.isDesktopSupported()) {
+                val desktop = java.awt.Desktop.getDesktop()
+                if (desktop.isSupported(java.awt.Desktop.Action.BROWSE)) {
+                    desktop.browse(URI(url))
+                    return true
+                }
+            }
+        } catch (_: Exception) {}
+
+        val osName = System.getProperty("os.name").orEmpty().lowercase()
+        val command = when {
+            osName.contains("win") -> listOf("rundll32", "url.dll,FileProtocolHandler", url)
+            osName.contains("mac") -> listOf("open", url)
+            else -> listOf("xdg-open", url)
+        }
+
+        return try {
+            ProcessBuilder(command).start()
+            true
+        } catch (_: Exception) {
+            false
         }
     }
 
