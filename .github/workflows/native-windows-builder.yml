@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   windows-builder:
-    runs-on: windows-latest
+    runs-on: blacksmith-2vcpu-windows-2025
 
     steps:
       - name: Checkout

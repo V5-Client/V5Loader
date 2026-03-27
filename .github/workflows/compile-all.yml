@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   detect-native:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     outputs:
       native_changed: ${{ steps.native.outputs.native_changed }}
       should_build: ${{ steps.native.outputs.should_build }}
@@ -92,7 +92,7 @@ jobs:
       - macos
       - windows
     if: ${{ always() && needs['detect-native'].outputs.should_build == 'true' && (needs['detect-native'].outputs.native_changed == 'false' || needs.windows.result == 'success') }}
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     outputs:
       head_sha: ${{ steps.resolve_sha.outputs.head_sha }}
     steps:
