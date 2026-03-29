@@ -3016,10 +3016,14 @@ public final class com/v5/api/V5Auth {
 	public static final fun shutDownHard ()Ljava/lang/Void;
 }
 
+public final class com/v5/compat/CameraCompat {
+	public static final field INSTANCE Lcom/v5/compat/CameraCompat;
+	public static final fun getPos (Lnet/minecraft/client/render/Camera;)Lnet/minecraft/util/math/Vec3d;
+}
+
 public final class com/v5/event/Context {
 	public field camera Lnet/minecraft/client/render/Camera;
 	public field consumers Lnet/minecraft/client/render/VertexConsumerProvider;
-	public field frustum Lnet/minecraft/client/render/Frustum;
 	public fun <init> ()V
 	public final fun getCamera ()Lnet/minecraft/client/render/Camera;
 	public final fun getConsumers ()Lnet/minecraft/client/render/VertexConsumerProvider;
@@ -3216,10 +3220,6 @@ public abstract class com/v5/mixins/MultiplayerScreenMixin : net/minecraft/clien
 }
 
 public class com/v5/mixins/PlayerListHudMixin {
-	public fun <init> ()V
-}
-
-public abstract class com/v5/mixins/RenderLayersMixin {
 	public fun <init> ()V
 }
 
@@ -3584,12 +3584,18 @@ public final class com/v5/render/helper/TextureTracker {
 	public static final fun setPrevBoundTexture (I)V
 }
 
+public final class com/v5/render/objects/RenderLayerCompat {
+	public static final field INSTANCE Lcom/v5/render/objects/RenderLayerCompat;
+	public static final fun createLayer (Ljava/lang/String;Lcom/mojang/blaze3d/pipeline/RenderPipeline;ZZ)Lnet/minecraft/client/render/RenderLayer;
+	public static synthetic fun createLayer$default (Ljava/lang/String;Lcom/mojang/blaze3d/pipeline/RenderPipeline;ZZILjava/lang/Object;)Lnet/minecraft/client/render/RenderLayer;
+}
+
 public final class com/v5/render/objects/RenderLayers {
 	public static final field INSTANCE Lcom/v5/render/objects/RenderLayers;
 	public static final field LINE_LIST Lnet/minecraft/client/render/RenderLayer;
 	public static final field LINE_LIST_ESP Lnet/minecraft/client/render/RenderLayer;
-	public static final field TRIANGLE_STRIP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
-	public static final field TRIANGLE_STRIP_ESP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
+	public static final field TRIANGLE_STRIP Lnet/minecraft/client/render/RenderLayer;
+	public static final field TRIANGLE_STRIP_ESP Lnet/minecraft/client/render/RenderLayer;
 }
 
 public final class com/v5/render/objects/RenderPipelines {

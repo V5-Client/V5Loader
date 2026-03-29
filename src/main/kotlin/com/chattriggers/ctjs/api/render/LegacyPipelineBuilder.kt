@@ -5,6 +5,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.DepthTestFunction
 import com.mojang.blaze3d.platform.DestFactor
 import com.mojang.blaze3d.platform.SourceFactor
+import com.v5.render.objects.RenderLayerCompat
 import net.minecraft.client.render.RenderLayer
 
 object LegacyPipelineBuilder {
@@ -81,13 +82,10 @@ object LegacyPipelineBuilder {
     fun layer(): RenderLayer {
         if (layerList.containsKey(state())) return layerList[state()]!!
 
-        val layer = RenderLayer.of(
+        val layer = RenderLayerCompat.createLayer(
             "ctjs/custom/layer${hashCode()}",
-            1536,
             build(),
-            RenderLayer.MultiPhaseParameters
-                .builder()
-                .build(false)
+            translucent = blend == true
         )
         layerList[state()] = layer
 

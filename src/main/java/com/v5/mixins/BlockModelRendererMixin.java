@@ -21,9 +21,9 @@ import java.util.List;
 @Mixin(BlockModelRenderer.class)
 public class BlockModelRendererMixin {
     @Unique
-    private final ThreadLocal<Integer> alphas = new ThreadLocal<>();
+    private final ThreadLocal<Integer> alphas = ThreadLocal.withInitial(() -> -1);
 
-    @Inject(method = {"renderSmooth", "renderFlat"}, at = @At("HEAD"), cancellable = true)
+    @Inject(method = {"renderSmooth", "renderFlat"}, at = @At("HEAD"), cancellable = true, require = 0)
     private void onRenderSmooth(BlockRenderView world, List<BlockModelPart> parts, BlockState state, BlockPos pos, MatrixStack matrices, VertexConsumer vertexConsumer, boolean cull, int overlay, CallbackInfo ci) {
         if (Xray.isEnabled) {
             int alpha = Xray.alpha;
@@ -33,9 +33,25 @@ public class BlockModelRendererMixin {
         }
     }
 
-    @ModifyArgs(method = "renderQuad", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/VertexConsumer;quad(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/model/BakedQuad;[FFFFF[IIZ)V"))
-    private void modifyXrayAlpha(final Args args) {
-        final int alpha = alphas.get();
-        args.set(6, alpha == -1 ? args.get(6) : alpha / 255f);
+    @ModifyArgs(method = "renderQuad", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/VertexConsumer;quad(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/model/BakedQuad;[FFFFF[IIZ)V"), require = 0)
+    private void modifyXrayAlphaLegacy(final Args args) {
+        applyXrayAlpha(args, 6);
+    }
+
+    @ModifyArgs(method = "renderQuad", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/VertexConsumer;quad(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/model/BakedQuad;FFFFII)V"), require = 0)
+    private void modifyXrayAlphaModernQuad(final Args args) {
+        applyXrayAlpha(args, 5);
+    }
+
+    @ModifyArgs(method = "renderQuad", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/VertexConsumer;putBulkData(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/model/BakedQuad;FFFFII)V"), require = 0)
+    private void modifyXrayAlphaModernBulkData(final Args args) {
+        applyXrayAlpha(args, 5);
+    }
+
+    @Unique
+    private void applyXrayAlpha(final Args args, final int alphaIndex) {
+        final Integer alpha = alphas.get();
+        if (alpha == null || alpha == -1) return;
+        args.set(alphaIndex, alpha / 255f);
     }
 }

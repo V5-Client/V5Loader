@@ -6,8 +6,6 @@ import com.mojang.blaze3d.platform.DepthTestFunction
 import com.mojang.blaze3d.vertex.VertexFormat.DrawMode
 import net.minecraft.client.gl.RenderPipelines as MinecraftRenderPipelines
 import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.RenderLayer.MultiPhase
-import net.minecraft.client.render.RenderPhase
 import net.minecraft.client.render.VertexFormats
 
 object RenderPipelines {
@@ -58,39 +56,27 @@ object RenderPipelines {
 }
 
 object RenderLayers {
-    @JvmField val LINE_LIST: RenderLayer = RenderLayer.of(
+    @JvmField val LINE_LIST: RenderLayer = RenderLayerCompat.createLayer(
         "line-list",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
         RenderPipelines.LINE_LIST,
-        RenderLayer.MultiPhaseParameters.builder()
-            .layering(RenderPhase.VIEW_OFFSET_Z_LAYERING)
-            .build(false)
+        viewOffset = true
     )
 
-    @JvmField val LINE_LIST_ESP: RenderLayer = RenderLayer.of(
+    @JvmField val LINE_LIST_ESP: RenderLayer = RenderLayerCompat.createLayer(
         "line-list-esp",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
-        RenderPipelines.LINE_LIST_ESP,
-        RenderLayer.MultiPhaseParameters.builder().build(false)
+        RenderPipelines.LINE_LIST_ESP
     )
 
-    @JvmField val TRIANGLE_STRIP: MultiPhase = RenderLayer.of(
+    @JvmField val TRIANGLE_STRIP: RenderLayer = RenderLayerCompat.createLayer(
         "triangle_strip",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
-        false,
-        true,
         RenderPipelines.TRIANGLE_STRIP,
-        RenderLayer.MultiPhaseParameters.builder()
-            .layering(RenderPhase.VIEW_OFFSET_Z_LAYERING)
-            .build(false)
+        translucent = true,
+        viewOffset = true
     )
 
-    @JvmField val TRIANGLE_STRIP_ESP: MultiPhase = RenderLayer.of(
+    @JvmField val TRIANGLE_STRIP_ESP: RenderLayer = RenderLayerCompat.createLayer(
         "triangle_strip_esp",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
-        false,
-        true,
         RenderPipelines.TRIANGLE_STRIP_ESP,
-        RenderLayer.MultiPhaseParameters.builder().build(false)
+        translucent = true
     )
 }

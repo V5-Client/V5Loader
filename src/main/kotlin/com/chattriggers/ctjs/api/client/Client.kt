@@ -9,6 +9,7 @@ import com.chattriggers.ctjs.internal.mixins.ClientPlayerInteractionManagerAcces
 import com.chattriggers.ctjs.internal.mixins.HandledScreenAccessor
 import com.chattriggers.ctjs.internal.mixins.KeyBindingAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
+import com.v5.compat.CameraCompat
 import gg.essential.universal.UKeyboard
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.hud.ChatHud
@@ -342,10 +343,10 @@ object Client {
     }
 
     class CameraWrapper {
-        fun getX(): Double = getMinecraft().gameRenderer.camera.pos.x
+        fun getX(): Double = CameraCompat.getPos(getMinecraft().gameRenderer.camera).x
 
-        fun getY(): Double = getMinecraft().gameRenderer.camera.pos.y
+        fun getY(): Double = CameraCompat.getPos(getMinecraft().gameRenderer.camera).y
 
-        fun getZ(): Double = getMinecraft().gameRenderer.camera.pos.z
+        fun getZ(): Double = CameraCompat.getPos(getMinecraft().gameRenderer.camera).z
     }
 }

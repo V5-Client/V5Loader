@@ -29,8 +29,9 @@
     },
     "mixins": ["ctjs.mixins.json", "v5.mixins.json"],
     "depends": {
+        "minecraft": ">=1.21.10 <=1.21.11",
         "fabricloader": ">=$loader_version",
-        "fabric-api": ">=$fabric_api_version",
+        "fabric-api": ">=$fabric_api_min_version",
         "fabric-language-kotlin": ">=$fabric_kotlin_version"
     },
     "breaks": {

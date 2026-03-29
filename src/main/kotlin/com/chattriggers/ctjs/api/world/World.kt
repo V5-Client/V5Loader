@@ -75,7 +75,30 @@ object World {
     fun getDifficulty(): Settings.Difficulty? = toMC()?.difficulty?.let(Settings.Difficulty::fromMC)
 
     @JvmStatic
-    fun getMoonPhase(): Int = toMC()?.moonPhase ?: -1
+    fun getMoonPhase(): Int {
+        val world = toMC() ?: return -1
+
+        val directMoonPhase = (world.javaClass.methods + world.javaClass.declaredMethods).firstOrNull { method ->
+            method.name == "getMoonPhase" && method.parameterCount == 0
+        }?.let { method ->
+            runCatching {
+                method.isAccessible = true
+                method.invoke(world) as? Int
+            }.getOrNull()
+        }
+        if (directMoonPhase != null) return directMoonPhase
+
+        val timeOfDay = (world.javaClass.methods + world.javaClass.declaredMethods).firstOrNull { method ->
+            method.name == "getTimeOfDay" && method.parameterCount == 0
+        }?.let { method ->
+            runCatching {
+                method.isAccessible = true
+                method.invoke(world) as? Long
+            }.getOrNull()
+        } ?: world.timeOfDay
+
+        return ((timeOfDay / 24000L) % 8L).toInt()
+    }
 
     /**
      * Gets the [Block] at a location in the world.

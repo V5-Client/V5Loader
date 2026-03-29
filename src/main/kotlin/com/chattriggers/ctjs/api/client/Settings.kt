@@ -138,10 +138,29 @@ object Settings {
     }
 
     class VideoWrapper {
-        fun getGraphicsMode() = GraphicsMode.fromMC(toMC().graphicsMode.value)
+        fun getGraphicsMode(): GraphicsMode {
+            val optionValue = readGraphicsModeValue() as? MCGraphicsMode ?: return GraphicsMode.FAST
+            return GraphicsMode.fromMC(optionValue)
+        }
 
         fun setGraphicsMode(mode: GraphicsMode) {
-            toMC().graphicsMode.value = mode.toMC()
+            val options = toMC()
+            val mcMode = mode.toMC()
+
+            val applied = (options.javaClass.methods + options.javaClass.declaredMethods).firstOrNull { method ->
+                method.name == "applyGraphicsMode" &&
+                    method.parameterCount == 1 &&
+                    method.parameterTypes[0].isAssignableFrom(mcMode.javaClass)
+            }?.let { method ->
+                runCatching {
+                    method.isAccessible = true
+                    method.invoke(options, mcMode)
+                }.isSuccess
+            } == true
+
+            if (!applied) {
+                writeGraphicsModeValue(mcMode)
+            }
         }
 
         fun getRenderDistance() = toMC().viewDistance.value
@@ -214,6 +233,63 @@ object Settings {
 
         fun setEntityShadows(toggled: Boolean) {
             toMC().entityShadows.value = toggled
+        }
+
+        private fun readGraphicsModeValue(): Any? {
+            val option = readGraphicsModeOption() ?: return null
+            return (option.javaClass.methods + option.javaClass.declaredMethods).firstOrNull { method ->
+                method.name == "getValue" && method.parameterCount == 0
+            }?.let { method ->
+                runCatching {
+                    method.isAccessible = true
+                    method.invoke(option)
+                }.getOrNull()
+            } ?: runCatching {
+                option.javaClass.getDeclaredField("value").apply { isAccessible = true }.get(option)
+            }.getOrNull()
+        }
+
+        private fun writeGraphicsModeValue(value: MCGraphicsMode) {
+            val option = readGraphicsModeOption() ?: return
+
+            val setByMethod = (option.javaClass.methods + option.javaClass.declaredMethods).firstOrNull { method ->
+                method.name == "setValue" &&
+                    method.parameterCount == 1 &&
+                    method.parameterTypes[0].isAssignableFrom(value.javaClass)
+            }?.let { method ->
+                runCatching {
+                    method.isAccessible = true
+                    method.invoke(option, value)
+                }.isSuccess
+            } == true
+
+            if (!setByMethod) {
+                runCatching {
+                    option.javaClass.getDeclaredField("value").apply { isAccessible = true }.set(option, value)
+                }
+            }
+        }
+
+        private fun readGraphicsModeOption(): Any? {
+            val options = toMC()
+
+            val byMethod = listOf("getPreset", "getGraphicsMode").firstNotNullOfOrNull { name ->
+                (options.javaClass.methods + options.javaClass.declaredMethods).firstOrNull { method ->
+                    method.name == name && method.parameterCount == 0
+                }?.let { method ->
+                    runCatching {
+                        method.isAccessible = true
+                        method.invoke(options)
+                    }.getOrNull()
+                }
+            }
+            if (byMethod != null) return byMethod
+
+            return listOf("preset", "graphicsMode").firstNotNullOfOrNull { fieldName ->
+                runCatching {
+                    options.javaClass.getDeclaredField(fieldName).apply { isAccessible = true }.get(options)
+                }.getOrNull()
+            }
         }
     }
 

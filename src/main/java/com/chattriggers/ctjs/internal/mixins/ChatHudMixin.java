@@ -31,11 +31,30 @@ public class ChatHudMixin {
         method = "addMessage(Lnet/minecraft/client/gui/hud/ChatHudLine;)V",
         at = @At(
             value = "INVOKE",
+            target = "Ljava/util/List;removeLast()Ljava/lang/Object;",
+            shift = At.Shift.BEFORE
+        ),
+        require = 0
+    )
+    private void injectMessageRemovedForChatLimitModern(ChatHudLine message, CallbackInfo ci) {
+        notifyRemovedMessage();
+    }
+
+    @Inject(
+        method = "addMessage(Lnet/minecraft/client/gui/hud/ChatHudLine;)V",
+        at = @At(
+            value = "INVOKE",
             target = "Ljava/util/List;remove(I)Ljava/lang/Object;",
             shift = At.Shift.BEFORE
-        )
+        ),
+        require = 0
     )
-    private void injectMessageRemovedForChatLimit(ChatHudLine message, CallbackInfo ci) {
+    private void injectMessageRemovedForChatLimitLegacy(ChatHudLine message, CallbackInfo ci) {
+        notifyRemovedMessage();
+    }
+
+    private void notifyRemovedMessage() {
+        if (messages.isEmpty()) return;
         ChatLib.INSTANCE.onChatHudLineRemoved$ctjs(messages.getLast());
     }
 

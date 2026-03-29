@@ -22,6 +22,10 @@ import java.util.zip.ZipFile
  */
 object Mappings {
     private const val YARN_MAPPINGS_URL_PREFIX = "https://maven.fabricmc.net/net/fabricmc/yarn/"
+    private val runtimeYarnMappings = mapOf(
+        "1.21.10" to "1.21.10+build.1",
+        "1.21.11" to "1.21.11+build.4"
+    )
 
     // If this is changed, also change the Java.type function in mixinProvidedLibs.js
     internal val mappedPackages = setOf("Lnet/minecraft/", "Lcom/mojang/blaze3d/")
@@ -30,12 +34,17 @@ object Mappings {
     private val mappedToUnmappedClassNames = mutableMapOf<String, String>()
 
     internal fun initialize() {
-        val container = FabricLoader.getInstance().getModContainer(CTJS.MOD_ID)
-        val mappingVersion = if (container.isPresent) {
+        val loader = FabricLoader.getInstance()
+        val runtimeMinecraftVersion = loader.getModContainer("minecraft")
+            .map { it.metadata.version.friendlyString.substringBefore('-') }
+            .orElse("")
+        val container = loader.getModContainer(CTJS.MOD_ID)
+        val packagedMappingVersion = if (container.isPresent) {
             container.get().metadata.getCustomValue("${CTJS.MOD_ID}:yarn-mappings").asString
-        } else {
-            "1.21.10+build.1"
-        }
+        } else null
+        val mappingVersion = runtimeYarnMappings[runtimeMinecraftVersion]
+            ?: packagedMappingVersion
+            ?: "1.21.11+build.4"
         val jarName = "yarn-$mappingVersion-v2.jar".urlEncode()
 
         val jarBytes = URI("$YARN_MAPPINGS_URL_PREFIX${mappingVersion.urlEncode()}/$jarName").toURL().readBytes()

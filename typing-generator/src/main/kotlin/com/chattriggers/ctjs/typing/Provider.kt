@@ -474,15 +474,18 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
     private val classPathCache = mutableMapOf<KSDeclaration, String>()
     private val KSDeclaration.path: String
         get() = classPathCache.getOrPut(this) {
+            val qualified = qualifiedName?.asString()
+
             if (this is KSClassDeclaration) {
                 val parent = parentDeclaration
-                if (parent is KSClassDeclaration) {
+                if (parent is KSClassDeclaration && qualified != null) {
                     // Omit the parent class from the path
-                    return qualifiedName!!.getQualifier().substringBeforeLast('.') + ".$name"
+                    val packagePath = qualified.substringBeforeLast('.', "")
+                    return if (packagePath.isEmpty()) name else "$packagePath.$name"
                 }
             }
 
-            qualifiedName!!.asString()
+            qualified ?: simpleName.asString()
         }
 
     fun KSPropertyDeclaration.isStatic() = Modifier.JAVA_STATIC in modifiers ||
