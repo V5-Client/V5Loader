@@ -1,5 +1,6 @@
 package com.chattriggers.ctjs.internal.mixins;
 
+import com.chattriggers.ctjs.api.client.Client;
 import com.chattriggers.ctjs.internal.listeners.WorldListener;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -43,9 +44,9 @@ public abstract class WorldRendererMixin {
         return original;
     }
 
-    @Inject(method = "render", at = @At("HEAD"))
-    private void beforeRender(ObjectAllocator allocator, RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, Matrix4f positionMatrix, Matrix4f matrix4f, Matrix4f projectionMatrix, GpuBufferSlice fogBuffer, Vector4f fogColor, boolean renderSky, CallbackInfo ci) {
-        WorldListener.INSTANCE.triggerRenderStart(tickCounter.getDynamicDeltaTicks());
+    @Inject(method = "render", at = @At("HEAD"), require = 0)
+    private void beforeRender(CallbackInfo ci) {
+        WorldListener.INSTANCE.triggerRenderStart(Client.getMinecraft().getRenderTickCounter().getDynamicDeltaTicks());
     }
 
     @Inject(method = "method_62214", at = @At("RETURN"), require = 0)

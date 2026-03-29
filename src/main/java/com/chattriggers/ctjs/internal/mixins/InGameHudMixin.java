@@ -15,15 +15,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InGameHud.class)
 public class InGameHudMixin {
-    @Inject(method = "renderScoreboardSidebar(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/scoreboard/ScoreboardObjective;)V", at = @At("HEAD"), cancellable = true)
+    @Inject(
+        method = "renderScoreboardSidebar(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/scoreboard/ScoreboardObjective;)V",
+        at = @At("HEAD"),
+        cancellable = true,
+        require = 0
+    )
     private void injectRenderScoreboard(DrawContext matrices, ScoreboardObjective objective, CallbackInfo ci) {
         if (!Scoreboard.getShouldRender())
             ci.cancel();
     }
 
     @Inject(
-        method = "renderBossBarHud",
-        at = @At("TAIL")
+        method = "render",
+        at = @At("TAIL"),
+        require = 0
     )
     private void injectRenderOverlay(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         CTEvents.RENDER_OVERLAY.invoker().render(context, new UMatrixStack(context.getMatrices()).toMC(), tickCounter.getDynamicDeltaTicks());

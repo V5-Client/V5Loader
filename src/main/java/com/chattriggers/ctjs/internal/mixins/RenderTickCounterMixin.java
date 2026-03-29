@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(RenderTickCounter.Dynamic.class)
 public class RenderTickCounterMixin {
-    @Inject(method = "beginRenderTick(J)I", at = @At("HEAD"))
-    private void injectBeginRenderTick(long timeMillis, CallbackInfoReturnable<Integer> cir) {
+    @Inject(method = "beginRenderTick", at = @At("HEAD"), require = 0)
+    private void injectBeginRenderTick(CallbackInfoReturnable<Integer> cir) {
         CTEvents.RENDER_TICK.invoker().invoke();
     }
 }
