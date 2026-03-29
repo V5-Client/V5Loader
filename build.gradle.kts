@@ -3,8 +3,8 @@ import org.jetbrains.dokka.versioning.VersioningConfiguration
 import org.jetbrains.dokka.versioning.VersioningPlugin
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.HttpURLConnection
-import java.net.URI
 import java.net.URL
+import java.io.ByteArrayOutputStream
 
 buildscript {
     dependencies {
@@ -117,14 +117,12 @@ tasks {
         val flkVersion = libs.versions.fabric.kotlin.get()
         val yarnVersion = libs.versions.yarn.get()
         val fapiVersion = libs.versions.fabric.api.get()
-        val fapiMinVersion = "0.134.1+1.21.10"
         val loaderVersion = libs.versions.loader.get()
 
         inputs.property("version", project.version)
         inputs.property("yarn_mappings", yarnVersion)
         inputs.property("fabric_kotlin_version", flkVersion)
         inputs.property("fabric_api_version", fapiVersion)
-        inputs.property("fabric_api_min_version", fapiMinVersion)
         inputs.property("loader_version", loaderVersion)
 
         filesMatching("fabric.mod.json") {
@@ -133,7 +131,6 @@ tasks {
                 "yarn_mappings" to yarnVersion,
                 "fabric_kotlin_version" to flkVersion,
                 "fabric_api_version" to fapiVersion,
-                "fabric_api_min_version" to fapiMinVersion,
                 "loader_version" to loaderVersion
             )
         }
@@ -193,15 +190,15 @@ tasks {
 
                 sourceLink {
                     localDirectory.set(file("src/main/kotlin"))
-                    remoteUrl.set(URI("https://github.com/ChatTriggers/ctjs/blob/$branch/src/main/kotlin").toURL())
+                    remoteUrl.set(URL("https://github.com/ChatTriggers/ctjs/blob/$branch/src/main/kotlin"))
                     remoteLineSuffix.set("#L")
                 }
 
                 externalDocumentationLink {
                     val yarnVersion = libs.versions.yarn.get()
 
-                    url.set(URI("https://maven.fabricmc.net/docs/yarn-$yarnVersion/").toURL())
-                    packageListUrl.set(URI("https://maven.fabricmc.net/docs/yarn-$yarnVersion/element-list").toURL())
+                    url.set(URL("https://maven.fabricmc.net/docs/yarn-$yarnVersion/"))
+                    packageListUrl.set(URL("https://maven.fabricmc.net/docs/yarn-$yarnVersion/element-list"))
                 }
             }
         }
@@ -247,19 +244,17 @@ tasks {
 }
 
 fun downloadFile(url: String): ByteArray {
-    return (URI(url).toURL().openConnection() as HttpURLConnection).apply {
+    return (URL(url).openConnection() as HttpURLConnection).apply {
         requestMethod = "GET"
         doOutput = true
     }.inputStream.readAllBytes()
 }
 
 fun getBranch(): String {
-    val process = ProcessBuilder("git", "rev-parse", "HEAD")
-        .directory(projectDir)
-        .redirectErrorStream(true)
-        .start()
-
-    val output = process.inputStream.bufferedReader().use { it.readText().trim() }
-    check(process.waitFor() == 0) { "Failed to resolve git branch hash: $output" }
-    return output
+    val stdout = ByteArrayOutputStream()
+    exec {
+        commandLine("git", "rev-parse", "HEAD")
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
 }

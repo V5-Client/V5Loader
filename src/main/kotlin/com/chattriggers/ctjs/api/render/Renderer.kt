@@ -10,7 +10,6 @@ import com.chattriggers.ctjs.engine.LogType
 import com.chattriggers.ctjs.engine.printToConsole
 import com.chattriggers.ctjs.internal.utils.getOrDefault
 import com.chattriggers.ctjs.internal.utils.toRadians
-import com.v5.compat.CameraCompat
 import com.mojang.blaze3d.pipeline.RenderPipeline.Snippet
 import com.mojang.blaze3d.systems.RenderSystem
 import gg.essential.elementa.dsl.component1
@@ -313,7 +312,7 @@ object Renderer {
     @JvmStatic
     @JvmOverloads
     fun pos(x: Float, y: Float, z: Float = 0f) = apply {
-        val camera = CameraCompat.getPos(Client.getMinecraft().gameRenderer.camera)
+        val camera = Client.getMinecraft().gameRenderer.camera.pos
         Renderer3d.pos(x + camera.x.toFloat(), y + camera.y.toFloat(), z + camera.z.toFloat())
     }
 
@@ -563,6 +562,8 @@ object Renderer {
             colorize(1f, 1f, 1f, 1f)
 
         scale(1f, 1f, 50f)
+
+        RenderSystem.setShaderTexture(0, image.getTexture()?.glTextureView)
 
         begin(DrawMode.QUADS, VertexFormat.POSITION_TEXTURE_COLOR, snippet = RenderSnippet.POSITION_TEX_COLOR_SNIPPET)
         pos(x, y + height, 0f).tex(0f, 1f).color(colorized!!)

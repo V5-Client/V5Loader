@@ -47,10 +47,10 @@ public class WorldRendererMixin {
     WorldRenderEvent.START.invoker().trigger(c);
   }
 
-  @Inject(method = "method_62214", at = @At("RETURN"), require = 0)
-  private void postRender(CallbackInfo ci) {
+  @Inject(method = "method_62214", at = @At("RETURN"))
+  private void postRender(GpuBufferSlice gpuBufferSlice, WorldRenderState worldRenderState, Profiler profiler, Matrix4f matrix4f, Handle handle, Handle handle2, boolean bl, Frustum frustum, Handle handle3, Handle handle4, CallbackInfo ci) {
     Context c = getCtx();
-    c.setFrustum(null);
+    c.setFrustum(frustum);
     WorldRenderEvent.LAST.invoker().trigger(c);
   }
 
@@ -60,13 +60,19 @@ public class WorldRendererMixin {
     return original;
   }
 
-  @Inject(method = "method_62214", at = @At("HEAD"), cancellable = true, require = 0)
-  private void v5$renderMain(CallbackInfo ci) {
-    v5$cancelRender(ci);
-  }
-
-  @Unique
-  private void v5$cancelRender(CallbackInfo ci) {
+  @Inject(method = "method_62214", at = @At("HEAD"), cancellable = true)
+  private void v5$renderMain(
+          GpuBufferSlice gpuBufferSlice,
+          WorldRenderState worldRenderState,
+          Profiler profiler,
+          Matrix4f matrix4f,
+          Handle handle,
+          Handle handle2,
+          boolean bl,
+          Frustum frustum,
+          Handle handle3,
+          Handle handle4,
+          CallbackInfo ci) {
     if (V5MixinStorage.getBoolean("macroEnabled", false)
             && "No Render".equals(V5MixinStorage.getString("renderLimiter", "Off"))) {
       ci.cancel();

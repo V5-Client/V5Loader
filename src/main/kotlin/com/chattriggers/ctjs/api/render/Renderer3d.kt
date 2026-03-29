@@ -4,7 +4,7 @@ import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.Settings
 import com.chattriggers.ctjs.api.vec.Vec3f
 import com.chattriggers.ctjs.internal.utils.get
-import com.v5.compat.CameraCompat
+import com.mojang.blaze3d.systems.RenderSystem
 import gg.essential.elementa.dsl.component1
 import gg.essential.elementa.dsl.component2
 import gg.essential.elementa.dsl.component3
@@ -62,7 +62,7 @@ object Renderer3d {
             begin()
         if (!firstVertex)
             worldRenderer.endVertex()
-        val camera = CameraCompat.getPos(Client.getMinecraft().gameRenderer.camera)
+        val camera = Client.getMinecraft().gameRenderer.camera.pos
         worldRenderer.pos(Renderer.matrixStack, x.toDouble() - camera.x, y.toDouble() - camera.y, z.toDouble() - camera.z)
         firstVertex = false
     }
@@ -165,7 +165,9 @@ object Renderer3d {
      * @return [Renderer3d] to allow for method chaining
      */
     @JvmStatic
-    fun lineWidth(width: Float) = apply {}
+    fun lineWidth(width: Float) = apply {
+        RenderSystem.lineWidth(width)
+    }
 
     /**
      * Finalizes vertices and draws the world renderer.
@@ -218,11 +220,10 @@ object Renderer3d {
 
         val fontRenderer = Renderer.getFontRenderer()
         val camera = Client.getMinecraft().gameRenderer.camera
-        val cameraPos = CameraCompat.getPos(camera)
         val renderPos = Vec3f(
-            x - cameraPos.x.toFloat(),
-            y - cameraPos.y.toFloat(),
-            z - cameraPos.z.toFloat(),
+            x - camera.pos.x.toFloat(),
+            y - camera.pos.y.toFloat(),
+            z - camera.pos.z.toFloat(),
         )
 
         val lScale = scale * if (increase) {
@@ -338,6 +339,8 @@ object Renderer3d {
         Renderer.pushMatrix()
             .disableDepth()
             .disableCull()
+        RenderSystem.lineWidth(thickness)
+
         val (r, g, b, a) = Color(color.toInt(), true)
 
         val normalVec = Vector3f(x2 - x1, y2 - y1, z2 - z1).normalize()
@@ -347,6 +350,7 @@ object Renderer3d {
         pos(x2, y2, z2).color(r, g, b, a).normal(normalVec.x, normalVec.y, normalVec.z)
         draw()
 
+        RenderSystem.lineWidth(1f)
         Renderer
             .enableCull()
             .enableDepth()

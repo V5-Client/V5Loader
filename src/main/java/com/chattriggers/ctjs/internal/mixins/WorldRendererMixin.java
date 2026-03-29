@@ -48,8 +48,8 @@ public abstract class WorldRendererMixin {
         WorldListener.INSTANCE.triggerRenderStart(tickCounter.getDynamicDeltaTicks());
     }
 
-    @Inject(method = "method_62214", at = @At("RETURN"), require = 0)
-    private void afterRender(CallbackInfo ci) {
+    @Inject(method = "method_62214", at = @At("RETURN"))
+    private void afterRender(GpuBufferSlice gpuBufferSlice, WorldRenderState worldRenderState, Profiler profiler, Matrix4f matrix4f, Handle handle, Handle handle2, boolean bl, Frustum frustum, Handle handle3, Handle handle4, CallbackInfo ci) {
         WorldListener.INSTANCE.triggerRenderLast();
     }
 }

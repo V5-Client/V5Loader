@@ -13,6 +13,7 @@
         "MinecraftClientMixin",
         "MouseMixin",
         "PlayerListHudMixin",
+        "RenderLayersMixin",
         "LightTextureManagerMixin",
         "AbstractTerrainRenderContextMixin",
         "ChunkOcclusionDataBuilderMixin",

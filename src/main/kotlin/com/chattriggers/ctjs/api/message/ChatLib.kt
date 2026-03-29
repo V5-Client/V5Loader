@@ -129,26 +129,7 @@ object ChatLib {
      */
     @JvmStatic
     fun getChatWidth(): Int {
-        val options = Client.settings.toMC()
-        val chatScale = options.chatWidth.value
-
-        val staticWidth = runCatching {
-            val widthMethod = net.minecraft.client.gui.hud.ChatHud::class.java.methods.firstOrNull { method ->
-                method.name == "getWidth" && method.parameterCount == 1
-            } ?: return@runCatching null
-            widthMethod.isAccessible = true
-            widthMethod.invoke(null, chatScale) as? Int
-        }.getOrNull()
-        if (staticWidth != null) return staticWidth
-
-        val chatGui = Client.getChatGui() ?: return 0
-        return runCatching {
-            val getter = chatGui.javaClass.methods.firstOrNull { method ->
-                method.name == "getWidth" && method.parameterCount == 0
-            } ?: return@runCatching 0
-            getter.isAccessible = true
-            getter.invoke(chatGui) as? Int ?: 0
-        }.getOrDefault(0)
+        return Client.getChatGui()?.width ?: 0
     }
 
     /**

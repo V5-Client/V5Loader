@@ -670,65 +670,24 @@ object DynamicCommands : CommandCollection() {
         throw SimpleCommandExceptionType(message).createWithContext(reader)
 
     private fun getMockCommandSource(): ServerCommandSource {
-        val output = object : CommandOutput {
-            override fun sendMessage(message: Text?) {
-                ChatLib.chat(message)
-            }
-            override fun shouldReceiveFeedback() = true
-            override fun shouldTrackOutput() = false
-            override fun shouldBroadcastConsoleToOps() = false
-        }
-
-        val constructors = ServerCommandSource::class.java.declaredConstructors
-        for (constructor in constructors) {
-            if (constructor.parameterCount != 9) continue
-
-            val permissionArg = resolvePermissionArg(constructor.parameterTypes[4]) ?: continue
-
-            val args = arrayOf(
-                output,
-                Player.getPos().toVec3d(),
-                Player.getRotation(),
-                null,
-                permissionArg,
-                Player.getName(),
-                Player.getDisplayName(),
-                null,
-                Player.toMC(),
-            )
-
-            val source = runCatching {
-                constructor.isAccessible = true
-                constructor.newInstance(*args) as ServerCommandSource
-            }.getOrNull()
-
-            if (source != null) return source
-        }
-
-        throw IllegalStateException("Unable to create ServerCommandSource for this Minecraft version")
-    }
-
-    private fun resolvePermissionArg(type: Class<*>): Any? {
-        if (type == Int::class.javaPrimitiveType || type == Int::class.javaObjectType) {
-            return 0
-        }
-
-        if (type.name != "net.minecraft.command.permission.PermissionPredicate") {
-            return null
-        }
-
-        runCatching {
-            type.getField("ALL").get(null)
-        }.getOrNull()?.let { return it }
-
-        val fallbackFactory = (type.methods + type.declaredMethods).firstOrNull { method ->
-            method.parameterCount == 0 && (method.name == "all" || method.name == "alwaysTrue")
-        } ?: return null
-
-        return runCatching {
-            fallbackFactory.isAccessible = true
-            fallbackFactory.invoke(null)
-        }.getOrNull()
+        return ServerCommandSource(
+            object : CommandOutput {
+                override fun sendMessage(message: Text?) {
+                    ChatLib.chat(message)
+                }
+                override fun shouldReceiveFeedback() = true
+                override fun shouldTrackOutput() = false
+                override fun shouldBroadcastConsoleToOps() = false
+            },
+            Player.getPos().toVec3d(),
+            Player.getRotation(),
+            null,
+            0,
+            Player.getName(),
+            Player.getDisplayName(),
+            null,
+            Player.toMC(),
+        )
     }
 
     private fun <T, U> wrapArgument(base: ArgumentType<T>, block: (T) -> U): ArgumentType<U> {

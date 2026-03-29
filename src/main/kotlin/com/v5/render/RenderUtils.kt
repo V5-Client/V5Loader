@@ -1,6 +1,6 @@
 package com.v5.render
 
-import com.v5.compat.CameraCompat
+import com.mojang.blaze3d.systems.RenderSystem
 import com.v5.render.helper.FrustumHolder
 import com.v5.render.helper.FrustumUtils
 import com.v5.render.objects.RenderLayers
@@ -10,6 +10,7 @@ import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.render.Frustum
 import net.minecraft.client.render.VertexConsumer
 import net.minecraft.client.render.VertexConsumerProvider
+import net.minecraft.client.render.VertexRendering
 import net.minecraft.client.util.BufferAllocator
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.Entity
@@ -86,10 +87,9 @@ object RenderUtils {
             val camera = context.camera
             val frustum = FrustumHolder.currentFrustum
 
-            val cameraPos = CameraCompat.getPos(camera)
-            cameraX = cameraPos.x
-            cameraY = cameraPos.y
-            cameraZ = cameraPos.z
+            cameraX = camera.pos.x
+            cameraY = camera.pos.y
+            cameraZ = camera.pos.z
             cameraRotation = camera.rotation
 
             matrices.push()
@@ -110,6 +110,7 @@ object RenderUtils {
             }
 
             bufferSource.draw()
+            RenderSystem.lineWidth(1.0f)
         }
     }
 
@@ -231,6 +232,7 @@ object RenderUtils {
                 val lineWidth = (thicknessRaw / 10f).coerceAtLeast(0.1f)
                 if (lineWidth != currentLineWidth) {
                     bufferSource.draw()
+                    RenderSystem.lineWidth(lineWidth)
                     currentLineWidth = lineWidth
                 }
             }
@@ -240,16 +242,22 @@ object RenderUtils {
                 val idx = boxOrder[pos]
                 val i = idx * 6
                 val ci = idx * 4
-                val color = packColor(boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3])
 
-                // 1.21.11 removed VertexRendering box helpers; render a compatible outline for both paths.
-                writeOutlinedBox(
-                    entry,
-                    buffer,
-                    boxData[i], boxData[i + 1], boxData[i + 2],
-                    boxData[i + 3], boxData[i + 4], boxData[i + 5],
-                    color
-                )
+                if (filled) {
+                    VertexRendering.drawFilledBox(
+                        matrices, buffer,
+                        boxData[i].toFloat(), boxData[i + 1].toFloat(), boxData[i + 2].toFloat(),
+                        boxData[i + 3].toFloat(), boxData[i + 4].toFloat(), boxData[i + 5].toFloat(),
+                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
+                    )
+                } else {
+                    VertexRendering.drawBox(
+                        entry, buffer,
+                        boxData[i], boxData[i + 1], boxData[i + 2],
+                        boxData[i + 3], boxData[i + 4], boxData[i + 5],
+                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
+                    )
+                }
             }
         }
 
@@ -277,6 +285,7 @@ object RenderUtils {
                 bufferSource.draw()
                 currentLayer = layer
                 currentLineWidth = lineWidth
+                RenderSystem.lineWidth(lineWidth)
             }
 
             val buffer = bufferSource.getBuffer(layer)
@@ -315,44 +324,6 @@ object RenderUtils {
 
         buffer.vertex(entry, x1.toFloat(), y1.toFloat(), z1.toFloat()).color(argb).normal(entry, nx, ny, nz)
         buffer.vertex(entry, x2.toFloat(), y2.toFloat(), z2.toFloat()).color(argb).normal(entry, nx, ny, nz)
-    }
-
-    private fun writeOutlinedBox(
-        entry: MatrixStack.Entry,
-        buffer: VertexConsumer,
-        minX: Double, minY: Double, minZ: Double,
-        maxX: Double, maxY: Double, maxZ: Double,
-        argb: Int
-    ) {
-        val x1 = minX
-        val y1 = minY
-        val z1 = minZ
-        val x2 = maxX
-        val y2 = maxY
-        val z2 = maxZ
-
-        writeLine(entry, buffer, x1, y1, z1, x2, y1, z1, argb)
-        writeLine(entry, buffer, x2, y1, z1, x2, y1, z2, argb)
-        writeLine(entry, buffer, x2, y1, z2, x1, y1, z2, argb)
-        writeLine(entry, buffer, x1, y1, z2, x1, y1, z1, argb)
-
-        writeLine(entry, buffer, x1, y2, z1, x2, y2, z1, argb)
-        writeLine(entry, buffer, x2, y2, z1, x2, y2, z2, argb)
-        writeLine(entry, buffer, x2, y2, z2, x1, y2, z2, argb)
-        writeLine(entry, buffer, x1, y2, z2, x1, y2, z1, argb)
-
-        writeLine(entry, buffer, x1, y1, z1, x1, y2, z1, argb)
-        writeLine(entry, buffer, x2, y1, z1, x2, y2, z1, argb)
-        writeLine(entry, buffer, x2, y1, z2, x2, y2, z2, argb)
-        writeLine(entry, buffer, x1, y1, z2, x1, y2, z2, argb)
-    }
-
-    private fun packColor(r: Float, g: Float, b: Float, a: Float): Int {
-        val ai = (a * 255f).toInt().coerceIn(0, 255)
-        val ri = (r * 255f).toInt().coerceIn(0, 255)
-        val gi = (g * 255f).toInt().coerceIn(0, 255)
-        val bi = (b * 255f).toInt().coerceIn(0, 255)
-        return (ai shl 24) or (ri shl 16) or (gi shl 8) or bi
     }
 
     private fun renderTextBatch(matrices: MatrixStack, count: Int) {
@@ -475,10 +446,9 @@ object RenderUtils {
         val yawRad = Math.toRadians(camera.yaw.toDouble())
         val pitchRad = Math.toRadians(camera.pitch.toDouble())
         val cosPitch = kotlin.math.cos(pitchRad)
-        val cameraPos = CameraCompat.getPos(camera)
-        val startX = cameraPos.x + (-kotlin.math.sin(yawRad) * cosPitch) * 0.1
-        val startY = cameraPos.y + (-kotlin.math.sin(pitchRad)) * 0.1
-        val startZ = cameraPos.z + (kotlin.math.cos(yawRad) * cosPitch) * 0.1
+        val startX = camera.pos.x + (-kotlin.math.sin(yawRad) * cosPitch) * 0.1
+        val startY = camera.pos.y + (-kotlin.math.sin(pitchRad)) * 0.1
+        val startZ = camera.pos.z + (kotlin.math.cos(yawRad) * cosPitch) * 0.1
         addLine(startX, startY, startZ, targetPos.x, targetPos.y, targetPos.z, color.packed, thickness, depth, true)
     }
 
