@@ -3135,6 +3135,10 @@ public class com/v5/mixins/BlockModelRendererMixin {
 	public fun <init> ()V
 }
 
+public abstract class com/v5/mixins/BlockRenderLayersMixin {
+	public fun <init> ()V
+}
+
 public abstract class com/v5/mixins/CameraMixin {
 	public fun <init> ()V
 	protected abstract fun setPos (Lnet/minecraft/util/math/Vec3d;)V
@@ -3216,10 +3220,6 @@ public abstract class com/v5/mixins/MultiplayerScreenMixin : net/minecraft/clien
 }
 
 public class com/v5/mixins/PlayerListHudMixin {
-	public fun <init> ()V
-}
-
-public abstract class com/v5/mixins/RenderLayersMixin {
 	public fun <init> ()V
 }
 
