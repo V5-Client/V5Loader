@@ -562,7 +562,6 @@ object Renderer {
 
         scale(1f, 1f, 50f)
 
-        // FIXME: icba to do this
 //        RenderSystem.setShaderTexture(0, image.getTexture()?.glTextureView)
 
         begin(DrawMode.QUADS, VertexFormat.POSITION_TEXTURE_COLOR, snippet = RenderSnippet.POSITION_TEX_COLOR_SNIPPET)

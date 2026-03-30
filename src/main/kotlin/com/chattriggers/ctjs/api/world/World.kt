@@ -75,8 +75,10 @@ object World {
     fun getDifficulty(): Settings.Difficulty? = toMC()?.difficulty?.let(Settings.Difficulty::fromMC)
 
     @JvmStatic
-    // FIXME: icba to do this
-    fun getMoonPhase(): Int = -1 // toMC()?.moonPhase?.index ?: -1
+    fun getMoonPhase(): Int {
+        val world = toMC() ?: return -1
+        return ((world.timeOfDay / 24000L) % 8).toInt()
+    }
 
     /**
      * Gets the [Block] at a location in the world.
