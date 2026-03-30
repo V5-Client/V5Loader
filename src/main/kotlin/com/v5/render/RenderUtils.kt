@@ -87,9 +87,9 @@ object RenderUtils {
             val camera = context.camera
             val frustum = FrustumHolder.currentFrustum
 
-            cameraX = camera.pos.x
-            cameraY = camera.pos.y
-            cameraZ = camera.pos.z
+            cameraX = camera.cameraPos.x
+            cameraY = camera.cameraPos.y
+            cameraZ = camera.cameraPos.z
             cameraRotation = camera.rotation
 
             matrices.push()
@@ -110,7 +110,9 @@ object RenderUtils {
             }
 
             bufferSource.draw()
-            RenderSystem.lineWidth(1.0f)
+
+            // FIXME
+//            RenderSystem.lineWidth(1.0f)
         }
     }
 
@@ -232,7 +234,8 @@ object RenderUtils {
                 val lineWidth = (thicknessRaw / 10f).coerceAtLeast(0.1f)
                 if (lineWidth != currentLineWidth) {
                     bufferSource.draw()
-                    RenderSystem.lineWidth(lineWidth)
+                    // FIXME
+//                    RenderSystem.lineWidth(lineWidth)
                     currentLineWidth = lineWidth
                 }
             }
@@ -244,19 +247,21 @@ object RenderUtils {
                 val ci = idx * 4
 
                 if (filled) {
-                    VertexRendering.drawFilledBox(
-                        matrices, buffer,
-                        boxData[i].toFloat(), boxData[i + 1].toFloat(), boxData[i + 2].toFloat(),
-                        boxData[i + 3].toFloat(), boxData[i + 4].toFloat(), boxData[i + 5].toFloat(),
-                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
-                    )
+                    // FIXME
+//                    VertexRendering.drawFilledBox(
+//                        matrices, buffer,
+//                        boxData[i].toFloat(), boxData[i + 1].toFloat(), boxData[i + 2].toFloat(),
+//                        boxData[i + 3].toFloat(), boxData[i + 4].toFloat(), boxData[i + 5].toFloat(),
+//                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
+//                    )
                 } else {
-                    VertexRendering.drawBox(
-                        entry, buffer,
-                        boxData[i], boxData[i + 1], boxData[i + 2],
-                        boxData[i + 3], boxData[i + 4], boxData[i + 5],
-                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
-                    )
+                    // FIXME
+//                    VertexRendering.drawBox(
+//                        entry, buffer,
+//                        boxData[i], boxData[i + 1], boxData[i + 2],
+//                        boxData[i + 3], boxData[i + 4], boxData[i + 5],
+//                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
+//                    )
                 }
             }
         }
@@ -285,7 +290,8 @@ object RenderUtils {
                 bufferSource.draw()
                 currentLayer = layer
                 currentLineWidth = lineWidth
-                RenderSystem.lineWidth(lineWidth)
+                // FIXME
+//                RenderSystem.lineWidth(lineWidth)
             }
 
             val buffer = bufferSource.getBuffer(layer)
@@ -446,9 +452,9 @@ object RenderUtils {
         val yawRad = Math.toRadians(camera.yaw.toDouble())
         val pitchRad = Math.toRadians(camera.pitch.toDouble())
         val cosPitch = kotlin.math.cos(pitchRad)
-        val startX = camera.pos.x + (-kotlin.math.sin(yawRad) * cosPitch) * 0.1
-        val startY = camera.pos.y + (-kotlin.math.sin(pitchRad)) * 0.1
-        val startZ = camera.pos.z + (kotlin.math.cos(yawRad) * cosPitch) * 0.1
+        val startX = camera.cameraPos.x + (-kotlin.math.sin(yawRad) * cosPitch) * 0.1
+        val startY = camera.cameraPos.y + (-kotlin.math.sin(pitchRad)) * 0.1
+        val startZ = camera.cameraPos.z + (kotlin.math.cos(yawRad) * cosPitch) * 0.1
         addLine(startX, startY, startZ, targetPos.x, targetPos.y, targetPos.z, color.packed, thickness, depth, true)
     }
 

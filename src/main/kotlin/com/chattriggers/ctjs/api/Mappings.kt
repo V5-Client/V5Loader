@@ -34,7 +34,7 @@ object Mappings {
         val mappingVersion = if (container.isPresent) {
             container.get().metadata.getCustomValue("${CTJS.MOD_ID}:yarn-mappings").asString
         } else {
-            "1.21.10+build.1"
+            "1.21.11+build.3"
         }
         val jarName = "yarn-$mappingVersion-v2.jar".urlEncode()
 

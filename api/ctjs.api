@@ -3588,8 +3588,8 @@ public final class com/v5/render/objects/RenderLayers {
 	public static final field INSTANCE Lcom/v5/render/objects/RenderLayers;
 	public static final field LINE_LIST Lnet/minecraft/client/render/RenderLayer;
 	public static final field LINE_LIST_ESP Lnet/minecraft/client/render/RenderLayer;
-	public static final field TRIANGLE_STRIP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
-	public static final field TRIANGLE_STRIP_ESP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
+	public static final field TRIANGLE_STRIP Lnet/minecraft/client/render/RenderLayer;
+	public static final field TRIANGLE_STRIP_ESP Lnet/minecraft/client/render/RenderLayer;
 }
 
 public final class com/v5/render/objects/RenderPipelines {

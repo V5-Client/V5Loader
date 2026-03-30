@@ -190,7 +190,7 @@ tasks {
 
                 sourceLink {
                     localDirectory.set(file("src/main/kotlin"))
-                    remoteUrl.set(URL("https://github.com/ChatTriggers/ctjs/blob/$branch/src/main/kotlin"))
+                    remoteUrl.set(URL("https://github.com/Synnerz/ctjs/blob/$branch/src/main/kotlin"))
                     remoteLineSuffix.set("#L")
                 }
 

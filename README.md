@@ -1,6 +1,6 @@
 # V5Loader
 
-This project is CTJS 1.21.10 modified for V5 loading (SecureLoader), V5 utils (mixins, renderutils, etc), and Swift, a native pathfinder.
+This project is CTJS 1.21.11 modified for V5 loading (SecureLoader), V5 utils (mixins, renderutils, etc), and Swift, a native pathfinder.
 
 # Native Pathfinder JNI
 Linux/macOS:
