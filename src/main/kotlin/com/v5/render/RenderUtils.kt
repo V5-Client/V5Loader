@@ -1,6 +1,5 @@
 package com.v5.render
 
-import com.mojang.blaze3d.systems.RenderSystem
 import com.v5.render.helper.FrustumHolder
 import com.v5.render.helper.FrustumUtils
 import com.v5.render.objects.RenderLayers
@@ -10,13 +9,14 @@ import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.render.Frustum
 import net.minecraft.client.render.VertexConsumer
 import net.minecraft.client.render.VertexConsumerProvider
-import net.minecraft.client.render.VertexRendering
 import net.minecraft.client.util.BufferAllocator
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.Entity
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 import org.joml.Quaternionf
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 object RenderUtils {
@@ -30,9 +30,10 @@ object RenderUtils {
     private const val MAX_TEXTS = 1024
     private const val BOX_KEY_COUNT = 514 // filled(depth/no depth) + wire(depth 0-255 thickness, no-depth 0-255 thickness)
     private const val LINE_KEY_COUNT = 512 // depth(0-255 thickness) + no-depth(0-255 thickness)
+    private const val FULL_BRIGHT = 15728880
 
     private val boxData = DoubleArray(MAX_BOXES * 6)
-    private val boxColors = FloatArray(MAX_BOXES * 4)
+    private val boxColors = IntArray(MAX_BOXES)
     private val boxFlags = IntArray(MAX_BOXES)
     private val boxOrder = IntArray(MAX_BOXES)
     private val boxKeyCounts = IntArray(BOX_KEY_COUNT)
@@ -111,8 +112,6 @@ object RenderUtils {
 
             bufferSource.draw()
 
-            // FIXME
-//            RenderSystem.lineWidth(1.0f)
         }
     }
 
@@ -234,8 +233,6 @@ object RenderUtils {
                 val lineWidth = (thicknessRaw / 10f).coerceAtLeast(0.1f)
                 if (lineWidth != currentLineWidth) {
                     bufferSource.draw()
-                    // FIXME
-//                    RenderSystem.lineWidth(lineWidth)
                     currentLineWidth = lineWidth
                 }
             }
@@ -244,24 +241,31 @@ object RenderUtils {
             for (pos in start until end) {
                 val idx = boxOrder[pos]
                 val i = idx * 6
-                val ci = idx * 4
+                val color = boxColors[idx]
+                val x1 = boxData[i] - cameraX
+                val y1 = boxData[i + 1] - cameraY
+                val z1 = boxData[i + 2] - cameraZ
+                val x2 = boxData[i + 3] - cameraX
+                val y2 = boxData[i + 4] - cameraY
+                val z2 = boxData[i + 5] - cameraZ
 
                 if (filled) {
-                    // FIXME
-//                    VertexRendering.drawFilledBox(
-//                        matrices, buffer,
-//                        boxData[i].toFloat(), boxData[i + 1].toFloat(), boxData[i + 2].toFloat(),
-//                        boxData[i + 3].toFloat(), boxData[i + 4].toFloat(), boxData[i + 5].toFloat(),
-//                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
-//                    )
+                    writeFilledBox(
+                        entry,
+                        buffer,
+                        x1, y1, z1,
+                        x2, y2, z2,
+                        color
+                    )
                 } else {
-                    // FIXME
-//                    VertexRendering.drawBox(
-//                        entry, buffer,
-//                        boxData[i], boxData[i + 1], boxData[i + 2],
-//                        boxData[i + 3], boxData[i + 4], boxData[i + 5],
-//                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
-//                    )
+                    writeBox(
+                        entry,
+                        buffer,
+                        x1, y1, z1,
+                        x2, y2, z2,
+                        color,
+                        currentLineWidth
+                    )
                 }
             }
         }
@@ -290,21 +294,26 @@ object RenderUtils {
                 bufferSource.draw()
                 currentLayer = layer
                 currentLineWidth = lineWidth
-                // FIXME
-//                RenderSystem.lineWidth(lineWidth)
             }
 
             val buffer = bufferSource.getBuffer(layer)
             for (pos in start until end) {
                 val idx = lineOrder[pos]
                 val i = idx * 6
+                val x1 = lineData[i] - cameraX
+                val y1 = lineData[i + 1] - cameraY
+                val z1 = lineData[i + 2] - cameraZ
+                val x2 = lineData[i + 3] - cameraX
+                val y2 = lineData[i + 4] - cameraY
+                val z2 = lineData[i + 5] - cameraZ
 
                 writeLine(
                     entry,
                     buffer,
-                    lineData[i], lineData[i + 1], lineData[i + 2],
-                    lineData[i + 3], lineData[i + 4], lineData[i + 5],
-                    lineColors[idx]
+                    x1, y1, z1,
+                    x2, y2, z2,
+                    lineColors[idx],
+                    lineWidth
                 )
             }
         }
@@ -312,12 +321,81 @@ object RenderUtils {
         bufferSource.draw()
     }
 
-    private fun writeLine(
+    private fun writeFilledBox(
         entry: MatrixStack.Entry,
         buffer: VertexConsumer,
         x1: Double, y1: Double, z1: Double,
         x2: Double, y2: Double, z2: Double,
         argb: Int
+    ) {
+        val minX = min(x1, x2).toFloat()
+        val minY = min(y1, y2).toFloat()
+        val minZ = min(z1, z2).toFloat()
+        val maxX = max(x1, x2).toFloat()
+        val maxY = max(y1, y2).toFloat()
+        val maxZ = max(z1, z2).toFloat()
+
+        quad(buffer, entry, minX, minY, minZ, maxX, minY, minZ, maxX, maxY, minZ, minX, maxY, minZ, argb)
+        quad(buffer, entry, minX, minY, maxZ, minX, maxY, maxZ, maxX, maxY, maxZ, maxX, minY, maxZ, argb)
+        quad(buffer, entry, minX, minY, minZ, minX, maxY, minZ, minX, maxY, maxZ, minX, minY, maxZ, argb)
+        quad(buffer, entry, maxX, minY, minZ, maxX, minY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, argb)
+        quad(buffer, entry, minX, maxY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ, minX, maxY, maxZ, argb)
+        quad(buffer, entry, minX, minY, minZ, minX, minY, maxZ, maxX, minY, maxZ, maxX, minY, minZ, argb)
+    }
+
+    private fun quad(
+        buffer: VertexConsumer,
+        entry: MatrixStack.Entry,
+        x1: Float, y1: Float, z1: Float,
+        x2: Float, y2: Float, z2: Float,
+        x3: Float, y3: Float, z3: Float,
+        x4: Float, y4: Float, z4: Float,
+        argb: Int
+    ) {
+        buffer.vertex(entry, x1, y1, z1).color(argb)
+        buffer.vertex(entry, x2, y2, z2).color(argb)
+        buffer.vertex(entry, x3, y3, z3).color(argb)
+        buffer.vertex(entry, x4, y4, z4).color(argb)
+    }
+
+    private fun writeBox(
+        entry: MatrixStack.Entry,
+        buffer: VertexConsumer,
+        x1: Double, y1: Double, z1: Double,
+        x2: Double, y2: Double, z2: Double,
+        argb: Int,
+        lineWidth: Float
+    ) {
+        val minX = min(x1, x2)
+        val minY = min(y1, y2)
+        val minZ = min(z1, z2)
+        val maxX = max(x1, x2)
+        val maxY = max(y1, y2)
+        val maxZ = max(z1, z2)
+
+        writeLine(entry, buffer, minX, minY, minZ, maxX, minY, minZ, argb, lineWidth)
+        writeLine(entry, buffer, maxX, minY, minZ, maxX, minY, maxZ, argb, lineWidth)
+        writeLine(entry, buffer, maxX, minY, maxZ, minX, minY, maxZ, argb, lineWidth)
+        writeLine(entry, buffer, minX, minY, maxZ, minX, minY, minZ, argb, lineWidth)
+
+        writeLine(entry, buffer, minX, maxY, minZ, maxX, maxY, minZ, argb, lineWidth)
+        writeLine(entry, buffer, maxX, maxY, minZ, maxX, maxY, maxZ, argb, lineWidth)
+        writeLine(entry, buffer, maxX, maxY, maxZ, minX, maxY, maxZ, argb, lineWidth)
+        writeLine(entry, buffer, minX, maxY, maxZ, minX, maxY, minZ, argb, lineWidth)
+
+        writeLine(entry, buffer, minX, minY, minZ, minX, maxY, minZ, argb, lineWidth)
+        writeLine(entry, buffer, maxX, minY, minZ, maxX, maxY, minZ, argb, lineWidth)
+        writeLine(entry, buffer, maxX, minY, maxZ, maxX, maxY, maxZ, argb, lineWidth)
+        writeLine(entry, buffer, minX, minY, maxZ, minX, maxY, maxZ, argb, lineWidth)
+    }
+
+    private fun writeLine(
+        entry: MatrixStack.Entry,
+        buffer: VertexConsumer,
+        x1: Double, y1: Double, z1: Double,
+        x2: Double, y2: Double, z2: Double,
+        argb: Int,
+        lineWidth: Float
     ) {
         val dx = x2 - x1
         val dy = y2 - y1
@@ -328,8 +406,8 @@ object RenderUtils {
         val ny = (dy * invLen).toFloat()
         val nz = (dz * invLen).toFloat()
 
-        buffer.vertex(entry, x1.toFloat(), y1.toFloat(), z1.toFloat()).color(argb).normal(entry, nx, ny, nz)
-        buffer.vertex(entry, x2.toFloat(), y2.toFloat(), z2.toFloat()).color(argb).normal(entry, nx, ny, nz)
+        buffer.vertex(entry, x1.toFloat(), y1.toFloat(), z1.toFloat()).color(argb).normal(entry, nx, ny, nz).lineWidth(lineWidth)
+        buffer.vertex(entry, x2.toFloat(), y2.toFloat(), z2.toFloat()).color(argb).normal(entry, nx, ny, nz).lineWidth(lineWidth)
     }
 
     private fun renderTextBatch(matrices: MatrixStack, count: Int) {
@@ -381,7 +459,7 @@ object RenderUtils {
                 bufferSource,
                 layer,
                 0,
-                15728880
+                FULL_BRIGHT
             )
 
             matrices.pop()
@@ -483,13 +561,10 @@ object RenderUtils {
         if (!FrustumUtils.isVisible(FrustumHolder.currentFrustum, x1, y1, z1, x2, y2, z2)) return
 
         val i = boxCount * 6
-        val ci = boxCount * 4
-
         boxData[i] = x1; boxData[i + 1] = y1; boxData[i + 2] = z1
         boxData[i + 3] = x2; boxData[i + 4] = y2; boxData[i + 5] = z2
 
-        boxColors[ci] = color.rf; boxColors[ci + 1] = color.gf
-        boxColors[ci + 2] = color.bf; boxColors[ci + 3] = color.af
+        boxColors[boxCount] = color.packed
 
         boxFlags[boxCount] = (if (filled) 1 else 0) or
                 (if (depth) 2 else 0) or

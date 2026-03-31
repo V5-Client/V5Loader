@@ -53,7 +53,6 @@ public class WorldRendererMixin {
   private void postRender(GpuBufferSlice gpuBufferSlice, WorldRenderState worldRenderState, Profiler profiler, Matrix4f matrix4f, Handle handle, Handle handle2, boolean bl, Handle handle3, Handle handle4, CallbackInfo ci) {
     Context c = getCtx();
 
-    // FIXME: idk if this is a good solution
     Frustum frustum = MinecraftClient.getInstance().worldRenderer.getCapturedFrustum();
 
     if (frustum != null) {

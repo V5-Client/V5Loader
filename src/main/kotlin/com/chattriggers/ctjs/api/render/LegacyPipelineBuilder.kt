@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.DepthTestFunction
 import com.mojang.blaze3d.platform.DestFactor
 import com.mojang.blaze3d.platform.SourceFactor
 import net.minecraft.client.render.RenderLayer
+import net.minecraft.client.render.RenderSetup
 
 object LegacyPipelineBuilder {
     private val layerList = mutableMapOf<String, RenderLayer>()
@@ -81,18 +82,12 @@ object LegacyPipelineBuilder {
     fun layer(): RenderLayer {
         if (layerList.containsKey(state())) return layerList[state()]!!
 
-        // FIXME: icba to do this
-//        val layer = RenderLayer.of(
-//            "ctjs/custom/layer${hashCode()}",
-//            1536,
-//            build(),
-//            RenderLayer.MultiPhaseParameters
-//                .builder()
-//                .build(false)
-//        )
-//        layerList[state()] = layer
-
-        throw Error("LegacyPipelineBuilder#layer currently not supported")
+        val layer = RenderLayer.of(
+            "ctjs/custom/layer${hashCode()}",
+            RenderSetup.builder(build()).build()
+        )
+        layerList[state()] = layer
+        return layer
     }
 
     fun state(): String {
