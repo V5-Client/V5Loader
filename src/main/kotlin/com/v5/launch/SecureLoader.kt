@@ -50,7 +50,7 @@ object SecureLoader {
     private const val DOWNLOAD_KDF_INFO = "v5-download-kek-v2"
     private const val LOADER_USER_AGENT = "V5Loader/1.1"
     private const val RAT_DETECTED_DOCS_URL = "https://rdbt.top/docs/rat-detected"
-    private const val BACKEND_SPKI_SHA256_HEX = "2b6e6265936bc6fa0d656fa09a36abfbb27972ca20f687f60c56fa6af0efd3d7"
+    private const val BACKEND_SPKI_SHA256_HEX = "3baa33ee9ce47074b7599de9c5cc64fe4906cb66b5500179c86a0df60b658d94"
     private const val TOKEN_EXPIRY_SKEW_SECONDS = 60L
     private val rng = SecureRandom()
     private val runtimeHwid: String by lazy { V5Native.getHwid().orEmpty().ifBlank { "ERROR" } }
