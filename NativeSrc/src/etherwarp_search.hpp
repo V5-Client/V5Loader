@@ -7,6 +7,14 @@
 
 namespace v5pf {
 
+inline constexpr double ETHERWARP_STANDING_EYE_HEIGHT = 2.62;
+inline constexpr double ETHERWARP_LEGACY_SNEAK_OFFSET = 0.08;
+inline constexpr double ETHERWARP_MODERN_SNEAK_OFFSET = 0.35;
+inline constexpr double ETHERWARP_LEGACY_EYE_HEIGHT =
+  ETHERWARP_STANDING_EYE_HEIGHT - ETHERWARP_LEGACY_SNEAK_OFFSET;
+inline constexpr double ETHERWARP_MODERN_EYE_HEIGHT =
+  ETHERWARP_STANDING_EYE_HEIGHT - ETHERWARP_MODERN_SNEAK_OFFSET;
+
 struct EtherwarpSearchParams {
   Int3 start{0, 0, 0};
   Int3 goal{0, 0, 0};
@@ -18,7 +26,7 @@ struct EtherwarpSearchParams {
   double heuristicWeight = 1.0;
   double rayLength = 61.0;
   double rewireEpsilon = 1.0;
-  double eyeHeight = 2.59;
+  double eyeHeight = ETHERWARP_LEGACY_EYE_HEIGHT;
 };
 
 struct EtherwarpSearchResult {

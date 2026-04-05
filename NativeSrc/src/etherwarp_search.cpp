@@ -925,43 +925,6 @@ inline SimplifiedEtherwarpPath simplifyEtherwarpPath(
 
 } // namespace
 
-#ifdef V5PF_ENABLE_TEST_HOOKS
-namespace testhooks {
-
-std::optional<EtherwarpRayDirection> resolveStableAimDirectionForTest(
-  const WorldSnapshot& world,
-  const Int3& from,
-  const Int3& to,
-  const double eyeHeight,
-  const double rayLength
-) {
-  return resolveStableAimDirection(world, from, to, eyeHeight, rayLength);
-}
-
-std::optional<EtherwarpRayDirection> optimizeAimDirectionForHopForTest(
-  const WorldSnapshot& world,
-  const Int3& from,
-  const Int3& to,
-  const double eyeHeight,
-  const double rayLength
-) {
-  return optimizeAimDirectionForHop(world, from, to, eyeHeight, rayLength);
-}
-
-double measureSquareMarginForTest(
-  const WorldSnapshot& world,
-  const Int3& from,
-  const Int3& to,
-  const double eyeHeight,
-  const double rayLength,
-  const EtherwarpRayDirection& direction
-) {
-  return measureSquareMargin(world, from, to, eyeHeight, rayLength, direction);
-}
-
-} // namespace testhooks
-#endif
-
 std::optional<EtherwarpSearchResult> findEtherwarpPath(
   const WorldSnapshot& world,
   const EtherwarpSearchParams& params,
