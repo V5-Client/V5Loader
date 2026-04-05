@@ -23,9 +23,10 @@ enum VoxelFlags : uint16_t {
   VF_FENCE_LIKE = 1u << 7,
   VF_STAIRS_BOTTOM = 1u << 8,
   VF_CARPET_LIKE = 1u << 9,
+  VF_ETHER_PASSABLE = 1u << 10,
 };
 
-constexpr uint16_t VF_AIR_DEFAULT = VF_PASSABLE | VF_PASSABLE_FLY;
+constexpr uint16_t VF_AIR_DEFAULT = VF_PASSABLE | VF_PASSABLE_FLY | VF_ETHER_PASSABLE;
 
 struct Int3 {
   int x;

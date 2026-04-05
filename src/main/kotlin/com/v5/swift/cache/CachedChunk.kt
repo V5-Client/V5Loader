@@ -1,8 +1,6 @@
 package com.v5.swift.cache
 
-import net.minecraft.block.Block
-import net.minecraft.block.BlockState
-import net.minecraft.block.Blocks
+import com.v5.swift.nativepath.NativeVoxelFlags
 
 class CachedChunk(
   @JvmField val minY: Int,
@@ -10,30 +8,29 @@ class CachedChunk(
 ) {
 
   companion object {
-    @JvmField val AIR: BlockState = Blocks.AIR.defaultState
-    @JvmField val AIR_ID: Int = Block.STATE_IDS.getRawId(AIR)
+    @JvmField
+    val AIR_FLAGS: Short = (
+      NativeVoxelFlags.PASSABLE or
+        NativeVoxelFlags.PASSABLE_FLY or
+        NativeVoxelFlags.ETHER_PASSABLE
+      ).toShort()
   }
 
-  private val sections: Array<IntArray?> = arrayOfNulls((maxY - minY + 15) shr 4)
+  private val sections: Array<ShortArray?> = arrayOfNulls((maxY - minY + 15) shr 4)
 
   @Volatile
   @JvmField
   var ready: Boolean = false
 
-  fun get(localX: Int, y: Int, localZ: Int): BlockState {
-    val stateId = getStateId(localX, y, localZ)
-    return if (stateId == AIR_ID) AIR else Block.STATE_IDS.get(stateId) ?: AIR
-  }
-
-  fun getStateId(localX: Int, y: Int, localZ: Int): Int {
-    if (y !in minY..<maxY) return AIR_ID
+  fun getFlags(localX: Int, y: Int, localZ: Int): Short {
+    if (y !in minY..<maxY) return AIR_FLAGS
     val sectionIndex = (y - minY) shr 4
-    if (sectionIndex < 0 || sectionIndex >= sections.size) return AIR_ID
-    val section = sections[sectionIndex] ?: return AIR_ID
+    if (sectionIndex < 0 || sectionIndex >= sections.size) return AIR_FLAGS
+    val section = sections[sectionIndex] ?: return AIR_FLAGS
     return section[((y and 15) shl 8) or ((localZ and 15) shl 4) or (localX and 15)]
   }
 
-  fun set(localX: Int, y: Int, localZ: Int, state: BlockState) {
+  fun setFlags(localX: Int, y: Int, localZ: Int, flags: Short) {
     if (y !in minY..<maxY) return
 
     val sectionIndex = (y - minY) shr 4
@@ -41,23 +38,25 @@ class CachedChunk(
 
     var section = sections[sectionIndex]
     if (section == null) {
-      section = IntArray(4096) { AIR_ID }
+      section = ShortArray(4096) { AIR_FLAGS }
       sections[sectionIndex] = section
     }
 
-    section[((y and 15) shl 8) or ((localZ and 15) shl 4) or (localX and 15)] =
-      Block.STATE_IDS.getRawId(state)
+    section[((y and 15) shl 8) or ((localZ and 15) shl 4) or (localX and 15)] = flags
   }
 
   fun hasSection(index: Int): Boolean {
     return index in sections.indices && sections[index] != null
   }
 
-  fun getSectionData(index: Int): IntArray? {
-    return if (index in sections.indices) sections[index] else null
+  fun copySectionFlags(index: Int, dest: ShortArray, destOffset: Int) {
+    val section = if (index in sections.indices) sections[index] else null
+    if (section != null) {
+      section.copyInto(dest, destOffset)
+    }
   }
 
-  fun setSection(sectionIndex: Int, data: IntArray) {
+  fun setSection(sectionIndex: Int, data: ShortArray) {
     if (sectionIndex in sections.indices) {
       sections[sectionIndex] = data
     }

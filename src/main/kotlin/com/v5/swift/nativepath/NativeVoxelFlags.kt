@@ -11,4 +11,5 @@ object NativeVoxelFlags {
   const val FENCE_LIKE = 1 shl 7
   const val STAIRS_BOTTOM = 1 shl 8
   const val CARPET_LIKE = 1 shl 9
+  const val ETHER_PASSABLE = 1 shl 10
 }

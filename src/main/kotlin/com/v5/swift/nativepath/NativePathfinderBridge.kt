@@ -14,6 +14,24 @@ object NativePathfinderBridge {
     val avoidPenalty: DoubleArray
   )
 
+  data class NativeEtherwarpSearchRequest(
+    val startX: Int,
+    val startY: Int,
+    val startZ: Int,
+    val goalX: Int,
+    val goalY: Int,
+    val goalZ: Int,
+    val maxIterations: Int,
+    val threadCount: Int,
+    val yawStep: Double,
+    val pitchStep: Double,
+    val newNodeCost: Double,
+    val heuristicWeight: Double,
+    val rayLength: Double,
+    val rewireEpsilon: Double,
+    val eyeHeight: Double
+  )
+
   @Volatile
   private var lastError: String? = null
 
@@ -104,6 +122,45 @@ object NativePathfinderBridge {
 
       if (result == null) {
         lastError = "Native pathfinder returned no path"
+      } else {
+        lastError = null
+      }
+
+      result
+    } catch (t: Throwable) {
+      lastError = t.message ?: t.javaClass.simpleName
+      null
+    }
+  }
+
+  @JvmStatic
+  fun findEtherwarpPath(request: NativeEtherwarpSearchRequest): NativeEtherwarpResult? {
+    if (!isAvailable()) {
+      lastError = NativePathfinderJNI.getLoadError() ?: "Native pathfinder unavailable"
+      return null
+    }
+
+    return try {
+      val result = NativePathfinderJNI.findEtherwarpPath(
+        request.startX,
+        request.startY,
+        request.startZ,
+        request.goalX,
+        request.goalY,
+        request.goalZ,
+        request.maxIterations,
+        request.threadCount,
+        request.yawStep,
+        request.pitchStep,
+        request.newNodeCost,
+        request.heuristicWeight,
+        request.rayLength,
+        request.rewireEpsilon,
+        request.eyeHeight
+      )
+
+      if (result == null) {
+        lastError = "Native etherwarp pathfinder returned no path"
       } else {
         lastError = null
       }

@@ -1,6 +1,7 @@
 package com.v5.swift.nativepath
 
 import net.minecraft.block.AbstractRailBlock
+import net.minecraft.block.AbstractSkullBlock
 import net.minecraft.block.BannerBlock
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
@@ -9,6 +10,7 @@ import net.minecraft.block.CarpetBlock
 import net.minecraft.block.DoorBlock
 import net.minecraft.block.FenceBlock
 import net.minecraft.block.FenceGateBlock
+import net.minecraft.block.FlowerPotBlock
 import net.minecraft.block.LadderBlock
 import net.minecraft.block.LeverBlock
 import net.minecraft.block.PlantBlock
@@ -43,7 +45,7 @@ object NativeStateEncoder {
   @JvmStatic
   fun flagsForStateId(stateId: Int): Int {
     if (stateId < 0 || stateId >= stateFlags.size) {
-      return NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY
+      return NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY or NativeVoxelFlags.ETHER_PASSABLE
     }
 
     val cached = stateFlags[stateId]
@@ -52,7 +54,7 @@ object NativeStateEncoder {
     }
 
     val state = Block.STATE_IDS.get(stateId)
-      ?: return NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY
+      ?: return NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY or NativeVoxelFlags.ETHER_PASSABLE
 
     val flags = computeFlags(state)
     stateFlags[stateId] = flags
@@ -66,15 +68,19 @@ object NativeStateEncoder {
   }
 
   @JvmStatic
+  fun flagsShortForState(state: BlockState): Short = flagsForState(state).toShort()
+
+  @JvmStatic
   fun flagsShortForStateId(stateId: Int): Short = flagsForStateId(stateId).toShort()
 
   private fun computeFlags(state: BlockState): Int {
     if (state.isAir) {
-      return NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY
+      return NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY or NativeVoxelFlags.ETHER_PASSABLE
     }
 
     var flags = 0
     val block = state.block
+    val collisionShape = state.getCollisionShape(EMPTY_VIEW, ORIGIN, SHAPE_CONTEXT)
 
     if (!state.fluidState.isEmpty) {
       flags = flags or NativeVoxelFlags.FLUID
@@ -82,6 +88,11 @@ object NativeStateEncoder {
 
     if (block is CarpetBlock) {
       return flags or NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY or NativeVoxelFlags.CARPET_LIKE
+    }
+
+    // Heads/skulls should not obstruct pathing or etherwarp landing clearance checks.
+    if (block is AbstractSkullBlock) {
+      return flags or NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY or NativeVoxelFlags.ETHER_PASSABLE
     }
 
     val isPassThrough = block is SlabBlock ||
@@ -146,12 +157,11 @@ object NativeStateEncoder {
       }
 
       else -> {
-        val shape = state.getCollisionShape(EMPTY_VIEW, ORIGIN, SHAPE_CONTEXT)
-        if (shape.isEmpty) {
+        if (collisionShape.isEmpty) {
           flags = flags or NativeVoxelFlags.PASSABLE
         } else {
           flags = flags or NativeVoxelFlags.SOLID
-          val box = shape.boundingBox
+          val box = collisionShape.boundingBox
           if (box.maxY - box.minY >= 0.5 && !isPassThrough) {
             flags = flags or NativeVoxelFlags.BLOCKING_WALL
           }
@@ -161,6 +171,17 @@ object NativeStateEncoder {
 
     if ((flags and NativeVoxelFlags.PASSABLE) != 0 || (flags and NativeVoxelFlags.CARPET_LIKE) != 0) {
       flags = flags or NativeVoxelFlags.PASSABLE_FLY
+    }
+
+    val etherPassable = when {
+      block is FlowerPotBlock -> true
+      block is LadderBlock -> true
+      block is SignBlock || block is WallSignBlock -> false
+      else -> collisionShape.isEmpty
+    }
+
+    if (etherPassable) {
+      flags = flags or NativeVoxelFlags.ETHER_PASSABLE
     }
 
     return flags

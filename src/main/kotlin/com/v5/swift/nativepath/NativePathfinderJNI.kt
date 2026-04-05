@@ -98,5 +98,23 @@ object NativePathfinderJNI {
     avoidPenalty: DoubleArray
   ): NativePathResult?
 
+  @JvmStatic external fun findEtherwarpPath(
+    startX: Int,
+    startY: Int,
+    startZ: Int,
+    goalX: Int,
+    goalY: Int,
+    goalZ: Int,
+    maxIterations: Int,
+    threadCount: Int,
+    yawStep: Double,
+    pitchStep: Double,
+    newNodeCost: Double,
+    heuristicWeight: Double,
+    rayLength: Double,
+    rewireEpsilon: Double,
+    eyeHeight: Double
+  ): NativeEtherwarpResult?
+
   @JvmStatic external fun cancelSearch()
 }

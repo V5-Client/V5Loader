@@ -2,29 +2,91 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstring>
 
 namespace v5pf {
 
 void ChunkData::ensureLayout() {
   const int count = sectionCount();
   if (count <= 0) {
-    sections.clear();
+    sectionOffsets.clear();
+    voxels.clear();
     return;
   }
 
-  if (static_cast<int>(sections.size()) != count) {
-    sections.resize(static_cast<size_t>(count));
+  if (static_cast<int>(sectionOffsets.size()) != count) {
+    sectionOffsets.assign(static_cast<size_t>(count), -1);
   }
 }
+
+bool ChunkData::hasSection(const int sectionIdx) const {
+  return sectionIdx >= 0 &&
+    sectionIdx < static_cast<int>(sectionOffsets.size()) &&
+    sectionOffsets[static_cast<size_t>(sectionIdx)] >= 0;
+}
+
+const uint16_t* ChunkData::sectionData(const int sectionIdx) const {
+  if (!hasSection(sectionIdx)) {
+    return nullptr;
+  }
+
+  return voxels.data() + static_cast<size_t>(sectionOffsets[static_cast<size_t>(sectionIdx)]);
+}
+
+uint16_t* ChunkData::sectionData(const int sectionIdx) {
+  if (!hasSection(sectionIdx)) {
+    return nullptr;
+  }
+
+  return voxels.data() + static_cast<size_t>(sectionOffsets[static_cast<size_t>(sectionIdx)]);
+}
+
+void ChunkData::assignSection(const int sectionIdx, const uint16_t* source) {
+  if (source == nullptr) return;
+
+  ensureLayout();
+  if (sectionIdx < 0 || sectionIdx >= static_cast<int>(sectionOffsets.size())) {
+    return;
+  }
+
+  int32_t& offset = sectionOffsets[static_cast<size_t>(sectionIdx)];
+  if (offset < 0) {
+    offset = static_cast<int32_t>(voxels.size());
+    voxels.resize(voxels.size() + 4096, VF_AIR_DEFAULT);
+  }
+
+  std::memcpy(
+    voxels.data() + static_cast<size_t>(offset),
+    source,
+    4096 * sizeof(uint16_t)
+  );
+}
+
+namespace {
+
+void ensureMutableSection(ChunkData& chunk, const int sectionIdx) {
+  chunk.ensureLayout();
+  if (sectionIdx < 0 || sectionIdx >= static_cast<int>(chunk.sectionOffsets.size())) {
+    return;
+  }
+
+  int32_t& offset = chunk.sectionOffsets[static_cast<size_t>(sectionIdx)];
+  if (offset >= 0) {
+    return;
+  }
+
+  offset = static_cast<int32_t>(chunk.voxels.size());
+  chunk.voxels.resize(chunk.voxels.size() + 4096, VF_AIR_DEFAULT);
+}
+
+} // namespace
 
 uint16_t ChunkData::getFlags(const int localX, const int y, const int localZ) const {
   if (y < minY || y >= maxY) return VF_AIR_DEFAULT;
 
   const int sectionIdx = (y - minY) >> 4;
-  if (sectionIdx < 0 || sectionIdx >= static_cast<int>(sections.size())) return VF_AIR_DEFAULT;
-
-  const auto& section = sections[static_cast<size_t>(sectionIdx)];
-  if (section.empty()) return VF_AIR_DEFAULT;
+  const uint16_t* section = sectionData(sectionIdx);
+  if (section == nullptr) return VF_AIR_DEFAULT;
 
   const int index = ((y & 15) << 8) | ((localZ & 15) << 4) | (localX & 15);
   return section[static_cast<size_t>(index)];
@@ -33,18 +95,18 @@ uint16_t ChunkData::getFlags(const int localX, const int y, const int localZ) co
 void ChunkData::setFlags(const int localX, const int y, const int localZ, const uint16_t flags) {
   if (y < minY || y >= maxY) return;
 
-  ensureLayout();
-
   const int sectionIdx = (y - minY) >> 4;
-  if (sectionIdx < 0 || sectionIdx >= static_cast<int>(sections.size())) return;
-
-  auto& section = sections[static_cast<size_t>(sectionIdx)];
-  if (section.empty()) {
-    section.assign(4096, VF_AIR_DEFAULT);
-  }
+  ensureMutableSection(*this, sectionIdx);
+  uint16_t* section = sectionData(sectionIdx);
+  if (section == nullptr) return;
 
   const int index = ((y & 15) << 8) | ((localZ & 15) << 4) | (localX & 15);
   section[static_cast<size_t>(index)] = flags;
+}
+
+const ChunkMap& WorldSnapshot::chunks() const {
+  static const ChunkMap kEmptyChunks;
+  return data != nullptr ? data->chunks : kEmptyChunks;
 }
 
 uint16_t WorldSnapshot::getFlags(const int x, const int y, const int z) const {
@@ -52,25 +114,29 @@ uint16_t WorldSnapshot::getFlags(const int x, const int y, const int z) const {
 
   const int chunkX = x >> 4;
   const int chunkZ = z >> 4;
-  const auto it = chunks.find(chunkKey(chunkX, chunkZ));
-  if (it == chunks.end()) {
+  const auto& chunkMap = chunks();
+  const auto it = chunkMap.find(chunkKey(chunkX, chunkZ));
+  if (it == chunkMap.end() || it->second == nullptr) {
     return VF_SOLID | VF_BLOCKING_WALL;
   }
 
-  return it->second.getFlags(x & 15, y, z & 15);
+  return it->second->getFlags(x & 15, y, z & 15);
 }
 
 void WorldState::setWorld(std::string worldKey, const int minY, const int maxY) {
   std::lock_guard lock(mutex_);
-  worldKey_ = std::move(worldKey);
-  minY_ = minY;
-  maxY_ = maxY;
-  chunks_.clear();
+  auto next = std::make_shared<WorldData>();
+  next->worldKey = std::move(worldKey);
+  next->minY = minY;
+  next->maxY = maxY;
+  data_ = std::move(next);
 }
 
 void WorldState::clear() {
   std::lock_guard lock(mutex_);
-  chunks_.clear();
+  auto next = std::make_shared<WorldData>(*data_);
+  next->chunks.clear();
+  data_ = std::move(next);
 }
 
 void WorldState::upsertChunk(
@@ -79,7 +145,8 @@ void WorldState::upsertChunk(
   const int minY,
   const int maxY,
   const uint64_t sectionMask,
-  const std::vector<uint16_t>& sectionFlags
+  const uint16_t* sectionFlags,
+  const size_t sectionFlagCount
 ) {
   ChunkData chunk;
   chunk.minY = minY;
@@ -93,48 +160,65 @@ void WorldState::upsertChunk(
     const bool hasSection = (sectionMask & (1ULL << i)) != 0ULL;
     if (!hasSection) continue;
 
-    if (readOffset + 4096 > sectionFlags.size()) {
+    if (sectionFlags == nullptr || readOffset + 4096 > sectionFlagCount) {
       break;
     }
 
-    auto& section = chunk.sections[static_cast<size_t>(i)];
-    section.assign(
-      sectionFlags.begin() + static_cast<std::ptrdiff_t>(readOffset),
-      sectionFlags.begin() + static_cast<std::ptrdiff_t>(readOffset + 4096)
-    );
+    chunk.assignSection(i, sectionFlags + readOffset);
     readOffset += 4096;
   }
 
   std::lock_guard lock(mutex_);
-  minY_ = minY;
-  maxY_ = maxY;
-  chunks_[chunkKey(chunkX, chunkZ)] = std::move(chunk);
+  auto next = std::make_shared<WorldData>(*data_);
+  next->minY = minY;
+  next->maxY = maxY;
+  next->chunks[chunkKey(chunkX, chunkZ)] = std::make_shared<ChunkData>(std::move(chunk));
+  data_ = std::move(next);
 }
 
 void WorldState::applyUpdates(const std::vector<BlockUpdate>& updates) {
+  if (updates.empty()) {
+    return;
+  }
+
   std::lock_guard lock(mutex_);
+  auto next = std::make_shared<WorldData>(*data_);
+  std::unordered_map<int64_t, std::shared_ptr<ChunkData>> mutableChunks;
+  mutableChunks.reserve(updates.size());
 
   for (const auto& update : updates) {
     const int chunkX = update.x >> 4;
     const int chunkZ = update.z >> 4;
     const auto key = chunkKey(chunkX, chunkZ);
-    auto it = chunks_.find(key);
-    if (it == chunks_.end()) {
+    const auto it = next->chunks.find(key);
+    if (it == next->chunks.end() || it->second == nullptr) {
       continue;
     }
 
-    it->second.setFlags(update.x & 15, update.y, update.z & 15, update.flags);
+    std::shared_ptr<ChunkData> chunk;
+    const auto mutableIt = mutableChunks.find(key);
+    if (mutableIt != mutableChunks.end()) {
+      chunk = mutableIt->second;
+    } else {
+      chunk = std::make_shared<ChunkData>(*it->second);
+      mutableChunks.emplace(key, chunk);
+      next->chunks[key] = chunk;
+    }
+
+    chunk->setFlags(update.x & 15, update.y, update.z & 15, update.flags);
   }
+
+  data_ = std::move(next);
 }
 
 WorldSnapshot WorldState::snapshot() const {
   std::lock_guard lock(mutex_);
 
   WorldSnapshot snapshot;
-  snapshot.worldKey = worldKey_;
-  snapshot.minY = minY_;
-  snapshot.maxY = maxY_;
-  snapshot.chunks = chunks_;
+  snapshot.data = data_;
+  snapshot.worldKey = data_->worldKey;
+  snapshot.minY = data_->minY;
+  snapshot.maxY = data_->maxY;
   return snapshot;
 }
 

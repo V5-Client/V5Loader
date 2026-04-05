@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pathfinder.hpp"
+#include "world_voxel_cursor.hpp"
 
 #include <array>
 #include <unordered_map>
@@ -77,6 +78,7 @@ class Runtime {
   const WorldSnapshot& world_;
   const SearchParams& params_;
   ActionCosts costs_{};
+  mutable WorldVoxelCursor voxelCursor_;
 
   mutable std::unordered_map<uint64_t, uint16_t> flagsCache_;
   std::unordered_map<uint64_t, uint8_t> safeCache_;

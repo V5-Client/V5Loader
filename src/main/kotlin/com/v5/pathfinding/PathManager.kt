@@ -1,7 +1,11 @@
 package com.v5.pathfinding
 
+import com.chattriggers.ctjs.api.message.ChatLib
+import com.chattriggers.ctjs.api.world.TabList
 import com.v5.swift.Swift
 import com.v5.swift.nativepath.NativePathfinderBridge
+import com.v5.swift.nativepath.NativeStateEncoder
+import com.v5.swift.nativepath.NativeVoxelFlags
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
@@ -11,6 +15,26 @@ import net.minecraft.util.math.BlockPos
 object PathManager {
   private const val NON_PRIMARY_START_PENALTY = 250.0
   private const val HEURISTIC_WEIGHT = 1.05
+  private const val ETHERWARP_DEFAULT_MAX_ITERATIONS = 100_000
+  private const val ETHERWARP_AUTO_THREAD_COUNT = 0
+  private const val ETHERWARP_STANDING_EYE_HEIGHT = 2.62
+  private const val ETHERWARP_LEGACY_SNEAK_OFFSET = 0.08
+  private const val ETHERWARP_MODERN_SNEAK_OFFSET = 0.35
+
+  private val MODERN_ETHERWARP_AREAS = setOf(
+    "Hub",
+    "Dwarven Mines",
+    "Gold Mine",
+    "The Park",
+    "Park",
+    "Spider's Den",
+    "Spider Den",
+    "The End",
+    "End",
+    "The Farming Islands",
+    "The Barn",
+    "Galatea"
+  )
 
   const val FLAG_FLUID_FEET = 1 shl 0
   const val FLAG_FLUID_HEAD = 1 shl 1
@@ -56,11 +80,22 @@ object PathManager {
     val selectedStartIndex: Int
   )
 
+  private data class EtherwarpSnapshot(
+    val points: List<BlockPos>,
+    val angles: FloatArray,
+    val timeMs: Long,
+    val nodesExplored: Int,
+    val nanosecondsPerNode: Double
+  )
+
   @Volatile
   private var currentPath: PathSnapshot? = null
 
   @Volatile
   private var currentAnnotations: PathAnnotations? = null
+
+  @Volatile
+  private var currentEtherwarpPath: EtherwarpSnapshot? = null
 
   @Volatile
   private var lastError: String? = null
@@ -76,6 +111,15 @@ object PathManager {
 
   private var currentTask: Future<*>? = null
   private val searchId = AtomicInteger(0)
+
+  private fun resolveEtherwarpThreadCount(threadCount: Int): Int {
+    val maxThreads = max(1, Runtime.getRuntime().availableProcessors())
+    if (threadCount == ETHERWARP_AUTO_THREAD_COUNT) {
+      return maxThreads
+    }
+
+    return threadCount.coerceIn(1, maxThreads)
+  }
 
   @JvmStatic
   @JvmOverloads
@@ -130,6 +174,7 @@ object PathManager {
     lastError = null
     currentPath = null
     currentAnnotations = null
+    currentEtherwarpPath = null
 
     if (maxIterations <= 0) {
       lastError = "maxIterations must be > 0"
@@ -179,15 +224,15 @@ object PathManager {
         try {
           val result = NativePathfinderBridge.findPath(
             NativePathfinderBridge.NativePathSearchRequest(
-              startPoints = startFlat,
-              endPoints = endFlat,
-              isFly = isFly,
-              maxIterations = maxIterations,
-              heuristicWeight = HEURISTIC_WEIGHT,
-              nonPrimaryStartPenalty = if (isFly) 0.0 else NON_PRIMARY_START_PENALTY,
-              moveOrderOffset = if (isFly) 0 else searchVariantSeed,
-              avoidMeta = avoidMeta,
-              avoidPenalty = avoidPenalty
+              startFlat,
+              endFlat,
+              isFly,
+              maxIterations,
+              HEURISTIC_WEIGHT,
+              if (isFly) 0.0 else NON_PRIMARY_START_PENALTY,
+              if (isFly) 0 else searchVariantSeed,
+              avoidMeta,
+              avoidPenalty
             )
           )
 
@@ -241,6 +286,176 @@ object PathManager {
       if (searchId.get() == currentId) {
         isSearching = false
         lastError = e.message ?: "Failed to submit native pathfinding task"
+      }
+      return false
+    }
+
+    return true
+  }
+
+  @JvmStatic
+  @JvmOverloads
+  fun findEtherwarpPath(
+    startX: Int,
+    startY: Int,
+    startZ: Int,
+    goalX: Int,
+    goalY: Int,
+    goalZ: Int,
+    maxIterations: Int = ETHERWARP_DEFAULT_MAX_ITERATIONS,
+    threadCount: Int = ETHERWARP_AUTO_THREAD_COUNT,
+    yawStep: Double = 5.0,
+    pitchStep: Double = 5.0,
+    newNodeCost: Double = 1.0,
+    heuristicWeight: Double = 1.0,
+    rayLength: Double = 61.0,
+    rewireEpsilon: Double = 1.0,
+    eyeHeight: Double = Double.NaN
+  ): Boolean {
+    cancelSearch()
+
+    lastError = null
+    currentPath = null
+    currentAnnotations = null
+    currentEtherwarpPath = null
+
+    if (maxIterations <= 0) {
+      lastError = "maxIterations must be > 0"
+      return false
+    }
+    if (threadCount < ETHERWARP_AUTO_THREAD_COUNT) {
+      lastError = "threadCount must be >= 0 (0 = auto)"
+      return false
+    }
+    if (!yawStep.isFinite() || yawStep <= 0.0) {
+      lastError = "yawStep must be > 0"
+      return false
+    }
+    if (!pitchStep.isFinite() || pitchStep <= 0.0) {
+      lastError = "pitchStep must be > 0"
+      return false
+    }
+    if (!newNodeCost.isFinite() || newNodeCost <= 0.0) {
+      lastError = "newNodeCost must be > 0"
+      return false
+    }
+    if (!heuristicWeight.isFinite() || heuristicWeight <= 0.0) {
+      lastError = "heuristicWeight must be > 0"
+      return false
+    }
+    if (!rayLength.isFinite() || rayLength <= 0.0) {
+      lastError = "rayLength must be > 0"
+      return false
+    }
+    if (!rewireEpsilon.isFinite() || rewireEpsilon < 0.0) {
+      lastError = "rewireEpsilon must be >= 0"
+      return false
+    }
+    val resolvedEyeHeight = when {
+      eyeHeight.isNaN() -> getCurrentEtherwarpEyeHeight()
+      eyeHeight.isFinite() && eyeHeight > 0.0 -> eyeHeight
+      else -> Double.NaN
+    }
+    if (!resolvedEyeHeight.isFinite() || resolvedEyeHeight <= 0.0) {
+      lastError = "eyeHeight must be > 0 or NaN for auto"
+      return false
+    }
+
+    val nativeValidation = validateNativeAvailability()
+    if (nativeValidation != null) {
+      lastError = nativeValidation
+      return false
+    }
+
+    val world = MinecraftClient.getInstance().world ?: run {
+      lastError = "World is not loaded"
+      return false
+    }
+    val minSupportY = world.bottomY
+    val maxSupportY = world.topYInclusive - 2
+    if (startY !in minSupportY..maxSupportY) {
+      lastError = "Etherwarp start Y must be between $minSupportY and $maxSupportY"
+      return false
+    }
+    if (goalY !in minSupportY..maxSupportY) {
+      lastError = "Etherwarp goal Y must be between $minSupportY and $maxSupportY"
+      return false
+    }
+
+    validateEtherwarpLanding("Start block", startX, startY, startZ)?.let {
+      lastError = it
+      return false
+    }
+    validateEtherwarpLanding("Goal block", goalX, goalY, goalZ)?.let {
+      lastError = it
+      return false
+    }
+
+    val currentId = searchId.incrementAndGet()
+    val resolvedThreadCount = resolveEtherwarpThreadCount(threadCount)
+    isSearching = true
+
+    try {
+      currentTask = Swift.executor.submit {
+        try {
+          val result = NativePathfinderBridge.findEtherwarpPath(
+            NativePathfinderBridge.NativeEtherwarpSearchRequest(
+              startX,
+              startY,
+              startZ,
+              goalX,
+              goalY,
+              goalZ,
+              maxIterations,
+              resolvedThreadCount,
+              yawStep,
+              pitchStep,
+              newNodeCost,
+              heuristicWeight,
+              rayLength,
+              rewireEpsilon,
+              resolvedEyeHeight
+            )
+          )
+
+          if (searchId.get() != currentId) {
+            return@submit
+          }
+
+          if (result != null && result.path.isNotEmpty()) {
+            currentEtherwarpPath = EtherwarpSnapshot(
+              points = toBlockPosList(result.path),
+              angles = result.angles.copyOf(),
+              timeMs = result.timeMs,
+              nodesExplored = result.nodesExplored,
+              nanosecondsPerNode = result.nanosecondsPerNode
+            )
+            lastError = null
+          } else {
+            currentEtherwarpPath = null
+            lastError = NativePathfinderBridge.getLastError() ?: "No etherwarp path found to destination"
+          }
+        } catch (e: InterruptedException) {
+          if (searchId.get() == currentId) {
+            lastError = "Pathfinding was cancelled"
+          }
+          Thread.currentThread().interrupt()
+        } catch (e: Exception) {
+          if (searchId.get() == currentId) {
+            lastError = e.message ?: "Unknown error during native etherwarp pathfinding"
+            e.printStackTrace()
+          }
+        } finally {
+          if (searchId.get() == currentId) {
+            isSearching = false
+            currentTask = null
+          }
+        }
+      }
+    } catch (e: Exception) {
+      if (searchId.get() == currentId) {
+        isSearching = false
+        lastError = e.message ?: "Failed to submit native etherwarp pathfinding task"
       }
       return false
     }
@@ -365,6 +580,68 @@ object PathManager {
     return result
   }
 
+  private fun validateEtherwarpLanding(label: String, x: Int, y: Int, z: Int): String? {
+    val world = MinecraftClient.getInstance().world ?: return "World is not loaded"
+
+    val supportFlags = NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y, z)))
+    val feetFlags = NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y + 1, z)))
+    val headFlags = NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y + 2, z)))
+
+    if (!isEtherwarpStandable(supportFlags)) {
+      return "$label must be a solid etherwarp landing block"
+    }
+    if (!isEtherwarpPassable(feetFlags)) {
+      return "$label must have passable space above it"
+    }
+    if (!isEtherwarpPassable(headFlags)) {
+      return "$label must have two passable blocks above it"
+    }
+
+    return null
+  }
+
+  private fun isEtherwarpStandable(flags: Int): Boolean {
+    return (flags and NativeVoxelFlags.SOLID) != 0
+  }
+
+  private fun isEtherwarpPassable(flags: Int): Boolean {
+    return (flags and NativeVoxelFlags.ETHER_PASSABLE) != 0
+  }
+
+  @JvmStatic
+  fun getCurrentEtherwarpEyeHeight(): Double {
+    return ETHERWARP_STANDING_EYE_HEIGHT - getCurrentEtherwarpSneakOffset()
+  }
+
+  @JvmStatic
+  fun getCurrentEtherwarpSneakOffset(): Double {
+    return if (isModernEtherwarpArea(getCurrentHypixelArea())) {
+      ETHERWARP_MODERN_SNEAK_OFFSET
+    } else {
+      ETHERWARP_LEGACY_SNEAK_OFFSET
+    }
+  }
+
+  private fun getCurrentHypixelArea(): String? {
+    for (entry in TabList.getNames()) {
+      val cleanLine = ChatLib.removeFormatting(entry.toString()).trim()
+      if (!cleanLine.contains("Area:")) {
+        continue
+      }
+
+      val value = cleanLine.substringAfter("Area:", "").trim()
+      if (value.isNotEmpty()) {
+        return value
+      }
+    }
+
+    return null
+  }
+
+  private fun isModernEtherwarpArea(area: String?): Boolean {
+    return area != null && area in MODERN_ETHERWARP_AREAS
+  }
+
   private fun consumeTransientAvoidZones(): Array<NativeAvoidZone> {
     synchronized(avoidLock) {
       if (transientAvoidEntries.isEmpty()) return emptyArray()
@@ -435,6 +712,23 @@ object PathManager {
   }
 
   @JvmStatic
+  fun getEtherwarpPathArray(): IntArray {
+    val snapshot = currentEtherwarpPath ?: return IntArray(0)
+    val points = snapshot.points
+    val result = IntArray(points.size * 3)
+    var idx = 0
+    for (point in points) {
+      result[idx++] = point.x
+      result[idx++] = point.y
+      result[idx++] = point.z
+    }
+    return result
+  }
+
+  @JvmStatic
+  fun getEtherwarpAnglesArray(): FloatArray = currentEtherwarpPath?.angles?.copyOf() ?: FloatArray(0)
+
+  @JvmStatic
   fun getPathFlagsArray(): IntArray = currentAnnotations?.pathFlags ?: IntArray(0)
 
   @JvmStatic
@@ -498,16 +792,28 @@ object PathManager {
   fun getPathSize(): Int = currentPath?.points?.size ?: 0
 
   @JvmStatic
+  fun getEtherwarpPathSize(): Int = currentEtherwarpPath?.points?.size ?: 0
+
+  @JvmStatic
   fun getKeyNodeCount(): Int = currentPath?.keyNodes?.size ?: 0
 
   @JvmStatic
   fun getLastTimeMs(): Long = currentPath?.timeMs ?: -1L
 
   @JvmStatic
+  fun getEtherwarpLastTimeMs(): Long = currentEtherwarpPath?.timeMs ?: -1L
+
+  @JvmStatic
   fun getNodesExplored(): Int = currentPath?.nodesExplored ?: 0
 
   @JvmStatic
+  fun getEtherwarpNodesExplored(): Int = currentEtherwarpPath?.nodesExplored ?: 0
+
+  @JvmStatic
   fun getNanosecondsPerNode(): Double = currentPath?.nanosecondsPerNode ?: 0.0
+
+  @JvmStatic
+  fun getEtherwarpNanosecondsPerNode(): Double = currentEtherwarpPath?.nanosecondsPerNode ?: 0.0
 
   @JvmStatic
   fun getSelectedStartIndex(): Int = currentPath?.selectedStartIndex ?: -1
@@ -524,10 +830,14 @@ object PathManager {
   fun hasPath(): Boolean = currentPath != null
 
   @JvmStatic
+  fun hasEtherwarpPath(): Boolean = currentEtherwarpPath != null
+
+  @JvmStatic
   fun clear() {
     cancelSearch()
     currentPath = null
     currentAnnotations = null
+    currentEtherwarpPath = null
     lastError = null
   }
 }
