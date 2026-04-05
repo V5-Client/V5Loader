@@ -3882,7 +3882,9 @@ public final class com/v5/swift/nativepath/NativeStateEncoder {
 public final class com/v5/swift/nativepath/NativeVoxelFlags {
 	public static final field BLOCKING_WALL I
 	public static final field CARPET_LIKE I
+	public static final field ETHER_FEET_BLOCKER I
 	public static final field ETHER_PASSABLE I
+	public static final field ETHER_TELEPORT_CLEAR I
 	public static final field FENCE_LIKE I
 	public static final field FLUID I
 	public static final field INSTANCE Lcom/v5/swift/nativepath/NativeVoxelFlags;

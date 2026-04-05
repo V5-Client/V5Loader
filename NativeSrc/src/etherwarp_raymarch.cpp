@@ -25,20 +25,23 @@ inline bool isLandingBlockAt(
   const uint16_t supportFlags,
   const WorldSnapshot& world
 ) {
-  if (y < world.minY || y + 2 >= world.maxY) {
-    return false;
-  }
-
   if (!isEtherwarpStandableFlags(supportFlags)) {
     return false;
   }
 
-  const uint16_t feetFlags = cursor.getFlags(x, y + 1, z);
-  if (!isEtherPassableFlags(feetFlags)) {
+  const int standOffset = etherwarpStandOffset(supportFlags);
+  const int feetY = y + standOffset;
+  const int headY = feetY + 1;
+  if (y < world.minY || headY >= world.maxY) {
     return false;
   }
 
-  return isEtherPassableFlags(cursor.getFlags(x, y + 2, z));
+  const uint16_t feetFlags = cursor.getFlags(x, feetY, z);
+  if (!isEtherwarpTeleportSpaceClearFlags(feetFlags)) {
+    return false;
+  }
+
+  return isEtherwarpTeleportSpaceClearFlags(cursor.getFlags(x, headY, z));
 }
 
 } // namespace

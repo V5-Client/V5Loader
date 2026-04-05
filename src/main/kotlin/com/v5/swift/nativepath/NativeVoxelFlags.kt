@@ -12,4 +12,8 @@ object NativeVoxelFlags {
   const val STAIRS_BOTTOM = 1 shl 8
   const val CARPET_LIKE = 1 shl 9
   const val ETHER_PASSABLE = 1 shl 10
+  // Etherwarp can target through these voxels.
+  const val ETHER_TELEPORT_CLEAR = 1 shl 11
+  // Etherwarp can ray through these voxels, but the player's body cannot occupy them after landing.
+  const val ETHER_FEET_BLOCKER = 1 shl 12
 }

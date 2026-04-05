@@ -12,8 +12,17 @@ inline bool isEtherPassableFlags(const uint16_t flags) {
   return hasVoxelFlag(flags, VF_ETHER_PASSABLE);
 }
 
+inline bool isEtherwarpTeleportSpaceClearFlags(const uint16_t flags) {
+  return hasVoxelFlag(flags, VF_ETHER_TELEPORT_CLEAR) &&
+    !hasVoxelFlag(flags, VF_ETHER_FEET_BLOCKER);
+}
+
 inline bool isEtherwarpStandableFlags(const uint16_t flags) {
   return hasVoxelFlag(flags, VF_SOLID);
+}
+
+inline int etherwarpStandOffset(const uint16_t supportFlags) {
+  return hasVoxelFlag(supportFlags, VF_FENCE_LIKE) ? 2 : 1;
 }
 
 inline double etherwarpLandingYOffset(const uint16_t supportFlags) {
@@ -58,15 +67,30 @@ inline bool isEtherPassableVoxel(const WorldSnapshot& world, const int x, const 
   return isEtherPassableFlags(flagsAt(world, x, y, z));
 }
 
+inline bool isEtherwarpTeleportSpaceClearVoxel(
+  const WorldSnapshot& world,
+  const int x,
+  const int y,
+  const int z
+) {
+  return isEtherwarpTeleportSpaceClearFlags(flagsAt(world, x, y, z));
+}
+
 inline bool isEtherwarpStandableVoxel(const WorldSnapshot& world, const int x, const int y, const int z) {
   return isEtherwarpStandableFlags(flagsAt(world, x, y, z));
 }
 
 inline bool isEtherwarpLandingBlockVoxel(const WorldSnapshot& world, const int x, const int y, const int z) {
-  if (y < world.minY || y + 2 >= world.maxY) return false;
-  return isEtherwarpStandableVoxel(world, x, y, z) &&
-    isEtherPassableVoxel(world, x, y + 1, z) &&
-    isEtherPassableVoxel(world, x, y + 2, z);
+  const uint16_t supportFlags = flagsAt(world, x, y, z);
+  if (!isEtherwarpStandableFlags(supportFlags)) return false;
+
+  const int standOffset = etherwarpStandOffset(supportFlags);
+  const int feetY = y + standOffset;
+  const int headY = feetY + 1;
+  if (y < world.minY || headY >= world.maxY) return false;
+
+  return isEtherwarpTeleportSpaceClearVoxel(world, x, feetY, z) &&
+    isEtherwarpTeleportSpaceClearVoxel(world, x, headY, z);
 }
 
 inline bool isWalkSafeVoxel(const WorldSnapshot& world, const int x, const int y, const int z) {

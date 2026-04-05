@@ -584,16 +584,18 @@ object PathManager {
     val world = MinecraftClient.getInstance().world ?: return "World is not loaded"
 
     val supportFlags = NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y, z)))
-    val feetFlags = NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y + 1, z)))
-    val headFlags = NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y + 2, z)))
-
     if (!isEtherwarpStandable(supportFlags)) {
       return "$label must be a solid etherwarp landing block"
     }
-    if (!isEtherwarpPassable(feetFlags)) {
+
+    val standOffset = etherwarpStandOffset(supportFlags)
+    val feetFlags = NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y + standOffset, z)))
+    val headFlags = NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y + standOffset + 1, z)))
+
+    if (!isEtherwarpTeleportSpaceClear(feetFlags)) {
       return "$label must have passable space above it"
     }
-    if (!isEtherwarpPassable(headFlags)) {
+    if (!isEtherwarpTeleportSpaceClear(headFlags)) {
       return "$label must have two passable blocks above it"
     }
 
@@ -604,8 +606,17 @@ object PathManager {
     return (flags and NativeVoxelFlags.SOLID) != 0
   }
 
-  private fun isEtherwarpPassable(flags: Int): Boolean {
-    return (flags and NativeVoxelFlags.ETHER_PASSABLE) != 0
+  private fun isFenceLikeEtherwarpSupport(flags: Int): Boolean {
+    return (flags and NativeVoxelFlags.FENCE_LIKE) != 0
+  }
+
+  private fun etherwarpStandOffset(flags: Int): Int {
+    return if (isFenceLikeEtherwarpSupport(flags)) 2 else 1
+  }
+
+  private fun isEtherwarpTeleportSpaceClear(flags: Int): Boolean {
+    return (flags and NativeVoxelFlags.ETHER_TELEPORT_CLEAR) != 0 &&
+      (flags and NativeVoxelFlags.ETHER_FEET_BLOCKER) == 0
   }
 
   @JvmStatic

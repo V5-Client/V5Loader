@@ -12,7 +12,8 @@ class CachedChunk(
     val AIR_FLAGS: Short = (
       NativeVoxelFlags.PASSABLE or
         NativeVoxelFlags.PASSABLE_FLY or
-        NativeVoxelFlags.ETHER_PASSABLE
+        NativeVoxelFlags.ETHER_PASSABLE or
+        NativeVoxelFlags.ETHER_TELEPORT_CLEAR
       ).toShort()
   }
 
