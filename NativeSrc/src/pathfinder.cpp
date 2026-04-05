@@ -91,6 +91,7 @@ std::optional<SearchResult> findPathSingle(
   const double weight = (std::isfinite(params.heuristicWeight) && params.heuristicWeight > 0.0)
     ? params.heuristicWeight
     : 1.0;
+  const double initialStartPenalty = std::max(0.0, params.initialStartPenalty);
   const bool isFly = params.isFly;
 
   std::array<Int3, 16> walkMovesOrdered = detail::WALK_MOVES;
@@ -104,7 +105,7 @@ std::optional<SearchResult> findPathSingle(
 
   for (size_t i = 0; i < params.starts.size(); i++) {
     const auto& start = params.starts[i];
-    const double startPenalty = i == 0 ? 0.0 : std::max(0.0, params.nonPrimaryStartPenalty);
+    const double startPenalty = initialStartPenalty + (i == 0 ? 0.0 : std::max(0.0, params.nonPrimaryStartPenalty));
 
     const uint64_t key = coordKey(start.x, start.y, start.z);
     int nodeIdx = -1;
@@ -284,7 +285,7 @@ std::optional<SearchResult> findPath(
 
         SearchParams workerParams = params;
         workerParams.starts = {params.starts[startIdx]};
-        workerParams.nonPrimaryStartPenalty = 0.0;
+        workerParams.initialStartPenalty = startIdx == 0 ? 0.0 : std::max(0.0, params.nonPrimaryStartPenalty);
 
         auto result = findPathSingle(world, workerParams, cancelFlag, &localCancelFlag);
         if (!result.has_value()) {
