@@ -3,6 +3,7 @@ package com.v5.pathfinding
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.world.TabList
 import com.v5.swift.Swift
+import com.v5.swift.cache.CachedWorld
 import com.v5.swift.nativepath.NativePathfinderBridge
 import com.v5.swift.nativepath.NativeStateEncoder
 import com.v5.swift.nativepath.NativeVoxelFlags
@@ -11,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.math.BlockPos
+import net.minecraft.world.chunk.ChunkStatus
 
 object PathManager {
   private const val NON_PRIMARY_START_PENALTY = 250.0
@@ -583,14 +585,14 @@ object PathManager {
   private fun validateEtherwarpLanding(label: String, x: Int, y: Int, z: Int): String? {
     val world = MinecraftClient.getInstance().world ?: return "World is not loaded"
 
-    val supportFlags = NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y, z)))
+    val supportFlags = resolveEtherwarpValidationFlags(world, x, y, z) ?: return null
     if (!isEtherwarpStandable(supportFlags)) {
       return "$label must be a solid etherwarp landing block"
     }
 
     val standOffset = etherwarpStandOffset(supportFlags)
-    val feetFlags = NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y + standOffset, z)))
-    val headFlags = NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y + standOffset + 1, z)))
+    val feetFlags = resolveEtherwarpValidationFlags(world, x, y + standOffset, z) ?: return null
+    val headFlags = resolveEtherwarpValidationFlags(world, x, y + standOffset + 1, z) ?: return null
 
     if (!isEtherwarpTeleportSpaceClear(feetFlags)) {
       return "$label must have passable space above it"
@@ -600,6 +602,16 @@ object PathManager {
     }
 
     return null
+  }
+
+  private fun resolveEtherwarpValidationFlags(world: net.minecraft.client.world.ClientWorld, x: Int, y: Int, z: Int): Int? {
+    val chunkX = x shr 4
+    val chunkZ = z shr 4
+    if (world.chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) != null) {
+      return NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y, z)))
+    }
+
+    return CachedWorld.getBlockFlags(x, y, z)?.toInt()?.and(0xFFFF)
   }
 
   private fun isEtherwarpStandable(flags: Int): Boolean {
