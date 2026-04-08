@@ -47,6 +47,11 @@ object PathManager {
   const val FLAG_DROP_NEXT = 1 shl 6
   const val FLAG_TIGHT_CORRIDOR = 1 shl 7
 
+  const val ETHERWARP_VOXEL_SOLID = NativeVoxelFlags.SOLID
+  const val ETHERWARP_VOXEL_FENCE_LIKE = NativeVoxelFlags.FENCE_LIKE
+  const val ETHERWARP_VOXEL_TELEPORT_CLEAR = NativeVoxelFlags.ETHER_TELEPORT_CLEAR
+  const val ETHERWARP_VOXEL_FEET_BLOCKER = NativeVoxelFlags.ETHER_FEET_BLOCKER
+
   private data class PathAnnotations(
     val pathFlags: IntArray,
     val keyNodeFlags: IntArray,
@@ -774,6 +779,21 @@ object PathManager {
     FLAG_DROP_NEXT,
     FLAG_TIGHT_CORRIDOR
   )
+
+  @JvmStatic
+  fun getEtherwarpVoxelFlagsAt(x: Int, y: Int, z: Int): Int {
+    val world = MinecraftClient.getInstance().world ?: return 0
+    return resolveEtherwarpValidationFlags(world, x, y, z) ?: 0
+  }
+
+  @JvmStatic
+  fun isEtherwarpSupportSolid(flags: Int): Boolean = isEtherwarpStandable(flags)
+
+  @JvmStatic
+  fun getEtherwarpStandOffsetForFlags(flags: Int): Int = etherwarpStandOffset(flags)
+
+  @JvmStatic
+  fun isEtherwarpTeleportSpaceClearFlags(flags: Int): Boolean = isEtherwarpTeleportSpaceClear(flags)
 
   @JvmStatic
   @JvmOverloads

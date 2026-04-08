@@ -3244,6 +3244,10 @@ public class com/v5/mixins/YggdrasilServicesKeyInfoMixin {
 }
 
 public final class com/v5/pathfinding/PathManager {
+	public static final field ETHERWARP_VOXEL_FEET_BLOCKER I
+	public static final field ETHERWARP_VOXEL_FENCE_LIKE I
+	public static final field ETHERWARP_VOXEL_SOLID I
+	public static final field ETHERWARP_VOXEL_TELEPORT_CLEAR I
 	public static final field FLAG_DROP_NEXT I
 	public static final field FLAG_FLUID_FEET I
 	public static final field FLAG_FLUID_HEAD I
@@ -3300,6 +3304,8 @@ public final class com/v5/pathfinding/PathManager {
 	public static final fun getEtherwarpNodesExplored ()I
 	public static final fun getEtherwarpPathArray ()[I
 	public static final fun getEtherwarpPathSize ()I
+	public static final fun getEtherwarpStandOffsetForFlags (I)I
+	public static final fun getEtherwarpVoxelFlagsAt (III)I
 	public static final fun getKeyNodeCount ()I
 	public static final fun getKeyNodeFlagsArray ()[I
 	public static final fun getKeyNodeMetricsArray ()[I
@@ -3316,6 +3322,8 @@ public final class com/v5/pathfinding/PathManager {
 	public static final fun getSelectedStartIndex ()I
 	public static final fun hasEtherwarpPath ()Z
 	public static final fun hasPath ()Z
+	public static final fun isEtherwarpSupportSolid (I)Z
+	public static final fun isEtherwarpTeleportSpaceClearFlags (I)Z
 	public static final fun isSearching ()Z
 	public static final fun setSearchVariantSeed (I)V
 }
