@@ -157,10 +157,29 @@ struct AngleRobustnessScore {
   double centerDistance = std::numeric_limits<double>::infinity();
 };
 
+struct EyeOrigin {
+  double x = 0.0;
+  double y = 0.0;
+  double z = 0.0;
+};
+
 inline float normalizeYawDegrees(double yaw) {
   yaw = std::fmod(yaw, 360.0);
   if (yaw < 0.0) yaw += 360.0;
   return static_cast<float>(yaw);
+}
+
+inline EyeOrigin resolveEyeOriginFromLanding(
+  const WorldSnapshot& world,
+  const Int3& from,
+  const double eyeHeight
+) {
+  const uint16_t fromSupportFlags = flagsAt(world, from.x, from.y, from.z);
+  return EyeOrigin{
+    static_cast<double>(from.x) + 0.5,
+    static_cast<double>(from.y) + etherwarpEyeYOffset(fromSupportFlags, eyeHeight),
+    static_cast<double>(from.z) + 0.5
+  };
 }
 
 inline double circularAngleDistance(const float a, const float b) {
@@ -215,22 +234,47 @@ inline std::optional<EtherwarpRayDirection> makeDirectionToPoint(
 
 inline std::optional<EtherwarpRayDirection> makeAimDirection(
   const WorldSnapshot& world,
-  const Int3& from,
-  const Int3& to,
-  const double eyeHeight
+  const double originX,
+  const double originY,
+  const double originZ,
+  const Int3& to
 ) {
-  const uint16_t fromSupportFlags = flagsAt(world, from.x, from.y, from.z);
   const uint16_t toSupportFlags = flagsAt(world, to.x, to.y, to.z);
-
-  const double originX = static_cast<double>(from.x) + 0.5;
-  const double originY = static_cast<double>(from.y) + etherwarpEyeYOffset(fromSupportFlags, eyeHeight);
-  const double originZ = static_cast<double>(from.z) + 0.5;
 
   const double targetX = static_cast<double>(to.x) + 0.5;
   const double targetY = static_cast<double>(to.y) + etherwarpLandingYOffset(toSupportFlags);
   const double targetZ = static_cast<double>(to.z) + 0.5;
 
   return makeDirectionToPoint(originX, originY, originZ, targetX, targetY, targetZ);
+}
+
+inline std::optional<EtherwarpRayDirection> makeAimDirection(
+  const WorldSnapshot& world,
+  const Int3& from,
+  const Int3& to,
+  const double eyeHeight
+) {
+  const auto origin = resolveEyeOriginFromLanding(world, from, eyeHeight);
+  return makeAimDirection(world, origin.x, origin.y, origin.z, to);
+}
+
+inline std::optional<EtherwarpRayDirection> makeAimDirectionToOffset(
+  const double originX,
+  const double originY,
+  const double originZ,
+  const Int3& to,
+  const double targetXOffset,
+  const double targetYOffset,
+  const double targetZOffset
+) {
+  return makeDirectionToPoint(
+    originX,
+    originY,
+    originZ,
+    static_cast<double>(to.x) + targetXOffset,
+    static_cast<double>(to.y) + targetYOffset,
+    static_cast<double>(to.z) + targetZOffset
+  );
 }
 
 inline std::optional<EtherwarpRayDirection> makeAimDirectionToOffset(
@@ -242,20 +286,21 @@ inline std::optional<EtherwarpRayDirection> makeAimDirectionToOffset(
   const double targetYOffset,
   const double targetZOffset
 ) {
-  const uint16_t fromSupportFlags = flagsAt(world, from.x, from.y, from.z);
+  const auto origin = resolveEyeOriginFromLanding(world, from, eyeHeight);
+  return makeAimDirectionToOffset(origin.x, origin.y, origin.z, to, targetXOffset, targetYOffset, targetZOffset);
+}
 
-  const double originX = static_cast<double>(from.x) + 0.5;
-  const double originY = static_cast<double>(from.y) + etherwarpEyeYOffset(fromSupportFlags, eyeHeight);
-  const double originZ = static_cast<double>(from.z) + 0.5;
-
-  return makeDirectionToPoint(
-    originX,
-    originY,
-    originZ,
-    static_cast<double>(to.x) + targetXOffset,
-    static_cast<double>(to.y) + targetYOffset,
-    static_cast<double>(to.z) + targetZOffset
-  );
+inline bool hitsExactEtherwarpTarget(
+  const WorldSnapshot& world,
+  const Int3& target,
+  const double rayLength,
+  const EtherwarpRayDirection& direction,
+  const double originX,
+  const double originY,
+  const double originZ
+) {
+  const auto hit = raymarchEtherwarp(world, originX, originY, originZ, direction, rayLength);
+  return hit.has_value() && hit->x == target.x && hit->y == target.y && hit->z == target.z;
 }
 
 inline bool hitsExactEtherwarpTarget(
@@ -266,23 +311,19 @@ inline bool hitsExactEtherwarpTarget(
   const double rayLength,
   const EtherwarpRayDirection& direction
 ) {
-  const uint16_t fromSupportFlags = flagsAt(world, from.x, from.y, from.z);
-  const double originX = static_cast<double>(from.x) + 0.5;
-  const double originY = static_cast<double>(from.y) + etherwarpEyeYOffset(fromSupportFlags, eyeHeight);
-  const double originZ = static_cast<double>(from.z) + 0.5;
-
-  const auto hit = raymarchEtherwarp(world, originX, originY, originZ, direction, rayLength);
-  return hit.has_value() && hit->x == target.x && hit->y == target.y && hit->z == target.z;
+  const auto origin = resolveEyeOriginFromLanding(world, from, eyeHeight);
+  return hitsExactEtherwarpTarget(world, target, rayLength, direction, origin.x, origin.y, origin.z);
 }
 
 inline bool squareMarginIsValid(
   const WorldSnapshot& world,
-  const Int3& from,
   const Int3& to,
-  const double eyeHeight,
   const double rayLength,
   const EtherwarpRayDirection& direction,
-  const double margin
+  const double margin,
+  const double originX,
+  const double originY,
+  const double originZ
 ) {
   static constexpr double DELTAS[] = {-1.0, 0.0, 1.0};
 
@@ -295,7 +336,7 @@ inline bool squareMarginIsValid(
         90.0
       ));
       const auto sampledDirection = makeRayDirectionFromAngles(sampledYaw, sampledPitch);
-      if (!hitsExactEtherwarpTarget(world, from, to, eyeHeight, rayLength, sampledDirection)) {
+      if (!hitsExactEtherwarpTarget(world, to, rayLength, sampledDirection, originX, originY, originZ)) {
         return false;
       }
     }
@@ -304,19 +345,33 @@ inline bool squareMarginIsValid(
   return true;
 }
 
-inline double measureSquareMargin(
+inline bool squareMarginIsValid(
   const WorldSnapshot& world,
   const Int3& from,
   const Int3& to,
   const double eyeHeight,
   const double rayLength,
-  const EtherwarpRayDirection& direction
+  const EtherwarpRayDirection& direction,
+  const double margin
 ) {
-  if (!hitsExactEtherwarpTarget(world, from, to, eyeHeight, rayLength, direction)) {
+  const auto origin = resolveEyeOriginFromLanding(world, from, eyeHeight);
+  return squareMarginIsValid(world, to, rayLength, direction, margin, origin.x, origin.y, origin.z);
+}
+
+inline double measureSquareMargin(
+  const WorldSnapshot& world,
+  const Int3& to,
+  const double rayLength,
+  const EtherwarpRayDirection& direction,
+  const double originX,
+  const double originY,
+  const double originZ
+) {
+  if (!hitsExactEtherwarpTarget(world, to, rayLength, direction, originX, originY, originZ)) {
     return -1.0;
   }
 
-  if (!squareMarginIsValid(world, from, to, eyeHeight, rayLength, direction, ROBUSTNESS_INITIAL_MARGIN)) {
+  if (!squareMarginIsValid(world, to, rayLength, direction, ROBUSTNESS_INITIAL_MARGIN, originX, originY, originZ)) {
     return 0.0;
   }
 
@@ -327,7 +382,7 @@ inline double measureSquareMargin(
     if (next <= high) {
       break;
     }
-    if (!squareMarginIsValid(world, from, to, eyeHeight, rayLength, direction, next)) {
+    if (!squareMarginIsValid(world, to, rayLength, direction, next, originX, originY, originZ)) {
       high = next;
       break;
     }
@@ -336,7 +391,7 @@ inline double measureSquareMargin(
   }
 
   if (low >= ROBUSTNESS_MAX_MARGIN - ROBUSTNESS_EPSILON &&
-      squareMarginIsValid(world, from, to, eyeHeight, rayLength, direction, ROBUSTNESS_MAX_MARGIN)) {
+      squareMarginIsValid(world, to, rayLength, direction, ROBUSTNESS_MAX_MARGIN, originX, originY, originZ)) {
     return ROBUSTNESS_MAX_MARGIN;
   }
 
@@ -348,7 +403,7 @@ inline double measureSquareMargin(
   double bad = high;
   for (int i = 0; i < ROBUSTNESS_BINARY_SEARCH_STEPS; i++) {
     const double mid = (good + bad) * 0.5;
-    if (squareMarginIsValid(world, from, to, eyeHeight, rayLength, direction, mid)) {
+    if (squareMarginIsValid(world, to, rayLength, direction, mid, originX, originY, originZ)) {
       good = mid;
     } else {
       bad = mid;
@@ -358,20 +413,28 @@ inline double measureSquareMargin(
   return good;
 }
 
-inline std::optional<EtherwarpRayDirection> resolveStableAimDirection(
+inline double measureSquareMargin(
   const WorldSnapshot& world,
   const Int3& from,
   const Int3& to,
   const double eyeHeight,
   const double rayLength,
+  const EtherwarpRayDirection& direction
+) {
+  const auto origin = resolveEyeOriginFromLanding(world, from, eyeHeight);
+  return measureSquareMargin(world, to, rayLength, direction, origin.x, origin.y, origin.z);
+}
+
+inline std::optional<EtherwarpRayDirection> resolveStableAimDirection(
+  const WorldSnapshot& world,
+  const double originX,
+  const double originY,
+  const double originZ,
+  const Int3& to,
+  const double rayLength,
   const std::optional<EtherwarpRayDirection>& fallback = std::nullopt
 ) {
-  const uint16_t fromSupportFlags = flagsAt(world, from.x, from.y, from.z);
   const uint16_t toSupportFlags = flagsAt(world, to.x, to.y, to.z);
-
-  const double originX = static_cast<double>(from.x) + 0.5;
-  const double originY = static_cast<double>(from.y) + etherwarpEyeYOffset(fromSupportFlags, eyeHeight);
-  const double originZ = static_cast<double>(from.z) + 0.5;
 
   const double landingY = etherwarpLandingYOffset(toSupportFlags);
   const double verticalOffsets[] = {landingY, landingY - 0.2, landingY - 0.35, landingY - 0.5};
@@ -420,6 +483,18 @@ inline std::optional<EtherwarpRayDirection> resolveStableAimDirection(
   }
 
   return std::nullopt;
+}
+
+inline std::optional<EtherwarpRayDirection> resolveStableAimDirection(
+  const WorldSnapshot& world,
+  const Int3& from,
+  const Int3& to,
+  const double eyeHeight,
+  const double rayLength,
+  const std::optional<EtherwarpRayDirection>& fallback = std::nullopt
+) {
+  const auto origin = resolveEyeOriginFromLanding(world, from, eyeHeight);
+  return resolveStableAimDirection(world, origin.x, origin.y, origin.z, to, rayLength, fallback);
 }
 
 inline std::vector<AngularRow> buildAngularRows(
@@ -520,6 +595,26 @@ inline int createNode(SharedState& state, const Int3& pos, const double h) {
 
 inline bool tryDirectShot(
   const WorldSnapshot& world,
+  const Int3& target,
+  const double rayLength,
+  const double originX,
+  const double originY,
+  const double originZ,
+  EtherwarpRayDirection* usedDirection = nullptr
+) {
+  const auto direction = resolveStableAimDirection(world, originX, originY, originZ, target, rayLength);
+  if (!direction.has_value()) {
+    return false;
+  }
+
+  if (usedDirection != nullptr) {
+    *usedDirection = *direction;
+  }
+  return true;
+}
+
+inline bool tryDirectShot(
+  const WorldSnapshot& world,
   const Int3& from,
   const Int3& target,
   const double eyeHeight,
@@ -558,13 +653,14 @@ inline bool isBetterRobustnessScore(
 
 inline std::optional<EtherwarpRayDirection> optimizeAimDirectionForHop(
   const WorldSnapshot& world,
-  const Int3& from,
   const Int3& to,
-  const double eyeHeight,
   const double rayLength,
+  const double originX,
+  const double originY,
+  const double originZ,
   const std::optional<EtherwarpRayDirection>& fallback = std::nullopt
 ) {
-  const auto baseline = resolveStableAimDirection(world, from, to, eyeHeight, rayLength, fallback);
+  const auto baseline = resolveStableAimDirection(world, originX, originY, originZ, to, rayLength, fallback);
   if (!baseline.has_value()) {
     return std::nullopt;
   }
@@ -596,7 +692,7 @@ inline std::optional<EtherwarpRayDirection> optimizeAimDirectionForHop(
     {0.53125, 0.53125},
   };
 
-  const double baselineMargin = measureSquareMargin(world, from, to, eyeHeight, rayLength, *baseline);
+  const double baselineMargin = measureSquareMargin(world, to, rayLength, *baseline, originX, originY, originZ);
   AngleRobustnessScore bestScore;
   bestScore.yaw = baseline->yaw;
   bestScore.pitch = baseline->pitch;
@@ -608,23 +704,23 @@ inline std::optional<EtherwarpRayDirection> optimizeAimDirectionForHop(
   for (const double targetYOffset : verticalOffsets) {
     for (const auto& lateral : lateralOffsets) {
       const auto candidate = makeAimDirectionToOffset(
-        world,
-        from,
+        originX,
+        originY,
+        originZ,
         to,
-        eyeHeight,
         lateral.x,
         targetYOffset,
         lateral.z
       );
       if (!candidate.has_value() ||
-          !hitsExactEtherwarpTarget(world, from, to, eyeHeight, rayLength, *candidate)) {
+          !hitsExactEtherwarpTarget(world, to, rayLength, *candidate, originX, originY, originZ)) {
         continue;
       }
 
       AngleRobustnessScore score;
       score.yaw = candidate->yaw;
       score.pitch = candidate->pitch;
-      score.margin = measureSquareMargin(world, from, to, eyeHeight, rayLength, *candidate);
+      score.margin = measureSquareMargin(world, to, rayLength, *candidate, originX, originY, originZ);
       score.baselineDistance = std::hypot(
         circularAngleDistance(candidate->yaw, baseline->yaw),
         std::abs(static_cast<double>(candidate->pitch) - static_cast<double>(baseline->pitch))
@@ -648,6 +744,18 @@ inline std::optional<EtherwarpRayDirection> optimizeAimDirectionForHop(
   return baseline;
 }
 
+inline std::optional<EtherwarpRayDirection> optimizeAimDirectionForHop(
+  const WorldSnapshot& world,
+  const Int3& from,
+  const Int3& to,
+  const double eyeHeight,
+  const double rayLength,
+  const std::optional<EtherwarpRayDirection>& fallback = std::nullopt
+) {
+  const auto origin = resolveEyeOriginFromLanding(world, from, eyeHeight);
+  return optimizeAimDirectionForHop(world, to, rayLength, origin.x, origin.y, origin.z, fallback);
+}
+
 inline std::vector<float> optimizeAnglesForRoute(
   const WorldSnapshot& world,
   const std::vector<Int3>& points,
@@ -660,10 +768,7 @@ inline std::vector<float> optimizeAnglesForRoute(
   }
 
   angles.reserve(points.size() * 2);
-  angles.push_back(std::numeric_limits<float>::quiet_NaN());
-  angles.push_back(std::numeric_limits<float>::quiet_NaN());
-
-  for (size_t i = 1; i < points.size(); i++) {
+  for (size_t i = 0; i < points.size(); i++) {
     std::optional<EtherwarpRayDirection> fallback;
     const size_t angleIdx = i * 2;
     if (angleIdx + 1 < fallbackAngles.size() &&
@@ -672,14 +777,27 @@ inline std::vector<float> optimizeAnglesForRoute(
       fallback = makeRayDirectionFromAngles(fallbackAngles[angleIdx], fallbackAngles[angleIdx + 1]);
     }
 
-    const auto optimized = optimizeAimDirectionForHop(
-      world,
-      points[i - 1],
-      points[i],
-      params.eyeHeight,
-      params.rayLength,
-      fallback
-    );
+    std::optional<EtherwarpRayDirection> optimized;
+    if (i == 0) {
+      optimized = optimizeAimDirectionForHop(
+        world,
+        points[i],
+        params.rayLength,
+        params.startEyeX,
+        params.startEyeY,
+        params.startEyeZ,
+        fallback
+      );
+    } else {
+      optimized = optimizeAimDirectionForHop(
+        world,
+        points[i - 1],
+        points[i],
+        params.eyeHeight,
+        params.rayLength,
+        fallback
+      );
+    }
 
     if (optimized.has_value()) {
       angles.push_back(optimized->yaw);
@@ -694,7 +812,10 @@ inline std::vector<float> optimizeAnglesForRoute(
     }
 
     EtherwarpRayDirection directShotDirection;
-    if (tryDirectShot(world, points[i - 1], points[i], params.eyeHeight, params.rayLength, &directShotDirection)) {
+    const bool hasDirectShot = i == 0
+      ? tryDirectShot(world, points[i], params.rayLength, params.startEyeX, params.startEyeY, params.startEyeZ, &directShotDirection)
+      : tryDirectShot(world, points[i - 1], points[i], params.eyeHeight, params.rayLength, &directShotDirection);
+    if (hasDirectShot) {
       angles.push_back(directShotDirection.yaw);
       angles.push_back(directShotDirection.pitch);
     } else {
@@ -740,6 +861,7 @@ inline bool refineAroundSeed(
   const double originX,
   const double originY,
   const double originZ,
+  const bool useExplicitOrigin,
   const int nextDepth,
   const double nextG,
   const RefinementSeed& seed,
@@ -767,14 +889,27 @@ inline bool refineAroundSeed(
         continue;
       }
 
-      const auto candidateDirection = resolveStableAimDirection(
-        world,
-        current,
-        *hit,
-        params.eyeHeight,
-        params.rayLength,
-        sample.direction
-      );
+      std::optional<EtherwarpRayDirection> candidateDirection;
+      if (useExplicitOrigin) {
+        candidateDirection = resolveStableAimDirection(
+          world,
+          originX,
+          originY,
+          originZ,
+          *hit,
+          params.rayLength,
+          sample.direction
+        );
+      } else {
+        candidateDirection = resolveStableAimDirection(
+          world,
+          current,
+          *hit,
+          params.eyeHeight,
+          params.rayLength,
+          sample.direction
+        );
+      }
       if (!candidateDirection.has_value()) {
         continue;
       }
@@ -795,24 +930,38 @@ inline void collectNeighbors(
   const Int3& current,
   const double currG,
   const int currDepth,
-  WorkerScratch& scratch
+  WorkerScratch& scratch,
+  const bool useExplicitOrigin = false,
+  const double explicitOriginX = 0.0,
+  const double explicitOriginY = 0.0,
+  const double explicitOriginZ = 0.0
 ) {
   scratch.beginNode();
 
-  const uint16_t currentSupportFlags = flagsAt(world, current.x, current.y, current.z);
-  const double originX = static_cast<double>(current.x) + 0.5;
-  const double originY = static_cast<double>(current.y) + etherwarpEyeYOffset(currentSupportFlags, params.eyeHeight);
-  const double originZ = static_cast<double>(current.z) + 0.5;
+  double originX = explicitOriginX;
+  double originY = explicitOriginY;
+  double originZ = explicitOriginZ;
+  if (!useExplicitOrigin) {
+    const auto landingOrigin = resolveEyeOriginFromLanding(world, current, params.eyeHeight);
+    originX = landingOrigin.x;
+    originY = landingOrigin.y;
+    originZ = landingOrigin.z;
+  }
   const int nextDepth = currDepth + 1;
   const double nextG = currG + params.newNodeCost;
 
   EtherwarpRayDirection goalDirection;
-  if (tryDirectShot(world, current, params.goal, params.eyeHeight, params.rayLength, &goalDirection)) {
+  const bool hasGoalDirectShot = useExplicitOrigin
+    ? tryDirectShot(world, params.goal, params.rayLength, originX, originY, originZ, &goalDirection)
+    : tryDirectShot(world, current, params.goal, params.eyeHeight, params.rayLength, &goalDirection);
+  if (hasGoalDirectShot) {
     appendNeighborCandidate(params, nextDepth, nextG, params.goal, goalDirection, scratch);
     return;
   }
 
-  const auto goalAim = makeAimDirection(world, current, params.goal, params.eyeHeight);
+  const auto goalAim = useExplicitOrigin
+    ? makeAimDirection(world, originX, originY, originZ, params.goal)
+    : makeAimDirection(world, current, params.goal, params.eyeHeight);
   if (goalAim.has_value()) {
     scratch.refinementSeeds.push_back(RefinementSeed{
       goalAim->yaw,
@@ -827,14 +976,27 @@ inline void collectNeighbors(
       continue;
     }
 
-    const auto candidateDirection = resolveStableAimDirection(
-      world,
-      current,
-      *hit,
-      params.eyeHeight,
-      params.rayLength,
-      sample.direction
-    );
+    std::optional<EtherwarpRayDirection> candidateDirection;
+    if (useExplicitOrigin) {
+      candidateDirection = resolveStableAimDirection(
+        world,
+        originX,
+        originY,
+        originZ,
+        *hit,
+        params.rayLength,
+        sample.direction
+      );
+    } else {
+      candidateDirection = resolveStableAimDirection(
+        world,
+        current,
+        *hit,
+        params.eyeHeight,
+        params.rayLength,
+        sample.direction
+      );
+    }
     if (!candidateDirection.has_value()) {
       continue;
     }
@@ -868,7 +1030,7 @@ inline void collectNeighbors(
   }
 
   for (const auto& seed : scratch.refinementSeeds) {
-    if (refineAroundSeed(world, params, lattice, current, originX, originY, originZ, nextDepth, nextG, seed, scratch)) {
+    if (refineAroundSeed(world, params, lattice, current, originX, originY, originZ, useExplicitOrigin, nextDepth, nextG, seed, scratch)) {
       return;
     }
   }
@@ -888,18 +1050,31 @@ inline SimplifiedEtherwarpPath simplifyEtherwarpPath(
 
   result.points.reserve(chainPoints.size());
   result.angles.reserve(chainPoints.size() * 2);
-  result.points.push_back(chainPoints.front());
-  result.angles.push_back(std::numeric_limits<float>::quiet_NaN());
-  result.angles.push_back(std::numeric_limits<float>::quiet_NaN());
 
-  size_t from = 0;
-  while (from + 1 < chainPoints.size()) {
-    size_t next = from + 1;
+  size_t from = static_cast<size_t>(-1);
+  while (true) {
+    const size_t firstCandidate = from == static_cast<size_t>(-1) ? 0 : (from + 1);
+    if (firstCandidate >= chainPoints.size()) {
+      break;
+    }
+
+    size_t next = firstCandidate;
     std::optional<EtherwarpRayDirection> simplifiedDirection;
 
-    for (size_t candidate = chainPoints.size(); candidate-- > from + 1;) {
+    for (size_t candidate = chainPoints.size(); candidate-- > firstCandidate;) {
       EtherwarpRayDirection direction;
-      if (!tryDirectShot(world, chainPoints[from], chainPoints[candidate], params.eyeHeight, params.rayLength, &direction)) {
+      const bool hasDirectShot = from == static_cast<size_t>(-1)
+        ? tryDirectShot(
+            world,
+            chainPoints[candidate],
+            params.rayLength,
+            params.startEyeX,
+            params.startEyeY,
+            params.startEyeZ,
+            &direction
+          )
+        : tryDirectShot(world, chainPoints[from], chainPoints[candidate], params.eyeHeight, params.rayLength, &direction);
+      if (!hasDirectShot) {
         continue;
       }
 
@@ -917,6 +1092,9 @@ inline SimplifiedEtherwarpPath simplifyEtherwarpPath(
       result.angles.push_back(chainPitch[next]);
     }
 
+    if (next == chainPoints.size() - 1) {
+      break;
+    }
     from = next;
   }
 
@@ -932,12 +1110,14 @@ std::optional<EtherwarpSearchResult> findEtherwarpPath(
 ) {
   cancelFlag.store(false);
 
-  if (!isEtherwarpLandingBlockVoxel(world, params.start.x, params.start.y, params.start.z) ||
-      !isEtherwarpLandingBlockVoxel(world, params.goal.x, params.goal.y, params.goal.z)) {
+  if (!isEtherwarpLandingBlockVoxel(world, params.goal.x, params.goal.y, params.goal.z)) {
     return std::nullopt;
   }
 
   if (params.maxIterations <= 0 || params.threadCount <= 0 ||
+      !std::isfinite(params.startEyeX) ||
+      !std::isfinite(params.startEyeY) ||
+      !std::isfinite(params.startEyeZ) ||
       !std::isfinite(params.yawStep) || params.yawStep <= 0.0 ||
       !std::isfinite(params.pitchStep) || params.pitchStep <= 0.0 ||
       !std::isfinite(params.newNodeCost) || params.newNodeCost <= 0.0 ||
@@ -950,27 +1130,34 @@ std::optional<EtherwarpSearchResult> findEtherwarpPath(
 
   const auto totalStartTime = std::chrono::steady_clock::now();
   EtherwarpRayDirection directShotDirection;
-  if (tryDirectShot(world, params.start, params.goal, params.eyeHeight, params.rayLength, &directShotDirection)) {
+  if (tryDirectShot(
+        world,
+        params.goal,
+        params.rayLength,
+        params.startEyeX,
+        params.startEyeY,
+        params.startEyeZ,
+        &directShotDirection
+      )) {
     const auto elapsedNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
       std::chrono::steady_clock::now() - totalStartTime
     ).count();
 
     EtherwarpSearchResult result;
-    result.points = {params.start, params.goal};
+    result.points = {params.goal};
     const auto optimizedDirectShot = optimizeAimDirectionForHop(
       world,
-      params.start,
       params.goal,
-      params.eyeHeight,
       params.rayLength,
+      params.startEyeX,
+      params.startEyeY,
+      params.startEyeZ,
       directShotDirection
     );
     const EtherwarpRayDirection& finalDirectShot = optimizedDirectShot.has_value()
       ? *optimizedDirectShot
       : directShotDirection;
     result.angles = {
-      std::numeric_limits<float>::quiet_NaN(),
-      std::numeric_limits<float>::quiet_NaN(),
       finalDirectShot.yaw,
       finalDirectShot.pitch
     };
@@ -986,16 +1173,41 @@ std::optional<EtherwarpSearchResult> findEtherwarpPath(
   SharedState state(reserveTarget);
 
   {
+    WorkerScratch bootstrapScratch(lattice);
+    collectNeighbors(
+      world,
+      params,
+      lattice,
+      Int3{},
+      0.0,
+      0,
+      bootstrapScratch,
+      true,
+      params.startEyeX,
+      params.startEyeY,
+      params.startEyeZ
+    );
+
+    if (bootstrapScratch.neighbors.empty()) {
+      return std::nullopt;
+    }
+
     std::lock_guard lock(state.mutex);
-    const double h = heuristicToGoal(params.start, params.goal);
-    const int startIdx = createNode(state, params.start, h);
-    state.nodeParent[static_cast<size_t>(startIdx)] = -1;
-    state.nodeDepth[static_cast<size_t>(startIdx)] = 0;
-    state.nodeG[static_cast<size_t>(startIdx)] = 0.0;
-    state.nodeF[static_cast<size_t>(startIdx)] = weightedHeuristic(h, params);
-    state.nodeYaw[static_cast<size_t>(startIdx)] = std::numeric_limits<float>::quiet_NaN();
-    state.nodePitch[static_cast<size_t>(startIdx)] = std::numeric_limits<float>::quiet_NaN();
-    state.heap.add(startIdx);
+    for (const auto& neighbor : bootstrapScratch.neighbors) {
+      const int nodeIdx = createNode(state, neighbor.pos, neighbor.h);
+      state.nodeParent[static_cast<size_t>(nodeIdx)] = -1;
+      state.nodeDepth[static_cast<size_t>(nodeIdx)] = neighbor.depth;
+      state.nodeG[static_cast<size_t>(nodeIdx)] = neighbor.g;
+      state.nodeF[static_cast<size_t>(nodeIdx)] = neighbor.f;
+      state.nodeYaw[static_cast<size_t>(nodeIdx)] = neighbor.yaw;
+      state.nodePitch[static_cast<size_t>(nodeIdx)] = neighbor.pitch;
+      state.heap.add(nodeIdx);
+
+      if (isGoal(neighbor.pos, params.goal) && !state.solved) {
+        state.solved = true;
+        state.solutionIdx = nodeIdx;
+      }
+    }
   }
 
   auto worker = [&]() {
@@ -1058,7 +1270,15 @@ std::optional<EtherwarpSearchResult> findEtherwarpPath(
         if (expansion.isGoal) {
           continue;
         }
-        collectNeighbors(world, params, lattice, expansion.current, expansion.currG, expansion.currDepth, scratch);
+        collectNeighbors(
+          world,
+          params,
+          lattice,
+          expansion.current,
+          expansion.currG,
+          expansion.currDepth,
+          scratch
+        );
         expansion.neighbors = scratch.neighbors;
       }
 

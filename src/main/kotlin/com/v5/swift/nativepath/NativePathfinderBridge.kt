@@ -15,12 +15,12 @@ object NativePathfinderBridge {
   )
 
   data class NativeEtherwarpSearchRequest(
-    val startX: Int,
-    val startY: Int,
-    val startZ: Int,
     val goalX: Int,
     val goalY: Int,
     val goalZ: Int,
+    val startEyeX: Double,
+    val startEyeY: Double,
+    val startEyeZ: Double,
     val maxIterations: Int,
     val threadCount: Int,
     val yawStep: Double,
@@ -142,12 +142,12 @@ object NativePathfinderBridge {
 
     return try {
       val result = NativePathfinderJNI.findEtherwarpPath(
-        request.startX,
-        request.startY,
-        request.startZ,
         request.goalX,
         request.goalY,
         request.goalZ,
+        request.startEyeX,
+        request.startEyeY,
+        request.startEyeZ,
         request.maxIterations,
         request.threadCount,
         request.yawStep,

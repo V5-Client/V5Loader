@@ -99,12 +99,12 @@ object NativePathfinderJNI {
   ): NativePathResult?
 
   @JvmStatic external fun findEtherwarpPath(
-    startX: Int,
-    startY: Int,
-    startZ: Int,
     goalX: Int,
     goalY: Int,
     goalZ: Int,
+    startEyeX: Double,
+    startEyeY: Double,
+    startEyeZ: Double,
     maxIterations: Int,
     threadCount: Int,
     yawStep: Double,

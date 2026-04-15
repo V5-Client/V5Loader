@@ -16,8 +16,10 @@ inline constexpr double ETHERWARP_MODERN_EYE_HEIGHT =
   ETHERWARP_STANDING_EYE_HEIGHT - ETHERWARP_MODERN_SNEAK_OFFSET;
 
 struct EtherwarpSearchParams {
-  Int3 start{0, 0, 0};
   Int3 goal{0, 0, 0};
+  double startEyeX = 0.0;
+  double startEyeY = 0.0;
+  double startEyeZ = 0.0;
   int maxIterations = 100000;
   int threadCount = 1;
   double yawStep = 5.0;

@@ -9,6 +9,7 @@ import com.v5.swift.nativepath.NativeStateEncoder
 import com.v5.swift.nativepath.NativeVoxelFlags
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.floor
 import kotlin.math.max
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.math.BlockPos
@@ -19,7 +20,7 @@ object PathManager {
   private const val HEURISTIC_WEIGHT = 1.05
   private const val ETHERWARP_DEFAULT_MAX_ITERATIONS = 100_000
   private const val ETHERWARP_AUTO_THREAD_COUNT = 0
-  private const val ETHERWARP_STANDING_EYE_HEIGHT = 2.62
+  private const val ETHERWARP_STANDING_EYE_HEIGHT = 1.62
   private const val ETHERWARP_LEGACY_SNEAK_OFFSET = 0.08
   private const val ETHERWARP_MODERN_SNEAK_OFFSET = 0.35
 
@@ -93,6 +94,17 @@ object PathManager {
     val timeMs: Long,
     val nodesExplored: Int,
     val nanosecondsPerNode: Double
+  )
+
+  private data class EtherwarpLandingCandidate(
+    val x: Int,
+    val y: Int,
+    val z: Int,
+    val centerX: Double,
+    val centerY: Double,
+    val centerZ: Double,
+    val originDistanceSq: Double,
+    val anchorDistanceSq: Double
   )
 
   @Volatile
@@ -303,9 +315,6 @@ object PathManager {
   @JvmStatic
   @JvmOverloads
   fun findEtherwarpPath(
-    startX: Int,
-    startY: Int,
-    startZ: Int,
     goalX: Int,
     goalY: Int,
     goalZ: Int,
@@ -367,6 +376,7 @@ object PathManager {
       lastError = "eyeHeight must be > 0 or NaN for auto"
       return false
     }
+    val resolvedSupportEyeHeight = resolvedEyeHeight + 1.0
 
     val nativeValidation = validateNativeAvailability()
     if (nativeValidation != null) {
@@ -374,23 +384,27 @@ object PathManager {
       return false
     }
 
-    val world = MinecraftClient.getInstance().world ?: run {
+    val client = MinecraftClient.getInstance()
+    val world = client.world ?: run {
       lastError = "World is not loaded"
       return false
     }
-    val minSupportY = world.bottomY
-    val maxSupportY = world.topYInclusive - 2
-    if (startY !in minSupportY..maxSupportY) {
-      lastError = "Etherwarp start Y must be between $minSupportY and $maxSupportY"
+    val player = client.player ?: run {
+      lastError = "Player is not loaded"
       return false
     }
-    if (goalY !in minSupportY..maxSupportY) {
-      lastError = "Etherwarp goal Y must be between $minSupportY and $maxSupportY"
+    val originX = player.x
+    val originY = player.y + resolvedEyeHeight
+    val originZ = player.z
+    if (!originX.isFinite() || !originY.isFinite() || !originZ.isFinite()) {
+      lastError = "Unable to resolve player eye origin"
       return false
     }
 
-    validateEtherwarpLanding("Start block", startX, startY, startZ)?.let {
-      lastError = it
+    val minSupportY = world.bottomY
+    val maxSupportY = world.topYInclusive - 2
+    if (goalY !in minSupportY..maxSupportY) {
+      lastError = "Etherwarp goal Y must be between $minSupportY and $maxSupportY"
       return false
     }
     validateEtherwarpLanding("Goal block", goalX, goalY, goalZ)?.let {
@@ -407,12 +421,12 @@ object PathManager {
         try {
           val result = NativePathfinderBridge.findEtherwarpPath(
             NativePathfinderBridge.NativeEtherwarpSearchRequest(
-              startX,
-              startY,
-              startZ,
               goalX,
               goalY,
               goalZ,
+              originX,
+              originY,
+              originZ,
               maxIterations,
               resolvedThreadCount,
               yawStep,
@@ -421,7 +435,7 @@ object PathManager {
               heuristicWeight,
               rayLength,
               rewireEpsilon,
-              resolvedEyeHeight
+              resolvedSupportEyeHeight
             )
           )
 
@@ -634,6 +648,133 @@ object PathManager {
   private fun isEtherwarpTeleportSpaceClear(flags: Int): Boolean {
     return (flags and NativeVoxelFlags.ETHER_TELEPORT_CLEAR) != 0 &&
       (flags and NativeVoxelFlags.ETHER_FEET_BLOCKER) == 0
+  }
+
+  private fun isValidEtherwarpLanding(world: net.minecraft.client.world.ClientWorld, x: Int, y: Int, z: Int): Boolean {
+    val supportFlags = resolveEtherwarpValidationFlags(world, x, y, z) ?: return false
+    if (!isEtherwarpStandable(supportFlags)) {
+      return false
+    }
+
+    val standOffset = etherwarpStandOffset(supportFlags)
+    val feetFlags = resolveEtherwarpValidationFlags(world, x, y + standOffset, z) ?: return false
+    val headFlags = resolveEtherwarpValidationFlags(world, x, y + standOffset + 1, z) ?: return false
+    return isEtherwarpTeleportSpaceClear(feetFlags) && isEtherwarpTeleportSpaceClear(headFlags)
+  }
+
+  private fun getEtherwarpLandingCenter(world: net.minecraft.client.world.ClientWorld, x: Int, y: Int, z: Int): DoubleArray {
+    val supportFlags = resolveEtherwarpValidationFlags(world, x, y, z) ?: return doubleArrayOf(
+      x + 0.5,
+      y + 1.0,
+      z + 0.5
+    )
+    return doubleArrayOf(
+      x + 0.5,
+      y + etherwarpStandOffset(supportFlags).toDouble(),
+      z + 0.5
+    )
+  }
+
+  @JvmStatic
+  fun isValidEtherwarpLanding(x: Int, y: Int, z: Int): Boolean {
+    val world = MinecraftClient.getInstance().world ?: return false
+    return isValidEtherwarpLanding(world, x, y, z)
+  }
+
+  @JvmStatic
+  fun getEtherwarpLandingCenter(x: Int, y: Int, z: Int): DoubleArray? {
+    val world = MinecraftClient.getInstance().world ?: return null
+    return getEtherwarpLandingCenter(world, x, y, z)
+  }
+
+  @JvmStatic
+  fun getEtherwarpLandingCandidates(
+    anchorX: Double,
+    anchorY: Double,
+    anchorZ: Double,
+    radius: Int,
+    maxDistance: Double,
+    sortOriginX: Double,
+    sortOriginY: Double,
+    sortOriginZ: Double
+  ): EtherwarpLandingCandidatesResult? {
+    val world = MinecraftClient.getInstance().world ?: return null
+    if (!anchorX.isFinite() || !anchorY.isFinite() || !anchorZ.isFinite()) {
+      return null
+    }
+    if (!sortOriginX.isFinite() || !sortOriginY.isFinite() || !sortOriginZ.isFinite()) {
+      return null
+    }
+
+    val clampedRadius = radius.coerceAtLeast(0)
+    val distanceLimitSq = when {
+      !maxDistance.isFinite() -> Double.POSITIVE_INFINITY
+      maxDistance < 0.0 -> return EtherwarpLandingCandidatesResult(IntArray(0), DoubleArray(0))
+      else -> maxDistance * maxDistance
+    }
+
+    val baseX = floor(anchorX).toInt()
+    val baseY = floor(anchorY).toInt()
+    val baseZ = floor(anchorZ).toInt()
+    val candidates = ArrayList<EtherwarpLandingCandidate>((clampedRadius * 2 + 1).let { it * it * it })
+
+    for (dx in -clampedRadius..clampedRadius) {
+      for (dy in -clampedRadius..clampedRadius) {
+        for (dz in -clampedRadius..clampedRadius) {
+          val goalX = baseX + dx
+          val goalY = baseY + dy
+          val goalZ = baseZ + dz
+          if (!isValidEtherwarpLanding(world, goalX, goalY, goalZ)) {
+            continue
+          }
+
+          val center = getEtherwarpLandingCenter(world, goalX, goalY, goalZ)
+          val dxAnchor = center[0] - anchorX
+          val dyAnchor = center[1] - anchorY
+          val dzAnchor = center[2] - anchorZ
+          val anchorDistanceSq = dxAnchor * dxAnchor + dyAnchor * dyAnchor + dzAnchor * dzAnchor
+          if (anchorDistanceSq > distanceLimitSq) {
+            continue
+          }
+
+          val dxOrigin = goalX - sortOriginX
+          val dyOrigin = goalY - sortOriginY
+          val dzOrigin = goalZ - sortOriginZ
+          val originDistanceSq = dxOrigin * dxOrigin + dyOrigin * dyOrigin + dzOrigin * dzOrigin
+
+          candidates.add(
+            EtherwarpLandingCandidate(
+              x = goalX,
+              y = goalY,
+              z = goalZ,
+              centerX = center[0],
+              centerY = center[1],
+              centerZ = center[2],
+              originDistanceSq = originDistanceSq,
+              anchorDistanceSq = anchorDistanceSq
+            )
+          )
+        }
+      }
+    }
+
+    candidates.sortWith(compareBy<EtherwarpLandingCandidate>({ it.originDistanceSq }, { it.anchorDistanceSq }))
+
+    val goals = IntArray(candidates.size * 3)
+    val centers = DoubleArray(candidates.size * 3)
+    var goalIndex = 0
+    var centerIndex = 0
+
+    for (candidate in candidates) {
+      goals[goalIndex++] = candidate.x
+      goals[goalIndex++] = candidate.y
+      goals[goalIndex++] = candidate.z
+      centers[centerIndex++] = candidate.centerX
+      centers[centerIndex++] = candidate.centerY
+      centers[centerIndex++] = candidate.centerZ
+    }
+
+    return EtherwarpLandingCandidatesResult(goals, centers)
   }
 
   @JvmStatic

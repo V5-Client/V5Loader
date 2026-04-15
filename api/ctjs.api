@@ -3243,6 +3243,12 @@ public class com/v5/mixins/YggdrasilServicesKeyInfoMixin {
 	public fun <init> ()V
 }
 
+public final class com/v5/pathfinding/EtherwarpLandingCandidatesResult {
+	public final field centers [D
+	public final field goals [I
+	public fun <init> ([I[D)V
+}
+
 public final class com/v5/pathfinding/PathManager {
 	public static final field ETHERWARP_VOXEL_FEET_BLOCKER I
 	public static final field ETHERWARP_VOXEL_FENCE_LIKE I
@@ -3270,17 +3276,17 @@ public final class com/v5/pathfinding/PathManager {
 	public static final fun cancelSearch ()V
 	public static final fun clear ()V
 	public static final fun clearTransientAvoidPoints ()V
-	public static final fun findEtherwarpPath (IIIIII)Z
-	public static final fun findEtherwarpPath (IIIIIII)Z
-	public static final fun findEtherwarpPath (IIIIIIII)Z
-	public static final fun findEtherwarpPath (IIIIIIIID)Z
-	public static final fun findEtherwarpPath (IIIIIIIIDD)Z
-	public static final fun findEtherwarpPath (IIIIIIIIDDD)Z
-	public static final fun findEtherwarpPath (IIIIIIIIDDDD)Z
-	public static final fun findEtherwarpPath (IIIIIIIIDDDDD)Z
-	public static final fun findEtherwarpPath (IIIIIIIIDDDDDD)Z
-	public static final fun findEtherwarpPath (IIIIIIIIDDDDDDD)Z
-	public static synthetic fun findEtherwarpPath$default (IIIIIIIIDDDDDDDILjava/lang/Object;)Z
+	public static final fun findEtherwarpPath (III)Z
+	public static final fun findEtherwarpPath (IIII)Z
+	public static final fun findEtherwarpPath (IIIII)Z
+	public static final fun findEtherwarpPath (IIIIID)Z
+	public static final fun findEtherwarpPath (IIIIIDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDDDDD)Z
+	public static synthetic fun findEtherwarpPath$default (IIIIIDDDDDDDILjava/lang/Object;)Z
 	public static final fun findFlyPath ([[I[[I)Z
 	public static final fun findFlyPath ([[I[[II)Z
 	public static synthetic fun findFlyPath$default ([[I[[IIILjava/lang/Object;)Z
@@ -3299,6 +3305,8 @@ public final class com/v5/pathfinding/PathManager {
 	public static final fun getCurrentEtherwarpEyeHeight ()D
 	public static final fun getCurrentEtherwarpSneakOffset ()D
 	public static final fun getEtherwarpAnglesArray ()[F
+	public static final fun getEtherwarpLandingCandidates (DDDIDDDD)Lcom/v5/pathfinding/EtherwarpLandingCandidatesResult;
+	public static final fun getEtherwarpLandingCenter (III)[D
 	public static final fun getEtherwarpLastTimeMs ()J
 	public static final fun getEtherwarpNanosecondsPerNode ()D
 	public static final fun getEtherwarpNodesExplored ()I
@@ -3325,6 +3333,7 @@ public final class com/v5/pathfinding/PathManager {
 	public static final fun isEtherwarpSupportSolid (I)Z
 	public static final fun isEtherwarpTeleportSpaceClearFlags (I)Z
 	public static final fun isSearching ()Z
+	public static final fun isValidEtherwarpLanding (III)Z
 	public static final fun setSearchVariantSeed (I)V
 }
 
@@ -3799,7 +3808,7 @@ public final class com/v5/swift/nativepath/NativePathfinderBridge {
 }
 
 public final class com/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest {
-	public fun <init> (IIIIIIIIDDDDDDD)V
+	public fun <init> (IIIDDDIIDDDDDDD)V
 	public final fun component1 ()I
 	public final fun component10 ()D
 	public final fun component11 ()D
@@ -3809,14 +3818,14 @@ public final class com/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwar
 	public final fun component15 ()D
 	public final fun component2 ()I
 	public final fun component3 ()I
-	public final fun component4 ()I
-	public final fun component5 ()I
-	public final fun component6 ()I
+	public final fun component4 ()D
+	public final fun component5 ()D
+	public final fun component6 ()D
 	public final fun component7 ()I
 	public final fun component8 ()I
 	public final fun component9 ()D
-	public final fun copy (IIIIIIIIDDDDDDD)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;
-	public static synthetic fun copy$default (Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;IIIIIIIIDDDDDDDILjava/lang/Object;)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;
+	public final fun copy (IIIDDDIIDDDDDDD)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;
+	public static synthetic fun copy$default (Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;IIIDDDIIDDDDDDDILjava/lang/Object;)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEyeHeight ()D
 	public final fun getGoalX ()I
@@ -3828,9 +3837,9 @@ public final class com/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwar
 	public final fun getPitchStep ()D
 	public final fun getRayLength ()D
 	public final fun getRewireEpsilon ()D
-	public final fun getStartX ()I
-	public final fun getStartY ()I
-	public final fun getStartZ ()I
+	public final fun getStartEyeX ()D
+	public final fun getStartEyeY ()D
+	public final fun getStartEyeZ ()D
 	public final fun getThreadCount ()I
 	public final fun getYawStep ()D
 	public fun hashCode ()I
@@ -3869,7 +3878,7 @@ public final class com/v5/swift/nativepath/NativePathfinderJNI {
 	public static final fun applyBlockUpdates ([I)V
 	public static final fun cancelSearch ()V
 	public static final fun clearWorld ()V
-	public static final fun findEtherwarpPath (IIIIIIIIDDDDDDD)Lcom/v5/swift/nativepath/NativeEtherwarpResult;
+	public static final fun findEtherwarpPath (IIIDDDIIDDDDDDD)Lcom/v5/swift/nativepath/NativeEtherwarpResult;
 	public static final fun findPath ([I[IZIDDI[I[D)Lcom/v5/swift/nativepath/NativePathResult;
 	public static final fun getLoadError ()Ljava/lang/String;
 	public static final fun initNative ()Z

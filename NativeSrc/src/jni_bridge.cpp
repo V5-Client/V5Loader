@@ -359,12 +359,12 @@ JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findP
 JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findEtherwarpPath(
   JNIEnv* env,
   jclass,
-  jint startX,
-  jint startY,
-  jint startZ,
   jint goalX,
   jint goalY,
   jint goalZ,
+  jdouble startEyeX,
+  jdouble startEyeY,
+  jdouble startEyeZ,
   jint maxIterations,
   jint threadCount,
   jdouble yawStep,
@@ -376,16 +376,14 @@ JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findE
   jdouble eyeHeight
 ) {
   v5pf::EtherwarpSearchParams params;
-  params.start = v5pf::Int3{
-    static_cast<int>(startX),
-    static_cast<int>(startY),
-    static_cast<int>(startZ),
-  };
   params.goal = v5pf::Int3{
     static_cast<int>(goalX),
     static_cast<int>(goalY),
     static_cast<int>(goalZ),
   };
+  params.startEyeX = static_cast<double>(startEyeX);
+  params.startEyeY = static_cast<double>(startEyeY);
+  params.startEyeZ = static_cast<double>(startEyeZ);
   params.maxIterations = static_cast<int>(maxIterations);
   params.threadCount = static_cast<int>(threadCount);
   params.yawStep = static_cast<double>(yawStep);
