@@ -3918,3 +3918,4 @@ public final class com/v5/visuals/StructureFinder {
 	public static final fun submitBlockUpdate (III)V
 	public static final fun submitChunkScan (II)V
 }
+
