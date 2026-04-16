@@ -12,7 +12,6 @@ import com.chattriggers.ctjs.internal.launch.IInjector
 import com.chattriggers.ctjs.internal.launch.Mixin
 import com.chattriggers.ctjs.internal.launch.MixinDetails
 import java.io.File
-import java.io.StringReader
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 import java.net.URI
@@ -27,8 +26,6 @@ import kotlin.contracts.contract
 import org.mozilla.javascript.*
 import org.mozilla.javascript.commonjs.module.ModuleScriptProvider
 import org.mozilla.javascript.commonjs.module.Require
-import org.mozilla.javascript.commonjs.module.provider.ModuleSource
-import org.mozilla.javascript.commonjs.module.provider.ModuleSourceProvider
 import org.mozilla.javascript.commonjs.module.provider.StrongCachingModuleScriptProvider
 import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider
 
@@ -61,9 +58,6 @@ object JSLoader {
     private val mixinIdMap = mutableMapOf<Int, MixinCallback>()
     private val mixins = mutableMapOf<Mixin, MixinDetails>()
 
-    private val virtualFiles = ConcurrentHashMap<String, String>()
-    private val virtualFilesLowercase = ConcurrentHashMap<String, String>()
-
     private val INVOKE_MIXIN_CALL =
             MethodHandles.lookup()
                     .findStatic(
@@ -80,9 +74,9 @@ object JSLoader {
         JSContextFactory.addAllURLs(jars)
 
         val cx = JSContextFactory.enterContext()
-        val diskProvider = UrlModuleSourceProvider(listOf(modulesFolder.toURI()), listOf())
-        val virtualProvider = VirtualModuleSourceProvider(diskProvider)
-        moduleProvider = StrongCachingModuleScriptProvider(virtualProvider)
+        moduleProvider = StrongCachingModuleScriptProvider(
+            UrlModuleSourceProvider(listOf(modulesFolder.toURI()), listOf())
+        )
 
         moduleScope = ImporterTopLevel(cx)
         (moduleScope as ScriptableObject).defineProperty("global", moduleScope, 2)
@@ -97,309 +91,6 @@ object JSLoader {
 
         mixinLibsLoaded = false
     }
-
-    fun loadVirtualModule(entryPoint: String) {
-        wrapInContext { cx ->
-            try {
-                val normalizedEntry = normalizePath(entryPoint).removeSuffix(".js")
-                "[V5] Loading virtual entry point: $normalizedEntry".printToConsole()
-                require.requireMain(cx, normalizedEntry)
-            } catch (e: Throwable) {
-                "Error loading virtual module $entryPoint".printToConsole(LogType.ERROR)
-                e.printTraceToConsole()
-            }
-        }
-    }
-
-    fun normalizePath(path: String): String {
-        if (path.isBlank()) return ""
-
-        var result = path.replace('\\', '/').trim()
-
-        while (result.startsWith("./") || result.startsWith("/")) {
-            result = result.removePrefix("./").removePrefix("/")
-        }
-
-        while (result.endsWith("/")) {
-            result = result.dropLast(1)
-        }
-
-        val segments = result.split("/").toMutableList()
-        var i = 0
-        while (i < segments.size) {
-            when {
-                segments[i].isEmpty() -> {
-                    segments.removeAt(i)
-                }
-                segments[i] == "." -> {
-                    segments.removeAt(i)
-                }
-                segments[i] == ".." -> {
-                    if (i > 0 && segments[i - 1] != "..") {
-                        segments.removeAt(i)
-                        segments.removeAt(i - 1)
-                        i = maxOf(0, i - 1)
-                    } else {
-                        i++
-                    }
-                }
-                else -> {
-                    i++
-                }
-            }
-        }
-
-        return segments.joinToString("/")
-    }
-
-    private fun resolvePath(relativePath: String, baseFilePath: String): String {
-        val baseDir = baseFilePath.substringBeforeLast('/', "")
-
-        val combined =
-                if (baseDir.isNotEmpty()) {
-                    "$baseDir/$relativePath"
-                } else {
-                    relativePath
-                }
-
-        return normalizePath(combined)
-    }
-
-    private fun resolveImportPath(importPath: String, currentFilePath: String): String {
-        val pathWithoutJs = importPath.removeSuffix(".js")
-
-        return when {
-            pathWithoutJs.startsWith(".") -> {
-                resolvePath(pathWithoutJs, currentFilePath)
-            }
-            else -> {
-                pathWithoutJs
-            }
-        }
-    }
-
-    private fun transformEsModuleToCommonJs(content: String, filePath: String): String {
-        if (!isEsModule(content)) {
-            return content
-        }
-
-        var result = content
-        val exportedNames = mutableSetOf<String>()
-        var defaultExportName: String? = null
-
-        // import { X, Y as Z } from 'path'
-        result =
-                result.replace(
-                        Regex("""import\s*\{\s*([^}]+)\s*\}\s*from\s*['"]([^'"]+)['"];?""")
-                ) { match ->
-                    val imports =
-                            match.groupValues[1]
-                                    .split(",")
-                                    .map { it.trim() }
-                                    .filter { it.isNotEmpty() }
-                                    .joinToString(", ") { part ->
-                                        if (part.contains(Regex("""\s+as\s+"""))) {
-                                            val (original, alias) =
-                                                    part.split(Regex("""\s+as\s+""")).map {
-                                                        it.trim()
-                                                    }
-                                            "$original: $alias"
-                                        } else {
-                                            part
-                                        }
-                                    }
-                    val resolvedPath = resolveImportPath(match.groupValues[2], filePath)
-                    "var _imp = require('$resolvedPath'); var { $imports } = _imp;"
-                }
-
-        result =
-                result.replace(Regex("""import\s+(\w+)\s+from\s*['"]([^'"]+)['"];?""")) { match ->
-                    val name = match.groupValues[1]
-                    val resolvedPath = resolveImportPath(match.groupValues[2], filePath)
-                    """var $name = (function() { var m = require('$resolvedPath'); if (!m) return m; if (typeof m === 'function') return m; if (typeof m === 'object' && m.default !== undefined) return m.default; return m; })();"""
-                }
-
-        // import * as X from 'path'
-        result =
-                result.replace(Regex("""import\s*\*\s*as\s+(\w+)\s+from\s*['"]([^'"]+)['"];?""")) {
-                        match ->
-                    val name = match.groupValues[1]
-                    val resolvedPath = resolveImportPath(match.groupValues[2], filePath)
-                    "var $name = require('$resolvedPath');"
-                }
-
-        // import 'path'
-        result =
-                result.replace(Regex("""import\s*['"]([^'"]+)['"];?""")) { match ->
-                    val resolvedPath = resolveImportPath(match.groupValues[1], filePath)
-                    "require('$resolvedPath');"
-                }
-
-        // export default function name
-        result =
-                result.replace(Regex("""export\s+default\s+function\s+(\w+)""")) { match ->
-                    val name = match.groupValues[1]
-                    defaultExportName = name
-                    "function $name"
-                }
-
-        // export default class name
-        result =
-                result.replace(Regex("""export\s+default\s+class\s+(\w+)""")) { match ->
-                    val name = match.groupValues[1]
-                    defaultExportName = name
-                    "class $name"
-                }
-
-        // export default { ... } or export default expression
-        result =
-                result.replace(Regex("""export\s+default\s+(?!function|class)""")) {
-                    "module.exports = "
-                }
-
-        // export { X, Y, Z as W }
-        result =
-                result.replace(Regex("""export\s*\{\s*([^}]+)\s*\}\s*;?""")) { match ->
-                    val exports =
-                            match.groupValues[1].split(",").map { it.trim() }.filter {
-                                it.isNotEmpty()
-                            }
-
-                    exports.joinToString("\n") { exp ->
-                        if (exp.contains(Regex("""\s+as\s+"""))) {
-                            val parts = exp.split(Regex("""\s+as\s+""")).map { it.trim() }
-                            val original = parts[0]
-                            val alias = parts[1]
-                            "Object.defineProperty(module.exports, '$alias', { get: function() { return $original; }, enumerable: true });"
-                        } else {
-                            "Object.defineProperty(module.exports, '$exp', { get: function() { return $exp; }, enumerable: true });"
-                        }
-                    }
-                }
-
-        // export const/let/var X = ...
-        result =
-                result.replace(Regex("""export\s+(const|let|var)\s+(\w+)""")) { match ->
-                    val keyword = match.groupValues[1]
-                    val name = match.groupValues[2]
-                    exportedNames.add(name)
-                    "$keyword $name"
-                }
-
-        // export function X(...) { }
-        result =
-                result.replace(Regex("""export\s+function\s+(\w+)""")) { match ->
-                    val name = match.groupValues[1]
-                    exportedNames.add(name)
-                    "function $name"
-                }
-
-        // export async function X(...) { }
-        result =
-                result.replace(Regex("""export\s+async\s+function\s+(\w+)""")) { match ->
-                    val name = match.groupValues[1]
-                    exportedNames.add(name)
-                    "async function $name"
-                }
-
-        // export class X { }
-        result =
-                result.replace(Regex("""export\s+class\s+(\w+)""")) { match ->
-                    val name = match.groupValues[1]
-                    exportedNames.add(name)
-                    "class $name"
-                }
-
-        val exportStatements = StringBuilder()
-
-        exportedNames.forEach { name ->
-            exportStatements.appendLine(
-                    """Object.defineProperty(module.exports, '$name', { get: function() { return $name; }, enumerable: true });"""
-            )
-        }
-
-        defaultExportName?.let { name ->
-            exportStatements.appendLine(
-                    """Object.defineProperty(module.exports, 'default', { get: function() { return $name; }, enumerable: true });"""
-            )
-        }
-
-        result =
-                """
-Object.defineProperty(module.exports, '__esModule', { value: true });
-$result
-$exportStatements
-""".trimStart()
-
-        return result
-    }
-
-    private fun isEsModule(content: String): Boolean {
-        val patterns =
-                listOf(
-                        Regex("""(?:^|[\n\r;}\s])\s*import\s+[\w{*]"""),
-                        Regex("""(?:^|[\n\r;}\s])\s*import\s*['"]"""),
-                        Regex(
-                                """(?:^|[\n\r;}\s])\s*export\s+(?:default|const|let|var|function|class|async|\{)"""
-                        ),
-                )
-        return patterns.any { it.containsMatchIn(content) }
-    }
-
-    fun addVirtualFile(path: String, content: String) {
-        val normalizedPath = normalizePath(path)
-        if (normalizedPath.isEmpty()) {
-            "Warning: Attempted to add virtual file with empty path".printToConsole(LogType.WARN)
-            return
-        }
-
-        val processedContent =
-                if (normalizedPath.endsWith(".js")) {
-                    try {
-                        transformEsModuleToCommonJs(content, normalizedPath)
-                    } catch (e: Exception) {
-                        "Warning: Failed to transform $normalizedPath: ${e.message}".printToConsole(
-                                LogType.WARN
-                        )
-                        e.printTraceToConsole()
-                        content
-                    }
-                } else {
-                    content
-                }
-
-        virtualFiles[normalizedPath] = processedContent
-        virtualFilesLowercase[normalizedPath.lowercase()] = normalizedPath
-    }
-
-    fun getVirtualFile(path: String): String? {
-        val normalizedPath = normalizePath(path)
-        if (normalizedPath.isEmpty()) return null
-
-        virtualFiles[normalizedPath]?.let {
-            return it
-        }
-
-        val actualPath = virtualFilesLowercase[normalizedPath.lowercase()] ?: return null
-        return virtualFiles[actualPath]
-    }
-
-    fun hasVirtualFile(path: String): Boolean {
-        val normalizedPath = normalizePath(path)
-        if (normalizedPath.isEmpty()) return false
-
-        return virtualFiles.containsKey(normalizedPath) ||
-                virtualFilesLowercase.containsKey(normalizedPath.lowercase())
-    }
-
-    fun getVirtualFilePaths(): Set<String> = virtualFiles.keys.toSet()
-
-    fun clearVirtualFiles() {
-        virtualFiles.clear()
-        virtualFilesLowercase.clear()
-    }
-
-    fun getVirtualFileCount(): Int = virtualFiles.size
 
     internal fun mixinSetup(modules: List<Module>): Map<Mixin, MixinDetails> {
         loadMixinLibs()
@@ -418,20 +109,6 @@ $exportStatements
         mixinsFinalized = true
 
         return mixins
-    }
-
-    fun loadVirtualMixin(path: String) {
-        val normalizedPath = normalizePath(path).removeSuffix(".js")
-        "[V5] Loading virtual mixin: $normalizedPath".printToConsole()
-        loadMixinLibs()
-        wrapInContext {
-            try {
-                val uri = File("/ct_virtual_modules/$normalizedPath").toURI()
-                require.loadCTModule(normalizedPath, uri)
-            } catch (e: Throwable) {
-                e.printTraceToConsole()
-            }
-        }
     }
 
     fun entrySetup(): Unit = wrapInContext {
@@ -833,120 +510,6 @@ $exportStatements
     ) : Require(Context.getContext(), moduleScope, moduleProvider, null, null, false) {
         fun loadCTModule(cachedName: String, uri: URI): Scriptable {
             return getExportedModuleInterface(Context.getContext(), cachedName, uri, null, false)
-        }
-    }
-
-    private class VirtualModuleSourceProvider(private val fallback: ModuleSourceProvider) :
-            ModuleSourceProvider {
-
-        companion object {
-            private const val VIRTUAL_PREFIX = "/ct_virtual_modules/"
-        }
-
-        private fun makeVirtualUri(path: String): URI {
-            return File("$VIRTUAL_PREFIX$path").toURI()
-        }
-
-        private fun isVirtualUri(uri: URI): Boolean {
-            return uri.scheme == "file" && uri.path?.contains(VIRTUAL_PREFIX) == true
-        }
-
-        private fun extractVirtualPath(uri: URI): String? {
-            val path = uri.path ?: return null
-            val idx = path.indexOf(VIRTUAL_PREFIX)
-            if (idx < 0) return null
-            return path.substring(idx + VIRTUAL_PREFIX.length)
-        }
-
-        private fun tryResolve(basePath: String): Triple<String, String, URI>? {
-            val normalized = normalizePath(basePath)
-            if (normalized.isEmpty()) return null
-
-            getVirtualFile(normalized)?.let {
-                return Triple(normalized, it, makeVirtualUri(normalized))
-            }
-
-            if (!normalized.endsWith(".js") && !normalized.endsWith(".json")) {
-                getVirtualFile("$normalized.js")?.let {
-                    return Triple("$normalized.js", it, makeVirtualUri("$normalized.js"))
-                }
-            }
-
-            getVirtualFile("$normalized/index.js")?.let {
-                return Triple("$normalized/index.js", it, makeVirtualUri("$normalized/index.js"))
-            }
-
-            return null
-        }
-
-        private fun createModuleSource(
-                resolvedPath: String,
-                content: String,
-                uri: URI,
-                validator: Any?
-        ): ModuleSource {
-            val parentPath = resolvedPath.substringBeforeLast('/', "")
-            val baseUri =
-                    if (parentPath.isNotEmpty()) {
-                        makeVirtualUri("$parentPath/")
-                    } else {
-                        makeVirtualUri("")
-                    }
-            return ModuleSource(StringReader(content), null, uri, baseUri, validator)
-        }
-
-        override fun loadSource(
-                moduleId: String?,
-                paths: Scriptable?,
-                validator: Any?
-        ): ModuleSource? {
-            if (moduleId.isNullOrBlank()) return null
-
-            val normalizedId = normalizePath(moduleId)
-            if (normalizedId.isEmpty()) return fallback.loadSource(moduleId, paths, validator)
-
-            tryResolve(normalizedId)?.let { (resolvedPath, content, uri) ->
-                return createModuleSource(resolvedPath, content, uri, validator)
-            }
-
-            return fallback.loadSource(moduleId, paths, validator)
-        }
-
-        override fun loadSource(uri: URI?, baseUri: URI?, validator: Any?): ModuleSource? {
-            if (uri == null) return fallback.loadSource(uri, baseUri, validator)
-
-            if (isVirtualUri(uri)) {
-                val virtualPath = extractVirtualPath(uri) ?: return null
-                val normalized = normalizePath(virtualPath)
-                if (normalized.isEmpty()) return null
-
-                tryResolve(normalized)?.let { (resolvedPath, content, resolvedUri) ->
-                    return createModuleSource(resolvedPath, content, resolvedUri, validator)
-                }
-
-                return null
-            }
-
-            if (baseUri != null && isVirtualUri(baseUri)) {
-                val basePath = extractVirtualPath(baseUri) ?: return null
-
-                val relativePath =
-                        try {
-                            uri.path ?: uri.schemeSpecificPart ?: uri.toString()
-                        } catch (e: Exception) {
-                            uri.toString()
-                        }
-
-                val resolved = resolvePath(relativePath, basePath)
-
-                tryResolve(resolved)?.let { (resolvedPath, content, resolvedUri) ->
-                    return createModuleSource(resolvedPath, content, resolvedUri, validator)
-                }
-
-                return fallback.loadSource(uri, baseUri, validator)
-            }
-
-            return fallback.loadSource(uri, baseUri, validator)
         }
     }
 }
