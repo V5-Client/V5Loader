@@ -22,6 +22,7 @@ struct SearchParams {
   bool isFly = false;
   int maxIterations = 500000;
   double heuristicWeight = 1.05;
+  double initialStartPenalty = 0.0;
   double nonPrimaryStartPenalty = 0.0;
   int moveOrderOffset = 0;
   std::vector<AvoidZone> avoidZones;

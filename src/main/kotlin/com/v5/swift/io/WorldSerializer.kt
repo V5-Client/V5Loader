@@ -1,6 +1,7 @@
 package com.v5.swift.io
 
 import com.v5.swift.cache.CachedChunk
+import com.v5.swift.nativepath.NativeStateEncoder
 import java.io.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -12,7 +13,8 @@ import kotlin.collections.iterator
 object WorldSerializer {
 
   private const val MAGIC = 0x5CAFEBAB
-  private const val VERSION = 3
+  private const val VERSION = 4
+  private const val LEGACY_STATE_ID_VERSION = 3
   private val CACHE_DIR = File("pathfinder_cache")
 
   init {
@@ -34,8 +36,8 @@ object WorldSerializer {
       out.writeInt(VERSION)
       out.writeInt(readyChunks.size)
 
-      val byteBuffer = ByteBuffer.allocate(4096 * 4).order(ByteOrder.BIG_ENDIAN)
-      val intBuffer = byteBuffer.asIntBuffer()
+      val byteBuffer = ByteBuffer.allocate(4096 * 2).order(ByteOrder.BIG_ENDIAN)
+      val rawSection = ShortArray(4096)
 
       for ((key, chunk) in readyChunks) {
         out.writeLong(key)
@@ -54,9 +56,10 @@ object WorldSerializer {
 
         for (i in 0 until sectionCount) {
           if ((sectionMask and (1L shl i)) != 0L) {
-            val data = chunk.getSectionData(i)!!
-            intBuffer.clear()
-            intBuffer.put(data)
+            rawSection.fill(CachedChunk.AIR_FLAGS)
+            chunk.copySectionFlags(i, rawSection, 0)
+            byteBuffer.clear()
+            byteBuffer.asShortBuffer().put(rawSection)
             out.write(byteBuffer.array())
           }
         }
@@ -72,12 +75,14 @@ object WorldSerializer {
     try {
       DataInputStream(BufferedInputStream(GZIPInputStream(FileInputStream(file)))).use { input ->
         if (input.readInt() != MAGIC) return null
-        if (input.readInt() != VERSION) return null
+        val version = input.readInt()
+        if (version != VERSION && version != LEGACY_STATE_ID_VERSION) return null
 
         val count = input.readInt()
         val map = ConcurrentHashMap<Long, CachedChunk>(count)
 
-        val rawBytes = ByteArray(4096 * 4)
+        val sectionByteSize = if (version == VERSION) 4096 * 2 else 4096 * 4
+        val rawBytes = ByteArray(sectionByteSize)
 
         for (k in 0 until count) {
           val key = input.readLong()
@@ -92,9 +97,7 @@ object WorldSerializer {
           for (i in 0 until sectionCount) {
             if ((sectionMask and (1L shl i)) != 0L) {
               input.readFully(rawBytes)
-              val intData = IntArray(4096)
-              ByteBuffer.wrap(rawBytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer().get(intData)
-              chunk.setSection(i, intData)
+              chunk.setSection(i, decodeSection(version, rawBytes))
             }
           }
 
@@ -107,6 +110,18 @@ object WorldSerializer {
     } catch (e: Exception) {
       e.printStackTrace()
       return null
+    }
+  }
+
+  private fun decodeSection(version: Int, rawBytes: ByteArray): ShortArray {
+    return if (version == VERSION) {
+      val section = ShortArray(4096)
+      ByteBuffer.wrap(rawBytes).order(ByteOrder.BIG_ENDIAN).asShortBuffer().get(section)
+      section
+    } else {
+      val stateIds = IntArray(4096)
+      ByteBuffer.wrap(rawBytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer().get(stateIds)
+      ShortArray(4096) { index -> NativeStateEncoder.flagsShortForStateId(stateIds[index]) }
     }
   }
 }

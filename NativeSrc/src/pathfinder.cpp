@@ -11,17 +11,24 @@
 #include <chrono>
 #include <cmath>
 #include <limits>
+#include <mutex>
+#include <thread>
 #include <unordered_map>
 
 namespace v5pf {
 
-std::optional<SearchResult> findPath(
+namespace {
+
+bool isCancelled(const std::atomic_bool& cancelFlag, const std::atomic_bool* localCancelFlag) {
+  return cancelFlag.load() || (localCancelFlag != nullptr && localCancelFlag->load());
+}
+
+std::optional<SearchResult> findPathSingle(
   const WorldSnapshot& world,
   const SearchParams& params,
-  std::atomic_bool& cancelFlag
+  std::atomic_bool& cancelFlag,
+  const std::atomic_bool* localCancelFlag
 ) {
-  cancelFlag.store(false);
-
   if (params.starts.empty() || params.goals.empty()) {
     return std::nullopt;
   }
@@ -34,6 +41,7 @@ std::optional<SearchResult> findPath(
     return std::nullopt;
   }
 
+  const auto startTime = std::chrono::steady_clock::now();
   detail::Runtime runtime(world, params);
 
   const int reserveTarget = std::clamp(params.maxIterations / 2, 16384, 262144);
@@ -83,6 +91,7 @@ std::optional<SearchResult> findPath(
   const double weight = (std::isfinite(params.heuristicWeight) && params.heuristicWeight > 0.0)
     ? params.heuristicWeight
     : 1.0;
+  const double initialStartPenalty = std::max(0.0, params.initialStartPenalty);
   const bool isFly = params.isFly;
 
   std::array<Int3, 16> walkMovesOrdered = detail::WALK_MOVES;
@@ -96,7 +105,7 @@ std::optional<SearchResult> findPath(
 
   for (size_t i = 0; i < params.starts.size(); i++) {
     const auto& start = params.starts[i];
-    const double startPenalty = i == 0 ? 0.0 : std::max(0.0, params.nonPrimaryStartPenalty);
+    const double startPenalty = initialStartPenalty + (i == 0 ? 0.0 : std::max(0.0, params.nonPrimaryStartPenalty));
 
     const uint64_t key = coordKey(start.x, start.y, start.z);
     int nodeIdx = -1;
@@ -122,10 +131,8 @@ std::optional<SearchResult> findPath(
   }
 
   int iterations = 0;
-  const auto startTime = std::chrono::steady_clock::now();
-
   while (!heap.empty() && iterations < params.maxIterations) {
-    if (cancelFlag.load()) {
+    if (isCancelled(cancelFlag, localCancelFlag)) {
       return std::nullopt;
     }
 
@@ -144,6 +151,11 @@ std::optional<SearchResult> findPath(
         walk = nodeParent[static_cast<size_t>(walk)];
       }
       std::reverse(path.begin(), path.end());
+      auto keyPoints = extractKeyPoints(world, path, params.isFly);
+      auto pathFlags = encodeNodeFlags(world, path, params.isFly, false);
+      auto keyNodeFlags = encodeNodeFlags(world, keyPoints, params.isFly, true);
+      auto keyNodeMetrics = encodeKeyMetrics(world, keyPoints);
+      auto signatureHex = buildPathSignatureHex(path);
 
       const auto elapsedNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
         std::chrono::steady_clock::now() - startTime
@@ -151,14 +163,16 @@ std::optional<SearchResult> findPath(
 
       SearchResult result;
       result.points = std::move(path);
-      result.keyPoints = extractKeyPoints(world, result.points, params.isFly);
-      result.pathFlags = encodeNodeFlags(world, result.points, params.isFly, false);
-      result.keyNodeFlags = encodeNodeFlags(world, result.keyPoints, params.isFly, true);
-      result.keyNodeMetrics = encodeKeyMetrics(world, result.keyPoints);
-      result.signatureHex = buildPathSignatureHex(result.points);
+      result.keyPoints = std::move(keyPoints);
+      result.pathFlags = std::move(pathFlags);
+      result.keyNodeFlags = std::move(keyNodeFlags);
+      result.keyNodeMetrics = std::move(keyNodeMetrics);
+      result.signatureHex = std::move(signatureHex);
       result.timeMs = elapsedNs / 1000000LL;
       result.nodesExplored = iterations;
-      result.nanosecondsPerNode = iterations > 0 ? static_cast<double>(elapsedNs) / static_cast<double>(iterations) : 0.0;
+      result.nanosecondsPerNode = iterations > 0
+        ? static_cast<double>(elapsedNs) / static_cast<double>(iterations)
+        : 0.0;
       result.selectedStartIndex = nodeStartIndex[static_cast<size_t>(currIdx)];
       return result;
     }
@@ -241,6 +255,78 @@ std::optional<SearchResult> findPath(
   }
 
   return std::nullopt;
+}
+
+} // namespace
+
+std::optional<SearchResult> findPath(
+  const WorldSnapshot& world,
+  const SearchParams& params,
+  std::atomic_bool& cancelFlag
+) {
+  cancelFlag.store(false);
+
+  if (!params.isFly && params.starts.size() > 1) {
+    const size_t startCount = params.starts.size();
+    const unsigned int hwThreads = std::max(1u, std::thread::hardware_concurrency());
+    const size_t workerCount = std::min(startCount, static_cast<size_t>(hwThreads));
+
+    std::atomic_size_t nextStartIndex{0};
+    std::atomic_bool localCancelFlag{false};
+    std::mutex resultMutex;
+    std::optional<SearchResult> winner;
+
+    auto worker = [&]() {
+      while (!isCancelled(cancelFlag, &localCancelFlag)) {
+        const size_t startIdx = nextStartIndex.fetch_add(1);
+        if (startIdx >= startCount) {
+          return;
+        }
+
+        SearchParams workerParams = params;
+        workerParams.starts = {params.starts[startIdx]};
+        workerParams.initialStartPenalty = startIdx == 0 ? 0.0 : std::max(0.0, params.nonPrimaryStartPenalty);
+
+        auto result = findPathSingle(world, workerParams, cancelFlag, &localCancelFlag);
+        if (!result.has_value()) {
+          continue;
+        }
+
+        result->selectedStartIndex = static_cast<int>(startIdx);
+
+        bool expected = false;
+        if (!localCancelFlag.compare_exchange_strong(expected, true)) {
+          return;
+        }
+
+        std::lock_guard lock(resultMutex);
+        winner = std::move(result);
+        return;
+      }
+    };
+
+    std::vector<std::thread> workers;
+    workers.reserve(workerCount > 0 ? workerCount - 1 : 0);
+    for (size_t i = 1; i < workerCount; i++) {
+      workers.emplace_back(worker);
+    }
+
+    worker();
+
+    for (auto& thread : workers) {
+      if (thread.joinable()) {
+        thread.join();
+      }
+    }
+
+    if (winner.has_value()) {
+      return winner;
+    }
+
+    return std::nullopt;
+  }
+
+  return findPathSingle(world, params, cancelFlag, nullptr);
 }
 
 } // namespace v5pf

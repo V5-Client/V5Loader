@@ -9,6 +9,7 @@ namespace v5pf::detail {
 inline Runtime::Runtime(const WorldSnapshot& world, const SearchParams& params)
   : world_(world),
     params_(params),
+    voxelCursor_(world),
     walkStartX_(params.starts.empty() ? 0 : params.starts.front().x),
     walkStartZ_(params.starts.empty() ? 0 : params.starts.front().z) {
   const int reserveTarget = std::clamp(params_.maxIterations / 2, 4096, 262144);
@@ -123,7 +124,7 @@ inline bool Runtime::flyMove(const Int3& current, const Int3& delta, const doubl
 
 inline uint16_t Runtime::flagsAt(const int x, const int y, const int z) const {
   if (!flagsCacheEnabled_) {
-    return world_.getFlags(x, y, z);
+    return voxelCursor_.getFlags(x, y, z);
   }
 
   const uint64_t key = coordKey(x, y, z);
@@ -132,7 +133,7 @@ inline uint16_t Runtime::flagsAt(const int x, const int y, const int z) const {
     return it->second;
   }
 
-  const uint16_t flags = world_.getFlags(x, y, z);
+  const uint16_t flags = voxelCursor_.getFlags(x, y, z);
   flagsCache_.emplace(key, flags);
   return flags;
 }

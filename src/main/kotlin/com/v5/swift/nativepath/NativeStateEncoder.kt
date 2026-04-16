@@ -1,14 +1,17 @@
 package com.v5.swift.nativepath
 
 import net.minecraft.block.AbstractRailBlock
+import net.minecraft.block.AbstractSkullBlock
 import net.minecraft.block.BannerBlock
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.ButtonBlock
 import net.minecraft.block.CarpetBlock
+import net.minecraft.block.ComparatorBlock
 import net.minecraft.block.DoorBlock
 import net.minecraft.block.FenceBlock
 import net.minecraft.block.FenceGateBlock
+import net.minecraft.block.FlowerPotBlock
 import net.minecraft.block.LadderBlock
 import net.minecraft.block.LeverBlock
 import net.minecraft.block.PlantBlock
@@ -33,6 +36,11 @@ import net.minecraft.world.EmptyBlockView
 import net.minecraft.block.ShapeContext
 
 object NativeStateEncoder {
+  private const val DEFAULT_EMPTY_FLAGS =
+    NativeVoxelFlags.PASSABLE or
+      NativeVoxelFlags.PASSABLE_FLY or
+      NativeVoxelFlags.ETHER_PASSABLE or
+      NativeVoxelFlags.ETHER_TELEPORT_CLEAR
 
   private val ORIGIN: BlockPos = BlockPos.ORIGIN
   private val EMPTY_VIEW = EmptyBlockView.INSTANCE
@@ -43,7 +51,7 @@ object NativeStateEncoder {
   @JvmStatic
   fun flagsForStateId(stateId: Int): Int {
     if (stateId < 0 || stateId >= stateFlags.size) {
-      return NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY
+      return DEFAULT_EMPTY_FLAGS
     }
 
     val cached = stateFlags[stateId]
@@ -52,7 +60,7 @@ object NativeStateEncoder {
     }
 
     val state = Block.STATE_IDS.get(stateId)
-      ?: return NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY
+      ?: return DEFAULT_EMPTY_FLAGS
 
     val flags = computeFlags(state)
     stateFlags[stateId] = flags
@@ -66,15 +74,19 @@ object NativeStateEncoder {
   }
 
   @JvmStatic
+  fun flagsShortForState(state: BlockState): Short = flagsForState(state).toShort()
+
+  @JvmStatic
   fun flagsShortForStateId(stateId: Int): Short = flagsForStateId(stateId).toShort()
 
   private fun computeFlags(state: BlockState): Int {
     if (state.isAir) {
-      return NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY
+      return DEFAULT_EMPTY_FLAGS
     }
 
     var flags = 0
     val block = state.block
+    val collisionShape = state.getCollisionShape(EMPTY_VIEW, ORIGIN, SHAPE_CONTEXT)
 
     if (!state.fluidState.isEmpty) {
       flags = flags or NativeVoxelFlags.FLUID
@@ -82,6 +94,15 @@ object NativeStateEncoder {
 
     if (block is CarpetBlock) {
       return flags or NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY or NativeVoxelFlags.CARPET_LIKE
+    }
+
+    // Heads/skulls should not obstruct pathing or etherwarp landing clearance checks.
+    if (block is AbstractSkullBlock) {
+      return flags or
+        NativeVoxelFlags.PASSABLE or
+        NativeVoxelFlags.PASSABLE_FLY or
+        NativeVoxelFlags.ETHER_PASSABLE or
+        NativeVoxelFlags.ETHER_FEET_BLOCKER
     }
 
     val isPassThrough = block is SlabBlock ||
@@ -146,12 +167,11 @@ object NativeStateEncoder {
       }
 
       else -> {
-        val shape = state.getCollisionShape(EMPTY_VIEW, ORIGIN, SHAPE_CONTEXT)
-        if (shape.isEmpty) {
+        if (collisionShape.isEmpty) {
           flags = flags or NativeVoxelFlags.PASSABLE
         } else {
           flags = flags or NativeVoxelFlags.SOLID
-          val box = shape.boundingBox
+          val box = collisionShape.boundingBox
           if (box.maxY - box.minY >= 0.5 && !isPassThrough) {
             flags = flags or NativeVoxelFlags.BLOCKING_WALL
           }
@@ -161,6 +181,36 @@ object NativeStateEncoder {
 
     if ((flags and NativeVoxelFlags.PASSABLE) != 0 || (flags and NativeVoxelFlags.CARPET_LIKE) != 0) {
       flags = flags or NativeVoxelFlags.PASSABLE_FLY
+    }
+
+    val etherPassable = when {
+      block is ComparatorBlock -> true
+      block is FlowerPotBlock -> true
+      block is LadderBlock -> true
+      block is SignBlock || block is WallSignBlock -> false
+      else -> collisionShape.isEmpty
+    }
+    val etherwarpFeetBlocker = when (block) {
+      is ComparatorBlock,
+      is FlowerPotBlock,
+      is LadderBlock,
+      is VineBlock -> true
+      else -> false
+    }
+    // Signs are special: Etherwarp allows the landing space to be considered clear even though
+    // the block is not ray-passable, while small collision blocks still prevent the player body
+    // from occupying that space after teleporting.
+    val teleportSpaceClear =
+      (etherPassable || block is SignBlock || block is WallSignBlock) && !etherwarpFeetBlocker
+
+    if (etherPassable) {
+      flags = flags or NativeVoxelFlags.ETHER_PASSABLE
+    }
+    if (teleportSpaceClear) {
+      flags = flags or NativeVoxelFlags.ETHER_TELEPORT_CLEAR
+    }
+    if (etherwarpFeetBlocker) {
+      flags = flags or NativeVoxelFlags.ETHER_FEET_BLOCKER
     }
 
     return flags

@@ -3243,7 +3243,17 @@ public class com/v5/mixins/YggdrasilServicesKeyInfoMixin {
 	public fun <init> ()V
 }
 
+public final class com/v5/pathfinding/EtherwarpLandingCandidatesResult {
+	public final field centers [D
+	public final field goals [I
+	public fun <init> ([I[D)V
+}
+
 public final class com/v5/pathfinding/PathManager {
+	public static final field ETHERWARP_VOXEL_FEET_BLOCKER I
+	public static final field ETHERWARP_VOXEL_FENCE_LIKE I
+	public static final field ETHERWARP_VOXEL_SOLID I
+	public static final field ETHERWARP_VOXEL_TELEPORT_CLEAR I
 	public static final field FLAG_DROP_NEXT I
 	public static final field FLAG_FLUID_FEET I
 	public static final field FLAG_FLUID_HEAD I
@@ -3266,6 +3276,17 @@ public final class com/v5/pathfinding/PathManager {
 	public static final fun cancelSearch ()V
 	public static final fun clear ()V
 	public static final fun clearTransientAvoidPoints ()V
+	public static final fun findEtherwarpPath (III)Z
+	public static final fun findEtherwarpPath (IIII)Z
+	public static final fun findEtherwarpPath (IIIII)Z
+	public static final fun findEtherwarpPath (IIIIID)Z
+	public static final fun findEtherwarpPath (IIIIIDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDDDDD)Z
+	public static synthetic fun findEtherwarpPath$default (IIIIIDDDDDDDILjava/lang/Object;)Z
 	public static final fun findFlyPath ([[I[[I)Z
 	public static final fun findFlyPath ([[I[[II)Z
 	public static synthetic fun findFlyPath$default ([[I[[IIILjava/lang/Object;)Z
@@ -3281,6 +3302,18 @@ public final class com/v5/pathfinding/PathManager {
 	public static final fun findPathMultipleGoals (III[II)Z
 	public static final fun findPathMultipleGoals (III[IIZ)Z
 	public static synthetic fun findPathMultipleGoals$default (III[IIZILjava/lang/Object;)Z
+	public static final fun getCurrentEtherwarpEyeHeight ()D
+	public static final fun getCurrentEtherwarpSneakOffset ()D
+	public static final fun getEtherwarpAnglesArray ()[F
+	public static final fun getEtherwarpLandingCandidates (DDDIDDDD)Lcom/v5/pathfinding/EtherwarpLandingCandidatesResult;
+	public static final fun getEtherwarpLandingCenter (III)[D
+	public static final fun getEtherwarpLastTimeMs ()J
+	public static final fun getEtherwarpNanosecondsPerNode ()D
+	public static final fun getEtherwarpNodesExplored ()I
+	public static final fun getEtherwarpPathArray ()[I
+	public static final fun getEtherwarpPathSize ()I
+	public static final fun getEtherwarpStandOffsetForFlags (I)I
+	public static final fun getEtherwarpVoxelFlagsAt (III)I
 	public static final fun getKeyNodeCount ()I
 	public static final fun getKeyNodeFlagsArray ()[I
 	public static final fun getKeyNodeMetricsArray ()[I
@@ -3295,8 +3328,12 @@ public final class com/v5/pathfinding/PathManager {
 	public static final fun getPathSignature ()Ljava/lang/String;
 	public static final fun getPathSize ()I
 	public static final fun getSelectedStartIndex ()I
+	public static final fun hasEtherwarpPath ()Z
 	public static final fun hasPath ()Z
+	public static final fun isEtherwarpSupportSolid (I)Z
+	public static final fun isEtherwarpTeleportSpaceClearFlags (I)Z
 	public static final fun isSearching ()Z
+	public static final fun isValidEtherwarpLanding (III)Z
 	public static final fun setSearchVariantSeed (I)V
 }
 
@@ -3692,19 +3729,17 @@ public final class com/v5/swift/Swift$Companion {
 }
 
 public final class com/v5/swift/cache/CachedChunk {
-	public static final field AIR Lnet/minecraft/block/BlockState;
-	public static final field AIR_ID I
+	public static final field AIR_FLAGS S
 	public static final field Companion Lcom/v5/swift/cache/CachedChunk$Companion;
 	public final field maxY I
 	public final field minY I
 	public field ready Z
 	public fun <init> (II)V
-	public final fun get (III)Lnet/minecraft/block/BlockState;
-	public final fun getSectionData (I)[I
-	public final fun getStateId (III)I
+	public final fun copySectionFlags (I[SI)V
+	public final fun getFlags (III)S
 	public final fun hasSection (I)Z
-	public final fun set (IIILnet/minecraft/block/BlockState;)V
-	public final fun setSection (I[I)V
+	public final fun setFlags (IIIS)V
+	public final fun setSection (I[S)V
 }
 
 public final class com/v5/swift/cache/CachedChunk$Companion {
@@ -3713,7 +3748,7 @@ public final class com/v5/swift/cache/CachedChunk$Companion {
 public final class com/v5/swift/cache/CachedWorld {
 	public static final field INSTANCE Lcom/v5/swift/cache/CachedWorld;
 	public final fun clear ()V
-	public static final fun getBlockState (III)Lnet/minecraft/block/BlockState;
+	public static final fun getBlockFlags (III)Ljava/lang/Short;
 	public final fun getCacheStats ()Ljava/lang/String;
 	public static final fun getChunk (II)Lcom/v5/swift/cache/CachedChunk;
 	public final fun load (Ljava/lang/String;)V
@@ -3736,6 +3771,15 @@ public final class com/v5/swift/io/WorldSerializer {
 	public final fun save (Ljava/lang/String;Ljava/util/Map;)V
 }
 
+public final class com/v5/swift/nativepath/NativeEtherwarpResult {
+	public final field angles [F
+	public final field nanosecondsPerNode D
+	public final field nodesExplored I
+	public final field path [I
+	public final field timeMs J
+	public fun <init> ([I[FJID)V
+}
+
 public final class com/v5/swift/nativepath/NativePathResult {
 	public final field keyNodeFlags [I
 	public final field keyNodeMetrics [I
@@ -3755,11 +3799,51 @@ public final class com/v5/swift/nativepath/NativePathfinderBridge {
 	public static final fun applyBlockUpdates ([I)V
 	public static final fun cancelSearch ()V
 	public static final fun clearWorld ()V
+	public static final fun findEtherwarpPath (Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;)Lcom/v5/swift/nativepath/NativeEtherwarpResult;
 	public static final fun findPath (Lcom/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest;)Lcom/v5/swift/nativepath/NativePathResult;
 	public static final fun getLastError ()Ljava/lang/String;
 	public static final fun isAvailable ()Z
 	public static final fun setWorld (Ljava/lang/String;II)V
 	public static final fun upsertChunk (IIIIJ[S)V
+}
+
+public final class com/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest {
+	public fun <init> (IIIDDDIIDDDDDDD)V
+	public final fun component1 ()I
+	public final fun component10 ()D
+	public final fun component11 ()D
+	public final fun component12 ()D
+	public final fun component13 ()D
+	public final fun component14 ()D
+	public final fun component15 ()D
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()D
+	public final fun component5 ()D
+	public final fun component6 ()D
+	public final fun component7 ()I
+	public final fun component8 ()I
+	public final fun component9 ()D
+	public final fun copy (IIIDDDIIDDDDDDD)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;
+	public static synthetic fun copy$default (Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;IIIDDDIIDDDDDDDILjava/lang/Object;)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEyeHeight ()D
+	public final fun getGoalX ()I
+	public final fun getGoalY ()I
+	public final fun getGoalZ ()I
+	public final fun getHeuristicWeight ()D
+	public final fun getMaxIterations ()I
+	public final fun getNewNodeCost ()D
+	public final fun getPitchStep ()D
+	public final fun getRayLength ()D
+	public final fun getRewireEpsilon ()D
+	public final fun getStartEyeX ()D
+	public final fun getStartEyeY ()D
+	public final fun getStartEyeZ ()D
+	public final fun getThreadCount ()I
+	public final fun getYawStep ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest {
@@ -3794,6 +3878,7 @@ public final class com/v5/swift/nativepath/NativePathfinderJNI {
 	public static final fun applyBlockUpdates ([I)V
 	public static final fun cancelSearch ()V
 	public static final fun clearWorld ()V
+	public static final fun findEtherwarpPath (IIIDDDIIDDDDDDD)Lcom/v5/swift/nativepath/NativeEtherwarpResult;
 	public static final fun findPath ([I[IZIDDI[I[D)Lcom/v5/swift/nativepath/NativePathResult;
 	public static final fun getLoadError ()Ljava/lang/String;
 	public static final fun initNative ()Z
@@ -3807,12 +3892,16 @@ public final class com/v5/swift/nativepath/NativeStateEncoder {
 	public static final field INSTANCE Lcom/v5/swift/nativepath/NativeStateEncoder;
 	public static final fun flagsForState (Lnet/minecraft/block/BlockState;)I
 	public static final fun flagsForStateId (I)I
+	public static final fun flagsShortForState (Lnet/minecraft/block/BlockState;)S
 	public static final fun flagsShortForStateId (I)S
 }
 
 public final class com/v5/swift/nativepath/NativeVoxelFlags {
 	public static final field BLOCKING_WALL I
 	public static final field CARPET_LIKE I
+	public static final field ETHER_FEET_BLOCKER I
+	public static final field ETHER_PASSABLE I
+	public static final field ETHER_TELEPORT_CLEAR I
 	public static final field FENCE_LIKE I
 	public static final field FLUID I
 	public static final field INSTANCE Lcom/v5/swift/nativepath/NativeVoxelFlags;

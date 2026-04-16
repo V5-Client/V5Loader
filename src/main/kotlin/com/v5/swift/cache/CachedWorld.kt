@@ -4,9 +4,6 @@ import com.v5.swift.Swift
 import com.v5.swift.io.WorldSerializer
 import com.v5.swift.nativepath.NativePathfinderBridge
 import com.v5.swift.nativepath.NativeStateEncoder
-import net.minecraft.block.Block
-import net.minecraft.block.BlockState
-import net.minecraft.block.Blocks
 import net.minecraft.client.MinecraftClient
 import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket
@@ -20,13 +17,10 @@ import kotlin.concurrent.withLock
 
 object CachedWorld {
 
-  private val AIR: BlockState = Blocks.AIR.defaultState
-  private val AIR_ID: Int = Block.STATE_IDS.getRawId(AIR)
-
   @Volatile
   private var chunks = ConcurrentHashMap<Long, CachedChunk>(512)
-  private val pendingChunks = ConcurrentLinkedQueue<Pair<Int, Int>>()
-  private val pendingNativeUpdates = ConcurrentLinkedQueue<IntArray>()
+  private val pendingChunks = ConcurrentLinkedQueue<Long>()
+  private val pendingNativeUpdates = ConcurrentHashMap<Long, Int>(256)
 
   private const val RUNTIME_WORLD_KEY = "runtime_memory"
   @Volatile
@@ -47,15 +41,26 @@ object CachedWorld {
   private fun chunkKey(x: Int, z: Int): Long =
     (x.toLong() shl 32) or (z.toLong() and 0xFFFFFFFFL)
 
+  private fun blockKey(x: Int, y: Int, z: Int): Long {
+    val packedX = (x.toLong() + 33_554_432L) and 0x3FFFFFFL
+    val packedY = (y.toLong() + 2_048L) and 0xFFFL
+    val packedZ = (z.toLong() + 33_554_432L) and 0x3FFFFFFL
+    return (packedX shl 38) or (packedY shl 26) or packedZ
+  }
+
+  private fun unpackBlockX(key: Long): Int = ((key ushr 38) and 0x3FFFFFFL).toInt() - 33_554_432
+  private fun unpackBlockY(key: Long): Int = ((key ushr 26) and 0xFFFL).toInt() - 2_048
+  private fun unpackBlockZ(key: Long): Int = (key and 0x3FFFFFFL).toInt() - 33_554_432
+
   @JvmStatic
-  fun getBlockState(x: Int, y: Int, z: Int): BlockState? {
+  fun getBlockFlags(x: Int, y: Int, z: Int): Short? {
     val chunkX = x shr 4
     val chunkZ = z shr 4
     val key = chunkKey(chunkX, chunkZ)
 
     val cached = cacheChunk
     if (cacheKey == key && cached != null && cached.ready) {
-      return cached.get(x and 15, y, z and 15)
+      return cached.getFlags(x and 15, y, z and 15)
     }
 
     val chunk = chunks[key] ?: return null
@@ -64,7 +69,7 @@ object CachedWorld {
     cacheKey = key
     cacheChunk = chunk
 
-    return chunk.get(x and 15, y, z and 15)
+    return chunk.getFlags(x and 15, y, z and 15)
   }
 
   @JvmStatic
@@ -77,7 +82,7 @@ object CachedWorld {
   fun onPacketReceive(packet: Packet<*>) {
     when (packet) {
       is ChunkDataS2CPacket -> {
-        pendingChunks.add(packet.chunkX to packet.chunkZ)
+        pendingChunks.add(chunkKey(packet.chunkX, packet.chunkZ))
       }
 
       is BlockUpdateS2CPacket -> {
@@ -85,8 +90,9 @@ object CachedWorld {
         val key = chunkKey(pos.x shr 4, pos.z shr 4)
         val chunk = chunks[key]
         if (chunk != null && chunk.ready) {
-          chunk.set(pos.x and 15, pos.y, pos.z and 15, packet.state)
-          queueNativeUpdate(pos.x, pos.y, pos.z, NativeStateEncoder.flagsForState(packet.state))
+          val flags = NativeStateEncoder.flagsForState(packet.state).toShort()
+          chunk.setFlags(pos.x and 15, pos.y, pos.z and 15, flags)
+          queueNativeUpdate(pos.x, pos.y, pos.z, flags.toInt() and 0xFFFF)
           if (cacheKey == key) {
             cacheChunk = chunk
           }
@@ -98,8 +104,9 @@ object CachedWorld {
           val key = chunkKey(pos.x shr 4, pos.z shr 4)
           val chunk = chunks[key]
           if (chunk != null && chunk.ready) {
-            chunk.set(pos.x and 15, pos.y, pos.z and 15, state)
-            queueNativeUpdate(pos.x, pos.y, pos.z, NativeStateEncoder.flagsForState(state))
+            val flags = NativeStateEncoder.flagsForState(state).toShort()
+            chunk.setFlags(pos.x and 15, pos.y, pos.z and 15, flags)
+            queueNativeUpdate(pos.x, pos.y, pos.z, flags.toInt() and 0xFFFF)
             if (cacheKey == key) {
               cacheChunk = chunk
             }
@@ -120,11 +127,12 @@ object CachedWorld {
 
     repeat(Swift.CHUNKS_PER_TICK) {
       val next = pendingChunks.poll() ?: return@repeat
-      val (chunkX, chunkZ) = next
+      val chunkX = (next shr 32).toInt()
+      val chunkZ = next.toInt()
 
       val worldChunk = world.chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false)
       if (worldChunk == null) {
-        pendingChunks.add(chunkX to chunkZ)
+        pendingChunks.add(chunkKey(chunkX, chunkZ))
         return@repeat
       }
 
@@ -135,15 +143,15 @@ object CachedWorld {
         val section = sections[sectionIndex]
         if (section.isEmpty) continue
 
-        val sectionData = IntArray(4096) { AIR_ID }
+        val sectionData = ShortArray(4096) { CachedChunk.AIR_FLAGS }
 
         for (localY in 0..15) {
           val yOffset = localY shl 8
           for (localZ in 0..15) {
             val zOffset = localZ shl 4
             for (localX in 0..15) {
-              val state = section.getBlockState(localX, localY, localZ)
-              sectionData[yOffset or zOffset or localX] = Block.STATE_IDS.getRawId(state)
+              sectionData[yOffset or zOffset or localX] =
+                NativeStateEncoder.flagsShortForState(section.getBlockState(localX, localY, localZ))
             }
           }
         }
@@ -306,12 +314,12 @@ object CachedWorld {
 
     if (totalValues == 0) {
       NativePathfinderBridge.upsertChunk(
-        chunkX = chunkX,
-        chunkZ = chunkZ,
-        minY = chunk.minY,
-        maxY = chunk.maxY,
-        sectionMask = 0L,
-        sectionFlags = ShortArray(0)
+        chunkX,
+        chunkZ,
+        chunk.minY,
+        chunk.maxY,
+        0L,
+        ShortArray(0)
       )
       return
     }
@@ -320,20 +328,17 @@ object CachedWorld {
     var offset = 0
     for (i in 0 until sectionCount) {
       if ((sectionMask and (1L shl i)) == 0L) continue
-      val sectionData = chunk.getSectionData(i) ?: continue
-      for (j in 0 until 4096) {
-        sectionFlags[offset + j] = NativeStateEncoder.flagsShortForStateId(sectionData[j])
-      }
+      chunk.copySectionFlags(i, sectionFlags, offset)
       offset += 4096
     }
 
     NativePathfinderBridge.upsertChunk(
-      chunkX = chunkX,
-      chunkZ = chunkZ,
-      minY = chunk.minY,
-      maxY = chunk.maxY,
-      sectionMask = sectionMask,
-      sectionFlags = sectionFlags
+      chunkX,
+      chunkZ,
+      chunk.minY,
+      chunk.maxY,
+      sectionMask,
+      sectionFlags
     )
   }
 
@@ -344,21 +349,30 @@ object CachedWorld {
     }
     if (pendingNativeUpdates.isEmpty()) return
 
-    val updates = ArrayList<Int>(pendingNativeUpdates.size * 4)
-    while (true) {
-      val u = pendingNativeUpdates.poll() ?: break
-      updates.add(u[0])
-      updates.add(u[1])
-      updates.add(u[2])
-      updates.add(u[3])
+    var updates = IntArray(maxOf(16, pendingNativeUpdates.size * 4))
+    var offset = 0
+    pendingNativeUpdates.forEach { key, flags ->
+      if (!pendingNativeUpdates.remove(key, flags)) {
+        return@forEach
+      }
+
+      if (offset + 4 > updates.size) {
+        updates = updates.copyOf(maxOf(updates.size shl 1, offset + 4))
+      }
+
+      updates[offset] = unpackBlockX(key)
+      updates[offset + 1] = unpackBlockY(key)
+      updates[offset + 2] = unpackBlockZ(key)
+      updates[offset + 3] = flags
+      offset += 4
     }
 
-    if (updates.isEmpty()) return
-    NativePathfinderBridge.applyBlockUpdates(updates.toIntArray())
+    if (offset == 0) return
+    NativePathfinderBridge.applyBlockUpdates(if (offset == updates.size) updates else updates.copyOf(offset))
   }
 
   private fun queueNativeUpdate(x: Int, y: Int, z: Int, flags: Int) {
     if (!NativePathfinderBridge.isAvailable()) return
-    pendingNativeUpdates.add(intArrayOf(x, y, z, flags))
+    pendingNativeUpdates[blockKey(x, y, z)] = flags
   }
 }

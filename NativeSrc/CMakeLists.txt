@@ -11,6 +11,8 @@ add_library(V5PathJNI SHARED
   src/jni_bridge.cpp
   src/world_state.cpp
   src/pathfinder.cpp
+  src/etherwarp_search.cpp
+  src/etherwarp_raymarch.cpp
   src/path_directional_scan.cpp
   src/path_simplifier.cpp
   src/path_annotations.cpp
