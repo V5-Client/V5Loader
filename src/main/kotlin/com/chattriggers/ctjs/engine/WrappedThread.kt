@@ -10,8 +10,11 @@ class WrappedThread(private val task: Runnable) {
         ForkJoinPool.commonPool().execute {
             try {
                 JSContextFactory.enterContext()
-                task.run()
-                Context.exit()
+                try {
+                    task.run()
+                } finally {
+                    Context.exit()
+                }
             } catch (e: Throwable) {
                 e.printTraceToConsole()
             }

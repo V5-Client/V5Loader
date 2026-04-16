@@ -22,21 +22,13 @@ object V5Native {
             decryptAesGcm = methods.firstOrNull { m ->
                 m.name == decodeName(intArrayOf(62, 63, 57, 40, 35, 42, 46, 27, 63, 41, 29, 57, 55)) &&
                     m.parameterCount == 3
-            },
-            runNativeAntiTamperChecks = methods.firstOrNull { m ->
-                m.name == decodeName(
-                    intArrayOf(
-                        40, 47, 52, 20, 59, 46, 51, 44, 63, 27, 52, 46, 51, 14, 59, 55, 42, 63, 40, 25, 50, 63, 57, 49, 41
-                    )
-                ) && m.parameterCount == 0
             }
         )
     }
 
     private data class NativeMethodHandles(
         val consumeToken: java.lang.reflect.Method?,
-        val decryptAesGcm: java.lang.reflect.Method?,
-        val runNativeAntiTamperChecks: java.lang.reflect.Method?
+        val decryptAesGcm: java.lang.reflect.Method?
     )
 
     private fun decodeName(obfuscated: IntArray): String {
@@ -53,10 +45,5 @@ object V5Native {
     @JvmStatic
     fun decryptAesGcm(encryptedBytes: ByteArray, contentKey: ByteArray, fileIv: ByteArray): ByteArray? {
         return nativeMethods?.decryptAesGcm?.invoke(null, encryptedBytes, contentKey, fileIv) as? ByteArray
-    }
-
-    @JvmStatic
-    fun runAntiTamperChecks(): Boolean {
-        return (nativeMethods?.runNativeAntiTamperChecks?.invoke(null) as? Boolean) ?: false
     }
 }

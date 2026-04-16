@@ -8,7 +8,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 import net.fabricmc.loader.api.FabricLoader
-import sun.misc.Unsafe
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.IOException
@@ -277,7 +276,6 @@ object SecureLoader {
     }
 
     fun run() {
-        runAntiTamperChecks()
         onMixinPlugin()
         onInitialize()
     }
@@ -570,8 +568,6 @@ object SecureLoader {
     }
 
     private fun downloadEncryptedAsset(endpointPath: String, token: String): ByteArray {
-        runAntiTamperChecks()
-
         val keyGen = KeyPairGenerator.getInstance("EC")
         keyGen.initialize(ECGenParameterSpec("secp256r1"))
         val clientKeyPair = keyGen.generateKeyPair()
@@ -806,35 +802,7 @@ object SecureLoader {
     }
 
     private fun shutDownHard(): Nothing {
-        val y: Unsafe by lazy {
-            Unsafe::class.java.getDeclaredField("theUnsafe").let {
-                it.isAccessible = true
-                it[null] as Unsafe
-            }
-        }
-
-        try {
-            y.putAddress(0, 0)
-        } catch (_: Exception) { }
-
-        Runtime.getRuntime().exit(0)
-        throw Error().also { it.stackTrace = arrayOf() }
-    }
-
-    private fun runAntiTamperChecks() {
-        if (V5Native.runAntiTamperChecks()) {
-            val y3k: Unsafe by lazy {
-                Unsafe::class.java.getDeclaredField("theUnsafe").let {
-                    it.isAccessible = true
-                    it[null] as Unsafe
-                }
-            }
-            try {
-                y3k.putAddress(0, 0)
-            } catch (_: Exception) {}
-            Runtime.getRuntime().exit(0)
-            throw Error().also { it.stackTrace = arrayOf() }
-        }
+        throw IllegalStateException("V5 loader aborted due to unrecoverable error")
     }
 
     fun isLoaded(): Boolean = isLoaded

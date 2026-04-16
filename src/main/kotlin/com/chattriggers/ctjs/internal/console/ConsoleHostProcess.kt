@@ -19,6 +19,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 import java.io.PrintWriter
+import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.URLClassLoader
 import java.net.URLDecoder
@@ -100,7 +101,7 @@ object ConsoleHostProcess : Initializer {
             .start()
 
         while (running) {
-            val server = ServerSocket(PORT)
+            val server = ServerSocket(PORT, 50, InetAddress.getLoopbackAddress())
             serverSocket = server
             server.accept().use { socket ->
                 socketOut = PrintWriter(socket.outputStream, true, Charsets.UTF_8)

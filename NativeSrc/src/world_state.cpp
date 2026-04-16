@@ -6,6 +6,26 @@
 
 namespace v5pf {
 
+namespace {
+
+constexpr int kMinAllowedWorldY = -2048;
+constexpr int kMaxAllowedWorldY = 2048;
+constexpr int64_t kMaxAllowedWorldSpan = 4096;
+
+[[nodiscard]] bool isValidWorldBounds(const int minY, const int maxY) {
+  if (minY >= maxY) {
+    return false;
+  }
+  if (minY < kMinAllowedWorldY || maxY > kMaxAllowedWorldY) {
+    return false;
+  }
+
+  const int64_t span = static_cast<int64_t>(maxY) - static_cast<int64_t>(minY);
+  return span > 0 && span <= kMaxAllowedWorldSpan;
+}
+
+} // namespace
+
 void ChunkData::ensureLayout() {
   const int count = sectionCount();
   if (count <= 0) {
@@ -124,6 +144,10 @@ uint16_t WorldSnapshot::getFlags(const int x, const int y, const int z) const {
 }
 
 void WorldState::setWorld(std::string worldKey, const int minY, const int maxY) {
+  if (!isValidWorldBounds(minY, maxY)) {
+    return;
+  }
+
   std::lock_guard lock(mutex_);
   auto next = std::make_shared<WorldData>();
   next->worldKey = std::move(worldKey);
@@ -148,6 +172,10 @@ void WorldState::upsertChunk(
   const uint16_t* sectionFlags,
   const size_t sectionFlagCount
 ) {
+  if (!isValidWorldBounds(minY, maxY)) {
+    return;
+  }
+
   ChunkData chunk;
   chunk.minY = minY;
   chunk.maxY = maxY;
@@ -156,7 +184,8 @@ void WorldState::upsertChunk(
   const int sectionCount = chunk.sectionCount();
   size_t readOffset = 0;
 
-  for (int i = 0; i < sectionCount; i++) {
+  const int maskedSectionCount = std::min(sectionCount, 64);
+  for (int i = 0; i < maskedSectionCount; i++) {
     const bool hasSection = (sectionMask & (1ULL << i)) != 0ULL;
     if (!hasSection) continue;
 
@@ -183,7 +212,7 @@ void WorldState::applyUpdates(const std::vector<BlockUpdate>& updates) {
 
   std::lock_guard lock(mutex_);
   auto next = std::make_shared<WorldData>(*data_);
-  std::unordered_map<int64_t, std::shared_ptr<ChunkData>> mutableChunks;
+  std::unordered_map<uint64_t, std::shared_ptr<ChunkData>> mutableChunks;
   mutableChunks.reserve(updates.size());
 
   for (const auto& update : updates) {
