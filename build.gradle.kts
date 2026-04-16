@@ -149,11 +149,11 @@ tasks {
 
     // shit fix for file name but ehh
     jar {
-        archiveFileName.set("v5-${project.version}.jar")
+        archiveFileName.set("V5-Loader.jar")
     }
 
     remapJar {
-        archiveFileName.set("v5-${project.version}.jar")
+        archiveFileName.set("V5-Loader.jar")
     }
 
     dokkaHtml {
