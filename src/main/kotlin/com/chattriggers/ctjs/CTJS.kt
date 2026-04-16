@@ -37,7 +37,7 @@ class CTJS : ClientModInitializer {
         }
 
         Config.loadData()
-        SecureLoader.run()
+        SecureLoader.onInitialize()
 
         Runtime.getRuntime().addShutdownHook(Thread {
             TriggerType.GAME_UNLOAD.triggerAll()
@@ -128,6 +128,7 @@ class CTJS : ClientModInitializer {
                 ChatLib.chat("&cReloading ChatTriggers...")
 
             thread {
+                SecureLoader.reload()
                 ModuleManager.setup()
                 Client.getMinecraft().options.load()
 
@@ -136,8 +137,6 @@ class CTJS : ClientModInitializer {
                 isLoaded = true
 
                 ModuleManager.entryPass()
-
-                SecureLoader.reload()
 
                 if (asCommand)
                     ChatLib.chat("&aDone reloading!")

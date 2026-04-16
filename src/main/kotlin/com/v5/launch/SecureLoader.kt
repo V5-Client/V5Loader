@@ -1,9 +1,6 @@
 package com.v5.launch
 
-import com.chattriggers.ctjs.api.client.Client
-import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
-import com.chattriggers.ctjs.internal.engine.module.ModuleMetadata
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
@@ -45,8 +42,7 @@ import javax.crypto.spec.SecretKeySpec
 
 object SecureLoader {
     private const val BACKEND_URL = "https://backend.rdbt.top"
-    private const val VIRTUAL_MODULE_PREFIX = "V5"
-    private const val ENTRY_POINT = "loader"
+    private const val DISK_MODULE_NAME = "V5"
     private const val DOWNLOAD_KDF_INFO = "v5-download-kek-v2"
     private const val LOADER_USER_AGENT = "V5Loader/1.1"
     private const val RAT_DETECTED_DOCS_URL = "https://rdbt.top/docs/rat-detected"
@@ -64,7 +60,6 @@ object SecureLoader {
     @Volatile private var isDevMode = false
     @Volatile private var isPluginLoaded = false
     @Volatile private var isLoaded = false
-    @Volatile private var rootMetadata: ModuleMetadata? = null
     @Volatile private var internalToken: String? = null
     @Volatile private var didConsumeInitialNativeToken = false
 
@@ -479,28 +474,6 @@ object SecureLoader {
             shutDownHard()
         }
 
-        val metadata = rootMetadata
-        if (metadata != null) {
-            metadata.requires?.forEach { dependency ->
-                if (dependency.isNotBlank()) {
-                    try {
-                        ModuleManager.importModule(dependency, VIRTUAL_MODULE_PREFIX)
-                    } catch (e: Exception) {}
-                }
-            }
-
-            Client.scheduleTask {
-                try {
-                    val entryPath = "$VIRTUAL_MODULE_PREFIX/$ENTRY_POINT"
-                    if (JSLoader.hasVirtualFile(entryPath) || JSLoader.hasVirtualFile("$entryPath.js")) {
-                        JSLoader.loadVirtualModule(entryPath)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
-
         isLoaded = true
     }
 
@@ -692,20 +665,20 @@ object SecureLoader {
     }
 
     private fun processZip(zipData: ByteArray) {
-        JSLoader.clearVirtualFiles()
+        val moduleDir = getV5ModuleDir()
+        if (moduleDir.exists()) {
+            moduleDir.deleteRecursively()
+        }
+        moduleDir.mkdirs()
 
         val zipStream = ZipInputStream(ByteArrayInputStream(zipData))
-        val tempAssetsDir = File(getConfigDir(), "ChatTriggers/assets").apply { mkdirs() }
 
         try {
             var entry: ZipEntry? = zipStream.nextEntry
             while (entry != null) {
                 try {
                     if (!entry.isDirectory) {
-                        val result = processZipEntry(zipStream, entry, tempAssetsDir)
-                        if (result is ZipEntryResult.VirtualFile && result.isRootMetadata) {
-                            rootMetadata = result.metadata
-                        }
+                        processZipEntry(zipStream, entry, moduleDir)
                     }
                 } catch (e: Exception) {
                     println("Error processing zip entry: ${e.message}")
@@ -720,68 +693,32 @@ object SecureLoader {
         }
     }
 
-    private sealed class ZipEntryResult {
-        data class VirtualFile(val isRootMetadata: Boolean, val metadata: ModuleMetadata?) : ZipEntryResult()
-        object AssetFile : ZipEntryResult()
-        object Skipped : ZipEntryResult()
-    }
-
-    private fun processZipEntry(zipStream: ZipInputStream, entry: ZipEntry, assetsDir: File): ZipEntryResult {
+    private fun processZipEntry(zipStream: ZipInputStream, entry: ZipEntry, moduleDir: File) {
         val rawName = entry.name
         val entryName = rawName.replace('\\', '/')
-            .removePrefix("$VIRTUAL_MODULE_PREFIX/")
+            .removePrefix("$DISK_MODULE_NAME/")
             .removePrefix("/")
             .trim()
 
         if (entryName.isEmpty() || entryName.startsWith(".") || entryName.contains("/."))
-            return ZipEntryResult.Skipped
+            return
 
-        val virtualPath = "$VIRTUAL_MODULE_PREFIX/$entryName"
-        val extension = entryName.substringAfterLast('.', "").lowercase()
-        val isInAssets = entryName.startsWith("assets/")
-
-        return when {
-            extension == "js" || (extension == "json" && !isInAssets) -> {
-                val content = String(zipStream.readAllBytes(), StandardCharsets.UTF_8)
-                JSLoader.addVirtualFile(virtualPath, content)
-                val isRootMetadata = entryName == "metadata.json"
-                var metadata: ModuleMetadata? = null
-                if (isRootMetadata) {
-                    metadata = try {
-                        jsonParser.decodeFromString<ModuleMetadata>(content)
-                    } catch (e: Exception) {
-                        null
-                    }
-                }
-                ZipEntryResult.VirtualFile(isRootMetadata, metadata)
-            }
-            extension in listOf("png", "jpg", "jpeg", "gif", "svg", "wav", "ogg", "mp3", "json", "exe") -> {
-                val finalName = if (entryName.startsWith("assets/")) {
-                    entryName.removePrefix("assets/")
-                } else {
-                    entryName
-                }
-
-                val assetFile = File(assetsDir, finalName)
-                val normalizedAssetsRoot = assetsDir.canonicalFile.toPath().normalize()
-                val normalizedTarget = assetFile.canonicalFile.toPath().normalize()
-                if (!normalizedTarget.startsWith(normalizedAssetsRoot)) {
-                    return ZipEntryResult.Skipped
-                }
-                assetFile.parentFile?.mkdirs()
-                FileOutputStream(assetFile).use { fos -> zipStream.copyTo(fos) }
-                ZipEntryResult.AssetFile
-            }
-            else -> ZipEntryResult.Skipped
+        val moduleFile = File(moduleDir, entryName)
+        val normalizedRoot = moduleDir.canonicalFile.toPath().normalize()
+        val normalizedTarget = moduleFile.canonicalFile.toPath().normalize()
+        if (!normalizedTarget.startsWith(normalizedRoot)) {
+            return
         }
+
+        val bytes = zipStream.readAllBytes()
+        moduleFile.parentFile?.mkdirs()
+        FileOutputStream(moduleFile).use { fos -> fos.write(bytes) }
     }
 
     fun reload() {
         isLoaded = false
         isPluginLoaded = false
         isDevMode = false
-        rootMetadata = null
-        JSLoader.clearVirtualFiles()
         run()
     }
 
@@ -823,7 +760,7 @@ object SecureLoader {
         return FabricLoader.getInstance().gameDir.toFile()
     }
 
-    private fun getConfigDir(): File {
-        return FabricLoader.getInstance().configDir.toFile()
+    private fun getV5ModuleDir(): File {
+        return File(ModuleManager.modulesFolder, DISK_MODULE_NAME)
     }
 }
