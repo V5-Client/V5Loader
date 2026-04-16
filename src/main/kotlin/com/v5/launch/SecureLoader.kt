@@ -48,6 +48,8 @@ object SecureLoader {
     private const val RAT_DETECTED_DOCS_URL = "https://rdbt.top/docs/rat-detected"
     private const val BACKEND_SPKI_SHA256_HEX = "3baa33ee9ce47074b7599de9c5cc64fe4906cb66b5500179c86a0df60b658d94"
     private const val TOKEN_EXPIRY_SKEW_SECONDS = 60L
+    private const val SESSION_DIR_NAME = ".v5"
+    private const val SESSION_FILE_NAME = "session.json"
     private val rng = SecureRandom()
     private val runtimeHwid: String by lazy { V5Native.getHwid().orEmpty().ifBlank { "ERROR" } }
 
@@ -100,7 +102,7 @@ object SecureLoader {
     @JvmStatic
     fun getFreshJwtToken(): String? {
         val token = getJwtToken()
-        if (token.isNullOrBlank()) return null
+        if (token.isNullOrBlank()) return refreshTokenSingleFlight("")
         if (!isNearExpiry(token)) return token
         return refreshTokenSingleFlight(token)
     }
@@ -122,7 +124,7 @@ object SecureLoader {
         internalToken?.let { latest ->
             if (!isNearExpiry(latest)) return latest
         }
-        val refreshed = fallbackHwidLogin()
+        val refreshed = refreshWithStoredRefreshToken()
         if (!refreshed.isNullOrBlank()) {
             internalToken = refreshed
             return refreshed
@@ -156,16 +158,16 @@ object SecureLoader {
         }
     }
 
-    private fun fallbackHwidLogin(): String? {
-        if (runtimeHwid.isBlank() || runtimeHwid == "ERROR") return null
-        val requestBody = """{"hwid":"$runtimeHwid"}""".toByteArray(StandardCharsets.UTF_8)
+    private fun refreshWithStoredRefreshToken(): String? {
+        val refreshToken = readRefreshTokenFromSessionFile() ?: return null
+        val requestBody = """{"refresh_token":"${escapeJson(refreshToken)}"}"""
+            .toByteArray(StandardCharsets.UTF_8)
 
         val connection = try {
-            openPinnedConnection("$BACKEND_URL/api/auth/login-hwid").apply {
+            openPinnedConnection("$BACKEND_URL/api/auth/refresh").apply {
                 requestMethod = "POST"
                 setRequestProperty("Content-Type", "application/json")
                 setRequestProperty("Accept", "application/json")
-                setRequestProperty("X-V5-HWID", runtimeHwid)
                 setRequestProperty("User-Agent", LOADER_USER_AGENT)
                 connectTimeout = 10000
                 readTimeout = 10000
@@ -178,19 +180,103 @@ object SecureLoader {
         return try {
             connection.outputStream.use { it.write(requestBody) }
             val responseCode = connection.responseCode
-            if (responseCode != 200) return null
-            val responseText = connection.inputStream
+            val responseText = (if (responseCode in 200..299) connection.inputStream else connection.errorStream)
                 ?.bufferedReader()
                 ?.use { it.readText() }
                 ?: ""
+            if (responseText.isBlank()) return null
+
             val obj = jsonParser.parseToJsonElement(responseText).jsonObject
-            if (obj["success"]?.jsonPrimitive?.booleanOrNull == false) return null
-            obj["access_token"]?.jsonPrimitive?.contentOrNull
+            if (responseCode != 200) {
+                val errorCode = obj["error"]?.jsonPrimitive?.contentOrNull.orEmpty()
+                if (
+                    errorCode == "INVALID_REFRESH_TOKEN" ||
+                    errorCode == "REFRESH_TOKEN_EXPIRED" ||
+                    errorCode == "REFRESH_TOKEN_REUSED" ||
+                    errorCode == "SESSION_REVOKED"
+                ) {
+                    clearSessionFile()
+                }
+                return null
+            }
+
+            val accessToken = obj["access_token"]?.jsonPrimitive?.contentOrNull
                 ?: obj["token"]?.jsonPrimitive?.contentOrNull
+            val rotatedRefresh = obj["refresh_token"]?.jsonPrimitive?.contentOrNull
+            if (accessToken.isNullOrBlank() || rotatedRefresh.isNullOrBlank()) {
+                return null
+            }
+            persistRefreshToken(rotatedRefresh)
+            accessToken
         } catch (_: Exception) {
             null
         } finally {
             connection.disconnect()
+        }
+    }
+
+    private fun getSessionFile(): File {
+        return File(File(getGameDir(), SESSION_DIR_NAME), SESSION_FILE_NAME)
+    }
+
+    private fun readRefreshTokenFromSessionFile(): String? {
+        val file = getSessionFile()
+        if (!file.exists() || !file.isFile) return null
+        return try {
+            val content = file.readText(Charsets.UTF_8)
+            val obj = jsonParser.parseToJsonElement(content).jsonObject
+            obj["refresh_token"]?.jsonPrimitive?.contentOrNull?.trim()?.ifBlank { null }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun persistRefreshToken(refreshToken: String) {
+        if (refreshToken.isBlank()) return
+        val file = getSessionFile()
+        try {
+            file.parentFile?.mkdirs()
+            val escaped = escapeJson(refreshToken)
+            val json = """{"refresh_token":"$escaped","updated_at":${System.currentTimeMillis() / 1000L}}"""
+            file.writeText(json, Charsets.UTF_8)
+            file.setReadable(false, false)
+            file.setWritable(false, false)
+            file.setExecutable(false, false)
+            file.setReadable(true, true)
+            file.setWritable(true, true)
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun clearSessionFile() {
+        try {
+            val file = getSessionFile()
+            if (file.exists()) file.delete()
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun escapeJson(value: String): String {
+        return buildString(value.length + 8) {
+            for (ch in value) {
+                when (ch) {
+                    '\\' -> append("\\\\")
+                    '"' -> append("\\\"")
+                    '\b' -> append("\\b")
+                    '\u000C' -> append("\\f")
+                    '\n' -> append("\\n")
+                    '\r' -> append("\\r")
+                    '\t' -> append("\\t")
+                    else -> {
+                        if (ch.code < 0x20) {
+                            append("\\u")
+                            append(ch.code.toString(16).padStart(4, '0'))
+                        } else {
+                            append(ch)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -308,7 +394,6 @@ object SecureLoader {
         return try {
             connection.requestMethod = "GET"
             connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.setRequestProperty("X-V5-HWID", runtimeHwid)
             connection.setRequestProperty("User-Agent", LOADER_USER_AGENT)
             connection.setRequestProperty("Content-Type", "application/json")
             connection.connectTimeout = 10000
@@ -495,7 +580,6 @@ object SecureLoader {
 
         val connection = openPinnedConnection("$BACKEND_URL$endpointPath").apply {
             setRequestProperty("Authorization", "Bearer $token")
-            setRequestProperty("X-V5-HWID", runtimeHwid)
             setRequestProperty("User-Agent", LOADER_USER_AGENT)
             setRequestProperty("X-V5-Client-Pub", clientPub)
             setRequestProperty("X-V5-Client-Nonce", clientNonce)
