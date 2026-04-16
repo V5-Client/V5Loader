@@ -1,6 +1,6 @@
 {
   "Settings": {
-    "Input": "build/libs/v5-1.0.0.jar",
+    "Input": "build/libs/V5-Loader.jar",
     "Output": "V5-Loader.jar",
     "Libraries": [],
     "Exclusions": [],
