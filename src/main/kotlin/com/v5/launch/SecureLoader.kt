@@ -1,6 +1,6 @@
 package com.v5.launch
 
-import com.chattriggers.ctjs.internal.engine.module.ModuleManager
+import com.chattriggers.ctjs.CTJS
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
@@ -299,20 +299,15 @@ object SecureLoader {
                 shutDownHard()
             }
 
-            if (isDevMode) {
-                println("[V5] Hi Dev! Skipping loader step.")
+            val modulePath = getV5ModuleDir()
+            if (modulePath.exists() && isLocalDeveloperModeEnabled()) {
+                isDevMode = true
+                println("[V5] Developer mode with existing V5 module path. Skipping V5 module download.")
                 isPluginLoaded = true
                 return
             }
 
             val zipBytes = downloadZip(token)
-            if (zipBytes == null) {
-                println("[V5] Hi Dev! Skipping loader step.")
-                isDevMode = true
-                isPluginLoaded = true
-                return
-            }
-
             processZip(zipBytes)
             Arrays.fill(zipBytes, 0)
             isPluginLoaded = true
@@ -341,6 +336,19 @@ object SecureLoader {
                 println("[V5] ${result.message}")
                 false
             }
+        }
+    }
+
+    private fun isLocalDeveloperModeEnabled(): Boolean {
+        return try {
+            val stateFile = File(File(CTJS.MODULES_FOLDER, "V5Config"), "developerMode.json")
+            stateFile.isFile &&
+                jsonParser.parseToJsonElement(stateFile.readText(Charsets.UTF_8))
+                    .jsonObject["enabled"]
+                    ?.jsonPrimitive
+                    ?.booleanOrNull == true
+        } catch (_: Exception) {
+            false
         }
     }
 
@@ -531,7 +539,6 @@ object SecureLoader {
 
     private fun downloadModLoaderJar(token: String): ByteArray {
         return downloadEncryptedAsset("/api/download/modloader", token)
-            ?: throw IOException("Backend returned DEV_LOCAL for modloader download")
     }
 
     private fun stageModLoaderUpdateAndRelaunch(
@@ -562,11 +569,11 @@ object SecureLoader {
         isLoaded = true
     }
 
-    private fun downloadZip(token: String): ByteArray? {
+    private fun downloadZip(token: String): ByteArray {
         return downloadEncryptedAsset("/api/download/v5", token)
     }
 
-    private fun downloadEncryptedAsset(endpointPath: String, token: String): ByteArray? {
+    private fun downloadEncryptedAsset(endpointPath: String, token: String): ByteArray {
         runAntiTamperChecks()
 
         val keyGen = KeyPairGenerator.getInstance("EC")
@@ -605,10 +612,6 @@ object SecureLoader {
             if (responseCode != 200 || json?.get("success")?.jsonPrimitive?.booleanOrNull != true) {
                 val errorMessage = json?.get("error")?.jsonPrimitive?.contentOrNull ?: "Unknown error"
                 throw IOException("Download failed: $errorMessage (code: $responseCode)")
-            }
-
-            if (json["mode"]?.jsonPrimitive?.contentOrNull == "DEV_LOCAL") {
-                return null
             }
 
             val payload = json["payload"]?.jsonObject ?: throw IOException("Missing payload")
@@ -845,6 +848,6 @@ object SecureLoader {
     }
 
     private fun getV5ModuleDir(): File {
-        return File(ModuleManager.modulesFolder, DISK_MODULE_NAME)
+        return File(File(CTJS.MODULES_FOLDER), DISK_MODULE_NAME)
     }
 }
