@@ -15,8 +15,5 @@ object V5Auth {
     }
 
     @JvmStatic
-    fun getHwid(): String = SecureLoader.getHwid() 
-
-    @JvmStatic
     fun shutDownHard(): Nothing = SecureLoader.killClientHard()
 }

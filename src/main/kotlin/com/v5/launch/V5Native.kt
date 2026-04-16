@@ -19,10 +19,6 @@ object V5Native {
                 m.name == decodeName(intArrayOf(57, 53, 52, 41, 47, 55, 63, 14, 53, 49, 63, 52)) &&
                     m.parameterCount == 0
             },
-            getHwid = methods.firstOrNull { m ->
-                m.name == decodeName(intArrayOf(61, 63, 46, 18, 45, 51, 62)) &&
-                    m.parameterCount == 0
-            },
             decryptAesGcm = methods.firstOrNull { m ->
                 m.name == decodeName(intArrayOf(62, 63, 57, 40, 35, 42, 46, 27, 63, 41, 29, 57, 55)) &&
                     m.parameterCount == 3
@@ -39,7 +35,6 @@ object V5Native {
 
     private data class NativeMethodHandles(
         val consumeToken: java.lang.reflect.Method?,
-        val getHwid: java.lang.reflect.Method?,
         val decryptAesGcm: java.lang.reflect.Method?,
         val runNativeAntiTamperChecks: java.lang.reflect.Method?
     )
@@ -54,9 +49,6 @@ object V5Native {
 
     @JvmStatic
     fun consumeToken(): String? = nativeMethods?.consumeToken?.invoke(null) as? String
-
-    @JvmStatic
-    fun getHwid(): String? = nativeMethods?.getHwid?.invoke(null) as? String
 
     @JvmStatic
     fun decryptAesGcm(encryptedBytes: ByteArray, contentKey: ByteArray, fileIv: ByteArray): ByteArray? {
