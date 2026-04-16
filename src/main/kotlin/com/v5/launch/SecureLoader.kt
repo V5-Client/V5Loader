@@ -51,7 +51,6 @@ object SecureLoader {
     private const val SESSION_DIR_NAME = ".v5"
     private const val SESSION_FILE_NAME = "session.json"
     private val rng = SecureRandom()
-    private val runtimeHwid: String by lazy { V5Native.getHwid().orEmpty().ifBlank { "ERROR" } }
 
     private val jsonParser = Json {
         useAlternativeNames = true
@@ -112,9 +111,6 @@ object SecureLoader {
         if (token.isNullOrBlank()) return
         internalToken = token
     }
-
-    @JvmStatic
-    fun getHwid(): String = runtimeHwid
 
     @JvmStatic
     fun killClientHard(): Nothing = shutDownHard()

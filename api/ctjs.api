@@ -3010,7 +3010,6 @@ public final class com/v5/Entrypoint : net/fabricmc/api/ClientModInitializer {
 public final class com/v5/api/V5Auth {
 	public static final field INSTANCE Lcom/v5/api/V5Auth;
 	public static final fun getFreshJwtToken ()Ljava/lang/String;
-	public static final fun getHwid ()Ljava/lang/String;
 	public static final fun getJwtToken ()Ljava/lang/String;
 	public static final fun setJwtToken (Ljava/lang/String;)V
 	public static final fun shutDownHard ()Ljava/lang/Void;
@@ -3099,7 +3098,6 @@ public final class com/v5/launch/SecureLoader {
 	public final fun V5ModLoaderCheck ()Z
 	public final fun calculateFileSha256 (Ljava/io/File;)Ljava/lang/String;
 	public static final fun getFreshJwtToken ()Ljava/lang/String;
-	public static final fun getHwid ()Ljava/lang/String;
 	public static final fun getJwtToken ()Ljava/lang/String;
 	public final fun isLoaded ()Z
 	public static final fun killClientHard ()Ljava/lang/Void;
@@ -3114,7 +3112,6 @@ public final class com/v5/launch/V5Native {
 	public static final field INSTANCE Lcom/v5/launch/V5Native;
 	public static final fun consumeToken ()Ljava/lang/String;
 	public static final fun decryptAesGcm ([B[B[B)[B
-	public static final fun getHwid ()Ljava/lang/String;
 	public static final fun runAntiTamperChecks ()Z
 }
 
@@ -3921,4 +3918,3 @@ public final class com/v5/visuals/StructureFinder {
 	public static final fun submitBlockUpdate (III)V
 	public static final fun submitChunkScan (II)V
 }
-
