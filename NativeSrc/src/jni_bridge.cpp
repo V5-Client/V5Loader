@@ -5,6 +5,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <exception>
 #include <string>
 #include <vector>
 
@@ -35,50 +36,101 @@ std::vector<double> toDoubleVector(JNIEnv* env, jdoubleArray array) {
   return out;
 }
 
-class CriticalShortArray {
+std::vector<jshort> toShortVector(JNIEnv* env, jshortArray array) {
+  if (array == nullptr) return {};
+
+  const jsize len = env->GetArrayLength(array);
+  if (len <= 0) return {};
+
+  std::vector<jshort> out(static_cast<size_t>(len));
+  env->GetShortArrayRegion(array, 0, len, out.data());
+  return out;
+}
+
+class ScopedUtfChars {
  public:
-  CriticalShortArray(JNIEnv* env, jshortArray array)
-    : env_(env),
-      array_(array) {
-    if (env_ == nullptr || array_ == nullptr) {
-      return;
-    }
-
-    length_ = env_->GetArrayLength(array_);
-    if (length_ <= 0) {
-      length_ = 0;
-      return;
-    }
-
-    data_ = static_cast<jshort*>(env_->GetPrimitiveArrayCritical(array_, nullptr));
-  }
-
-  CriticalShortArray(const CriticalShortArray&) = delete;
-  CriticalShortArray& operator=(const CriticalShortArray&) = delete;
-
-  ~CriticalShortArray() {
-    if (env_ != nullptr && array_ != nullptr && data_ != nullptr) {
-      env_->ReleasePrimitiveArrayCritical(array_, data_, JNI_ABORT);
+  ScopedUtfChars(JNIEnv* env, jstring value)
+    : env_(env), value_(value) {
+    if (env_ != nullptr && value_ != nullptr) {
+      chars_ = env_->GetStringUTFChars(value_, nullptr);
     }
   }
 
-  [[nodiscard]] const uint16_t* data() const {
-    return reinterpret_cast<const uint16_t*>(data_);
+  ScopedUtfChars(const ScopedUtfChars&) = delete;
+  ScopedUtfChars& operator=(const ScopedUtfChars&) = delete;
+
+  ~ScopedUtfChars() {
+    if (env_ != nullptr && value_ != nullptr && chars_ != nullptr) {
+      env_->ReleaseStringUTFChars(value_, chars_);
+    }
   }
 
-  [[nodiscard]] size_t size() const {
-    return length_ > 0 ? static_cast<size_t>(length_) : 0U;
+  [[nodiscard]] const char* get() const {
+    return chars_;
   }
 
  private:
   JNIEnv* env_ = nullptr;
-  jshortArray array_ = nullptr;
-  jshort* data_ = nullptr;
-  jsize length_ = 0;
+  jstring value_ = nullptr;
+  const char* chars_ = nullptr;
 };
 
 bool hasPendingJavaException(JNIEnv* env) {
   return env != nullptr && env->ExceptionCheck() == JNI_TRUE;
+}
+
+void throwJavaException(JNIEnv* env, const char* className, const std::string& message) {
+  if (env == nullptr || hasPendingJavaException(env)) {
+    return;
+  }
+
+  jclass exceptionClass = env->FindClass(className);
+  if (exceptionClass == nullptr) {
+    env->ExceptionClear();
+    exceptionClass = env->FindClass("java/lang/RuntimeException");
+    if (exceptionClass == nullptr) {
+      return;
+    }
+  }
+
+  env->ThrowNew(exceptionClass, message.c_str());
+}
+
+constexpr int kMinAllowedWorldY = -2048;
+constexpr int kMaxAllowedWorldY = 2048;
+constexpr int64_t kMaxWorldSpanBlocks = 4096;
+
+bool isValidHeightRange(const jint minY, const jint maxY) {
+  const int64_t span = static_cast<int64_t>(maxY) - static_cast<int64_t>(minY);
+  return minY < maxY &&
+    minY >= kMinAllowedWorldY &&
+    maxY <= kMaxAllowedWorldY &&
+    span > 0 &&
+    span <= kMaxWorldSpanBlocks;
+}
+
+std::string buildInvalidHeightMessage(const jint minY, const jint maxY) {
+  return "Invalid minY/maxY: minY=" + std::to_string(minY) +
+    ", maxY=" + std::to_string(maxY) +
+    ", required minY < maxY, minY >= " + std::to_string(kMinAllowedWorldY) +
+    ", maxY <= " + std::to_string(kMaxAllowedWorldY) +
+    ", and span <= " + std::to_string(kMaxWorldSpanBlocks);
+}
+
+void throwRuntimeFromException(JNIEnv* env, const char* entrypoint, const std::exception& ex) {
+  throwJavaException(
+    env,
+    "java/lang/RuntimeException",
+    std::string(entrypoint) + " failed with native exception: " + ex.what()
+  );
+}
+
+void throwRuntimeUnknown(JNIEnv* env, const char* entrypoint) {
+  throwJavaException(
+    env,
+    "java/lang/RuntimeException",
+    std::string(entrypoint) + " failed with unknown native exception"
+  );
 }
 
 std::vector<v5pf::Int3> parsePoints(const std::vector<int>& flat) {
@@ -126,8 +178,16 @@ std::vector<jfloat> toJFloatVector(const std::vector<float>& values) {
 
 extern "C" {
 
-JNIEXPORT jboolean JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_initNative(JNIEnv*, jclass) {
-  return JNI_TRUE;
+JNIEXPORT jboolean JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_initNative(JNIEnv* env, jclass) {
+  try {
+    return JNI_TRUE;
+  } catch (const std::exception& ex) {
+    throwRuntimeFromException(env, "initNative", ex);
+    return JNI_FALSE;
+  } catch (...) {
+    throwRuntimeUnknown(env, "initNative");
+    return JNI_FALSE;
+  }
 }
 
 JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_setWorld(
@@ -137,17 +197,35 @@ JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_setWorld
   jint minY,
   jint maxY
 ) {
-  const char* keyChars = worldKey != nullptr ? env->GetStringUTFChars(worldKey, nullptr) : nullptr;
-  std::string key = keyChars != nullptr ? keyChars : "runtime_memory";
-  if (keyChars != nullptr) {
-    env->ReleaseStringUTFChars(worldKey, keyChars);
-  }
+  try {
+    if (!isValidHeightRange(minY, maxY)) {
+      throwJavaException(env, "java/lang/IllegalArgumentException", buildInvalidHeightMessage(minY, maxY));
+      return;
+    }
 
-  g_worldState.setWorld(std::move(key), static_cast<int>(minY), static_cast<int>(maxY));
+    const ScopedUtfChars keyChars(env, worldKey);
+    if (hasPendingJavaException(env)) {
+      return;
+    }
+
+    std::string key = keyChars.get() != nullptr ? keyChars.get() : "runtime_memory";
+
+    g_worldState.setWorld(std::move(key), static_cast<int>(minY), static_cast<int>(maxY));
+  } catch (const std::exception& ex) {
+    throwRuntimeFromException(env, "setWorld", ex);
+  } catch (...) {
+    throwRuntimeUnknown(env, "setWorld");
+  }
 }
 
-JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_clearWorld(JNIEnv*, jclass) {
-  g_worldState.clear();
+JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_clearWorld(JNIEnv* env, jclass) {
+  try {
+    g_worldState.clear();
+  } catch (const std::exception& ex) {
+    throwRuntimeFromException(env, "clearWorld", ex);
+  } catch (...) {
+    throwRuntimeUnknown(env, "clearWorld");
+  }
 }
 
 JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_upsertChunk(
@@ -160,20 +238,32 @@ JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_upsertCh
   jlong sectionMask,
   jshortArray sectionFlags
 ) {
-  CriticalShortArray flags(env, sectionFlags);
-  if (hasPendingJavaException(env)) {
-    return;
-  }
+  try {
+    if (!isValidHeightRange(minY, maxY)) {
+      throwJavaException(env, "java/lang/IllegalArgumentException", buildInvalidHeightMessage(minY, maxY));
+      return;
+    }
 
-  g_worldState.upsertChunk(
-    static_cast<int>(chunkX),
-    static_cast<int>(chunkZ),
-    static_cast<int>(minY),
-    static_cast<int>(maxY),
-    static_cast<uint64_t>(sectionMask),
-    flags.data(),
-    flags.size()
-  );
+    const auto flags = toShortVector(env, sectionFlags);
+    if (hasPendingJavaException(env)) {
+      return;
+    }
+
+    const auto* sectionData = flags.empty() ? nullptr : reinterpret_cast<const uint16_t*>(flags.data());
+    g_worldState.upsertChunk(
+      static_cast<int>(chunkX),
+      static_cast<int>(chunkZ),
+      static_cast<int>(minY),
+      static_cast<int>(maxY),
+      static_cast<uint64_t>(sectionMask),
+      sectionData,
+      flags.size()
+    );
+  } catch (const std::exception& ex) {
+    throwRuntimeFromException(env, "upsertChunk", ex);
+  } catch (...) {
+    throwRuntimeUnknown(env, "upsertChunk");
+  }
 }
 
 JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_applyBlockUpdates(
@@ -181,24 +271,33 @@ JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_applyBlo
   jclass,
   jintArray updates
 ) {
-  const auto flat = toIntVector(env, updates);
-  if (flat.empty() || flat.size() % 4 != 0) {
-    return;
+  try {
+    const auto flat = toIntVector(env, updates);
+    if (hasPendingJavaException(env)) {
+      return;
+    }
+    if (flat.empty() || flat.size() % 4 != 0) {
+      return;
+    }
+
+    std::vector<v5pf::BlockUpdate> parsed;
+    parsed.reserve(flat.size() / 4);
+
+    for (size_t i = 0; i + 3 < flat.size(); i += 4) {
+      parsed.push_back(v5pf::BlockUpdate{
+        flat[i],
+        flat[i + 1],
+        flat[i + 2],
+        static_cast<uint16_t>(flat[i + 3])
+      });
+    }
+
+    g_worldState.applyUpdates(parsed);
+  } catch (const std::exception& ex) {
+    throwRuntimeFromException(env, "applyBlockUpdates", ex);
+  } catch (...) {
+    throwRuntimeUnknown(env, "applyBlockUpdates");
   }
-
-  std::vector<v5pf::BlockUpdate> parsed;
-  parsed.reserve(flat.size() / 4);
-
-  for (size_t i = 0; i + 3 < flat.size(); i += 4) {
-    parsed.push_back(v5pf::BlockUpdate{
-      flat[i],
-      flat[i + 1],
-      flat[i + 2],
-      static_cast<uint16_t>(flat[i + 3])
-    });
-  }
-
-  g_worldState.applyUpdates(parsed);
 }
 
 JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findPath(
@@ -214,146 +313,160 @@ JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findP
   jintArray avoidMeta,
   jdoubleArray avoidPenalty
 ) {
-  const auto startFlat = toIntVector(env, startPoints);
-  const auto endFlat = toIntVector(env, endPoints);
+  try {
+    const auto startFlat = toIntVector(env, startPoints);
+    const auto endFlat = toIntVector(env, endPoints);
+    if (hasPendingJavaException(env)) {
+      return nullptr;
+    }
 
-  const auto starts = parsePoints(startFlat);
-  const auto goals = parsePoints(endFlat);
+    const auto starts = parsePoints(startFlat);
+    const auto goals = parsePoints(endFlat);
 
-  if (starts.empty() || goals.empty()) {
-    return nullptr;
-  }
+    if (starts.empty() || goals.empty()) {
+      return nullptr;
+    }
 
-  const auto avoidMetaFlat = toIntVector(env, avoidMeta);
-  const auto avoidPenaltyFlat = toDoubleVector(env, avoidPenalty);
+    const auto avoidMetaFlat = toIntVector(env, avoidMeta);
+    const auto avoidPenaltyFlat = toDoubleVector(env, avoidPenalty);
+    if (hasPendingJavaException(env)) {
+      return nullptr;
+    }
 
-  std::vector<v5pf::AvoidZone> avoidZones;
-  if (!avoidMetaFlat.empty() && avoidMetaFlat.size() % 5 == 0) {
-    const size_t count = avoidMetaFlat.size() / 5;
-    if (avoidPenaltyFlat.size() == count) {
-      avoidZones.reserve(count);
-      for (size_t i = 0; i < count; i++) {
-        const size_t base = i * 5;
-        avoidZones.push_back(v5pf::AvoidZone{
-          avoidMetaFlat[base],
-          avoidMetaFlat[base + 1],
-          avoidMetaFlat[base + 2],
-          avoidMetaFlat[base + 3],
-          avoidMetaFlat[base + 4],
-          avoidPenaltyFlat[i],
-        });
+    std::vector<v5pf::AvoidZone> avoidZones;
+    if (!avoidMetaFlat.empty() && avoidMetaFlat.size() % 5 == 0) {
+      const size_t count = avoidMetaFlat.size() / 5;
+      if (avoidPenaltyFlat.size() == count) {
+        avoidZones.reserve(count);
+        for (size_t i = 0; i < count; i++) {
+          const size_t base = i * 5;
+          avoidZones.push_back(v5pf::AvoidZone{
+            avoidMetaFlat[base],
+            avoidMetaFlat[base + 1],
+            avoidMetaFlat[base + 2],
+            avoidMetaFlat[base + 3],
+            avoidMetaFlat[base + 4],
+            avoidPenaltyFlat[i],
+          });
+        }
       }
     }
-  }
 
-  v5pf::SearchParams params;
-  params.starts = starts;
-  params.goals = goals;
-  params.isFly = isFly == JNI_TRUE;
-  params.maxIterations = static_cast<int>(maxIterations);
-  params.heuristicWeight = static_cast<double>(heuristicWeight);
-  params.nonPrimaryStartPenalty = static_cast<double>(nonPrimaryStartPenalty);
-  params.moveOrderOffset = static_cast<int>(moveOrderOffset);
-  params.avoidZones = std::move(avoidZones);
+    v5pf::SearchParams params;
+    params.starts = starts;
+    params.goals = goals;
+    params.isFly = isFly == JNI_TRUE;
+    params.maxIterations = static_cast<int>(maxIterations);
+    params.heuristicWeight = static_cast<double>(heuristicWeight);
+    params.nonPrimaryStartPenalty = static_cast<double>(nonPrimaryStartPenalty);
+    params.moveOrderOffset = static_cast<int>(moveOrderOffset);
+    params.avoidZones = std::move(avoidZones);
 
-  g_cancelSearch.store(false);
-  const auto worldSnapshot = g_worldState.snapshot();
-  auto result = v5pf::findPath(worldSnapshot, params, g_cancelSearch);
+    g_cancelSearch.store(false);
+    const auto worldSnapshot = g_worldState.snapshot();
+    auto result = v5pf::findPath(worldSnapshot, params, g_cancelSearch);
 
-  if (!result.has_value() || result->points.empty()) {
-    return nullptr;
-  }
+    if (!result.has_value() || result->points.empty()) {
+      return nullptr;
+    }
 
-  const auto packedPath = packPoints(result->points);
-  const auto packedKeyPath = packPoints(result->keyPoints);
-  const auto packedPathFlags = toJIntVector(result->pathFlags);
-  const auto packedKeyNodeFlags = toJIntVector(result->keyNodeFlags);
-  const auto packedKeyNodeMetrics = toJIntVector(result->keyNodeMetrics);
+    const auto packedPath = packPoints(result->points);
+    const auto packedKeyPath = packPoints(result->keyPoints);
+    const auto packedPathFlags = toJIntVector(result->pathFlags);
+    const auto packedKeyNodeFlags = toJIntVector(result->keyNodeFlags);
+    const auto packedKeyNodeMetrics = toJIntVector(result->keyNodeMetrics);
 
-  jintArray pathArray = env->NewIntArray(static_cast<jsize>(packedPath.size()));
-  if (pathArray == nullptr) {
-    return nullptr;
-  }
-  env->SetIntArrayRegion(pathArray, 0, static_cast<jsize>(packedPath.size()), packedPath.data());
+    jintArray pathArray = env->NewIntArray(static_cast<jsize>(packedPath.size()));
+    if (pathArray == nullptr) {
+      return nullptr;
+    }
+    env->SetIntArrayRegion(pathArray, 0, static_cast<jsize>(packedPath.size()), packedPath.data());
 
-  jintArray keyPathArray = env->NewIntArray(static_cast<jsize>(packedKeyPath.size()));
-  if (keyPathArray == nullptr) {
-    return nullptr;
-  }
-  env->SetIntArrayRegion(keyPathArray, 0, static_cast<jsize>(packedKeyPath.size()), packedKeyPath.data());
+    jintArray keyPathArray = env->NewIntArray(static_cast<jsize>(packedKeyPath.size()));
+    if (keyPathArray == nullptr) {
+      return nullptr;
+    }
+    env->SetIntArrayRegion(keyPathArray, 0, static_cast<jsize>(packedKeyPath.size()), packedKeyPath.data());
 
-  jintArray pathFlagsArray = env->NewIntArray(static_cast<jsize>(packedPathFlags.size()));
-  if (pathFlagsArray == nullptr) {
-    return nullptr;
-  }
-  if (!packedPathFlags.empty()) {
-    env->SetIntArrayRegion(
+    jintArray pathFlagsArray = env->NewIntArray(static_cast<jsize>(packedPathFlags.size()));
+    if (pathFlagsArray == nullptr) {
+      return nullptr;
+    }
+    if (!packedPathFlags.empty()) {
+      env->SetIntArrayRegion(
+        pathFlagsArray,
+        0,
+        static_cast<jsize>(packedPathFlags.size()),
+        packedPathFlags.data()
+      );
+    }
+
+    jintArray keyNodeFlagsArray = env->NewIntArray(static_cast<jsize>(packedKeyNodeFlags.size()));
+    if (keyNodeFlagsArray == nullptr) {
+      return nullptr;
+    }
+    if (!packedKeyNodeFlags.empty()) {
+      env->SetIntArrayRegion(
+        keyNodeFlagsArray,
+        0,
+        static_cast<jsize>(packedKeyNodeFlags.size()),
+        packedKeyNodeFlags.data()
+      );
+    }
+
+    jintArray keyNodeMetricsArray = env->NewIntArray(static_cast<jsize>(packedKeyNodeMetrics.size()));
+    if (keyNodeMetricsArray == nullptr) {
+      return nullptr;
+    }
+    if (!packedKeyNodeMetrics.empty()) {
+      env->SetIntArrayRegion(
+        keyNodeMetricsArray,
+        0,
+        static_cast<jsize>(packedKeyNodeMetrics.size()),
+        packedKeyNodeMetrics.data()
+      );
+    }
+
+    jstring signature = env->NewStringUTF(result->signatureHex.c_str());
+    if (signature == nullptr) {
+      return nullptr;
+    }
+
+    jclass resultClass = env->FindClass("com/v5/swift/nativepath/NativePathResult");
+    if (resultClass == nullptr) {
+      return nullptr;
+    }
+
+    jmethodID ctor = env->GetMethodID(
+      resultClass,
+      "<init>",
+      "([I[IJIDI[I[I[ILjava/lang/String;)V"
+    );
+    if (ctor == nullptr) {
+      return nullptr;
+    }
+
+    return env->NewObject(
+      resultClass,
+      ctor,
+      pathArray,
+      keyPathArray,
+      static_cast<jlong>(result->timeMs),
+      static_cast<jint>(result->nodesExplored),
+      static_cast<jdouble>(result->nanosecondsPerNode),
+      static_cast<jint>(result->selectedStartIndex),
       pathFlagsArray,
-      0,
-      static_cast<jsize>(packedPathFlags.size()),
-      packedPathFlags.data()
-    );
-  }
-
-  jintArray keyNodeFlagsArray = env->NewIntArray(static_cast<jsize>(packedKeyNodeFlags.size()));
-  if (keyNodeFlagsArray == nullptr) {
-    return nullptr;
-  }
-  if (!packedKeyNodeFlags.empty()) {
-    env->SetIntArrayRegion(
       keyNodeFlagsArray,
-      0,
-      static_cast<jsize>(packedKeyNodeFlags.size()),
-      packedKeyNodeFlags.data()
-    );
-  }
-
-  jintArray keyNodeMetricsArray = env->NewIntArray(static_cast<jsize>(packedKeyNodeMetrics.size()));
-  if (keyNodeMetricsArray == nullptr) {
-    return nullptr;
-  }
-  if (!packedKeyNodeMetrics.empty()) {
-    env->SetIntArrayRegion(
       keyNodeMetricsArray,
-      0,
-      static_cast<jsize>(packedKeyNodeMetrics.size()),
-      packedKeyNodeMetrics.data()
+      signature
     );
-  }
-
-  jstring signature = env->NewStringUTF(result->signatureHex.c_str());
-  if (signature == nullptr) {
+  } catch (const std::exception& ex) {
+    throwRuntimeFromException(env, "findPath", ex);
+    return nullptr;
+  } catch (...) {
+    throwRuntimeUnknown(env, "findPath");
     return nullptr;
   }
-
-  jclass resultClass = env->FindClass("com/v5/swift/nativepath/NativePathResult");
-  if (resultClass == nullptr) {
-    return nullptr;
-  }
-
-  jmethodID ctor = env->GetMethodID(
-    resultClass,
-    "<init>",
-    "([I[IJIDI[I[I[ILjava/lang/String;)V"
-  );
-  if (ctor == nullptr) {
-    return nullptr;
-  }
-
-  return env->NewObject(
-    resultClass,
-    ctor,
-    pathArray,
-    keyPathArray,
-    static_cast<jlong>(result->timeMs),
-    static_cast<jint>(result->nodesExplored),
-    static_cast<jdouble>(result->nanosecondsPerNode),
-    static_cast<jint>(result->selectedStartIndex),
-    pathFlagsArray,
-    keyNodeFlagsArray,
-    keyNodeMetricsArray,
-    signature
-  );
 }
 
 JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findEtherwarpPath(
@@ -375,73 +488,87 @@ JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findE
   jdouble rewireEpsilon,
   jdouble eyeHeight
 ) {
-  v5pf::EtherwarpSearchParams params;
-  params.goal = v5pf::Int3{
-    static_cast<int>(goalX),
-    static_cast<int>(goalY),
-    static_cast<int>(goalZ),
-  };
-  params.startEyeX = static_cast<double>(startEyeX);
-  params.startEyeY = static_cast<double>(startEyeY);
-  params.startEyeZ = static_cast<double>(startEyeZ);
-  params.maxIterations = static_cast<int>(maxIterations);
-  params.threadCount = static_cast<int>(threadCount);
-  params.yawStep = static_cast<double>(yawStep);
-  params.pitchStep = static_cast<double>(pitchStep);
-  params.newNodeCost = static_cast<double>(newNodeCost);
-  params.heuristicWeight = static_cast<double>(heuristicWeight);
-  params.rayLength = static_cast<double>(rayLength);
-  params.rewireEpsilon = static_cast<double>(rewireEpsilon);
-  params.eyeHeight = static_cast<double>(eyeHeight);
+  try {
+    v5pf::EtherwarpSearchParams params;
+    params.goal = v5pf::Int3{
+      static_cast<int>(goalX),
+      static_cast<int>(goalY),
+      static_cast<int>(goalZ),
+    };
+    params.startEyeX = static_cast<double>(startEyeX);
+    params.startEyeY = static_cast<double>(startEyeY);
+    params.startEyeZ = static_cast<double>(startEyeZ);
+    params.maxIterations = static_cast<int>(maxIterations);
+    params.threadCount = static_cast<int>(threadCount);
+    params.yawStep = static_cast<double>(yawStep);
+    params.pitchStep = static_cast<double>(pitchStep);
+    params.newNodeCost = static_cast<double>(newNodeCost);
+    params.heuristicWeight = static_cast<double>(heuristicWeight);
+    params.rayLength = static_cast<double>(rayLength);
+    params.rewireEpsilon = static_cast<double>(rewireEpsilon);
+    params.eyeHeight = static_cast<double>(eyeHeight);
 
-  g_cancelSearch.store(false);
-  const auto worldSnapshot = g_worldState.snapshot();
-  auto result = v5pf::findEtherwarpPath(worldSnapshot, params, g_cancelSearch);
+    g_cancelSearch.store(false);
+    const auto worldSnapshot = g_worldState.snapshot();
+    auto result = v5pf::findEtherwarpPath(worldSnapshot, params, g_cancelSearch);
 
-  if (!result.has_value() || result->points.empty()) {
+    if (!result.has_value() || result->points.empty()) {
+      return nullptr;
+    }
+
+    const auto packedPath = packPoints(result->points);
+    const auto packedAngles = toJFloatVector(result->angles);
+
+    jintArray pathArray = env->NewIntArray(static_cast<jsize>(packedPath.size()));
+    if (pathArray == nullptr) {
+      return nullptr;
+    }
+    env->SetIntArrayRegion(pathArray, 0, static_cast<jsize>(packedPath.size()), packedPath.data());
+
+    jfloatArray angleArray = env->NewFloatArray(static_cast<jsize>(packedAngles.size()));
+    if (angleArray == nullptr) {
+      return nullptr;
+    }
+    if (!packedAngles.empty()) {
+      env->SetFloatArrayRegion(angleArray, 0, static_cast<jsize>(packedAngles.size()), packedAngles.data());
+    }
+
+    jclass resultClass = env->FindClass("com/v5/swift/nativepath/NativeEtherwarpResult");
+    if (resultClass == nullptr) {
+      return nullptr;
+    }
+
+    jmethodID ctor = env->GetMethodID(resultClass, "<init>", "([I[FJID)V");
+    if (ctor == nullptr) {
+      return nullptr;
+    }
+
+    return env->NewObject(
+      resultClass,
+      ctor,
+      pathArray,
+      angleArray,
+      static_cast<jlong>(result->timeMs),
+      static_cast<jint>(result->nodesExplored),
+      static_cast<jdouble>(result->nanosecondsPerNode)
+    );
+  } catch (const std::exception& ex) {
+    throwRuntimeFromException(env, "findEtherwarpPath", ex);
+    return nullptr;
+  } catch (...) {
+    throwRuntimeUnknown(env, "findEtherwarpPath");
     return nullptr;
   }
-
-  const auto packedPath = packPoints(result->points);
-  const auto packedAngles = toJFloatVector(result->angles);
-
-  jintArray pathArray = env->NewIntArray(static_cast<jsize>(packedPath.size()));
-  if (pathArray == nullptr) {
-    return nullptr;
-  }
-  env->SetIntArrayRegion(pathArray, 0, static_cast<jsize>(packedPath.size()), packedPath.data());
-
-  jfloatArray angleArray = env->NewFloatArray(static_cast<jsize>(packedAngles.size()));
-  if (angleArray == nullptr) {
-    return nullptr;
-  }
-  if (!packedAngles.empty()) {
-    env->SetFloatArrayRegion(angleArray, 0, static_cast<jsize>(packedAngles.size()), packedAngles.data());
-  }
-
-  jclass resultClass = env->FindClass("com/v5/swift/nativepath/NativeEtherwarpResult");
-  if (resultClass == nullptr) {
-    return nullptr;
-  }
-
-  jmethodID ctor = env->GetMethodID(resultClass, "<init>", "([I[FJID)V");
-  if (ctor == nullptr) {
-    return nullptr;
-  }
-
-  return env->NewObject(
-    resultClass,
-    ctor,
-    pathArray,
-    angleArray,
-    static_cast<jlong>(result->timeMs),
-    static_cast<jint>(result->nodesExplored),
-    static_cast<jdouble>(result->nanosecondsPerNode)
-  );
 }
 
-JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_cancelSearch(JNIEnv*, jclass) {
-  g_cancelSearch.store(true);
+JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_cancelSearch(JNIEnv* env, jclass) {
+  try {
+    g_cancelSearch.store(true);
+  } catch (const std::exception& ex) {
+    throwRuntimeFromException(env, "cancelSearch", ex);
+  } catch (...) {
+    throwRuntimeUnknown(env, "cancelSearch");
+  }
 }
 
 } // extern "C"

@@ -22,7 +22,18 @@ struct ChunkData {
   std::vector<uint16_t> voxels;
 
   [[nodiscard]] int sectionCount() const {
-    return static_cast<int>((maxY - minY + 15) >> 4);
+    const int64_t minY64 = static_cast<int64_t>(minY);
+    const int64_t maxY64 = static_cast<int64_t>(maxY);
+    if (maxY64 <= minY64) {
+      return 0;
+    }
+
+    const int64_t span = maxY64 - minY64;
+    const int64_t sections = (span + 15) >> 4;
+    if (sections > static_cast<int64_t>(std::numeric_limits<int>::max())) {
+      return std::numeric_limits<int>::max();
+    }
+    return static_cast<int>(sections);
   }
 
   void ensureLayout();
@@ -36,7 +47,7 @@ struct ChunkData {
 };
 
 using SharedChunkData = std::shared_ptr<const ChunkData>;
-using ChunkMap = std::unordered_map<int64_t, SharedChunkData>;
+using ChunkMap = std::unordered_map<uint64_t, SharedChunkData>;
 
 struct WorldData {
   std::string worldKey = "runtime_memory";

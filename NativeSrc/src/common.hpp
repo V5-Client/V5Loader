@@ -37,14 +37,16 @@ struct Int3 {
 };
 
 inline uint64_t coordKey(const int x, const int y, const int z) {
-  const uint64_t px = (static_cast<uint64_t>(x + 33554432) & 0x3FFFFFFULL);
-  const uint64_t py = (static_cast<uint64_t>(y + 2048) & 0xFFFULL);
-  const uint64_t pz = (static_cast<uint64_t>(z + 33554432) & 0x3FFFFFFULL);
+  const uint64_t px = ((static_cast<uint64_t>(x) + 33554432ULL) & 0x3FFFFFFULL);
+  const uint64_t py = ((static_cast<uint64_t>(y) + 2048ULL) & 0xFFFULL);
+  const uint64_t pz = ((static_cast<uint64_t>(z) + 33554432ULL) & 0x3FFFFFFULL);
   return (px << 38) | (py << 26) | pz;
 }
 
-inline int64_t chunkKey(const int x, const int z) {
-  return (static_cast<int64_t>(x) << 32) | (static_cast<uint32_t>(z));
+inline uint64_t chunkKey(const int x, const int z) {
+  const uint64_t px = static_cast<uint64_t>(static_cast<uint32_t>(x));
+  const uint64_t pz = static_cast<uint64_t>(static_cast<uint32_t>(z));
+  return (px << 32) | pz;
 }
 
 struct ActionCosts {
