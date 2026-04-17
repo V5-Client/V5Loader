@@ -99,27 +99,34 @@ inline double Runtime::flyHorizontalProgress(const int x, const int z) const {
   return calculateProgress(x, z);
 }
 
-inline bool Runtime::walkMove(const Int3& current, const Int3& delta, MoveOut& out) {
+inline bool Runtime::walkMove(const int currentX, const int currentY, const int currentZ, const Int3& delta, MoveOut& out) {
   if (delta.y == 0) {
     if (delta.x == 0 || delta.z == 0) {
-      return moveTraverse(current, delta.x, delta.z, out);
+      return moveTraverse(currentX, currentY, currentZ, delta.x, delta.z, out);
     }
-    return moveDiagonal(current, delta.x, delta.z, out);
+    return moveDiagonal(currentX, currentY, currentZ, delta.x, delta.z, out);
   }
 
   if (delta.y > 0) {
-    return moveAscend(current, delta.x, delta.z, out);
+    return moveAscend(currentX, currentY, currentZ, delta.x, delta.z, out);
   }
 
-  return moveDescend(current, delta.x, delta.z, out);
+  return moveDescend(currentX, currentY, currentZ, delta.x, delta.z, out);
 }
 
-inline bool Runtime::flyMove(const Int3& current, const Int3& delta, MoveOut& out) {
-  return moveFly(current, delta.x, delta.y, delta.z, calculateProgress(current.x, current.z), out);
+inline bool Runtime::flyMove(const int currentX, const int currentY, const int currentZ, const Int3& delta, MoveOut& out) {
+  return moveFly(currentX, currentY, currentZ, delta.x, delta.y, delta.z, calculateProgress(currentX, currentZ), out);
 }
 
-inline bool Runtime::flyMove(const Int3& current, const Int3& delta, const double progress, MoveOut& out) {
-  return moveFly(current, delta.x, delta.y, delta.z, progress, out);
+inline bool Runtime::flyMove(
+  const int currentX,
+  const int currentY,
+  const int currentZ,
+  const Int3& delta,
+  const double progress,
+  MoveOut& out
+) {
+  return moveFly(currentX, currentY, currentZ, delta.x, delta.y, delta.z, progress, out);
 }
 
 inline uint16_t Runtime::flagsAt(const int x, const int y, const int z) const {

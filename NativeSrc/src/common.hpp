@@ -43,6 +43,22 @@ inline uint64_t coordKey(const int x, const int y, const int z) {
   return (px << 38) | (py << 26) | pz;
 }
 
+inline int coordXFromKey(const uint64_t key) {
+  return static_cast<int>((key >> 38) & 0x3FFFFFFULL) - 33554432;
+}
+
+inline int coordYFromKey(const uint64_t key) {
+  return static_cast<int>((key >> 26) & 0xFFFULL) - 2048;
+}
+
+inline int coordZFromKey(const uint64_t key) {
+  return static_cast<int>(key & 0x3FFFFFFULL) - 33554432;
+}
+
+inline Int3 coordFromKey(const uint64_t key) {
+  return Int3{coordXFromKey(key), coordYFromKey(key), coordZFromKey(key)};
+}
+
 inline uint64_t chunkKey(const int x, const int z) {
   const uint64_t px = static_cast<uint64_t>(static_cast<uint32_t>(x));
   const uint64_t pz = static_cast<uint64_t>(static_cast<uint32_t>(z));

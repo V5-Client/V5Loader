@@ -105,9 +105,7 @@ struct SimplifiedEtherwarpPath {
 struct SharedState {
   explicit SharedState(const int reserveTarget)
     : heap(nodeF, nodeHeapPos) {
-    nodeX.reserve(static_cast<size_t>(reserveTarget));
-    nodeY.reserve(static_cast<size_t>(reserveTarget));
-    nodeZ.reserve(static_cast<size_t>(reserveTarget));
+    nodeCoord.reserve(static_cast<size_t>(reserveTarget));
     nodeParent.reserve(static_cast<size_t>(reserveTarget));
     nodeDepth.reserve(static_cast<size_t>(reserveTarget));
     nodeG.reserve(static_cast<size_t>(reserveTarget));
@@ -123,9 +121,7 @@ struct SharedState {
   std::mutex mutex;
   std::condition_variable cv;
 
-  std::vector<int> nodeX;
-  std::vector<int> nodeY;
-  std::vector<int> nodeZ;
+  std::vector<uint64_t> nodeCoord;
   std::vector<int> nodeParent;
   std::vector<int> nodeDepth;
   std::vector<double> nodeG;
@@ -577,10 +573,9 @@ inline bool isGoal(const Int3& pos, const Int3& goal) {
 }
 
 inline int createNode(SharedState& state, const Int3& pos, const double h) {
-  const int idx = static_cast<int>(state.nodeX.size());
-  state.nodeX.push_back(pos.x);
-  state.nodeY.push_back(pos.y);
-  state.nodeZ.push_back(pos.z);
+  const uint64_t key = coordKey(pos.x, pos.y, pos.z);
+  const int idx = static_cast<int>(state.nodeCoord.size());
+  state.nodeCoord.push_back(key);
   state.nodeParent.push_back(-1);
   state.nodeDepth.push_back(0);
   state.nodeG.push_back(std::numeric_limits<double>::infinity());
@@ -589,7 +584,7 @@ inline int createNode(SharedState& state, const Int3& pos, const double h) {
   state.nodeYaw.push_back(std::numeric_limits<float>::quiet_NaN());
   state.nodePitch.push_back(std::numeric_limits<float>::quiet_NaN());
   state.nodeHeapPos.push_back(-1);
-  state.coordToNode.emplace(coordKey(pos.x, pos.y, pos.z), idx);
+  state.coordToNode.emplace(key, idx);
   return idx;
 }
 
@@ -1241,11 +1236,7 @@ std::optional<EtherwarpSearchResult> findEtherwarpPath(
 
               BatchExpansion expansion;
               expansion.currIdx = currIdx;
-              expansion.current = Int3{
-                state.nodeX[static_cast<size_t>(currIdx)],
-                state.nodeY[static_cast<size_t>(currIdx)],
-                state.nodeZ[static_cast<size_t>(currIdx)]
-              };
+              expansion.current = coordFromKey(state.nodeCoord[static_cast<size_t>(currIdx)]);
               expansion.currG = state.nodeG[static_cast<size_t>(currIdx)];
               expansion.currDepth = state.nodeDepth[static_cast<size_t>(currIdx)];
               expansion.neighbors.reserve(512);
@@ -1387,11 +1378,7 @@ std::optional<EtherwarpSearchResult> findEtherwarpPath(
     chainYaw.reserve(chain.size());
     chainPitch.reserve(chain.size());
     for (const int idx : chain) {
-      chainPoints.push_back(Int3{
-        state.nodeX[static_cast<size_t>(idx)],
-        state.nodeY[static_cast<size_t>(idx)],
-        state.nodeZ[static_cast<size_t>(idx)]
-      });
+      chainPoints.push_back(coordFromKey(state.nodeCoord[static_cast<size_t>(idx)]));
       chainYaw.push_back(state.nodeYaw[static_cast<size_t>(idx)]);
       chainPitch.push_back(state.nodePitch[static_cast<size_t>(idx)]);
     }

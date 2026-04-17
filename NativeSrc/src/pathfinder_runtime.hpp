@@ -70,9 +70,9 @@ class Runtime {
   [[nodiscard]] double transientAvoidPenalty(int x, int y, int z) const;
   [[nodiscard]] double flyHorizontalProgress(int x, int z) const;
 
-  [[nodiscard]] bool walkMove(const Int3& current, const Int3& delta, MoveOut& out);
-  [[nodiscard]] bool flyMove(const Int3& current, const Int3& delta, MoveOut& out);
-  [[nodiscard]] bool flyMove(const Int3& current, const Int3& delta, double progress, MoveOut& out);
+  [[nodiscard]] bool walkMove(int currentX, int currentY, int currentZ, const Int3& delta, MoveOut& out);
+  [[nodiscard]] bool flyMove(int currentX, int currentY, int currentZ, const Int3& delta, MoveOut& out);
+  [[nodiscard]] bool flyMove(int currentX, int currentY, int currentZ, const Int3& delta, double progress, MoveOut& out);
 
  private:
   const WorldSnapshot& world_;
@@ -137,12 +137,12 @@ class Runtime {
   [[nodiscard]] double combinedPenalty(int edgeDist, int wallDist) const;
   [[nodiscard]] double pathPenalty(int x, int y, int z);
 
-  [[nodiscard]] bool moveTraverse(const Int3& current, int dx, int dz, MoveOut& out);
-  [[nodiscard]] bool moveDiagonal(const Int3& current, int dx, int dz, MoveOut& out);
-  [[nodiscard]] bool moveAscend(const Int3& current, int dx, int dz, MoveOut& out);
-  [[nodiscard]] bool moveDescend(const Int3& current, int dx, int dz, MoveOut& out);
+  [[nodiscard]] bool moveTraverse(int currentX, int currentY, int currentZ, int dx, int dz, MoveOut& out);
+  [[nodiscard]] bool moveDiagonal(int currentX, int currentY, int currentZ, int dx, int dz, MoveOut& out);
+  [[nodiscard]] bool moveAscend(int currentX, int currentY, int currentZ, int dx, int dz, MoveOut& out);
+  [[nodiscard]] bool moveDescend(int currentX, int currentY, int currentZ, int dx, int dz, MoveOut& out);
 
-  [[nodiscard]] bool moveFly(const Int3& current, int dx, int dy, int dz, double progress, MoveOut& out);
+  [[nodiscard]] bool moveFly(int currentX, int currentY, int currentZ, int dx, int dy, int dz, double progress, MoveOut& out);
   [[nodiscard]] bool shouldRejectConfined(int x, int y, int z, double progress);
   [[nodiscard]] double horizontalClearanceCost(int x, int y, int z, double progress);
   [[nodiscard]] double enclosureCost(int x, int y, int z, double progress);

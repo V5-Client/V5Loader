@@ -2,80 +2,80 @@
 
 namespace v5pf::detail {
 
-inline bool Runtime::moveTraverse(const Int3& current, const int dx, const int dz, MoveOut& out) {
-  const int destX = current.x + dx;
-  const int destZ = current.z + dz;
-  if (!isSafe(destX, current.y, destZ)) return false;
+inline bool Runtime::moveTraverse(const int currentX, const int currentY, const int currentZ, const int dx, const int dz, MoveOut& out) {
+  const int destX = currentX + dx;
+  const int destZ = currentZ + dz;
+  if (!isSafe(destX, currentY, destZ)) return false;
 
-  out.pos = {destX, current.y, destZ};
+  out.pos = {destX, currentY, destZ};
   out.cost = ActionCosts::SPRINT_ONE_BLOCK_TIME +
-    pathPenalty(destX, current.y, destZ) +
-    fluidPenalty(destX, current.y, destZ);
+    pathPenalty(destX, currentY, destZ) +
+    fluidPenalty(destX, currentY, destZ);
   return true;
 }
 
-inline bool Runtime::moveDiagonal(const Int3& current, const int dx, const int dz, MoveOut& out) {
-  const int destX = current.x + dx;
-  const int destZ = current.z + dz;
+inline bool Runtime::moveDiagonal(const int currentX, const int currentY, const int currentZ, const int dx, const int dz, MoveOut& out) {
+  const int destX = currentX + dx;
+  const int destZ = currentZ + dz;
 
-  if (!isSafe(destX, current.y, destZ)) return false;
+  if (!isSafe(destX, currentY, destZ)) return false;
 
-  if (!isPassable(destX, current.y, current.z)) return false;
-  if (!isPassable(current.x, current.y, destZ)) return false;
-  if (!isPassable(destX, current.y + 1, current.z)) return false;
-  if (!isPassable(current.x, current.y + 1, destZ)) return false;
+  if (!isPassable(destX, currentY, currentZ)) return false;
+  if (!isPassable(currentX, currentY, destZ)) return false;
+  if (!isPassable(destX, currentY + 1, currentZ)) return false;
+  if (!isPassable(currentX, currentY + 1, destZ)) return false;
 
-  out.pos = {destX, current.y, destZ};
+  out.pos = {destX, currentY, destZ};
   out.cost = ActionCosts::SPRINT_DIAGONAL_TIME +
-    pathPenalty(destX, current.y, destZ) +
-    fluidPenalty(destX, current.y, destZ);
+    pathPenalty(destX, currentY, destZ) +
+    fluidPenalty(destX, currentY, destZ);
   return true;
 }
 
-inline bool Runtime::moveAscend(const Int3& current, const int dx, const int dz, MoveOut& out) {
-  const int destX = current.x + dx;
-  const int destZ = current.z + dz;
+inline bool Runtime::moveAscend(const int currentX, const int currentY, const int currentZ, const int dx, const int dz, MoveOut& out) {
+  const int destX = currentX + dx;
+  const int destZ = currentZ + dz;
 
-  if (!isPassable(current.x, current.y + 2, current.z)) return false;
+  if (!isPassable(currentX, currentY + 2, currentZ)) return false;
 
-  if (!isSolid(destX, current.y, destZ)) return false;
-  if (isFenceLike(destX, current.y, destZ)) return false;
+  if (!isSolid(destX, currentY, destZ)) return false;
+  if (isFenceLike(destX, currentY, destZ)) return false;
 
-  if (!isPassable(destX, current.y + 1, destZ)) return false;
-  if (!isPassable(destX, current.y + 2, destZ)) return false;
+  if (!isPassable(destX, currentY + 1, destZ)) return false;
+  if (!isPassable(destX, currentY + 2, destZ)) return false;
 
-  const bool srcBottom = isBottomSlab(current.x, current.y - 1, current.z);
-  const bool destBottom = isBottomSlab(destX, current.y, destZ);
+  const bool srcBottom = isBottomSlab(currentX, currentY - 1, currentZ);
+  const bool destBottom = isBottomSlab(destX, currentY, destZ);
 
   if (srcBottom && !destBottom) return false;
 
-  const bool srcStair = isStairsBottom(current.x, current.y - 1, current.z);
-  const bool destStair = isStairsBottom(destX, current.y, destZ);
+  const bool srcStair = isStairsBottom(currentX, currentY - 1, currentZ);
+  const bool destStair = isStairsBottom(destX, currentY, destZ);
 
-  out.pos = {destX, current.y + 1, destZ};
+  out.pos = {destX, currentY + 1, destZ};
   double baseCost = ActionCosts::JUMP_UP_ONE_BLOCK_TIME;
   if (destBottom || srcStair || destStair) {
     baseCost = ActionCosts::SLAB_ASCENT_TIME;
   }
 
   out.cost = baseCost +
-    pathPenalty(destX, current.y + 1, destZ) +
-    fluidPenalty(destX, current.y + 1, destZ);
+    pathPenalty(destX, currentY + 1, destZ) +
+    fluidPenalty(destX, currentY + 1, destZ);
   return true;
 }
 
-inline bool Runtime::moveDescend(const Int3& current, const int dx, const int dz, MoveOut& out) {
-  const int destX = current.x + dx;
-  const int destZ = current.z + dz;
+inline bool Runtime::moveDescend(const int currentX, const int currentY, const int currentZ, const int dx, const int dz, MoveOut& out) {
+  const int destX = currentX + dx;
+  const int destZ = currentZ + dz;
 
-  if (!isPassable(destX, current.y + 1, destZ)) return false;
-  if (!isPassable(destX, current.y, destZ)) return false;
-  if (!isPassable(destX, current.y - 1, destZ)) return false;
+  if (!isPassable(destX, currentY + 1, destZ)) return false;
+  if (!isPassable(destX, currentY, destZ)) return false;
+  if (!isPassable(destX, currentY - 1, destZ)) return false;
 
   constexpr int maxFallHeight = 20;
 
   for (int dropBlocks = 1; dropBlocks <= maxFallHeight; dropBlocks++) {
-    const int floorY = current.y - dropBlocks - 1;
+    const int floorY = currentY - dropBlocks - 1;
 
     if (isPassable(destX, floorY, destZ)) {
       continue;
