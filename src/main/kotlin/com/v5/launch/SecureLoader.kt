@@ -484,19 +484,20 @@ object SecureLoader {
             return
         }
 
+        var updateStaged = false
         try {
-            val stageResult = stageModLoaderUpdateAndRelaunch(modLoaderBytes, result.candidates)
-            if (stageResult.autoRelaunchPlanned) {
-                println("[V5] V5ModLoader update staged. Relaunching Minecraft.")
-            } else {
-                println("[V5] V5ModLoader update staged. Waiting for Minecraft to close so the helper can swap jars.")
-                println("[V5] If Minecraft does not reopen automatically, wait a few minutes, then relaunch it manually.")
-            }
+            stageModLoaderUpdateAndRelaunch(modLoaderBytes, result.candidates)
+            updateStaged = true
+            println("[V5] V5ModLoader update staged. Closing Minecraft now so the helper can swap jars.")
         } catch (e: Exception) {
             println("[V5] Failed to stage V5ModLoader update.")
             e.printStackTrace()
         } finally {
             Arrays.fill(modLoaderBytes, 0)
+        }
+
+        if (updateStaged) {
+            forceCloseForModLoaderUpdate()
         }
     }
 
@@ -538,8 +539,8 @@ object SecureLoader {
     private fun stageModLoaderUpdateAndRelaunch(
         modLoaderBytes: ByteArray,
         candidates: List<File>
-    ): ModLoaderUpdater.StageResult {
-        return ModLoaderUpdater.stageUpdateAndRelaunch(
+    ) {
+        ModLoaderUpdater.stageUpdateAndRelaunch(
             gameDir = getGameDir(),
             modLoaderBytes = modLoaderBytes,
             candidates = candidates
@@ -799,6 +800,18 @@ object SecureLoader {
         isPluginLoaded = false
         isDevMode = false
         run()
+    }
+
+    private fun forceCloseForModLoaderUpdate(): Nothing {
+        try {
+            System.out.flush()
+            System.err.flush()
+            Thread.sleep(150)
+        } catch (_: Exception) {
+        }
+
+        Runtime.getRuntime().halt(0)
+        throw IllegalStateException("Failed to terminate process after staging V5ModLoader update")
     }
 
     private fun shutDownHard(): Nothing {

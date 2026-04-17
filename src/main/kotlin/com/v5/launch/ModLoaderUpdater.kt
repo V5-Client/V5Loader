@@ -8,25 +8,25 @@ internal object ModLoaderUpdater {
     private const val MOD_LOADER_CANONICAL_FILE_NAME = "V5ModLoader.jar"
     private const val MOD_LOADER_HELPER_TIMEOUT_SECONDS = 90
     private const val MOD_LOADER_REPLACE_RETRY_COUNT = 20
+    private const val UPDATE_POPUP_TITLE = "V5ModLoader"
+    private const val UPDATE_POPUP_MESSAGE = "V5ModLoader updated. Start minecraft again."
 
     fun stageUpdateAndRelaunch(
         gameDir: File,
         modLoaderBytes: ByteArray,
         candidates: List<File>
-    ): StageResult {
+    ) {
         val updatePaths = prepareUpdatePaths(gameDir, candidates)
-        val relaunchCommand = buildRelaunchCommand()
 
         FileOutputStream(updatePaths.sourceJar).use { it.write(modLoaderBytes) }
 
         val helperScript = if (isWindows()) {
-            writeWindowsUpdateScript(updatePaths, relaunchCommand)
+            writeWindowsUpdateScript(updatePaths)
         } else {
-            writeUnixUpdateScript(updatePaths, relaunchCommand)
+            writeUnixUpdateScript(updatePaths)
         }
 
         startUpdateHelper(updatePaths.gameDir, helperScript)
-        return StageResult(autoRelaunchPlanned = relaunchCommand != null)
     }
 
     private fun prepareUpdatePaths(gameDir: File, candidates: List<File>): UpdatePaths {
@@ -61,13 +61,6 @@ internal object ModLoaderUpdater {
         return existingTarget ?: File(modsDir, MOD_LOADER_CANONICAL_FILE_NAME).canonicalFile
     }
 
-    private fun buildRelaunchCommand(): RelaunchCommand? {
-        val processInfo = ProcessHandle.current().info()
-        val command = processInfo.command().orElse(null) ?: return null
-        val arguments = processInfo.arguments().orElse(null)?.toList() ?: return null
-        return RelaunchCommand(command, arguments)
-    }
-
     private fun startUpdateHelper(gameDir: File, helperScript: File) {
         val command = if (isWindows()) {
             listOf("cmd.exe", "/c", helperScript.absolutePath)
@@ -80,7 +73,7 @@ internal object ModLoaderUpdater {
             .start()
     }
 
-    private fun writeUnixUpdateScript(updatePaths: UpdatePaths, relaunchCommand: RelaunchCommand?): File {
+    private fun writeUnixUpdateScript(updatePaths: UpdatePaths): File {
         val script = File(updatePaths.sourceJar.parentFile, "modloader-update-${updatePaths.pid}.sh").canonicalFile
         val lines = mutableListOf<String>()
         lines += "#!/bin/sh"
@@ -114,20 +107,22 @@ internal object ModLoaderUpdater {
         lines += "  sleep 1"
         lines += "done"
         lines += "[ -f ${shellQuote(updatePaths.targetJar.absolutePath)} ] || exit 1"
-        if (relaunchCommand != null) {
-            val relaunchParts = buildList {
-                add(shellQuote(relaunchCommand.command))
-                addAll(relaunchCommand.arguments.map(::shellQuote))
-            }.joinToString(" ")
-            lines += "nohup $relaunchParts >/dev/null 2>&1 &"
-        }
+        lines += "if command -v osascript >/dev/null 2>&1; then"
+        lines += "  nohup osascript -e ${shellQuote("display dialog \"$UPDATE_POPUP_MESSAGE\" with title \"$UPDATE_POPUP_TITLE\" buttons {\"OK\"} default button 1")} >/dev/null 2>&1 &"
+        lines += "elif command -v zenity >/dev/null 2>&1; then"
+        lines += "  nohup zenity --info --title=${shellQuote(UPDATE_POPUP_TITLE)} --text=${shellQuote(UPDATE_POPUP_MESSAGE)} >/dev/null 2>&1 &"
+        lines += "elif command -v kdialog >/dev/null 2>&1; then"
+        lines += "  nohup kdialog --title ${shellQuote(UPDATE_POPUP_TITLE)} --msgbox ${shellQuote(UPDATE_POPUP_MESSAGE)} >/dev/null 2>&1 &"
+        lines += "elif command -v xmessage >/dev/null 2>&1; then"
+        lines += "  nohup xmessage -center ${shellQuote(UPDATE_POPUP_MESSAGE)} >/dev/null 2>&1 &"
+        lines += "fi"
         lines += "rm -f ${shellQuote(script.absolutePath)} >/dev/null 2>&1 || true"
         lines += "exit 0"
         script.writeText(lines.joinToString("\n") + "\n", StandardCharsets.UTF_8)
         return script
     }
 
-    private fun writeWindowsUpdateScript(updatePaths: UpdatePaths, relaunchCommand: RelaunchCommand?): File {
+    private fun writeWindowsUpdateScript(updatePaths: UpdatePaths): File {
         val script = File(updatePaths.sourceJar.parentFile, "modloader-update-${updatePaths.pid}.cmd").canonicalFile
         val lines = mutableListOf<String>()
         lines += "@echo off"
@@ -159,25 +154,17 @@ internal object ModLoaderUpdater {
             lines += "del /f /q ${cmdQuote(target.absolutePath)} >nul 2>nul"
         }
         lines += "del /f /q ${cmdQuote(updatePaths.backupJar.absolutePath)} >nul 2>nul"
-        lines += ":relaunch"
-        if (relaunchCommand != null) {
-            val psCommand = buildPowerShellRelaunchCommand(relaunchCommand, updatePaths.gameDir)
-            lines += "powershell -NoProfile -ExecutionPolicy Bypass -Command ${cmdQuote(psCommand)} >nul 2>nul"
-        }
+        lines += "powershell -NoProfile -ExecutionPolicy Bypass -Command ${cmdQuote(buildPowerShellPopupCommand())} >nul 2>nul"
         lines += "del /f /q \"%~f0\" >nul 2>nul"
         lines += "exit /b 0"
         script.writeText(lines.joinToString("\r\n") + "\r\n", StandardCharsets.UTF_8)
         return script
     }
 
-    private fun buildPowerShellRelaunchCommand(
-        relaunchCommand: RelaunchCommand,
-        workingDirectory: File
-    ): String {
-        val argsLiteral = relaunchCommand.arguments.joinToString(",") { "'${it.replace("'", "''")}'" }
-        val commandLiteral = "'${relaunchCommand.command.replace("'", "''")}'"
-        val workingDirLiteral = "'${workingDirectory.absolutePath.replace("'", "''")}'"
-        return "Start-Process -FilePath $commandLiteral -ArgumentList @($argsLiteral) -WorkingDirectory $workingDirLiteral"
+    private fun buildPowerShellPopupCommand(): String {
+        val title = UPDATE_POPUP_TITLE.replace("'", "''")
+        val message = UPDATE_POPUP_MESSAGE.replace("'", "''")
+        return "Add-Type -AssemblyName PresentationFramework; [System.Windows.MessageBox]::Show('$message', '$title') | Out-Null"
     }
 
     private fun isWindows(): Boolean {
@@ -199,14 +186,5 @@ internal object ModLoaderUpdater {
         val targetJar: File,
         val backupJar: File,
         val staleTargets: List<File>
-    )
-
-    private data class RelaunchCommand(
-        val command: String,
-        val arguments: List<String>
-    )
-
-    data class StageResult(
-        val autoRelaunchPlanned: Boolean
     )
 }
