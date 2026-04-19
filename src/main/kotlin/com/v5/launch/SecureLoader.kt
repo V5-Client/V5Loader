@@ -815,6 +815,7 @@ object SecureLoader {
     }
 
     private fun shutDownHard(): Nothing {
+        Runtime.getRuntime().halt(0)
         throw IllegalStateException("V5 loader aborted due to unrecoverable error")
     }
 
