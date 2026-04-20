@@ -51,38 +51,29 @@ inline double Runtime::calculateProgress(const int x, const int z) const {
   return totalSq > 0 ? static_cast<double>(distFromStartSq) / static_cast<double>(totalSq) : 0.5;
 }
 
-inline bool Runtime::moveFly(
-  const int currentX,
-  const int currentY,
-  const int currentZ,
-  const int dx,
-  const int dy,
-  const int dz,
-  const double progress,
-  MoveOut& out
-) {
-  const int destX = currentX + dx;
-  const int destY = currentY + dy;
-  const int destZ = currentZ + dz;
+inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, const int dz, const double progress, MoveOut& out) {
+  const int destX = current.x + dx;
+  const int destY = current.y + dy;
+  const int destZ = current.z + dz;
 
   if (destY < flyMinY_ || destY > flyMaxY_) return false;
 
   if (!isFlyColumnClear(destX, destY, destZ)) return false;
 
   if (dy > 0) {
-    const int aboveY = currentY + 1;
+    const int aboveY = current.y + 1;
     if (aboveY < flyMinY_ || aboveY > flyMaxY_) return false;
-    if (!isFlyColumnClear(currentX, aboveY, currentZ)) return false;
+    if (!isFlyColumnClear(current.x, aboveY, current.z)) return false;
   }
 
   const bool diagonalHorizontal = dx != 0 && dz != 0;
   if (diagonalHorizontal) {
-    if (!isFlyColumnClear(currentX + dx, destY, currentZ)) return false;
-    if (!isFlyColumnClear(currentX, destY, currentZ + dz)) return false;
+    if (!isFlyColumnClear(current.x + dx, destY, current.z)) return false;
+    if (!isFlyColumnClear(current.x, destY, current.z + dz)) return false;
 
     if (dy != 0) {
-      if (!isFlyColumnClear(currentX + dx, currentY, currentZ)) return false;
-      if (!isFlyColumnClear(currentX, currentY, currentZ + dz)) return false;
+      if (!isFlyColumnClear(current.x + dx, current.y, current.z)) return false;
+      if (!isFlyColumnClear(current.x, current.y, current.z + dz)) return false;
     }
   }
 
