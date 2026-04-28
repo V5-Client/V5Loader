@@ -3018,7 +3018,6 @@ public final class com/v5/api/V5Auth {
 public final class com/v5/event/Context {
 	public field camera Lnet/minecraft/client/render/Camera;
 	public field consumers Lnet/minecraft/client/render/VertexConsumerProvider;
-	public field frustum Lnet/minecraft/client/render/Frustum;
 	public fun <init> ()V
 	public final fun getCamera ()Lnet/minecraft/client/render/Camera;
 	public final fun getConsumers ()Lnet/minecraft/client/render/VertexConsumerProvider;
@@ -3120,6 +3119,10 @@ public class com/v5/mixins/BlockModelRendererMixin {
 	public fun <init> ()V
 }
 
+public abstract class com/v5/mixins/BlockRenderLayersMixin {
+	public fun <init> ()V
+}
+
 public abstract class com/v5/mixins/CameraMixin {
 	public fun <init> ()V
 	protected abstract fun setPos (Lnet/minecraft/util/math/Vec3d;)V
@@ -3201,10 +3204,6 @@ public abstract class com/v5/mixins/MultiplayerScreenMixin : net/minecraft/clien
 }
 
 public class com/v5/mixins/PlayerListHudMixin {
-	public fun <init> ()V
-}
-
-public abstract class com/v5/mixins/RenderLayersMixin {
 	public fun <init> ()V
 }
 
@@ -3610,8 +3609,8 @@ public final class com/v5/render/objects/RenderLayers {
 	public static final field INSTANCE Lcom/v5/render/objects/RenderLayers;
 	public static final field LINE_LIST Lnet/minecraft/client/render/RenderLayer;
 	public static final field LINE_LIST_ESP Lnet/minecraft/client/render/RenderLayer;
-	public static final field TRIANGLE_STRIP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
-	public static final field TRIANGLE_STRIP_ESP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
+	public static final field TRIANGLE_STRIP Lnet/minecraft/client/render/RenderLayer;
+	public static final field TRIANGLE_STRIP_ESP Lnet/minecraft/client/render/RenderLayer;
 }
 
 public final class com/v5/render/objects/RenderPipelines {

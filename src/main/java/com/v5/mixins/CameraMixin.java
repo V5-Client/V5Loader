@@ -4,7 +4,7 @@ import com.v5.storage.V5MixinStorage;
 import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BlockView;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,13 +17,7 @@ public abstract class CameraMixin {
     protected abstract void setPos(Vec3d pos);
 
     @Inject(method = "update", at = @At("TAIL"))
-    private void v5$applyCameraOverride(
-            BlockView area,
-            Entity focusedEntity,
-            boolean thirdPerson,
-            boolean inverseView,
-            float tickProgress,
-            CallbackInfo ci) {
+    private void v5$applyCameraOverride(World area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickProgress, CallbackInfo ci) {
         Object override = V5MixinStorage.get("cameraOverridePos", null);
         if (override instanceof Vec3d pos) {
             this.setPos(pos);

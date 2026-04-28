@@ -40,6 +40,7 @@ import net.minecraft.command.CommandSource
 import net.minecraft.command.EntitySelector
 import net.minecraft.command.argument.*
 import net.minecraft.command.argument.AngleArgumentType.Angle
+import net.minecraft.command.permission.PermissionPredicate
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.BuiltinRegistries
@@ -682,7 +683,7 @@ object DynamicCommands : CommandCollection() {
             Player.getPos().toVec3d(),
             Player.getRotation(),
             null,
-            0,
+            PermissionPredicate.NONE,
             Player.getName(),
             Player.getDisplayName(),
             null,

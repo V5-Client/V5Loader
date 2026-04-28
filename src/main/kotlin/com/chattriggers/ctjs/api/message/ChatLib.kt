@@ -1,11 +1,13 @@
 package com.chattriggers.ctjs.api.message
 
 import com.chattriggers.ctjs.api.client.Client
+import com.chattriggers.ctjs.api.client.Settings.toMC
 import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.internal.listeners.ClientListener
 import com.chattriggers.ctjs.internal.mixins.ChatHudAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import net.fabricmc.fabric.impl.command.client.ClientCommandInternals
+import net.minecraft.client.gui.hud.ChatHud
 import net.minecraft.client.gui.hud.ChatHudLine
 import net.minecraft.client.gui.hud.MessageIndicator
 import org.mozilla.javascript.regexp.NativeRegExp
@@ -129,7 +131,7 @@ object ChatLib {
      */
     @JvmStatic
     fun getChatWidth(): Int {
-        return Client.getChatGui()?.width ?: 0
+        return ChatHud.getWidth(toMC().chatWidth.getValue())
     }
 
     /**

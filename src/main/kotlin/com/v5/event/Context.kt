@@ -10,6 +10,6 @@ class Context {
   var matrixStack: MatrixStack? = null
   lateinit var consumers: VertexConsumerProvider
   lateinit var camera: Camera
-  lateinit var frustum: Frustum
+  var frustum: Frustum? = null
 
 }
