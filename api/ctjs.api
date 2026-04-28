@@ -3751,6 +3751,12 @@ public final class com/v5/swift/integration/HypixelManager {
 	public final fun onDisconnect ()V
 }
 
+public final class com/v5/swift/integration/WynncraftManager {
+	public static final field INSTANCE Lcom/v5/swift/integration/WynncraftManager;
+	public final fun init ()V
+	public final fun onDisconnect ()V
+}
+
 public final class com/v5/swift/io/WorldSerializer {
 	public static final field INSTANCE Lcom/v5/swift/io/WorldSerializer;
 	public final fun load (Ljava/lang/String;)Ljava/util/concurrent/ConcurrentHashMap;
