@@ -3,6 +3,7 @@ package com.v5.swift
 import com.v5.swift.cache.CachedWorld
 import com.v5.event.PacketEvent
 import com.v5.swift.integration.HypixelManager
+import com.v5.swift.integration.WynncraftManager
 import com.v5.swift.nativepath.NativePathfinderJNI
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -31,6 +32,7 @@ class Swift : ClientModInitializer {
   override fun onInitializeClient() {
     NativePathfinderJNI.initialize()
     HypixelManager.init()
+    WynncraftManager.init()
     CachedWorld.setWorldKey(null)
 
     PacketEvent.RECEIVE.register { packet ->
@@ -44,8 +46,8 @@ class Swift : ClientModInitializer {
     }
 
     ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
+      WynncraftManager.onDisconnect()
       HypixelManager.onDisconnect()
     }
   }
-
 }

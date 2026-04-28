@@ -37,6 +37,8 @@ object CachedWorld {
   private val loadCondition = loadLock.newCondition()
   @Volatile
   private var isCacheLoading = false
+  @Volatile
+  private var unlimitedChunkCache = false
 
   private fun chunkKey(x: Int, z: Int): Long =
     (x.toLong() shl 32) or (z.toLong() and 0xFFFFFFFFL)
@@ -119,6 +121,7 @@ object CachedWorld {
   fun processPendingChunks() {
     val mc = MinecraftClient.getInstance()
     val world = mc.world ?: return
+    if (isCacheLoading) return
 
     val minY = world.bottomY
     val maxY = world.topYInclusive + 1
@@ -170,7 +173,7 @@ object CachedWorld {
       syncChunkToNative(chunkX, chunkZ, cached)
     }
 
-    if (chunks.size > Swift.MAXIMUM_CACHED_CHUNKS) {
+    if (!unlimitedChunkCache && chunks.size > Swift.MAXIMUM_CACHED_CHUNKS) {
       val toRemove = chunks.size - Swift.MAXIMUM_CACHED_CHUNKS
       chunks.keys.take(toRemove).forEach { chunks.remove(it) }
     }
@@ -183,9 +186,7 @@ object CachedWorld {
     flushPendingNativeUpdates()
   }
 
-  fun saveAndClear(lobbyName: String) {
-    val mapToSave = chunks
-
+  private fun resetState() {
     chunks = ConcurrentHashMap(512)
     pendingChunks.clear()
     pendingNativeUpdates.clear()
@@ -194,6 +195,12 @@ object CachedWorld {
     pendingNativeResync = true
     nativeWorldToken = ""
     NativePathfinderBridge.clearWorld()
+  }
+
+  fun saveAndClear(lobbyName: String) {
+    val mapToSave = chunks
+    resetState()
+    setLoadingState(false)
 
     if (mapToSave.isNotEmpty()) {
       Swift.executor.submit {
@@ -207,25 +214,22 @@ object CachedWorld {
   }
 
   fun load(lobbyName: String) {
+    resetState()
+    val sessionMap = chunks
     setLoadingState(true)
 
     Swift.executor.submit {
       try {
         val loaded = WorldSerializer.load(lobbyName)
-
-        if (loaded != null) {
-          chunks = loaded
-          pendingChunks.clear()
-          pendingNativeUpdates.clear()
-          cacheKey = Long.MIN_VALUE
-          cacheChunk = null
-          pendingNativeResync = true
-          nativeWorldToken = ""
+        if (loaded != null && chunks === sessionMap) {
+          for ((key, chunk) in loaded) {
+            sessionMap.putIfAbsent(key, chunk)
+          }
         }
       } catch (e: Exception) {
         e.printStackTrace()
       } finally {
-        setLoadingState(false)
+        if (chunks === sessionMap) setLoadingState(false)
       }
     }
   }
@@ -249,20 +253,18 @@ object CachedWorld {
   }
 
   fun clear() {
-    chunks = ConcurrentHashMap(512)
-    pendingChunks.clear()
-    pendingNativeUpdates.clear()
-    cacheKey = Long.MIN_VALUE
-    cacheChunk = null
-    pendingNativeResync = true
-    nativeWorldToken = ""
-    NativePathfinderBridge.clearWorld()
+    resetState()
+    setLoadingState(false)
   }
 
   fun getCacheStats(): String {
     val currentChunks = chunks
     val ready = currentChunks.values.count { it.ready }
     return "Cached: $ready, Pending: ${pendingChunks.size}, Loading: $isCacheLoading"
+  }
+
+  fun setUnlimitedChunkCache(enabled: Boolean) {
+    unlimitedChunkCache = enabled
   }
 
   fun setWorldKey(newWorldKey: String?) {

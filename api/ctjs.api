@@ -3740,6 +3740,7 @@ public final class com/v5/swift/cache/CachedWorld {
 	public final fun onPacketReceive (Lnet/minecraft/network/packet/Packet;)V
 	public final fun processPendingChunks ()V
 	public final fun saveAndClear (Ljava/lang/String;)V
+	public final fun setUnlimitedChunkCache (Z)V
 	public final fun setWorldKey (Ljava/lang/String;)V
 	public final fun waitForLoad ()V
 }
