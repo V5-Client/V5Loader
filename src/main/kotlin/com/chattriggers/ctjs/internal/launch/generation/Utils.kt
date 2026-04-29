@@ -63,7 +63,7 @@ internal object Utils {
                 visit("longValue", constant.longValue)
             if (constant.doubleValue != null)
                 visit("doubleValue", constant.doubleValue)
-            if (constant.stringValue != null)
+            if (constant.stringValue != null)   
                 visit("stringValue", constant.stringValue)
             if (constant.classValue != null) {
                 val name = Mappings.getMappedClassName(constant.classValue)
