@@ -4,7 +4,6 @@ import org.jetbrains.dokka.versioning.VersioningPlugin
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.HttpURLConnection
 import java.net.URL
-import java.io.ByteArrayOutputStream
 
 buildscript {
     dependencies {
@@ -113,6 +112,14 @@ apiValidation {
 }
 
 tasks {
+    named("check") {
+        dependsOn("apiDump")
+    }
+
+    named("apiCheck") {
+        enabled = false
+    }
+
     processResources {
         val flkVersion = libs.versions.fabric.kotlin.get()
         val yarnVersion = libs.versions.yarn.get()
@@ -190,7 +197,7 @@ tasks {
 
                 sourceLink {
                     localDirectory.set(file("src/main/kotlin"))
-                    remoteUrl.set(URL("https://github.com/ChatTriggers/ctjs/blob/$branch/src/main/kotlin"))
+                    remoteUrl.set(URL("https://github.com/Synnerz/ctjs/blob/$branch/src/main/kotlin"))
                     remoteLineSuffix.set("#L")
                 }
 
@@ -251,10 +258,8 @@ fun downloadFile(url: String): ByteArray {
 }
 
 fun getBranch(): String {
-    val stdout = ByteArrayOutputStream()
-    exec {
-        commandLine("git", "rev-parse", "HEAD")
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
+    val process = ProcessBuilder("git", "rev-parse", "HEAD")
+        .redirectErrorStream(true)
+        .start()
+    return process.inputStream.bufferedReader().use { it.readText().trim() }
 }

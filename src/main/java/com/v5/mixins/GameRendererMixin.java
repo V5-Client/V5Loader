@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.v5.render.NVGRenderer;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.RenderTickCounter;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,12 +14,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class GameRendererMixin {
 
     @ModifyExpressionValue(
-            method = "render",
-            at =
-                    @At(
-                            value = "FIELD",
-                            target =
-                                    "Lnet/minecraft/client/option/GameOptions;pauseOnLostFocus:Z"))
+        method = "render",
+        at = @At(
+            value = "FIELD",
+            target = "Lnet/minecraft/client/option/GameOptions;pauseOnLostFocus:Z",
+            opcode = Opcodes.GETFIELD
+        )
+    )
     private boolean v5$render(boolean original) {
         return false;
     }

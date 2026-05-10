@@ -4,14 +4,12 @@ import com.mojang.blaze3d.pipeline.BlendFunction
 import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.DepthTestFunction
 import com.mojang.blaze3d.vertex.VertexFormat.DrawMode
+import net.minecraft.client.render.*
 import net.minecraft.client.gl.RenderPipelines as MinecraftRenderPipelines
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.RenderLayer.MultiPhase
-import net.minecraft.client.render.RenderPhase
-import net.minecraft.client.render.VertexFormats
 
 object RenderPipelines {
-    @JvmField val LINE_LIST: RenderPipeline = MinecraftRenderPipelines.register(
+    @JvmField
+    val LINE_LIST: RenderPipeline = MinecraftRenderPipelines.register(
         RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(MinecraftRenderPipelines.RENDERTYPE_LINES_SNIPPET))
             .withLocation("pipeline/lines")
             .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL, DrawMode.LINES)
@@ -22,7 +20,8 @@ object RenderPipelines {
             .build()
     )
 
-    @JvmField val LINE_LIST_ESP: RenderPipeline = MinecraftRenderPipelines.register(
+    @JvmField
+    val LINE_LIST_ESP: RenderPipeline = MinecraftRenderPipelines.register(
         RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(MinecraftRenderPipelines.RENDERTYPE_LINES_SNIPPET))
             .withLocation("pipeline/lines")
             .withShaderDefine("shad")
@@ -34,7 +33,8 @@ object RenderPipelines {
             .build()
     )
 
-    @JvmField val TRIANGLE_STRIP: RenderPipeline = MinecraftRenderPipelines.register(
+    @JvmField
+    val TRIANGLE_STRIP: RenderPipeline = MinecraftRenderPipelines.register(
         RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(MinecraftRenderPipelines.POSITION_COLOR_SNIPPET))
             .withLocation("pipeline/debug_filled_box")
             .withCull(false)
@@ -45,7 +45,8 @@ object RenderPipelines {
             .build()
     )
 
-    @JvmField val TRIANGLE_STRIP_ESP: RenderPipeline = MinecraftRenderPipelines.register(
+    @JvmField
+    val TRIANGLE_STRIP_ESP: RenderPipeline = MinecraftRenderPipelines.register(
         RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(MinecraftRenderPipelines.POSITION_COLOR_SNIPPET))
             .withLocation("pipeline/debug_filled_box")
             .withCull(false)
@@ -58,39 +59,37 @@ object RenderPipelines {
 }
 
 object RenderLayers {
-    @JvmField val LINE_LIST: RenderLayer = RenderLayer.of(
+    @JvmField
+    val LINE_LIST: RenderLayer = RenderLayer.of(
         "line-list",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
-        RenderPipelines.LINE_LIST,
-        RenderLayer.MultiPhaseParameters.builder()
-            .layering(RenderPhase.VIEW_OFFSET_Z_LAYERING)
-            .build(false)
+        RenderSetup.builder(RenderPipelines.LINE_LIST)
+            .layeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+            .outputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+            .build()
     )
 
-    @JvmField val LINE_LIST_ESP: RenderLayer = RenderLayer.of(
+    @JvmField
+    val LINE_LIST_ESP: RenderLayer = RenderLayer.of(
         "line-list-esp",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
-        RenderPipelines.LINE_LIST_ESP,
-        RenderLayer.MultiPhaseParameters.builder().build(false)
+        RenderSetup.builder(RenderPipelines.LINE_LIST_ESP)
+            .outputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+            .build()
     )
 
-    @JvmField val TRIANGLE_STRIP: MultiPhase = RenderLayer.of(
+    @JvmField
+    val TRIANGLE_STRIP: RenderLayer = RenderLayer.of(
         "triangle_strip",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
-        false,
-        true,
-        RenderPipelines.TRIANGLE_STRIP,
-        RenderLayer.MultiPhaseParameters.builder()
-            .layering(RenderPhase.VIEW_OFFSET_Z_LAYERING)
-            .build(false)
+        RenderSetup.builder(RenderPipelines.TRIANGLE_STRIP)
+            .layeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+            .translucent()
+            .build()
     )
 
-    @JvmField val TRIANGLE_STRIP_ESP: MultiPhase = RenderLayer.of(
+    @JvmField
+    val TRIANGLE_STRIP_ESP: RenderLayer = RenderLayer.of(
         "triangle_strip_esp",
-        RenderLayer.DEFAULT_BUFFER_SIZE,
-        false,
-        true,
-        RenderPipelines.TRIANGLE_STRIP_ESP,
-        RenderLayer.MultiPhaseParameters.builder().build(false)
+        RenderSetup.builder(RenderPipelines.TRIANGLE_STRIP_ESP)
+            .translucent()
+            .build()
     )
 }
