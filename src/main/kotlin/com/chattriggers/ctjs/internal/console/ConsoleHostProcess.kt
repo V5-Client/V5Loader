@@ -44,7 +44,6 @@ import kotlin.io.path.Path
  * `<number of loaders> + 1` sockets (the extra 1 is for the generic console).
  */
 object ConsoleHostProcess : Initializer {
-    private var PORT = 9002
     @Volatile
     private var running = false
     @Volatile
@@ -87,73 +86,87 @@ object ConsoleHostProcess : Initializer {
             URLDecoder.decode(str, Charset.defaultCharset())
         }
 
-        process = ProcessBuilder()
-            .directory(File("."))
-            .command(
-                Path(System.getProperty("java.home"), "bin", "java").toString(),
-                ConsoleClientProcess::class.qualifiedName,
-                PORT.toString(),
-                ProcessHandle.current().pid().toString(),
-            )
-            .apply {
-                environment()["CLASSPATH"] = urls
-            }
-            .start()
+        val server = ServerSocket(0, 50, InetAddress.getLoopbackAddress())
+        serverSocket = server
 
-        while (running) {
-            val server = ServerSocket(PORT, 50, InetAddress.getLoopbackAddress())
-            serverSocket = server
-            server.accept().use { socket ->
-                socketOut = PrintWriter(socket.outputStream, true, Charsets.UTF_8)
-                val socketIn = BufferedReader(InputStreamReader(socket.inputStream, Charsets.UTF_8))
-                connected = true
-
-                val initMessage = InitMessage(
-                    CTJS.MOD_VERSION,
-                    ConfigUpdateMessage.constructFromConfig(Config.ConsoleSettings.make()),
-                    this::class.java.getResourceAsStream("/assets/ctjs/FiraCode-Regular.otf")?.readAllBytes(),
+        try {
+            process = ProcessBuilder()
+                .directory(File("."))
+                .command(
+                    Path(System.getProperty("java.home"), "bin", "java").toString(),
+                    ConsoleClientProcess::class.qualifiedName,
+                    server.localPort.toString(),
+                    ProcessHandle.current().pid().toString(),
                 )
+                .apply {
+                    environment()["CLASSPATH"] = urls
+                }
+                .start()
 
-                synchronized(socketOut) {
-                    socketOut.println(Json.encodeToString<H2CMessage>(initMessage))
-                    pendingMessages.forEach { socketOut.println(Json.encodeToString<H2CMessage>(it)) }
+            while (running) {
+                val socket = try {
+                    server.accept()
+                } catch (e: Throwable) {
+                    if (running)
+                        throw e
+
+                    break
                 }
 
-                while (running) {
-                    val messageText = try {
-                        socketIn.readLine()
-                    } catch (_: Throwable) {
-                        println("Received error, reopening the connection")
-                        return@use
+                socket.use {
+                    socketOut = PrintWriter(it.outputStream, true, Charsets.UTF_8)
+                    val socketIn = BufferedReader(InputStreamReader(it.inputStream, Charsets.UTF_8))
+                    connected = true
+
+                    val initMessage = InitMessage(
+                        CTJS.MOD_VERSION,
+                        ConfigUpdateMessage.constructFromConfig(Config.ConsoleSettings.make()),
+                        this::class.java.getResourceAsStream("/assets/ctjs/FiraCode-Regular.otf")?.readAllBytes(),
+                    )
+
+                    synchronized(socketOut) {
+                        socketOut.println(Json.encodeToString<H2CMessage>(initMessage))
+                        pendingMessages.forEach { socketOut.println(Json.encodeToString<H2CMessage>(it)) }
                     }
 
-                    if (messageText == null) {
-                        Thread.sleep(50)
-                        continue
-                    }
-
-                    when (val message = Json.decodeFromString<C2HMessage>(messageText)) {
-                        is EvalTextMessage -> {
-                            val result = JSLoader.eval(message.string) ?: continue
-                            trySendMessage(EvalResultMessage(message.id, result))
+                    while (running) {
+                        val messageText = try {
+                            socketIn.readLine()
+                        } catch (_: Throwable) {
+                            println("Received error, reopening the connection")
+                            return@use
                         }
-                        is FontSizeMessage -> {
-                            val newValue = Config.consoleFontSize + message.delta
 
-                            Config.consoleFontSize = newValue.coerceIn(6..32)
-                            onConsoleSettingsChanged(Config.ConsoleSettings.make())
+                        if (messageText == null) {
+                            Thread.sleep(50)
+                            continue
                         }
-                        ReloadCTMessage -> Client.scheduleTask { CTJS.load() }
+
+                        when (val message = Json.decodeFromString<C2HMessage>(messageText)) {
+                            is EvalTextMessage -> {
+                                val result = JSLoader.eval(message.string) ?: continue
+                                trySendMessage(EvalResultMessage(message.id, result))
+                            }
+                            is FontSizeMessage -> {
+                                val newValue = Config.consoleFontSize + message.delta
+
+                                Config.consoleFontSize = newValue.coerceIn(6..32)
+                                onConsoleSettingsChanged(Config.ConsoleSettings.make())
+                            }
+                            ReloadCTMessage -> Client.scheduleTask { CTJS.load() }
+                        }
                     }
                 }
+
+                connected = false
             }
-
-            serverSocket = null
+        } finally {
             connected = false
+            serverSocket = null
+            runCatching { server.close() }
+            process?.destroy()
+            process = null
         }
-
-        process?.destroy()
-        process = null
     }
 
     fun clear() = trySendMessage(ClearConsoleMessage)
