@@ -93,9 +93,6 @@ object RenderUtils {
             cameraZ = camera.cameraPos.z
             cameraRotation = camera.rotation
 
-            matrices.push()
-            matrices.translate(-cameraX.toFloat(), -cameraY.toFloat(), -cameraZ.toFloat())
-
             if (localBoxCount > 0) {
                 renderBoxBatch(matrices, localBoxCount)
             }
@@ -104,16 +101,11 @@ object RenderUtils {
                 renderLineBatch(matrices, frustum, localLineCount)
             }
 
-            matrices.pop()
-
             if (localTextCount > 0) {
                 renderTextBatch(matrices, localTextCount)
             }
 
             bufferSource.draw()
-
-            // FIXME
-//            RenderSystem.lineWidth(1.0f)
         }
     }
 
@@ -230,13 +222,16 @@ object RenderUtils {
                 currentLineWidth = -1f
             }
 
-            if (!filled) {
+            val lineWidth = if (filled) {
+                1f
+            } else {
                 val thicknessRaw = if (depth) key - 2 else key - (2 + 256)
-                val lineWidth = (thicknessRaw / 10f).coerceAtLeast(0.1f)
+                (thicknessRaw / 10f).coerceAtLeast(0.1f)
+            }
+
+            if (!filled) {
                 if (lineWidth != currentLineWidth) {
                     bufferSource.draw()
-                    // FIXME
-//                    RenderSystem.lineWidth(lineWidth)
                     currentLineWidth = lineWidth
                 }
             }
@@ -254,21 +249,9 @@ object RenderUtils {
                 val z2 = boxData[i + 5] - cameraZ
 
                 if (filled) {
-                    // FIXME
-//                    VertexRendering.drawFilledBox(
-//                        matrices, buffer,
-//                        boxData[i].toFloat(), boxData[i + 1].toFloat(), boxData[i + 2].toFloat(),
-//                        boxData[i + 3].toFloat(), boxData[i + 4].toFloat(), boxData[i + 5].toFloat(),
-//                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
-//                    )
+                    writeFilledBox(entry, buffer, x1, y1, z1, x2, y2, z2, color)
                 } else {
-                    // FIXME
-//                    VertexRendering.drawBox(
-//                        entry, buffer,
-//                        boxData[i], boxData[i + 1], boxData[i + 2],
-//                        boxData[i + 3], boxData[i + 4], boxData[i + 5],
-//                        boxColors[ci], boxColors[ci + 1], boxColors[ci + 2], boxColors[ci + 3]
-//                    )
+                    writeBox(entry, buffer, x1, y1, z1, x2, y2, z2, color, lineWidth)
                 }
             }
         }
@@ -297,8 +280,6 @@ object RenderUtils {
                 bufferSource.draw()
                 currentLayer = layer
                 currentLineWidth = lineWidth
-                // FIXME
-//                RenderSystem.lineWidth(lineWidth)
             }
 
             val buffer = bufferSource.getBuffer(layer)
