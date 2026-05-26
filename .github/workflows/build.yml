@@ -52,11 +52,12 @@ jobs:
         run: npm install -g wrangler@latest --prefer-offline
 
       - name: Upload Loader to Cloudflare R2
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/1.21.11' }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          sha256sum build/libs/V5-Loader.jar | awk '{print $1}' > V5-Loader.jar.sha256
-          wrangler r2 object put v5-builds/V5-Loader.jar.sha256 --file V5-Loader.jar.sha256 --remote
-          wrangler r2 object put v5-builds/V5-Loader.jar --file build/libs/V5-Loader.jar --remote
+          test -f build/libs/V5-Loader.jar
+          sha256sum build/libs/V5-Loader.jar | awk '{print $1}' > V5-Loader-1.21.10.jar.sha256
+          wrangler r2 object put v5-builds/V5-Loader-1.21.10.jar.sha256 --file V5-Loader-1.21.10.jar.sha256 --remote
+          wrangler r2 object put v5-builds/V5-Loader-1.21.10.jar --file build/libs/V5-Loader.jar --remote
