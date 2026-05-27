@@ -22,9 +22,6 @@
             "com.chattriggers.ctjs.CTJS",
             "com.v5.swift.Swift",
             "com.v5.Entrypoint"
-        ],
-        "modmenu": [
-            "com.chattriggers.ctjs.internal.compat.ModMenuEntry"
         ]
     },
     "mixins": ["ctjs.mixins.json", "v5.mixins.json"],

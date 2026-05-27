@@ -3182,11 +3182,7 @@ public class com/v5/mixins/LightTextureManagerMixin {
 }
 
 public class com/v5/mixins/MinecraftClientMixin {
-	public field crosshairTarget Lnet/minecraft/util/hit/HitResult;
-	public field currentScreen Lnet/minecraft/client/gui/screen/Screen;
-	public field interactionManager Lnet/minecraft/client/network/ClientPlayerInteractionManager;
 	public field options Lnet/minecraft/client/option/GameOptions;
-	public field player Lnet/minecraft/client/network/ClientPlayerEntity;
 	public fun <init> ()V
 }
 

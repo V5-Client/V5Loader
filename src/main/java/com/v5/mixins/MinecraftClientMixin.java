@@ -2,35 +2,21 @@ package com.v5.mixins;
 
 import com.v5.storage.V5MixinStorage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.Perspective;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftClient.class)
 public class MinecraftClientMixin {
-    @Unique private static final boolean MAGICAL_TRUTH = true;
 
     @Shadow @Final public GameOptions options;
-    @Shadow @Nullable public net.minecraft.client.gui.screen.Screen currentScreen;
-    @Shadow @Nullable public ClientPlayerEntity player;
-    @Shadow @Nullable public ClientPlayerInteractionManager interactionManager;
-    @Shadow @Nullable public HitResult crosshairTarget;
-    @Shadow private int itemUseCooldown;
 
     @Inject(method = "handleInputEvents()V", at = @At("HEAD"))
     private void v5$handleInputEvents(CallbackInfo ci) {
@@ -42,43 +28,6 @@ public class MinecraftClientMixin {
             if (key.wasPressed()) {
                 key.setPressed(false);
             }
-        }
-    }
-
-    @Inject(method = "tick()V", at = @At("HEAD"))
-    private void v5$tickClick(CallbackInfo ci) {
-        boolean isNukerActive = V5MixinStorage.getBoolean("nukerActive", false);
-        boolean shouldClick = V5MixinStorage.getBoolean("shouldClick", false);
-        boolean macroEnabled = V5MixinStorage.getBoolean("macroEnabled", false);
-
-        if (!macroEnabled || (!isNukerActive && !shouldClick)) {
-            return;
-        }
-
-        if (currentScreen == null || player == null || interactionManager == null || !MAGICAL_TRUTH) {
-            return;
-        }
-
-        if (itemUseCooldown > 0) {
-            return;
-        }
-
-        player.swingHand(Hand.MAIN_HAND);
-
-        HitResult target = crosshairTarget;
-        if (target == null) {
-            return;
-        }
-
-        HitResult.Type type = target.getType();
-        if (type == HitResult.Type.ENTITY && target instanceof EntityHitResult entityTarget) {
-            interactionManager.attackEntity(player, entityTarget.getEntity());
-        } else if (type == HitResult.Type.BLOCK && target instanceof BlockHitResult blockTarget) {
-            interactionManager.attackBlock(blockTarget.getBlockPos(), blockTarget.getSide());
-        }
-
-        if (!isNukerActive) {
-            V5MixinStorage.set("shouldClick", false);
         }
     }
 
