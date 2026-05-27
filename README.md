@@ -76,13 +76,7 @@ cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release; cmake --build 
 
 ### Install built mod
 
-After building, place the jar at:
-
-- `.minecraft/V5/V5-Loader.jar`
-
-You must have the [V5ModLoader.jar](https://rdbt.top/docs/getting-started) in your mods folder for it to work.
-
-The V5ModLoader simply handles V5 user accounts to prevent abuse.
+After building, copy `build/libs/V5-Loader.jar` into `.minecraft/mods/` together with [V5ModLoader.jar](https://rdbt.top/docs/getting-started). V5ModLoader handles authentication and passes the JWT to the loader.
 
 ## Working on the JavaScript Module ([V5](https://github.com/V5-Client/V5))
 
