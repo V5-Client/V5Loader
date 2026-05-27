@@ -16,13 +16,8 @@ import java.io.FileOutputStream
 import java.net.URI
 import java.net.URL
 import java.nio.charset.StandardCharsets
-import java.security.KeyFactory
-import java.security.KeyPairGenerator
-import java.security.PrivateKey
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
-import java.security.spec.ECGenParameterSpec
-import java.security.spec.X509EncodedKeySpec
 import java.util.Arrays
 import java.util.Base64
 import java.util.zip.ZipEntry
@@ -33,23 +28,16 @@ import javax.net.ssl.SSLPeerUnverifiedException
 import javax.net.ssl.TrustManager
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
-import javax.crypto.Cipher
-import javax.crypto.KeyAgreement
-import javax.crypto.Mac
-import javax.crypto.spec.GCMParameterSpec
-import javax.crypto.spec.SecretKeySpec
 
 object SecureLoader {
     private const val BACKEND_URL = "https://backend.rdbt.top"
     private const val DISK_MODULE_NAME = "V5"
-    private const val DOWNLOAD_KDF_INFO = "v5-download-kek-v2"
     private const val LOADER_USER_AGENT = "V5Loader/1.1"
     private const val RAT_DETECTED_DOCS_URL = "https://rdbt.top/docs/rat-detected"
     private const val BACKEND_SPKI_SHA256_HEX = "3baa33ee9ce47074b7599de9c5cc64fe4906cb66b5500179c86a0df60b658d94"
     private const val TOKEN_EXPIRY_SKEW_SECONDS = 60L
     private const val SESSION_DIR_NAME = ".v5"
     private const val SESSION_FILE_NAME = "session.json"
-    private val rng = SecureRandom()
 
     private val jsonParser = Json {
         useAlternativeNames = true
@@ -533,7 +521,7 @@ object SecureLoader {
     }
 
     private fun downloadModLoaderJar(token: String): ByteArray {
-        return downloadEncryptedAsset("/api/download/modloader", token)
+        return downloadAsset("/api/download/modloader", token)
     }
 
     private fun stageModLoaderUpdateAndRelaunch(
@@ -565,75 +553,34 @@ object SecureLoader {
     }
 
     private fun downloadZip(token: String): ByteArray {
-        return downloadEncryptedAsset("/api/download/v5", token)
+        return downloadAsset("/api/download/v5", token)
     }
 
-    private fun downloadEncryptedAsset(endpointPath: String, token: String): ByteArray {
-        val keyGen = KeyPairGenerator.getInstance("EC")
-        keyGen.initialize(ECGenParameterSpec("secp256r1"))
-        val clientKeyPair = keyGen.generateKeyPair()
-        val clientPub = Base64.getEncoder().encodeToString(clientKeyPair.public.encoded)
-
-        val clientNonceBytes = ByteArray(16)
-        rng.nextBytes(clientNonceBytes)
-        val clientNonce = Base64.getEncoder().encodeToString(clientNonceBytes)
-
+    private fun downloadAsset(endpointPath: String, token: String): ByteArray {
         val connection = openPinnedConnection("$BACKEND_URL$endpointPath").apply {
             setRequestProperty("Authorization", "Bearer $token")
             setRequestProperty("User-Agent", LOADER_USER_AGENT)
-            setRequestProperty("X-V5-Client-Pub", clientPub)
-            setRequestProperty("X-V5-Client-Nonce", clientNonce)
             connectTimeout = 10000
             readTimeout = 30000
         }
 
         try {
             val responseCode = connection.responseCode
-            val responseText = try {
-                val stream = if (responseCode in 200..299) connection.inputStream else connection.errorStream
-                stream?.bufferedReader()?.use { it.readText() } ?: ""
-            } catch (_: Exception) {
-                ""
+            if (responseCode !in 200..299) {
+                val responseText = try {
+                    connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+                } catch (_: Exception) {
+                    ""
+                }
+                val errorMessage = try {
+                    jsonParser.parseToJsonElement(responseText).jsonObject["error"]?.jsonPrimitive?.contentOrNull
+                } catch (_: Exception) {
+                    null
+                }
+                throw IOException("Download failed: ${errorMessage ?: "Unknown error"} (code: $responseCode)")
             }
 
-            val json = try {
-                jsonParser.parseToJsonElement(responseText).jsonObject
-            } catch (_: Exception) {
-                null
-            }
-
-            if (responseCode != 200 || json?.get("success")?.jsonPrimitive?.booleanOrNull != true) {
-                val errorMessage = json?.get("error")?.jsonPrimitive?.contentOrNull ?: "Unknown error"
-                throw IOException("Download failed: $errorMessage (code: $responseCode)")
-            }
-
-            val payload = json["payload"]?.jsonObject ?: throw IOException("Missing payload")
-            val version = payload["version"]?.jsonPrimitive?.contentOrNull
-            val serverPub = payload["server_pub_key"]?.jsonPrimitive?.contentOrNull
-            val serverNonce = payload["server_nonce"]?.jsonPrimitive?.contentOrNull
-            val kdfSalt = payload["kdf_salt"]?.jsonPrimitive?.contentOrNull
-            val wrapIv = payload["wrap_iv"]?.jsonPrimitive?.contentOrNull
-            val wrappedKey = payload["wrapped_key"]?.jsonPrimitive?.contentOrNull
-            val fileIv = payload["file_iv"]?.jsonPrimitive?.contentOrNull
-            val contentStr = payload["content"]?.jsonPrimitive?.contentOrNull
-
-            if (
-                version != "2" || serverPub == null || serverNonce == null ||
-                kdfSalt == null || wrapIv == null || wrappedKey == null ||
-                fileIv == null || contentStr == null
-            ) {
-                throw IOException("Invalid payload structure")
-            }
-
-            return decryptEnvelope(
-                encryptedBase64 = contentStr,
-                fileIvBase64 = fileIv,
-                wrappedKeyBase64 = wrappedKey,
-                wrapIvBase64 = wrapIv,
-                serverPublicKeyBase64 = serverPub,
-                kdfSaltBase64 = kdfSalt,
-                clientPrivateKey = clientKeyPair.private
-            )
+            return connection.inputStream.use { it.readBytes() }
         } finally {
             connection.disconnect()
         }
@@ -673,76 +620,6 @@ object SecureLoader {
         }
         init(null, arrayOf<TrustManager>(pinnedTrust), SecureRandom())
     }.socketFactory
-
-    private fun decryptEnvelope(
-        encryptedBase64: String,
-        fileIvBase64: String,
-        wrappedKeyBase64: String,
-        wrapIvBase64: String,
-        serverPublicKeyBase64: String,
-        kdfSaltBase64: String,
-        clientPrivateKey: PrivateKey
-    ): ByteArray {
-        val keyFactory = KeyFactory.getInstance("EC")
-        val serverPublic = keyFactory.generatePublic(
-            X509EncodedKeySpec(Base64.getDecoder().decode(serverPublicKeyBase64))
-        )
-
-        val agreement = KeyAgreement.getInstance("ECDH")
-        agreement.init(clientPrivateKey)
-        agreement.doPhase(serverPublic, true)
-        val sharedSecret = agreement.generateSecret()
-
-        val salt = Base64.getDecoder().decode(kdfSaltBase64)
-        val kekBytes = hkdfSha256(sharedSecret, salt, DOWNLOAD_KDF_INFO.toByteArray(StandardCharsets.UTF_8), 32)
-
-        val wrapCipher = Cipher.getInstance("AES/GCM/NoPadding")
-        val wrapIv = Base64.getDecoder().decode(wrapIvBase64)
-        wrapCipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(kekBytes, "AES"), GCMParameterSpec(128, wrapIv))
-        val contentKey = wrapCipher.doFinal(Base64.getDecoder().decode(wrappedKeyBase64))
-
-        val fileIv = Base64.getDecoder().decode(fileIvBase64)
-        val encryptedBytes = Base64.getDecoder().decode(encryptedBase64)
-        val plaintext = V5Native.decryptAesGcm(encryptedBytes, contentKey, fileIv)
-            ?: throw IOException("Native decrypt failed")
-
-        Arrays.fill(sharedSecret, 0)
-        Arrays.fill(salt, 0)
-        Arrays.fill(kekBytes, 0)
-        Arrays.fill(contentKey, 0)
-        return plaintext
-    }
-
-    private fun hkdfSha256(ikm: ByteArray, salt: ByteArray, info: ByteArray, outputLen: Int): ByteArray {
-        val extractMac = Mac.getInstance("HmacSHA256")
-        extractMac.init(SecretKeySpec(salt, "HmacSHA256"))
-        val prk = extractMac.doFinal(ikm)
-
-        val expandMac = Mac.getInstance("HmacSHA256")
-        expandMac.init(SecretKeySpec(prk, "HmacSHA256"))
-
-        var t = ByteArray(0)
-        val output = ByteArray(outputLen)
-        var offset = 0
-        var counter = 1
-
-        while (offset < outputLen) {
-            expandMac.reset()
-            expandMac.update(t)
-            expandMac.update(info)
-            expandMac.update(counter.toByte())
-            t = expandMac.doFinal()
-
-            val copyLen = minOf(t.size, outputLen - offset)
-            System.arraycopy(t, 0, output, offset, copyLen)
-            offset += copyLen
-            counter++
-        }
-
-        Arrays.fill(prk, 0)
-        Arrays.fill(t, 0)
-        return output
-    }
 
     private fun processZip(zipData: ByteArray) {
         val moduleDir = getV5ModuleDir()

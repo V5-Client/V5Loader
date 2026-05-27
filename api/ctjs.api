@@ -3100,7 +3100,6 @@ public final class com/v5/launch/SecureLoader {
 public final class com/v5/launch/V5Native {
 	public static final field INSTANCE Lcom/v5/launch/V5Native;
 	public static final fun consumeToken ()Ljava/lang/String;
-	public static final fun decryptAesGcm ([B[B[B)[B
 }
 
 public class com/v5/mixins/AbstractBlockStateMixin {

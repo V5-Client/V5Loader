@@ -11,25 +11,13 @@ object V5Native {
         }
     }
 
-    private val nativeMethods by lazy {
+    private val consumeTokenMethod by lazy {
         val cls = jniClass ?: return@lazy null
-        val methods = cls.methods
-        NativeMethodHandles(
-            consumeToken = methods.firstOrNull { m ->
-                m.name == decodeName(intArrayOf(57, 53, 52, 41, 47, 55, 63, 14, 53, 49, 63, 52)) &&
-                    m.parameterCount == 0
-            },
-            decryptAesGcm = methods.firstOrNull { m ->
-                m.name == decodeName(intArrayOf(62, 63, 57, 40, 35, 42, 46, 27, 63, 41, 29, 57, 55)) &&
-                    m.parameterCount == 3
-            }
-        )
+        cls.methods.firstOrNull { m ->
+            m.name == decodeName(intArrayOf(57, 53, 52, 41, 47, 55, 63, 14, 53, 49, 63, 52)) &&
+                m.parameterCount == 0
+        }
     }
-
-    private data class NativeMethodHandles(
-        val consumeToken: java.lang.reflect.Method?,
-        val decryptAesGcm: java.lang.reflect.Method?
-    )
 
     private fun decodeName(obfuscated: IntArray): String {
         val out = CharArray(obfuscated.size)
@@ -40,10 +28,5 @@ object V5Native {
     }
 
     @JvmStatic
-    fun consumeToken(): String? = nativeMethods?.consumeToken?.invoke(null) as? String
-
-    @JvmStatic
-    fun decryptAesGcm(encryptedBytes: ByteArray, contentKey: ByteArray, fileIv: ByteArray): ByteArray? {
-        return nativeMethods?.decryptAesGcm?.invoke(null, encryptedBytes, contentKey, fileIv) as? ByteArray
-    }
+    fun consumeToken(): String? = consumeTokenMethod?.invoke(null) as? String
 }
