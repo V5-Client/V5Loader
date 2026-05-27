@@ -32,7 +32,6 @@
     },
     "breaks": {
         "smoothboot": "*",
-        "ctjs": "*",
         "stfu": "*",
         "nvidium": "*"
     },
