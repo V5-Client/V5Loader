@@ -342,15 +342,7 @@ object SecureLoader {
     private fun checkV5ModLoader(): ModLoaderCheckResult {
         val modsDir = File(getGameDir(), "mods")
         val candidates = modsDir.walk()
-            .filter { file ->
-                file.isFile &&
-                    file.extension.equals("jar", ignoreCase = true) &&
-                    (
-                        file.name.startsWith("V5ModLoader", ignoreCase = true) ||
-                        file.name.equals("V5ModLoader.jar", ignoreCase = true) ||
-                        file.name.startsWith("v5-", ignoreCase=true)
-                    )
-            }
+            .filter { file -> file.isFile && isV5ModLoaderJar(file.name) }
             .toList()
 
         if (candidates.size != 1) {
@@ -697,6 +689,14 @@ object SecureLoader {
     }
 
     fun isLoaded(): Boolean = isLoaded
+
+    private fun isV5ModLoaderJar(fileName: String): Boolean {
+        if (!fileName.endsWith(".jar", ignoreCase = true)) return false
+        if (fileName.startsWith("V5ModLoader", ignoreCase = true)) return true
+        // Gradle publish name (e.g. v5-1.0.0.jar), not V5-Loader.jar (case-insensitive v5- prefix).
+        return fileName.startsWith("v5-", ignoreCase = true) &&
+            !fileName.startsWith("V5-Loader", ignoreCase = true)
+    }
 
     private fun getGameDir(): File {
         return FabricLoader.getInstance().gameDir.toFile()
