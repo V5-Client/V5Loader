@@ -86,9 +86,7 @@ dependencies {
     include("io.netty:netty-codec-socks:4.1.97.Final")
 
     implementation("net.hypixel:mod-api:1.0.1")
-    include("net.hypixel:mod-api:1.0.1")
-    modImplementation("maven.modrinth:hypixel-mod-api:1.0.1+build.1+mc1.21")
-    include("maven.modrinth:hypixel-mod-api:1.0.1+build.1+mc1.21")
+    modImplementation("maven.modrinth:hypixel-mod-api:1.0.1+build.1+mc1.21") { include(this) }
 }
 
 loom {
@@ -157,10 +155,12 @@ tasks {
     // shit fix for file name but ehh
     jar {
         archiveFileName.set("V5-Loader.jar")
+        exclude("typings.d.ts")
     }
 
     remapJar {
         archiveFileName.set("V5-Loader.jar")
+        exclude("typings.d.ts")
     }
 
     dokkaHtml {
