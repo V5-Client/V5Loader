@@ -72,26 +72,109 @@ jobs:
     uses: ./.github/workflows/native-linux-builder.yml
 
   macos:
-    needs:
-      - detect-native
-      - linux
+    needs: detect-native
     if: ${{ needs['detect-native'].outputs.native_changed == 'true' }}
     uses: ./.github/workflows/native-macos-builder.yml
 
   windows:
-    needs:
-      - detect-native
-      - macos
+    needs: detect-native
     if: ${{ needs['detect-native'].outputs.native_changed == 'true' }}
     uses: ./.github/workflows/native-windows-builder.yml
 
-  commit:
+  bundle-natives:
     needs:
       - detect-native
       - linux
       - macos
       - windows
-    if: ${{ always() && needs['detect-native'].outputs.should_build == 'true' && (needs['detect-native'].outputs.native_changed == 'false' || needs.windows.result == 'success') }}
+    if: >-
+      ${{
+        always() &&
+        needs['detect-native'].outputs.native_changed == 'true' &&
+        needs.linux.result == 'success' &&
+        needs.macos.result == 'success' &&
+        needs.windows.result == 'success'
+      }}
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Linux native
+        uses: actions/download-artifact@v4
+        with:
+          name: native-linux-x86_64
+          path: artifact/linux/x86_64
+
+      - name: Download macOS natives
+        uses: actions/download-artifact@v4
+        with:
+          name: native-macos
+          path: artifact/macos
+
+      - name: Download Windows native
+        uses: actions/download-artifact@v4
+        with:
+          name: native-windows-x86_64
+          path: artifact/windows/x86_64
+
+      - name: Install native libraries
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DEST=src/main/resources/assets/v5/natives
+          mkdir -p "$DEST/linux/x86_64" "$DEST/macos/arm64" "$DEST/macos/x86_64" "$DEST/windows/x86_64"
+
+          cp artifact/linux/x86_64/V5PathJNI.so "$DEST/linux/x86_64/V5PathJNI.so"
+          cp artifact/macos/arm64/V5PathJNI.dylib "$DEST/macos/arm64/V5PathJNI.dylib"
+          cp artifact/macos/x86_64/V5PathJNI.dylib "$DEST/macos/x86_64/V5PathJNI.dylib"
+          cp artifact/windows/x86_64/V5PathJNI.dll "$DEST/windows/x86_64/V5PathJNI.dll"
+
+          rm -f src/main/resources/assets/v5/V5PathJNI.so
+          rm -f src/main/resources/assets/v5/V5PathJNI.dylib
+          rm -f src/main/resources/assets/v5/V5PathJNI.dll
+
+      - name: Commit bundled natives
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          USER_NAME="$(git log -1 --pretty=%an "${{ github.sha }}")"
+          USER_EMAIL="$(git log -1 --pretty=%ae "${{ github.sha }}")"
+          git config user.name "$USER_NAME"
+          git config user.email "$USER_EMAIL"
+
+          git add src/main/resources/assets/v5/natives/
+          git add -u src/main/resources/assets/v5/
+
+          if ! git diff --cached --quiet; then
+            git log -1 --pretty=%B "${{ github.sha }}" > .git/JNI_COMMIT_MSG
+            echo "" >> .git/JNI_COMMIT_MSG
+            echo "[skip-native-auto]" >> .git/JNI_COMMIT_MSG
+            git commit -F .git/JNI_COMMIT_MSG
+            rm -f .git/JNI_COMMIT_MSG
+            BRANCH="${{ github.ref_name }}"
+            git fetch origin "$BRANCH" --depth=50
+            git rebase "origin/$BRANCH"
+            git push origin HEAD:"$BRANCH"
+          fi
+
+  resolve-head:
+    needs:
+      - detect-native
+      - bundle-natives
+    if: >-
+      ${{
+        always() &&
+        needs['detect-native'].outputs.should_build == 'true' &&
+        (
+          needs['detect-native'].outputs.native_changed == 'false' ||
+          needs['bundle-natives'].result == 'success'
+        )
+      }}
     runs-on: blacksmith-2vcpu-ubuntu-2404
     outputs:
       head_sha: ${{ steps.resolve_sha.outputs.head_sha }}
@@ -107,13 +190,18 @@ jobs:
         run: |
           set -euo pipefail
           BRANCH="${{ github.ref_name }}"
-          git fetch origin "$BRANCH" --depth=50
-          echo "head_sha=$(git rev-parse "origin/$BRANCH")" >> "$GITHUB_OUTPUT"
+
+          if [[ "${{ needs['detect-native'].outputs.native_changed }}" == "true" ]]; then
+            git fetch origin "$BRANCH" --depth=50
+            echo "head_sha=$(git rev-parse "origin/$BRANCH")" >> "$GITHUB_OUTPUT"
+          else
+            echo "head_sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          fi
 
   build:
-    needs: commit
-    if: ${{ always() && needs.commit.result == 'success' }}
+    needs: resolve-head
+    if: ${{ always() && needs.resolve-head.result == 'success' }}
     uses: ./.github/workflows/build.yml
     secrets: inherit
     with:
-      sha: ${{ needs.commit.outputs.head_sha }}
+      sha: ${{ needs.resolve-head.outputs.head_sha }}
