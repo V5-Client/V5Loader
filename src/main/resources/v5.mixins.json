@@ -8,7 +8,6 @@
         "CameraMixin",
         "ChatHudMixin",
         "EntityRendererMixin",
-        "HorizontalConnectingBlockMixin",
         "KeyboardInputMixin",
         "MinecraftClientMixin",
         "MouseMixin",
