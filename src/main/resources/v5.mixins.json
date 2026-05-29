@@ -20,7 +20,6 @@
         "GameOptionsAccessorMixin",
         "GameRendererMixin",
         "GlStateManagerMixin",
-        "HorizontalConnectingBlockMixin",
         "KeyboardInputMixin",
         "LightTextureManagerMixin",
         "MinecraftClientMixin",
