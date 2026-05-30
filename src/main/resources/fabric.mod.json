@@ -31,7 +31,6 @@
         "fabric-language-kotlin": ">=$fabric_kotlin_version"
     },
     "breaks": {
-        "smoothboot": "*",
         "stfu": "*",
         "nvidium": "*"
     },
