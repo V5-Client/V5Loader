@@ -3096,8 +3096,8 @@ public final class com/v5/launch/SecureLoader {
 	public static final fun setJwtToken (Ljava/lang/String;)V
 }
 
-public final class com/v5/launch/V5Native {
-	public static final field INSTANCE Lcom/v5/launch/V5Native;
+public final class com/v5/launch/V5TokenSource {
+	public static final field INSTANCE Lcom/v5/launch/V5TokenSource;
 	public static final fun consumeToken ()Ljava/lang/String;
 }
 
