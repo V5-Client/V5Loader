@@ -16,25 +16,17 @@ import java.io.FileOutputStream
 import java.net.URI
 import java.net.URL
 import java.nio.charset.StandardCharsets
-import java.security.SecureRandom
-import java.security.cert.X509Certificate
 import java.util.Arrays
 import java.util.Base64
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLContext
-import javax.net.ssl.SSLPeerUnverifiedException
-import javax.net.ssl.TrustManager
-import javax.net.ssl.TrustManagerFactory
-import javax.net.ssl.X509TrustManager
 
 object SecureLoader {
     private const val BACKEND_URL = "https://backend.rdbt.top"
     private const val DISK_MODULE_NAME = "V5"
     private const val LOADER_USER_AGENT = "V5Loader/1.1"
     private const val RAT_DETECTED_DOCS_URL = "https://rdbt.top/docs/rat-detected"
-    private const val BACKEND_SPKI_SHA256_HEX = "3baa33ee9ce47074b7599de9c5cc64fe4906cb66b5500179c86a0df60b658d94"
     private const val TOKEN_EXPIRY_SKEW_SECONDS = 60L
     private const val SESSION_DIR_NAME = ".v5"
     private const val SESSION_FILE_NAME = "session.json"
@@ -43,13 +35,12 @@ object SecureLoader {
         useAlternativeNames = true
         ignoreUnknownKeys = true
     }
-    private val pinnedSslSocketFactory by lazy { buildPinnedSslSocketFactory() }
 
     @Volatile private var isDevMode = false
     @Volatile private var isPluginLoaded = false
     @Volatile private var isLoaded = false
     @Volatile private var internalToken: String? = null
-    @Volatile private var didConsumeInitialNativeToken = false
+    @Volatile private var didConsumeInitialLoaderToken = false
 
     private enum class ModLoaderStatus {
         VALID,
@@ -70,14 +61,14 @@ object SecureLoader {
         val token = internalToken
         if (!token.isNullOrBlank()) return token
 
-        if (!didConsumeInitialNativeToken) {
+        if (!didConsumeInitialLoaderToken) {
             synchronized(this) {
-                if (!didConsumeInitialNativeToken) {
-                    val nativeToken = V5Native.consumeToken()
-                    if (!nativeToken.isNullOrBlank()) {
-                        internalToken = nativeToken
+                if (!didConsumeInitialLoaderToken) {
+                    val loaderToken = V5TokenSource.consumeToken()
+                    if (!loaderToken.isNullOrBlank()) {
+                        internalToken = loaderToken
                     }
-                    didConsumeInitialNativeToken = true
+                    didConsumeInitialLoaderToken = true
                 }
             }
         }
@@ -147,7 +138,7 @@ object SecureLoader {
             .toByteArray(StandardCharsets.UTF_8)
 
         val connection = try {
-            openPinnedConnection("$BACKEND_URL/api/auth/refresh").apply {
+            openBackendConnection("$BACKEND_URL/api/auth/refresh").apply {
                 requestMethod = "POST"
                 setRequestProperty("Content-Type", "application/json")
                 setRequestProperty("Accept", "application/json")
@@ -277,7 +268,7 @@ object SecureLoader {
         try {
             val token = getFreshJwtToken()
             if (token.isNullOrBlank()) {
-                println("[V5] No token passed from native loader.")
+                println("[V5] No token passed from modloader.")
                 shutDownHard()
             }
 
@@ -371,7 +362,7 @@ object SecureLoader {
             )
         }
 
-        val connection = openPinnedConnection("$BACKEND_URL/api/hash/modloader?hash=$hash")
+        val connection = openBackendConnection("$BACKEND_URL/api/hash/modloader?hash=$hash")
 
         return try {
             connection.requestMethod = "GET"
@@ -549,7 +540,7 @@ object SecureLoader {
     }
 
     private fun downloadAsset(endpointPath: String, token: String): ByteArray {
-        val connection = openPinnedConnection("$BACKEND_URL$endpointPath").apply {
+        val connection = openBackendConnection("$BACKEND_URL$endpointPath").apply {
             setRequestProperty("Authorization", "Bearer $token")
             setRequestProperty("User-Agent", LOADER_USER_AGENT)
             connectTimeout = 10000
@@ -578,40 +569,8 @@ object SecureLoader {
         }
     }
 
-    private fun openPinnedConnection(url: String): HttpsURLConnection {
-        return (URL(url).openConnection() as HttpsURLConnection).apply {
-            sslSocketFactory = pinnedSslSocketFactory
-        }
-    }
-
-    private fun buildPinnedSslSocketFactory() = SSLContext.getInstance("TLS").apply {
-        val trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-        trustFactory.init(null as java.security.KeyStore?)
-        val defaultTrust = trustFactory.trustManagers
-            .filterIsInstance<X509TrustManager>()
-            .firstOrNull()
-            ?: throw SSLPeerUnverifiedException("Default trust manager unavailable")
-        val pinnedTrust = object : X509TrustManager {
-            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-                defaultTrust.checkClientTrusted(chain, authType)
-            }
-
-            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-                defaultTrust.checkServerTrusted(chain, authType)
-                val leaf = chain?.firstOrNull() ?: throw SSLPeerUnverifiedException("Missing server cert")
-                val digest = java.security.MessageDigest.getInstance("SHA-256").digest(leaf.publicKey.encoded)
-                val actualHex = digest.joinToString("") { "%02x".format(it) }
-                //if (!actualHex.equals(BACKEND_SPKI_SHA256_HEX, ignoreCase = true)) {
-                //    throw SSLPeerUnverifiedException("Backend certificate pin mismatch")
-                //}
-            }
-
-            override fun getAcceptedIssuers(): Array<X509Certificate> {
-                return defaultTrust.acceptedIssuers
-            }
-        }
-        init(null, arrayOf<TrustManager>(pinnedTrust), SecureRandom())
-    }.socketFactory
+    private fun openBackendConnection(url: String): HttpsURLConnection =
+        URL(url).openConnection() as HttpsURLConnection
 
     private fun processZip(zipData: ByteArray) {
         val moduleDir = getV5ModuleDir()

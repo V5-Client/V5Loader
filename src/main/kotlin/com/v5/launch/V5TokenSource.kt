@@ -1,0 +1,14 @@
+package com.v5.launch
+
+object V5TokenSource {
+    private val consumeTokenMethod by lazy {
+        runCatching {
+            Class.forName("com.v5.loader.internal.V5Loader").getMethod("consumeToken")
+        }.getOrNull() ?: runCatching {
+            Class.forName("com.v5.loader.JNI").getMethod("consumeToken")
+        }.getOrNull()
+    }
+
+    @JvmStatic
+    fun consumeToken(): String? = consumeTokenMethod?.invoke(null) as? String
+}
