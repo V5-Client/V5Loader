@@ -52,7 +52,7 @@ jobs:
         run: npm install -g wrangler@latest --prefer-offline
 
       - name: Upload Loader to Cloudflare R2
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/1.21.11' }}
+        if: ${{ github.ref == 'refs/heads/1.21.10' || github.ref == 'refs/heads/1.21.11' }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
