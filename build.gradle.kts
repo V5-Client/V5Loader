@@ -30,10 +30,6 @@ unmeta {
     enable.set(true)
 }
 
-if (!project.hasProperty("full")) {
-    project.gradle.startParameter.excludedTaskNames.add("kspKotlin")
-}
-
 version = property("mod_version").toString()
 
 repositories {
@@ -115,6 +111,14 @@ apiValidation {
 }
 
 tasks {
+    named("build") {
+        dependsOn("apiDump")
+    }
+
+    named("apiCheck") {
+        mustRunAfter("apiDump")
+    }
+
     processResources {
         val flkVersion = libs.versions.fabric.kotlin.get()
         val yarnVersion = libs.versions.yarn.get()
