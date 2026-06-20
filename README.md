@@ -76,4 +76,4 @@ cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release; cmake --build 
 
 ### Install built mod
 
-After building, copy `build/libs/V5-Loader.jar` into `.minecraft/mods/` together with [V5ModLoader.jar](https://rdbt.top/docs/getting-started). V5ModLoader handles authentication and passes the JWT to the loader.
+After building, copy `build/libs/V5-Loader.jar` into `.minecraft/mods/` together with the [V5ModLoader.jar](https://rdbt.top/docs/getting-started). V5ModLoader handles authentication and passes the JWT to the loader.
