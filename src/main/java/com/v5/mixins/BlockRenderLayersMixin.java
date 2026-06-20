@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.qol.Xray;
+import com.chattriggers.ctjs.api.render.Xray;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.render.BlockRenderLayer;
@@ -36,4 +36,3 @@ public abstract class BlockRenderLayersMixin {
         }
     }
 }
-

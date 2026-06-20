@@ -48,42 +48,32 @@ For production release commits, CI builds all platforms in parallel and commits 
 
 ### Quick dev commands
 
-Each command compiles native code, copies the output, runs API dump, then builds Kotlin.
+Each command compiles required native c++ code, then builds the final Kotlin mod. The output can be found at `build/libs/V5-Loader.jar`
 
 - **Linux:**
 
 ```bash
-cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release && cmake --build NativeSrc/build --config Release -j && mkdir -p ./src/main/resources/assets/v5/natives/linux/x86_64 && cp ./NativeSrc/build/V5PathJNI.so ./src/main/resources/assets/v5/natives/linux/x86_64/V5PathJNI.so && ./gradlew apiDump && ./gradlew build
+cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release && cmake --build NativeSrc/build --config Release -j && mkdir -p ./src/main/resources/assets/v5/natives/linux/x86_64 && cp ./NativeSrc/build/V5PathJNI.so ./src/main/resources/assets/v5/natives/linux/x86_64/V5PathJNI.so && ./gradlew build
 ```
 
 - **macOS (Apple Silicon):**
 
 ```bash
-cmake -S NativeSrc -B NativeSrc/build-arm64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 && cmake --build NativeSrc/build-arm64 --config Release -j && mkdir -p ./src/main/resources/assets/v5/natives/macos/arm64 && cp ./NativeSrc/build-arm64/V5PathJNI.dylib ./src/main/resources/assets/v5/natives/macos/arm64/V5PathJNI.dylib && ./gradlew apiDump && ./gradlew build
+cmake -S NativeSrc -B NativeSrc/build-arm64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 && cmake --build NativeSrc/build-arm64 --config Release -j && mkdir -p ./src/main/resources/assets/v5/natives/macos/arm64 && cp ./NativeSrc/build-arm64/V5PathJNI.dylib ./src/main/resources/assets/v5/natives/macos/arm64/V5PathJNI.dylib && ./gradlew build
 ```
 
 - **macOS (Intel):**
 
 ```bash
-cmake -S NativeSrc -B NativeSrc/build-x86_64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64 && cmake --build NativeSrc/build-x86_64 --config Release -j && mkdir -p ./src/main/resources/assets/v5/natives/macos/x86_64 && cp ./NativeSrc/build-x86_64/V5PathJNI.dylib ./src/main/resources/assets/v5/natives/macos/x86_64/V5PathJNI.dylib && ./gradlew apiDump && ./gradlew build
+cmake -S NativeSrc -B NativeSrc/build-x86_64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64 && cmake --build NativeSrc/build-x86_64 --config Release -j && mkdir -p ./src/main/resources/assets/v5/natives/macos/x86_64 && cp ./NativeSrc/build-x86_64/V5PathJNI.dylib ./src/main/resources/assets/v5/natives/macos/x86_64/V5PathJNI.dylib && ./gradlew build
 ```
 
 - **Windows (PowerShell):**
 
 ```powershell
-cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release; cmake --build NativeSrc/build --config Release --parallel; New-Item -ItemType Directory -Force -Path .\src\main\resources\assets\v5\natives\windows\x86_64 | Out-Null; if (Test-Path .\NativeSrc\build\Release\V5PathJNI.dll) { Copy-Item .\NativeSrc\build\Release\V5PathJNI.dll .\src\main\resources\assets\v5\natives\windows\x86_64\V5PathJNI.dll -Force } else { Copy-Item .\NativeSrc\build\V5PathJNI.dll .\src\main\resources\assets\v5\natives\windows\x86_64\V5PathJNI.dll -Force }; .\gradlew apiDump; .\gradlew build
+cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release; cmake --build NativeSrc/build --config Release --parallel; New-Item -ItemType Directory -Force -Path .\src\main\resources\assets\v5\natives\windows\x86_64 | Out-Null; if (Test-Path .\NativeSrc\build\Release\V5PathJNI.dll) { Copy-Item .\NativeSrc\build\Release\V5PathJNI.dll .\src\main\resources\assets\v5\natives\windows\x86_64\V5PathJNI.dll -Force } else { Copy-Item .\NativeSrc\build\V5PathJNI.dll .\src\main\resources\assets\v5\natives\windows\x86_64\V5PathJNI.dll -Force }; .\gradlew build
 ```
 
 ### Install built mod
 
 After building, copy `build/libs/V5-Loader.jar` into `.minecraft/mods/` together with [V5ModLoader.jar](https://rdbt.top/docs/getting-started). V5ModLoader handles authentication and passes the JWT to the loader.
-
-## Working on the JavaScript Module ([V5](https://github.com/V5-Client/V5))
-
-1. In-game, run `/V5 developerMode true`.
-   This disables auto-updater behavior so your local edits are not overwritten.~
-2. You are able to git clone into modules folder for ease of use.
-3. After making code changes, run `/ct load` to reload immediately.
-4. Use `/ct console` to view the JavaScript console.
-
-More detailed contributor docs may be added in the future.

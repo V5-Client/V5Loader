@@ -29,10 +29,6 @@ unmeta {
     enable.set(true)
 }
 
-if (!project.hasProperty("full")) {
-    project.gradle.startParameter.excludedTaskNames.add("kspKotlin")
-}
-
 version = property("mod_version").toString()
 
 repositories {
@@ -114,12 +110,12 @@ apiValidation {
 }
 
 tasks {
-    named("check") {
+    named("build") {
         dependsOn("apiDump")
     }
 
     named("apiCheck") {
-        enabled = false
+        mustRunAfter("apiDump")
     }
 
     processResources {
