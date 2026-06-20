@@ -51,7 +51,9 @@ class KeyBind {
             if (!categoryList.stream().anyMatch { it.id.path.equals(category) }) {
                 uniqueCategories[category] = 0
             }
-            val keyCategory = KeyBinding.Category.create(Identifier.of(category))
+            val categoryId = Identifier.of(category)
+            val keyCategory = categoryList.firstOrNull { it.id == categoryId }
+                ?: KeyBinding.Category.create(categoryId)
             uniqueCategories[category] = uniqueCategories[category]!! + 1
             keyBinding = KeyBinding(description, keyCode, keyCategory)
 
@@ -243,7 +245,9 @@ class KeyBind {
                 )
             )
 
-            KeyBindingAccessor.Category.getCategoryList().add(keyBinding.category)
+            if (uniqueCategories[getCategoryName(keyBinding.category)] == 1) {
+                KeyBindingAccessor.Category.getCategoryList().add(keyBinding.category)
+            }
 
             return keyBinding
         }

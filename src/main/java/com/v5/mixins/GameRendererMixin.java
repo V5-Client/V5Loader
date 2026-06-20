@@ -1,7 +1,7 @@
 package com.v5.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.v5.render.NVGRenderer;
+import com.chattriggers.ctjs.api.render.NVGRenderer;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.RenderTickCounter;
 import org.objectweb.asm.Opcodes;

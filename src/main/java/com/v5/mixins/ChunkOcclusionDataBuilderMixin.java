@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.qol.Xray;
+import com.chattriggers.ctjs.api.render.Xray;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

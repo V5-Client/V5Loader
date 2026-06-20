@@ -2,6 +2,7 @@ package com.chattriggers.ctjs.internal.engine
 
 import com.chattriggers.ctjs.api.triggers.ITriggerType
 import com.chattriggers.ctjs.api.triggers.Trigger
+import com.chattriggers.ctjs.api.Mappings
 import com.chattriggers.ctjs.engine.LogType
 import com.chattriggers.ctjs.engine.MixinCallback
 import com.chattriggers.ctjs.engine.printToConsole
@@ -16,7 +17,6 @@ import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 import java.net.URI
 import java.net.URL
-import java.nio.charset.Charset
 import java.util.ArrayDeque
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
@@ -38,7 +38,6 @@ object JSLoader {
     }
 
     private val triggers = ConcurrentHashMap<ITriggerType, TriggerBucket>()
-    private val hasTriggerCache = ConcurrentHashMap<ITriggerType, Boolean>()
     private val emptyArgs = emptyArray<Any?>()
     private val dispatchContext = ThreadLocal<Context?>()
     private val oneArgPool = ThreadLocal.withInitial { ArrayDeque<Array<Any?>>() }
@@ -113,12 +112,11 @@ object JSLoader {
 
     fun entrySetup(): Unit = wrapInContext {
         if (!mixinLibsLoaded) loadMixinLibs()
+        installProvidedTypes(it, moduleScope)
+        installProvidedTypes(it, evalScope)
 
         val moduleProvidedLibs =
-                saveResource(
-                        "/assets/ctjs/js/moduleProvidedLibs.js",
-                        File(modulesFolder.parentFile, "chattriggers-modules-provided-libs.js"),
-                )
+                readResource("/assets/ctjs/js/moduleProvidedLibs.js")
 
         try {
             val script = it.compileString(moduleProvidedLibs, "moduleProvided", 1, null)
@@ -214,7 +212,7 @@ object JSLoader {
     }
 
     fun hasTriggers(type: ITriggerType): Boolean {
-        return hasTriggerCache[type] == true
+        return triggers.containsKey(type)
     }
 
     fun addTrigger(trigger: Trigger) {
@@ -225,13 +223,11 @@ object JSLoader {
             val insertAt = -existing - 1
             bucket.ordered.add(insertAt, trigger)
             bucket.dirty = true
-            hasTriggerCache[trigger.type] = true
         }
     }
 
     fun clearTriggers() {
         triggers.clear()
-        hasTriggerCache.clear()
     }
 
     fun removeTrigger(trigger: Trigger) {
@@ -245,10 +241,8 @@ object JSLoader {
                 bucket.snapshot = emptyArray()
                 bucket.dirty = false
                 triggers.remove(trigger.type, bucket)
-                hasTriggerCache.remove(trigger.type)
             } else {
                 bucket.dirty = true
-                hasTriggerCache[trigger.type] = true
             }
         }
     }
@@ -358,8 +352,6 @@ object JSLoader {
             if (bucket.dirty) {
                 bucket.snapshot = bucket.ordered.toTypedArray()
                 bucket.dirty = false
-                if (bucket.snapshot.isEmpty()) hasTriggerCache.remove(type)
-                else hasTriggerCache[type] = true
             }
             return bucket.snapshot
         }
@@ -406,10 +398,7 @@ object JSLoader {
         if (mixinLibsLoaded) return
 
         val mixinProvidedLibs =
-                saveResource(
-                        "/assets/ctjs/js/mixinProvidedLibs.js",
-                        File(modulesFolder.parentFile, "chattriggers-mixin-provided-libs.js"),
-                )
+                readResource("/assets/ctjs/js/mixinProvidedLibs.js")
 
         wrapInContext {
             try {
@@ -488,21 +477,20 @@ object JSLoader {
                 mixins.getOrPut(mixin, ::MixinDetails).methodWideners[methodName] = isMutable
     }
 
-    private fun saveResource(resourceName: String?, outputFile: File): String {
-        require(resourceName != null && resourceName != "") {
-            "ResourcePath cannot be null or empty"
-        }
+    private fun readResource(name: String) = requireNotNull(javaClass.getResourceAsStream(name)) {
+        "The embedded resource '$name' cannot be found."
+    }.bufferedReader().use { it.readText() }
 
-        val parsedResourceName = resourceName.replace('\\', '/')
-        val resource =
-                javaClass.getResourceAsStream(parsedResourceName)
-                        ?: throw IllegalArgumentException(
-                                "The embedded resource '$parsedResourceName' cannot be found."
-                        )
-
-        val res = resource.bufferedReader().readText()
-        org.apache.commons.io.FileUtils.write(outputFile, res, Charset.defaultCharset())
-        return res
+    private fun installProvidedTypes(cx: Context, scope: Scriptable) {
+        readResource("/provided-types.properties").lineSequence()
+                .filter { it.isNotBlank() && !it.startsWith('#') }
+                .forEach { line ->
+                    val name = line.substringBefore('=')
+                    val path = line.substringAfter('=')
+                    val mappedPath = Mappings.mapClassName(path)?.replace('/', '.') ?: path
+                    val clazz = cx.applicationClassLoader.loadClass(mappedPath)
+                    ScriptableObject.putProperty(scope, name, NativeJavaClass(scope, clazz))
+                }
     }
 
     private class CTRequire(

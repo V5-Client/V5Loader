@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.screen.V5MainMenuScreen;
+import com.chattriggers.ctjs.api.client.V5MainMenuScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
 import org.spongepowered.asm.mixin.Mixin;

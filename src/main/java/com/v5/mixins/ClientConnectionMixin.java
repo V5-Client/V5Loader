@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.event.PacketEvent;
+import com.chattriggers.ctjs.api.triggers.PacketEvent;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.listener.PacketListener;
 import net.minecraft.network.packet.Packet;

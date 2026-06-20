@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.qol.Xray;
+import com.chattriggers.ctjs.api.render.Xray;
 import net.fabricmc.fabric.impl.client.indigo.renderer.mesh.MutableQuadViewImpl;
 import net.fabricmc.fabric.impl.client.indigo.renderer.render.AbstractTerrainRenderContext;
 import net.fabricmc.fabric.impl.client.indigo.renderer.render.BlockRenderInfo;
@@ -43,4 +43,3 @@ public abstract class AbstractTerrainRenderContextMixin {
         return ((alpha & 0xFF) << 24) | (color & 0x00FFFFFF);
     }
 }
-

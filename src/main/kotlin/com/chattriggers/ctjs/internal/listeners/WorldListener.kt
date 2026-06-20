@@ -2,6 +2,7 @@ package com.chattriggers.ctjs.internal.listeners
 
 import com.chattriggers.ctjs.MCBlockPos
 import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.internal.engine.CTEvents
 import com.chattriggers.ctjs.api.triggers.CancellableEvent
 import com.chattriggers.ctjs.api.triggers.TriggerType
 import com.chattriggers.ctjs.internal.engine.JSLoader
@@ -29,9 +30,12 @@ object WorldListener {
     }
 
     fun triggerRenderLast() {
-        if (matrixStack == null || !JSLoader.hasTriggers(TriggerType.POST_RENDER_WORLD)) return
-        Renderer.withMatrix(matrixStack, deltaTicks) {
-            TriggerType.POST_RENDER_WORLD.triggerAll(deltaTicks)
+        val stack = matrixStack ?: return
+        if (JSLoader.hasTriggers(TriggerType.POST_RENDER_WORLD)) {
+            Renderer.withMatrix(stack, deltaTicks) {
+                TriggerType.POST_RENDER_WORLD.triggerAll(deltaTicks)
+            }
         }
+        CTEvents.POST_RENDER_WORLD.invoker().render(stack, deltaTicks)
     }
 }

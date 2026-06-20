@@ -3,7 +3,6 @@ package com.chattriggers.ctjs.internal.launch
 import com.chattriggers.ctjs.api.Mappings
 import com.chattriggers.ctjs.engine.printTraceToConsole
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
-import com.v5.launch.SecureLoader
 import com.llamalad7.mixinextras.MixinExtrasBootstrap
 import java.io.OutputStream
 import java.io.PrintStream
