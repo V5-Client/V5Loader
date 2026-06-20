@@ -22,6 +22,10 @@ plugins {
     id("io.github.izhangzhihao.unmeta") version "1.0.3"
 }
 
+sourceSets.main {
+    resources.srcDir("typing-generator/src/main/resources")
+}
+
 unmeta {
     enable.set(true)
 }

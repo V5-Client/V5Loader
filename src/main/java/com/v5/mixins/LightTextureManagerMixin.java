@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.qol.Xray;
+import com.chattriggers.ctjs.api.render.Xray;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;

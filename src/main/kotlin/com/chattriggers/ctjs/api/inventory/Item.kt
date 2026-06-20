@@ -6,13 +6,13 @@ import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.entity.Entity
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.DrawContextHolder
 import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.api.world.block.Block
 import com.chattriggers.ctjs.api.world.block.BlockPos
 import com.chattriggers.ctjs.internal.Skippable
 import com.chattriggers.ctjs.internal.TooltipOverridable
 import com.chattriggers.ctjs.internal.utils.asMixin
-import com.v5.render.helper.DrawContextHolder
 import net.minecraft.block.pattern.CachedBlockPosition
 import net.minecraft.client.render.OverlayTexture
 import net.minecraft.client.render.item.ItemRenderState

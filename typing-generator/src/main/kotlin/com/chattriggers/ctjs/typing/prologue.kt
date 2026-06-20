@@ -26,99 +26,12 @@ val manualRoots = setOf(
     "org.spongepowered.asm.mixin.injection.callback.CallbackInfo",
 )
 
-private val providedTypes = mutableMapOf(
-    "Keyboard" to "gg.essential.universal.UKeyboard",
-    "Hand" to "net.minecraft.util.Hand",
-
-    "Client" to "com.chattriggers.ctjs.api.client.Client",
-    "CPS" to "com.chattriggers.ctjs.api.client.CPS",
-    "FileLib" to "com.chattriggers.ctjs.api.client.FileLib",
-    "KeyBind" to "com.chattriggers.ctjs.api.client.KeyBind",
-    "MathLib" to "com.chattriggers.ctjs.api.client.MathLib",
-    "Player" to "com.chattriggers.ctjs.api.client.Player",
-    "Settings" to "com.chattriggers.ctjs.api.client.Settings",
-    "Sound" to "com.chattriggers.ctjs.api.client.Sound",
-
-    "Commands" to "com.chattriggers.ctjs.api.commands.DynamicCommands",
-
-    "BlockEntity" to "com.chattriggers.ctjs.api.entity.BlockEntity",
-    "Entity" to "com.chattriggers.ctjs.api.entity.Entity",
-    "LivingEntity" to "com.chattriggers.ctjs.api.entity.LivingEntity",
-    "Particle" to "com.chattriggers.ctjs.api.entity.Particle",
-    "PlayerMP" to "com.chattriggers.ctjs.api.entity.PlayerMP",
-    "Team" to "com.chattriggers.ctjs.api.entity.Team",
-
-    "Action" to "com.chattriggers.ctjs.api.inventory.action.Action",
-    "ClickAction" to "com.chattriggers.ctjs.api.inventory.action.ClickAction",
-    "DragAction" to "com.chattriggers.ctjs.api.inventory.action.DragAction",
-    "DropAction" to "com.chattriggers.ctjs.api.inventory.action.DropAction",
-    "KeyAction" to "com.chattriggers.ctjs.api.inventory.action.KeyAction",
-    "NBT" to "com.chattriggers.ctjs.api.inventory.nbt.NBT",
-    "NBTBase" to "com.chattriggers.ctjs.api.inventory.nbt.NBTBase",
-    "NBTTagCompound" to "com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound",
-    "NBTTagList" to "com.chattriggers.ctjs.api.inventory.nbt.NBTTagList",
-    "Inventory" to "com.chattriggers.ctjs.api.inventory.Inventory",
-    "Item" to "com.chattriggers.ctjs.api.inventory.Item",
-    "ItemType" to "com.chattriggers.ctjs.api.inventory.ItemType",
-    "Slot" to "com.chattriggers.ctjs.api.inventory.Slot",
-
-    "ChatLib" to "com.chattriggers.ctjs.api.message.ChatLib",
-    "TextComponent" to "com.chattriggers.ctjs.api.message.TextComponent",
-
-    "Book" to "com.chattriggers.ctjs.api.render.Book",
-    "Display" to "com.chattriggers.ctjs.api.render.Display",
-    "Gui" to "com.chattriggers.ctjs.api.render.Gui",
-    "Image" to "com.chattriggers.ctjs.api.render.Image",
-    "Rectangle" to "com.chattriggers.ctjs.api.render.Rectangle",
-    "Renderer" to "com.chattriggers.ctjs.api.render.Renderer",
-    "Renderer3d" to "com.chattriggers.ctjs.api.render.Renderer3d",
-    "Shape" to "com.chattriggers.ctjs.api.render.Shape",
-    "Text" to "com.chattriggers.ctjs.api.render.Text",
-    "CancellableEvent" to "com.chattriggers.ctjs.api.triggers.CancellableEvent",
-
-    "Vec2f" to "com.chattriggers.ctjs.api.vec.Vec2f",
-    "Vec3f" to "com.chattriggers.ctjs.api.vec.Vec3f",
-    "Vec3i" to "com.chattriggers.ctjs.api.vec.Vec3i",
-
-    "Block" to "com.chattriggers.ctjs.api.world.block.Block",
-    "BlockFace" to "com.chattriggers.ctjs.api.world.block.BlockFace",
-    "BlockPos" to "com.chattriggers.ctjs.api.world.block.BlockPos",
-    "BlockType" to "com.chattriggers.ctjs.api.world.block.BlockType",
-    "BossBars" to "com.chattriggers.ctjs.api.world.BossBars",
-    "Chunk" to "com.chattriggers.ctjs.api.world.Chunk",
-    "PotionEffect" to "com.chattriggers.ctjs.api.world.PotionEffect",
-    "PotionEffectType" to "com.chattriggers.ctjs.api.world.PotionEffectType",
-    "Scoreboard" to "com.chattriggers.ctjs.api.world.Scoreboard",
-    "Server" to "com.chattriggers.ctjs.api.world.Server",
-    "TabList" to "com.chattriggers.ctjs.api.world.TabList",
-    "World" to "com.chattriggers.ctjs.api.world.World",
-
-    "Config" to "com.chattriggers.ctjs.api.Config",
-
-    "TriggerRegister" to "com.chattriggers.ctjs.engine.Register",
-    "Thread" to "com.chattriggers.ctjs.engine.WrappedThread",
-    "Priority" to "com.chattriggers.ctjs.api.triggers.Trigger\$Priority",
-    "ChatTriggers" to "com.chattriggers.ctjs.CTJS",
-    "Console" to "com.chattriggers.ctjs.engine.Console",
-
-    "GL11" to "org.lwjgl.opengl.GL11",
-    "GL12" to "org.lwjgl.opengl.GL12",
-    "GL13" to "org.lwjgl.opengl.GL13",
-    "GL14" to "org.lwjgl.opengl.GL14",
-    "GL15" to "org.lwjgl.opengl.GL15",
-    "GL20" to "org.lwjgl.opengl.GL20",
-    "GL21" to "org.lwjgl.opengl.GL21",
-    "GL30" to "org.lwjgl.opengl.GL30",
-    "GL31" to "org.lwjgl.opengl.GL31",
-    "GL32" to "org.lwjgl.opengl.GL32",
-    "GL33" to "org.lwjgl.opengl.GL33",
-    "GL40" to "org.lwjgl.opengl.GL40",
-    "GL41" to "org.lwjgl.opengl.GL41",
-    "GL42" to "org.lwjgl.opengl.GL42",
-    "GL43" to "org.lwjgl.opengl.GL43",
-    "GL44" to "org.lwjgl.opengl.GL44",
-    "GL45" to "org.lwjgl.opengl.GL45",
-)
+private val providedTypes = requireNotNull(object {}.javaClass.getResourceAsStream("/provided-types.properties"))
+    .bufferedReader()
+    .useLines { lines ->
+        lines.filter { it.isNotBlank() && !it.startsWith('#') }
+            .associate { line -> line.substringBefore('=') to line.substringAfter('=').replace('$', '.') }
+    }
 
 val prologue = """
     /// <reference no-default-lib="true" />
@@ -211,7 +124,7 @@ val prologue = """
       const HashMap: typeof java.util.HashMap;
       interface HashMap<K, V> extends java.util.HashMap<K, V> {}
       
-${providedTypes.entries.joinToString("") { (name, type) ->
+${providedTypes.entries.filterNot { it.key == "ArrayList" || it.key == "HashMap" }.joinToString("") { (name, type) ->
 "const $name: typeof $type;\ninterface $name extends $type {}\n"
 }.prependIndent("      ")}
 

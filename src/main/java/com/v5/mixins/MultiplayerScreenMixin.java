@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.screen.ProxyManagerScreen;
+import com.chattriggers.ctjs.api.client.ProxyManagerScreen;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;

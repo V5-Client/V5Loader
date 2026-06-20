@@ -3,7 +3,7 @@
     "id": "ctjs",
     "name": "V5",
     "version": "$version",
-    "description": "A ChatTriggers fork optimized for advanced automation and high-performance client-side scripting.",
+    "description": "A ChatTriggers fork that supports additional features.",
     "authors": ["Zurviq, rdbt, EpsilonPhoenix"],
     "contributors": ["Oblongboot", "Nathan", "IcyHenryT"],
     "icon": "assets/v5/icon.png",
@@ -20,8 +20,7 @@
         ],
         "client": [
             "com.chattriggers.ctjs.CTJS",
-            "com.v5.swift.Swift",
-            "com.v5.Entrypoint"
+            "com.chattriggers.ctjs.api.world.pathfinding.Swift"
         ]
     },
     "mixins": ["ctjs.mixins.json", "v5.mixins.json"],

@@ -19,7 +19,6 @@
         "AbstractBlockStateMixin",
         "BlockModelRendererMixin",
         "YggdrasilServicesKeyInfoMixin",
-        "GameOptionsAccessorMixin",
         "TranslationMixin",
         "ClientConnectionProxyMixin",
         "MultiplayerScreenMixin",
@@ -27,8 +26,6 @@
         "GameRendererMixin",
         "FirmamentModAnnouncerMixin",
         "DrawContextCapture",
-        "GlStateManagerMixin",
-        "FrustumInvoker",
         "WorldRendererMixin",
         "ScreenPanoramaMixin"
     ],

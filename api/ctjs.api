@@ -186,6 +186,14 @@ public final class com/chattriggers/ctjs/api/Mappings$Mapping$Companion {
 	public final fun fromMapped (Lnet/fabricmc/mappingio/tree/MappingTree$ElementMapping;)Lcom/chattriggers/ctjs/api/Mappings$Mapping;
 }
 
+public final class com/chattriggers/ctjs/api/V5Auth {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/V5Auth;
+	public static final fun getFreshJwtToken ()Ljava/lang/String;
+	public static final fun getJwtToken ()Ljava/lang/String;
+	public static final fun setJwtToken (Ljava/lang/String;)V
+	public static final fun shutDownHard ()Ljava/lang/Void;
+}
+
 public final class com/chattriggers/ctjs/api/client/CPS : com/chattriggers/ctjs/internal/utils/Initializer {
 	public static final field INSTANCE Lcom/chattriggers/ctjs/api/client/CPS;
 	public static final fun getLeftClicks ()I
@@ -264,6 +272,15 @@ public final class com/chattriggers/ctjs/api/client/Client$CurrentGuiWrapper {
 	public final fun getClassName ()Ljava/lang/String;
 	public final fun getSlotUnderMouse ()Lcom/chattriggers/ctjs/api/inventory/Slot;
 	public final fun set (Lnet/minecraft/client/gui/screen/Screen;)V
+}
+
+public final class com/chattriggers/ctjs/api/client/DiscordRPC {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/client/DiscordRPC;
+	public static final fun resetTimestamp ()V
+	public static final fun revertToIdle ()V
+	public static final fun stayOn ()V
+	public static final fun turnOff ()V
+	public static final fun updatePresence (Ljava/lang/String;Ljava/lang/String;)V
 }
 
 public final class com/chattriggers/ctjs/api/client/FileLib {
@@ -394,6 +411,92 @@ public final class com/chattriggers/ctjs/api/client/Player$ArmorWrapper {
 	public final fun getChestplate ()Lcom/chattriggers/ctjs/api/inventory/Item;
 	public final fun getHelmet ()Lcom/chattriggers/ctjs/api/inventory/Item;
 	public final fun getLeggings ()Lcom/chattriggers/ctjs/api/inventory/Item;
+}
+
+public final class com/chattriggers/ctjs/api/client/Proxy {
+	public fun <init> (Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Z
+	public final fun copy (Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lcom/chattriggers/ctjs/api/client/Proxy;
+	public static synthetic fun copy$default (Lcom/chattriggers/ctjs/api/client/Proxy;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Lcom/chattriggers/ctjs/api/client/Proxy;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIp ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getPassword ()Ljava/lang/String;
+	public final fun getPort ()I
+	public final fun getUsername ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isEnabled ()Z
+	public final fun setEnabled (Z)V
+	public final fun setIp (Ljava/lang/String;)V
+	public final fun setName (Ljava/lang/String;)V
+	public final fun setPassword (Ljava/lang/String;)V
+	public final fun setPort (I)V
+	public final fun setUsername (Ljava/lang/String;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/chattriggers/ctjs/api/client/ProxyEditScreen : net/minecraft/client/gui/screen/Screen {
+	public fun <init> (Lcom/chattriggers/ctjs/api/client/ProxyManagerScreen;Lcom/chattriggers/ctjs/api/client/Proxy;)V
+	public fun close ()V
+	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
+	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+	public fun renderBackground (Lnet/minecraft/client/gui/DrawContext;IIF)V
+}
+
+public final class com/chattriggers/ctjs/api/client/ProxyInfo {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/client/ProxyInfo;
+	public static final fun addProxy (Lcom/chattriggers/ctjs/api/client/Proxy;)V
+	public static final fun getEnabledProxies ()Ljava/util/List;
+	public static final fun getProxies ()Ljava/util/List;
+	public static final fun removeProxy (Lcom/chattriggers/ctjs/api/client/Proxy;)V
+	public static final fun setProxyEnabled (Lcom/chattriggers/ctjs/api/client/Proxy;Z)V
+	public static final fun updateProxy (Lcom/chattriggers/ctjs/api/client/Proxy;Lcom/chattriggers/ctjs/api/client/Proxy;)V
+}
+
+public final class com/chattriggers/ctjs/api/client/ProxyManagerScreen : net/minecraft/client/gui/screen/Screen {
+	public fun <init> (Lnet/minecraft/client/gui/screen/Screen;)V
+	public fun close ()V
+	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
+	public fun mouseScrolled (DDDD)Z
+	public final fun refreshList ()V
+	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+	public fun renderBackground (Lnet/minecraft/client/gui/DrawContext;IIF)V
+}
+
+public final class com/chattriggers/ctjs/api/client/ScreenHelper {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/client/ScreenHelper;
+	public static final field smallerFont Lcom/chattriggers/ctjs/api/render/Font;
+	public static final field titleFont Lcom/chattriggers/ctjs/api/render/Font;
+	public static final fun argb (IIII)I
+	public static final fun drawMenuButton (Ljava/lang/String;FFFFZLjava/lang/Integer;)V
+	public static synthetic fun drawMenuButton$default (Ljava/lang/String;FFFFZLjava/lang/Integer;ILjava/lang/Object;)V
+}
+
+public final class com/chattriggers/ctjs/api/client/ScreenHelper$MenuButton {
+	public fun <init> (Ljava/lang/String;IIIILkotlin/jvm/functions/Function0;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun component5 ()I
+	public final fun component6 ()Lkotlin/jvm/functions/Function0;
+	public final fun copy (Ljava/lang/String;IIIILkotlin/jvm/functions/Function0;)Lcom/chattriggers/ctjs/api/client/ScreenHelper$MenuButton;
+	public static synthetic fun copy$default (Lcom/chattriggers/ctjs/api/client/ScreenHelper$MenuButton;Ljava/lang/String;IIIILkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/chattriggers/ctjs/api/client/ScreenHelper$MenuButton;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()I
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getOnClick ()Lkotlin/jvm/functions/Function0;
+	public final fun getWidth ()I
+	public final fun getX ()I
+	public final fun getY ()I
+	public fun hashCode ()I
+	public final fun isHovered (II)Z
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/chattriggers/ctjs/api/client/Settings {
@@ -684,6 +787,28 @@ public final class com/chattriggers/ctjs/api/client/Sound$Category : java/lang/E
 public final class com/chattriggers/ctjs/api/client/Sound$Category$Companion {
 	public final fun from (Ljava/lang/Object;)Lcom/chattriggers/ctjs/api/client/Sound$Category;
 	public final fun fromMC (Lnet/minecraft/sound/SoundCategory;)Lcom/chattriggers/ctjs/api/client/Sound$Category;
+}
+
+public final class com/chattriggers/ctjs/api/client/V5MainMenuScreen : net/minecraft/client/gui/screen/Screen {
+	public fun <init> ()V
+	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
+	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+	public fun renderBackground (Lnet/minecraft/client/gui/DrawContext;IIF)V
+	public fun shouldCloseOnEsc ()Z
+}
+
+public final class com/chattriggers/ctjs/api/client/WelcomeScreen : net/minecraft/client/gui/screen/Screen {
+	public static final field Companion Lcom/chattriggers/ctjs/api/client/WelcomeScreen$Companion;
+	public fun <init> ()V
+	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
+	public fun mouseReleased (Lnet/minecraft/client/gui/Click;)Z
+	public static final fun open ()V
+	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+	public fun shouldCloseOnEsc ()Z
+}
+
+public final class com/chattriggers/ctjs/api/client/WelcomeScreen$Companion {
+	public final fun open ()V
 }
 
 public final class com/chattriggers/ctjs/api/commands/DynamicCommands : com/chattriggers/ctjs/internal/commands/CommandCollection {
@@ -1452,6 +1577,11 @@ public final class com/chattriggers/ctjs/api/inventory/nbt/NBTTagList : com/chat
 	public final fun toArray ()Lorg/mozilla/javascript/NativeArray;
 }
 
+public final class com/chattriggers/ctjs/api/message/Chat {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/message/Chat;
+	public static final fun sendGradientMsg (Ljava/lang/String;II[Ljava/lang/Object;)V
+}
+
 public final class com/chattriggers/ctjs/api/message/ChatLib {
 	public static final field INSTANCE Lcom/chattriggers/ctjs/api/message/ChatLib;
 	public static final fun actionBar (Ljava/lang/Object;)V
@@ -1620,6 +1750,21 @@ public final class com/chattriggers/ctjs/api/render/Display$Order : java/lang/En
 	public static fun values ()[Lcom/chattriggers/ctjs/api/render/Display$Order;
 }
 
+public final class com/chattriggers/ctjs/api/render/DrawContextHolder {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/render/DrawContextHolder;
+	public static final fun getCurrentContext ()Lnet/minecraft/client/gui/DrawContext;
+	public static final fun setCurrentContext (Lnet/minecraft/client/gui/DrawContext;)V
+}
+
+public final class com/chattriggers/ctjs/api/render/Font {
+	public fun <init> (Ljava/lang/String;Ljava/io/InputStream;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun buffer ()Ljava/nio/ByteBuffer;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+}
+
 public final class com/chattriggers/ctjs/api/render/Gui : gg/essential/universal/UScreen {
 	public fun <init> ()V
 	public fun <init> (Lcom/chattriggers/ctjs/api/message/TextComponent;)V
@@ -1727,6 +1872,100 @@ public final class com/chattriggers/ctjs/api/render/LegacyPipelineBuilder {
 	public final fun state ()Ljava/lang/String;
 }
 
+public final class com/chattriggers/ctjs/api/render/NVGRenderer {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/render/NVGRenderer;
+	public static field vg J
+	public static final fun beginFrame (FF)V
+	public static final fun clearImageCache ()V
+	public static final fun destroy ()V
+	public static final fun drawCheckerboard (FFFFF)V
+	public static final fun drawCheckerboard (FFFFFF)V
+	public static synthetic fun drawCheckerboard$default (FFFFFFILjava/lang/Object;)V
+	public static final fun drawCircle (FFFI)V
+	public static final fun drawDropShadow (FFFFFFFI)V
+	public static final fun drawGLTexture (IIIFFFF)V
+	public static final fun drawGLTexture (IIIFFFFF)V
+	public static final fun drawGLTexture (IIIFFFFFF)V
+	public static synthetic fun drawGLTexture$default (IIIFFFFFFILjava/lang/Object;)V
+	public static final fun drawGLTextureRegion (IIIIIIIFFFF)V
+	public static final fun drawGLTextureRegion (IIIIIIIFFFFF)V
+	public static final fun drawGLTextureRegion (IIIIIIIFFFFFF)V
+	public static synthetic fun drawGLTextureRegion$default (IIIIIIIFFFFFFILjava/lang/Object;)V
+	public static final fun drawGif (Ljava/lang/String;FFFFI)V
+	public static final fun drawGif (Ljava/lang/String;FFFFIF)V
+	public static final fun drawGif (Ljava/lang/String;FFFFIFF)V
+	public static synthetic fun drawGif$default (Ljava/lang/String;FFFFIFFILjava/lang/Object;)V
+	public static final fun drawGradientRect (FFFFIILjava/lang/Object;)V
+	public static final fun drawGradientRect (FFFFIILjava/lang/Object;F)V
+	public static synthetic fun drawGradientRect$default (FFFFIILjava/lang/Object;FILjava/lang/Object;)V
+	public static final fun drawHollowGradientRect (FFFFFIILjava/lang/Object;)V
+	public static final fun drawHollowGradientRect (FFFFFIILjava/lang/Object;F)V
+	public static synthetic fun drawHollowGradientRect$default (FFFFFIILjava/lang/Object;FILjava/lang/Object;)V
+	public static final fun drawHollowRect (FFFFFI)V
+	public static final fun drawHollowRect (FFFFFIF)V
+	public static synthetic fun drawHollowRect$default (FFFFFIFILjava/lang/Object;)V
+	public static final fun drawHueBar (FFFFF)V
+	public static final fun drawImage (Ljava/lang/String;FFFF)V
+	public static final fun drawImage (Ljava/lang/String;FFFFF)V
+	public static final fun drawImage (Ljava/lang/String;FFFFFF)V
+	public static synthetic fun drawImage$default (Ljava/lang/String;FFFFFFILjava/lang/Object;)V
+	public static final fun drawImageFromUrl (Ljava/lang/String;FFFF)V
+	public static final fun drawImageFromUrl (Ljava/lang/String;FFFFF)V
+	public static final fun drawImageFromUrl (Ljava/lang/String;FFFFFF)V
+	public static synthetic fun drawImageFromUrl$default (Ljava/lang/String;FFFFFFILjava/lang/Object;)V
+	public static final fun drawLine (FFFFFI)V
+	public static final fun drawRect (FFFFI)V
+	public static final fun drawRoundedRect (FFFFFI)V
+	public static final fun drawRoundedRectVaried (FFFFIFFFF)V
+	public static final fun endFrame ()V
+	public static final fun getCacheStats ()Ljava/lang/String;
+	public final fun getDefaultFont ()Lcom/chattriggers/ctjs/api/render/Font;
+	public static final fun globalAlpha (F)V
+	public static final fun invalidateGLTexture (I)V
+	public static final fun isImageLoaded (Ljava/lang/String;)Z
+	public static final fun linearGradient (FFFFII)V
+	public static final fun loadGif (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/render/NVGRenderer$GifData;
+	public static final fun loadImage (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun popScissor ()V
+	public static final fun pushScissor (FFFF)V
+	public static final fun registerV5Render (Ljava/lang/Runnable;)V
+	public static final fun resetScissor ()V
+	public static final fun restore ()V
+	public static final fun rotate (F)V
+	public static final fun runDrawables ()V
+	public static final fun save ()V
+	public static final fun scale (FF)V
+	public static final fun scissor (FFFF)V
+	public static final fun setGlobalCompositeOperation (I)V
+	public static final fun text (Ljava/lang/String;FFFII)V
+	public static final fun text (Ljava/lang/String;FFFILcom/chattriggers/ctjs/api/render/Font;I)V
+	public static synthetic fun text$default (Ljava/lang/String;FFFILcom/chattriggers/ctjs/api/render/Font;IILjava/lang/Object;)V
+	public static final fun textWidth (Ljava/lang/String;F)F
+	public static final fun textWidth (Ljava/lang/String;FLcom/chattriggers/ctjs/api/render/Font;)F
+	public static synthetic fun textWidth$default (Ljava/lang/String;FLcom/chattriggers/ctjs/api/render/Font;ILjava/lang/Object;)F
+	public static final fun translate (FF)V
+	public static final fun unloadGif (Ljava/lang/String;)V
+	public static final fun unloadImage (Ljava/lang/String;)V
+	public static final fun unregisterV5Render (Ljava/lang/Runnable;)V
+}
+
+public final class com/chattriggers/ctjs/api/render/NVGRenderer$GifData {
+	public fun <init> (III[I)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()[I
+	public final fun copy (III[I)Lcom/chattriggers/ctjs/api/render/NVGRenderer$GifData;
+	public static synthetic fun copy$default (Lcom/chattriggers/ctjs/api/render/NVGRenderer$GifData;III[IILjava/lang/Object;)Lcom/chattriggers/ctjs/api/render/NVGRenderer$GifData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDelays ()[I
+	public final fun getFrameCount ()I
+	public final fun getHeight ()I
+	public final fun getWidth ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class com/chattriggers/ctjs/api/render/Rectangle {
 	public fun <init> (JFFFF)V
 	public final fun draw ()Lcom/chattriggers/ctjs/api/render/Rectangle;
@@ -1758,6 +1997,94 @@ public final class com/chattriggers/ctjs/api/render/Rectangle {
 	public final fun setWidth (F)Lcom/chattriggers/ctjs/api/render/Rectangle;
 	public final fun setX (F)Lcom/chattriggers/ctjs/api/render/Rectangle;
 	public final fun setY (F)Lcom/chattriggers/ctjs/api/render/Rectangle;
+}
+
+public final class com/chattriggers/ctjs/api/render/RenderLayers {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/render/RenderLayers;
+	public static final field LINE_LIST Lnet/minecraft/client/render/RenderLayer;
+	public static final field LINE_LIST_ESP Lnet/minecraft/client/render/RenderLayer;
+	public static final field TRIANGLE_STRIP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
+	public static final field TRIANGLE_STRIP_ESP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
+}
+
+public final class com/chattriggers/ctjs/api/render/RenderPipelines {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/render/RenderPipelines;
+	public static final field LINE_LIST Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+	public static final field LINE_LIST_ESP Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+	public static final field TRIANGLE_STRIP Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+	public static final field TRIANGLE_STRIP_ESP Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+}
+
+public final class com/chattriggers/ctjs/api/render/RenderUtils {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/render/RenderUtils;
+	public static final fun drawBox (Lnet/minecraft/util/math/Box;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;)V
+	public static final fun drawBox (Lnet/minecraft/util/math/Box;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;F)V
+	public static final fun drawBox (Lnet/minecraft/util/math/Box;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawBox$default (Lnet/minecraft/util/math/Box;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static final fun drawFilledBox (Lnet/minecraft/util/math/Box;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;)V
+	public static final fun drawFilledBox (Lnet/minecraft/util/math/Box;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;Z)V
+	public static final fun drawFilledBox (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;)V
+	public static final fun drawFilledBox (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;Z)V
+	public static synthetic fun drawFilledBox$default (Lnet/minecraft/util/math/Box;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;ZILjava/lang/Object;)V
+	public static synthetic fun drawFilledBox$default (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;ZILjava/lang/Object;)V
+	public static final fun drawHitbox (Lnet/minecraft/entity/Entity;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;)V
+	public static final fun drawHitbox (Lnet/minecraft/entity/Entity;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;F)V
+	public static final fun drawHitbox (Lnet/minecraft/entity/Entity;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawHitbox$default (Lnet/minecraft/entity/Entity;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static final fun drawLine (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;)V
+	public static final fun drawLine (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;F)V
+	public static final fun drawLine (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawLine$default (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static final fun drawSizedBox (Lnet/minecraft/util/math/Vec3d;DDDLcom/chattriggers/ctjs/api/render/RenderUtils$Color;)V
+	public static final fun drawSizedBox (Lnet/minecraft/util/math/Vec3d;DDDLcom/chattriggers/ctjs/api/render/RenderUtils$Color;Z)V
+	public static final fun drawSizedBox (Lnet/minecraft/util/math/Vec3d;DDDLcom/chattriggers/ctjs/api/render/RenderUtils$Color;ZF)V
+	public static final fun drawSizedBox (Lnet/minecraft/util/math/Vec3d;DDDLcom/chattriggers/ctjs/api/render/RenderUtils$Color;ZFZ)V
+	public static synthetic fun drawSizedBox$default (Lnet/minecraft/util/math/Vec3d;DDDLcom/chattriggers/ctjs/api/render/RenderUtils$Color;ZFZILjava/lang/Object;)V
+	public static final fun drawStyledBox (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;)V
+	public static final fun drawStyledBox (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;F)V
+	public static final fun drawStyledBox (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawStyledBox$default (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static final fun drawText (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;)V
+	public static final fun drawText (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;F)V
+	public static final fun drawText (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;FZ)V
+	public static final fun drawText (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;FZZ)V
+	public static final fun drawText (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;FZZZ)V
+	public static final fun drawText (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;FZZZZ)V
+	public static synthetic fun drawText$default (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;FZZZZILjava/lang/Object;)V
+	public static final fun drawTracer (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;)V
+	public static final fun drawTracer (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;F)V
+	public static final fun drawTracer (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawTracer$default (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static final fun drawWireFrameBox (Lnet/minecraft/util/math/Box;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;)V
+	public static final fun drawWireFrameBox (Lnet/minecraft/util/math/Box;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;F)V
+	public static final fun drawWireFrameBox (Lnet/minecraft/util/math/Box;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZ)V
+	public static final fun drawWireFrameBox (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;)V
+	public static final fun drawWireFrameBox (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;F)V
+	public static final fun drawWireFrameBox (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZ)V
+	public static synthetic fun drawWireFrameBox$default (Lnet/minecraft/util/math/Box;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZILjava/lang/Object;)V
+	public static synthetic fun drawWireFrameBox$default (Lnet/minecraft/util/math/Vec3d;Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;FZILjava/lang/Object;)V
+}
+
+public final class com/chattriggers/ctjs/api/render/RenderUtils$Color {
+	public fun <init> (IIII)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun copy (IIII)Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;
+	public static synthetic fun copy$default (Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;IIIIILjava/lang/Object;)Lcom/chattriggers/ctjs/api/render/RenderUtils$Color;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getA ()I
+	public final fun getAf ()F
+	public final fun getB ()I
+	public final fun getBf ()F
+	public final fun getG ()I
+	public final fun getGf ()F
+	public final fun getPacked ()I
+	public final fun getR ()I
+	public final fun getRf ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class com/chattriggers/ctjs/api/render/Renderer {
@@ -1997,6 +2324,13 @@ public final class com/chattriggers/ctjs/api/render/Renderer3d {
 	public static final fun tex (FF)Lcom/chattriggers/ctjs/api/render/Renderer3d;
 }
 
+public final class com/chattriggers/ctjs/api/render/ShaderUtils {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/render/ShaderUtils;
+	public static final fun currentBackgroundShaderName ()Ljava/lang/String;
+	public static final fun cycleBackgroundShader ()Ljava/lang/String;
+	public static final fun renderBackground (DD)Z
+}
+
 public final class com/chattriggers/ctjs/api/render/Shape {
 	public fun <init> (J)V
 	public final fun addVertex (FF)Lcom/chattriggers/ctjs/api/render/Shape;
@@ -2085,6 +2419,16 @@ public final class com/chattriggers/ctjs/api/render/Toast : net/minecraft/client
 	public final fun setTitle (Ljava/lang/Object;)V
 	public final fun show ()Lcom/chattriggers/ctjs/api/render/Toast;
 	public fun update (Lnet/minecraft/client/toast/ToastManager;J)V
+}
+
+public final class com/chattriggers/ctjs/api/render/Xray {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/render/Xray;
+	public static field alpha I
+	public static field isEnabled Z
+	public static final fun returnAlpha (Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)I
+	public static final fun setAlpha (I)V
+	public static final fun setDisabled ()V
+	public static final fun setEnabled ()V
 }
 
 public class com/chattriggers/ctjs/api/triggers/CancellableEvent {
@@ -2191,6 +2535,15 @@ public final class com/chattriggers/ctjs/api/triggers/ITriggerType$DefaultImpls 
 	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
 	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
 	public static fun triggerAll (Lcom/chattriggers/ctjs/api/triggers/ITriggerType;[Ljava/lang/Object;)V
+}
+
+public final class com/chattriggers/ctjs/api/triggers/PacketEvent {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/triggers/PacketEvent;
+	public static final field RECEIVE Lnet/fabricmc/fabric/api/event/Event;
+}
+
+public abstract interface class com/chattriggers/ctjs/api/triggers/PacketEvent$ReceiveEvent {
+	public abstract fun trigger (Lnet/minecraft/network/packet/Packet;)V
 }
 
 public final class com/chattriggers/ctjs/api/triggers/PacketTrigger : com/chattriggers/ctjs/api/triggers/ClassFilterTrigger {
@@ -2583,6 +2936,15 @@ public final class com/chattriggers/ctjs/api/world/Server {
 	public static final fun toMC ()Lnet/minecraft/client/network/ServerInfo;
 }
 
+public final class com/chattriggers/ctjs/api/world/StructureFinder {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/StructureFinder;
+	public static final fun clear ()V
+	public static final fun getRenderBlocksArray ()[I
+	public static final fun shutdown ()V
+	public static final fun submitBlockUpdate (III)V
+	public static final fun submitChunkScan (II)V
+}
+
 public final class com/chattriggers/ctjs/api/world/TabList {
 	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/TabList;
 	public static final fun addName (Lcom/chattriggers/ctjs/api/message/TextComponent;)V
@@ -2877,6 +3239,304 @@ public final class com/chattriggers/ctjs/api/world/block/BlockType : com/chattri
 	public final fun withBlockPos (Lcom/chattriggers/ctjs/api/world/block/BlockPos;)Lcom/chattriggers/ctjs/api/world/block/Block;
 }
 
+public final class com/chattriggers/ctjs/api/world/pathfinding/CachedChunk {
+	public static final field AIR_FLAGS S
+	public static final field Companion Lcom/chattriggers/ctjs/api/world/pathfinding/CachedChunk$Companion;
+	public final field maxY I
+	public final field minY I
+	public field ready Z
+	public fun <init> (II)V
+	public final fun copySectionFlags (I[SI)V
+	public final fun getFlags (III)S
+	public final fun hasSection (I)Z
+	public final fun setFlags (IIIS)V
+	public final fun setSection (I[S)V
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/CachedChunk$Companion {
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/CachedWorld {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/pathfinding/CachedWorld;
+	public final fun clear ()V
+	public static final fun getBlockFlags (III)Ljava/lang/Short;
+	public final fun getCacheStats ()Ljava/lang/String;
+	public static final fun getChunk (II)Lcom/chattriggers/ctjs/api/world/pathfinding/CachedChunk;
+	public final fun load (Ljava/lang/String;)V
+	public final fun onPacketReceive (Lnet/minecraft/network/packet/Packet;)V
+	public final fun processPendingChunks ()V
+	public final fun saveAndClear (Ljava/lang/String;)V
+	public final fun setUnlimitedChunkCache (Z)V
+	public final fun setWorldKey (Ljava/lang/String;)V
+	public final fun waitForLoad ()V
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/EtherwarpLandingCandidatesResult {
+	public final field centers [D
+	public final field goals [I
+	public fun <init> ([I[D)V
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/HypixelManager {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/pathfinding/HypixelManager;
+	public final fun init ()V
+	public final fun onDisconnect ()V
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/NativeEtherwarpResult {
+	public final field angles [F
+	public final field nanosecondsPerNode D
+	public final field nodesExplored I
+	public final field path [I
+	public final field timeMs J
+	public fun <init> ([I[FJID)V
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/NativePathResult {
+	public final field keyNodeFlags [I
+	public final field keyNodeMetrics [I
+	public final field keyPath [I
+	public final field nanosecondsPerNode D
+	public final field nodesExplored I
+	public final field path [I
+	public final field pathFlags [I
+	public final field pathSignature Ljava/lang/String;
+	public final field selectedStartIndex I
+	public final field timeMs J
+	public fun <init> ([I[IJIDI[I[I[ILjava/lang/String;)V
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge;
+	public static final fun applyBlockUpdates ([I)V
+	public static final fun cancelSearch ()V
+	public static final fun clearWorld ()V
+	public static final fun findEtherwarpPath (Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge$NativeEtherwarpSearchRequest;)Lcom/chattriggers/ctjs/api/world/pathfinding/NativeEtherwarpResult;
+	public static final fun findPath (Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge$NativePathSearchRequest;)Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathResult;
+	public static final fun getLastError ()Ljava/lang/String;
+	public static final fun isAvailable ()Z
+	public static final fun setWorld (Ljava/lang/String;II)V
+	public static final fun upsertChunk (IIIIJ[S)V
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge$NativeEtherwarpSearchRequest {
+	public fun <init> (IIIDDDIIDDDDDDD)V
+	public final fun component1 ()I
+	public final fun component10 ()D
+	public final fun component11 ()D
+	public final fun component12 ()D
+	public final fun component13 ()D
+	public final fun component14 ()D
+	public final fun component15 ()D
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()D
+	public final fun component5 ()D
+	public final fun component6 ()D
+	public final fun component7 ()I
+	public final fun component8 ()I
+	public final fun component9 ()D
+	public final fun copy (IIIDDDIIDDDDDDD)Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge$NativeEtherwarpSearchRequest;
+	public static synthetic fun copy$default (Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge$NativeEtherwarpSearchRequest;IIIDDDIIDDDDDDDILjava/lang/Object;)Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge$NativeEtherwarpSearchRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEyeHeight ()D
+	public final fun getGoalX ()I
+	public final fun getGoalY ()I
+	public final fun getGoalZ ()I
+	public final fun getHeuristicWeight ()D
+	public final fun getMaxIterations ()I
+	public final fun getNewNodeCost ()D
+	public final fun getPitchStep ()D
+	public final fun getRayLength ()D
+	public final fun getRewireEpsilon ()D
+	public final fun getStartEyeX ()D
+	public final fun getStartEyeY ()D
+	public final fun getStartEyeZ ()D
+	public final fun getThreadCount ()I
+	public final fun getYawStep ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge$NativePathSearchRequest {
+	public fun <init> ([I[IZIDDI[I[D)V
+	public final fun component1 ()[I
+	public final fun component2 ()[I
+	public final fun component3 ()Z
+	public final fun component4 ()I
+	public final fun component5 ()D
+	public final fun component6 ()D
+	public final fun component7 ()I
+	public final fun component8 ()[I
+	public final fun component9 ()[D
+	public final fun copy ([I[IZIDDI[I[D)Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge$NativePathSearchRequest;
+	public static synthetic fun copy$default (Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge$NativePathSearchRequest;[I[IZIDDI[I[DILjava/lang/Object;)Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathfinderBridge$NativePathSearchRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAvoidMeta ()[I
+	public final fun getAvoidPenalty ()[D
+	public final fun getEndPoints ()[I
+	public final fun getHeuristicWeight ()D
+	public final fun getMaxIterations ()I
+	public final fun getMoveOrderOffset ()I
+	public final fun getNonPrimaryStartPenalty ()D
+	public final fun getStartPoints ()[I
+	public fun hashCode ()I
+	public final fun isFly ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/NativePathfinderJNI {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathfinderJNI;
+	public static final fun applyBlockUpdates ([I)V
+	public static final fun cancelSearch ()V
+	public static final fun clearWorld ()V
+	public static final fun findEtherwarpPath (IIIDDDIIDDDDDDD)Lcom/chattriggers/ctjs/api/world/pathfinding/NativeEtherwarpResult;
+	public static final fun findPath ([I[IZIDDI[I[D)Lcom/chattriggers/ctjs/api/world/pathfinding/NativePathResult;
+	public static final fun getLoadError ()Ljava/lang/String;
+	public static final fun initNative ()Z
+	public static final fun initialize ()Z
+	public static final fun isAvailable ()Z
+	public static final fun setWorld (Ljava/lang/String;II)V
+	public static final fun upsertChunk (IIIIJ[S)V
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/NativeStateEncoder {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/pathfinding/NativeStateEncoder;
+	public static final fun flagsForState (Lnet/minecraft/block/BlockState;)I
+	public static final fun flagsForStateId (I)I
+	public static final fun flagsShortForState (Lnet/minecraft/block/BlockState;)S
+	public static final fun flagsShortForStateId (I)S
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/NativeVoxelFlags {
+	public static final field BLOCKING_WALL I
+	public static final field CARPET_LIKE I
+	public static final field ETHER_FEET_BLOCKER I
+	public static final field ETHER_PASSABLE I
+	public static final field ETHER_TELEPORT_CLEAR I
+	public static final field FENCE_LIKE I
+	public static final field FLUID I
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/pathfinding/NativeVoxelFlags;
+	public static final field PASSABLE I
+	public static final field PASSABLE_FLY I
+	public static final field SLAB_BOTTOM I
+	public static final field SLAB_TOP I
+	public static final field SOLID I
+	public static final field STAIRS_BOTTOM I
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/PathManager {
+	public static final field ETHERWARP_VOXEL_FEET_BLOCKER I
+	public static final field ETHERWARP_VOXEL_FENCE_LIKE I
+	public static final field ETHERWARP_VOXEL_SOLID I
+	public static final field ETHERWARP_VOXEL_TELEPORT_CLEAR I
+	public static final field FLAG_DROP_NEXT I
+	public static final field FLAG_FLUID_FEET I
+	public static final field FLAG_FLUID_HEAD I
+	public static final field FLAG_LOW_HEADROOM I
+	public static final field FLAG_NEAR_EDGE I
+	public static final field FLAG_NEAR_WALL I
+	public static final field FLAG_STEP_UP_NEXT I
+	public static final field FLAG_TIGHT_CORRIDOR I
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/pathfinding/PathManager;
+	public static final fun addTransientAvoidPoint (III)V
+	public static final fun addTransientAvoidPoint (IIII)V
+	public static final fun addTransientAvoidPoint (IIIID)V
+	public static final fun addTransientAvoidPoint (IIIIDI)V
+	public static synthetic fun addTransientAvoidPoint$default (IIIIDIILjava/lang/Object;)V
+	public static final fun addTransientAvoidPoints ([I)V
+	public static final fun addTransientAvoidPoints ([II)V
+	public static final fun addTransientAvoidPoints ([IID)V
+	public static final fun addTransientAvoidPoints ([IIDI)V
+	public static synthetic fun addTransientAvoidPoints$default ([IIDIILjava/lang/Object;)V
+	public static final fun cancelSearch ()V
+	public static final fun clear ()V
+	public static final fun clearTransientAvoidPoints ()V
+	public static final fun findEtherwarpPath (III)Z
+	public static final fun findEtherwarpPath (IIII)Z
+	public static final fun findEtherwarpPath (IIIII)Z
+	public static final fun findEtherwarpPath (IIIIID)Z
+	public static final fun findEtherwarpPath (IIIIIDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDDDD)Z
+	public static final fun findEtherwarpPath (IIIIIDDDDDDD)Z
+	public static synthetic fun findEtherwarpPath$default (IIIIIDDDDDDDILjava/lang/Object;)Z
+	public static final fun findFlyPath ([[I[[I)Z
+	public static final fun findFlyPath ([[I[[II)Z
+	public static synthetic fun findFlyPath$default ([[I[[IIILjava/lang/Object;)Z
+	public static final fun findPath (IIIIII)Z
+	public static final fun findPath (IIIIIII)Z
+	public static final fun findPath (IIIIIIIZ)Z
+	public static final fun findPath ([[I[[I)Z
+	public static final fun findPath ([[I[[II)Z
+	public static final fun findPath ([[I[[IIZ)Z
+	public static synthetic fun findPath$default (IIIIIIIZILjava/lang/Object;)Z
+	public static synthetic fun findPath$default ([[I[[IIZILjava/lang/Object;)Z
+	public static final fun findPathMultipleGoals (III[I)Z
+	public static final fun findPathMultipleGoals (III[II)Z
+	public static final fun findPathMultipleGoals (III[IIZ)Z
+	public static synthetic fun findPathMultipleGoals$default (III[IIZILjava/lang/Object;)Z
+	public static final fun getCurrentEtherwarpEyeHeight ()D
+	public static final fun getCurrentEtherwarpSneakOffset ()D
+	public static final fun getEtherwarpAnglesArray ()[F
+	public static final fun getEtherwarpLandingCandidates (DDDIDDDD)Lcom/chattriggers/ctjs/api/world/pathfinding/EtherwarpLandingCandidatesResult;
+	public static final fun getEtherwarpLandingCenter (III)[D
+	public static final fun getEtherwarpLastTimeMs ()J
+	public static final fun getEtherwarpNanosecondsPerNode ()D
+	public static final fun getEtherwarpNodesExplored ()I
+	public static final fun getEtherwarpPathArray ()[I
+	public static final fun getEtherwarpPathSize ()I
+	public static final fun getEtherwarpStandOffsetForFlags (I)I
+	public static final fun getEtherwarpVoxelFlagsAt (III)I
+	public static final fun getKeyNodeCount ()I
+	public static final fun getKeyNodeFlagsArray ()[I
+	public static final fun getKeyNodeMetricsArray ()[I
+	public static final fun getKeyNodesArray ()[I
+	public static final fun getLastError ()Ljava/lang/String;
+	public static final fun getLastTimeMs ()J
+	public static final fun getNanosecondsPerNode ()D
+	public static final fun getNodesExplored ()I
+	public static final fun getPathArray ()[I
+	public static final fun getPathFlagBits ()[I
+	public static final fun getPathFlagsArray ()[I
+	public static final fun getPathSignature ()Ljava/lang/String;
+	public static final fun getPathSize ()I
+	public static final fun getSelectedStartIndex ()I
+	public static final fun hasEtherwarpPath ()Z
+	public static final fun hasPath ()Z
+	public static final fun isEtherwarpSupportSolid (I)Z
+	public static final fun isEtherwarpTeleportSpaceClearFlags (I)Z
+	public static final fun isSearching ()Z
+	public static final fun isValidEtherwarpLanding (III)Z
+	public static final fun setSearchVariantSeed (I)V
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/Swift : net/fabricmc/api/ClientModInitializer {
+	public static final field CHUNKS_PER_TICK I
+	public static final field Companion Lcom/chattriggers/ctjs/api/world/pathfinding/Swift$Companion;
+	public static final field MAXIMUM_CACHED_CHUNKS I
+	public static final field executor Ljava/util/concurrent/ExecutorService;
+	public fun <init> ()V
+	public fun onInitializeClient ()V
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/Swift$Companion {
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/WorldSerializer {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/pathfinding/WorldSerializer;
+	public final fun load (Ljava/lang/String;)Ljava/util/concurrent/ConcurrentHashMap;
+	public final fun save (Ljava/lang/String;Ljava/util/Map;)V
+}
+
+public final class com/chattriggers/ctjs/api/world/pathfinding/WynncraftManager {
+	public static final field INSTANCE Lcom/chattriggers/ctjs/api/world/pathfinding/WynncraftManager;
+	public final fun init ()V
+	public final fun onDisconnect ()V
+}
+
 public final class com/chattriggers/ctjs/engine/Console {
 	public static final field INSTANCE Lcom/chattriggers/ctjs/engine/Console;
 	public final fun clear ()V
@@ -3002,106 +3662,6 @@ public final class com/chattriggers/ctjs/engine/WrappedThread$Companion {
 	public static synthetic fun sleep$default (Lcom/chattriggers/ctjs/engine/WrappedThread$Companion;JIILjava/lang/Object;)V
 }
 
-public final class com/v5/Entrypoint : net/fabricmc/api/ClientModInitializer {
-	public fun <init> ()V
-	public fun onInitializeClient ()V
-}
-
-public final class com/v5/api/V5Auth {
-	public static final field INSTANCE Lcom/v5/api/V5Auth;
-	public static final fun getFreshJwtToken ()Ljava/lang/String;
-	public static final fun getJwtToken ()Ljava/lang/String;
-	public static final fun setJwtToken (Ljava/lang/String;)V
-	public static final fun shutDownHard ()Ljava/lang/Void;
-}
-
-public final class com/v5/event/Context {
-	public field camera Lnet/minecraft/client/render/Camera;
-	public field consumers Lnet/minecraft/client/render/VertexConsumerProvider;
-	public field frustum Lnet/minecraft/client/render/Frustum;
-	public fun <init> ()V
-	public final fun getCamera ()Lnet/minecraft/client/render/Camera;
-	public final fun getConsumers ()Lnet/minecraft/client/render/VertexConsumerProvider;
-	public final fun getFrustum ()Lnet/minecraft/client/render/Frustum;
-	public final fun getMatrixStack ()Lnet/minecraft/client/util/math/MatrixStack;
-	public final fun setCamera (Lnet/minecraft/client/render/Camera;)V
-	public final fun setConsumers (Lnet/minecraft/client/render/VertexConsumerProvider;)V
-	public final fun setFrustum (Lnet/minecraft/client/render/Frustum;)V
-	public final fun setMatrixStack (Lnet/minecraft/client/util/math/MatrixStack;)V
-}
-
-public final class com/v5/event/PacketEvent {
-	public static final field INSTANCE Lcom/v5/event/PacketEvent;
-	public static final field RECEIVE Lnet/fabricmc/fabric/api/event/Event;
-}
-
-public abstract interface class com/v5/event/PacketEvent$ReceiveEvent {
-	public abstract fun trigger (Lnet/minecraft/network/packet/Packet;)V
-}
-
-public final class com/v5/event/WorldRenderEvent {
-	public static final field INSTANCE Lcom/v5/event/WorldRenderEvent;
-	public static final field LAST Lnet/fabricmc/fabric/api/event/Event;
-	public static final field START Lnet/fabricmc/fabric/api/event/Event;
-}
-
-public abstract interface class com/v5/event/WorldRenderEvent$LastEvent {
-	public abstract fun trigger (Lcom/v5/event/Context;)V
-}
-
-public abstract interface class com/v5/event/WorldRenderEvent$StartEvent {
-	public abstract fun trigger (Lcom/v5/event/Context;)V
-}
-
-public final class com/v5/gradient/Chat {
-	public static final field INSTANCE Lcom/v5/gradient/Chat;
-	public final fun buildGradient (Ljava/lang/String;II)Lnet/minecraft/text/MutableText;
-	public final fun parseColoredText (Ljava/lang/String;)Lnet/minecraft/text/MutableText;
-	public static final fun sendGradientMsg (Ljava/lang/String;II[Ljava/lang/Object;)V
-}
-
-public final class com/v5/keybind/KeyBindUtils {
-	public static final field INSTANCE Lcom/v5/keybind/KeyBindUtils;
-	public static final fun create (Ljava/lang/String;Ljava/lang/String;I)Lcom/v5/keybind/KeyBindUtils$WrappedKeyBind;
-	public static final fun init ()V
-}
-
-public final class com/v5/keybind/KeyBindUtils$WrappedKeyBind {
-	public fun <init> (Ljava/lang/String;ILnet/minecraft/client/option/KeyBinding$Category;)V
-	public final fun getCategory ()Lnet/minecraft/client/option/KeyBinding$Category;
-	public final fun getDescription ()Ljava/lang/String;
-	public final fun getKeyBinding ()Lnet/minecraft/client/option/KeyBinding;
-	public final fun getKeyCode ()I
-	public final fun onKeyPress (Ljava/lang/Runnable;)Lcom/v5/keybind/KeyBindUtils$WrappedKeyBind;
-	public final fun registerToGame$ctjs ()V
-	public final fun update$ctjs ()V
-}
-
-public final class com/v5/launch/ModLoaderUpdater {
-	public static final field INSTANCE Lcom/v5/launch/ModLoaderUpdater;
-	public final fun stageUpdateAndRelaunch (Ljava/io/File;[BLjava/util/List;)V
-}
-
-public final class com/v5/launch/SecureLoader {
-	public static final field INSTANCE Lcom/v5/launch/SecureLoader;
-	public final fun V5ModLoaderCheck ()Z
-	public final fun calculateFileSha256 (Ljava/io/File;)Ljava/lang/String;
-	public static final fun getFreshJwtToken ()Ljava/lang/String;
-	public static final fun getJwtToken ()Ljava/lang/String;
-	public final fun isLoaded ()Z
-	public static final fun killClientHard ()Ljava/lang/Void;
-	public final fun onInitialize ()V
-	public final fun onMixinPlugin ()V
-	public final fun reload ()V
-	public final fun run ()V
-	public static final fun setJwtToken (Ljava/lang/String;)V
-}
-
-public final class com/v5/launch/V5TokenSource {
-	public static final field INSTANCE Lcom/v5/launch/V5TokenSource;
-	public static final fun consumeToken ()Ljava/lang/String;
-}
-
 public class com/v5/mixins/AbstractBlockStateMixin {
 	public fun <init> ()V
 }
@@ -3152,20 +3712,7 @@ public class com/v5/mixins/FirmamentModAnnouncerMixin {
 	public fun <init> ()V
 }
 
-public abstract interface class com/v5/mixins/FrustumInvoker {
-	public abstract fun invokeIntersectAab (DDDDDD)I
-}
-
-public abstract interface class com/v5/mixins/GameOptionsAccessorMixin {
-	public abstract fun getAllKeys ()[Lnet/minecraft/client/option/KeyBinding;
-	public abstract fun setAllKeys ([Lnet/minecraft/client/option/KeyBinding;)V
-}
-
 public class com/v5/mixins/GameRendererMixin {
-	public fun <init> ()V
-}
-
-public class com/v5/mixins/GlStateManagerMixin {
 	public fun <init> ()V
 }
 
@@ -3219,689 +3766,11 @@ public class com/v5/mixins/YggdrasilServicesKeyInfoMixin {
 	public fun <init> ()V
 }
 
-public final class com/v5/pathfinding/EtherwarpLandingCandidatesResult {
-	public final field centers [D
-	public final field goals [I
-	public fun <init> ([I[D)V
-}
-
-public final class com/v5/pathfinding/PathManager {
-	public static final field ETHERWARP_VOXEL_FEET_BLOCKER I
-	public static final field ETHERWARP_VOXEL_FENCE_LIKE I
-	public static final field ETHERWARP_VOXEL_SOLID I
-	public static final field ETHERWARP_VOXEL_TELEPORT_CLEAR I
-	public static final field FLAG_DROP_NEXT I
-	public static final field FLAG_FLUID_FEET I
-	public static final field FLAG_FLUID_HEAD I
-	public static final field FLAG_LOW_HEADROOM I
-	public static final field FLAG_NEAR_EDGE I
-	public static final field FLAG_NEAR_WALL I
-	public static final field FLAG_STEP_UP_NEXT I
-	public static final field FLAG_TIGHT_CORRIDOR I
-	public static final field INSTANCE Lcom/v5/pathfinding/PathManager;
-	public static final fun addTransientAvoidPoint (III)V
-	public static final fun addTransientAvoidPoint (IIII)V
-	public static final fun addTransientAvoidPoint (IIIID)V
-	public static final fun addTransientAvoidPoint (IIIIDI)V
-	public static synthetic fun addTransientAvoidPoint$default (IIIIDIILjava/lang/Object;)V
-	public static final fun addTransientAvoidPoints ([I)V
-	public static final fun addTransientAvoidPoints ([II)V
-	public static final fun addTransientAvoidPoints ([IID)V
-	public static final fun addTransientAvoidPoints ([IIDI)V
-	public static synthetic fun addTransientAvoidPoints$default ([IIDIILjava/lang/Object;)V
-	public static final fun cancelSearch ()V
-	public static final fun clear ()V
-	public static final fun clearTransientAvoidPoints ()V
-	public static final fun findEtherwarpPath (III)Z
-	public static final fun findEtherwarpPath (IIII)Z
-	public static final fun findEtherwarpPath (IIIII)Z
-	public static final fun findEtherwarpPath (IIIIID)Z
-	public static final fun findEtherwarpPath (IIIIIDD)Z
-	public static final fun findEtherwarpPath (IIIIIDDD)Z
-	public static final fun findEtherwarpPath (IIIIIDDDD)Z
-	public static final fun findEtherwarpPath (IIIIIDDDDD)Z
-	public static final fun findEtherwarpPath (IIIIIDDDDDD)Z
-	public static final fun findEtherwarpPath (IIIIIDDDDDDD)Z
-	public static synthetic fun findEtherwarpPath$default (IIIIIDDDDDDDILjava/lang/Object;)Z
-	public static final fun findFlyPath ([[I[[I)Z
-	public static final fun findFlyPath ([[I[[II)Z
-	public static synthetic fun findFlyPath$default ([[I[[IIILjava/lang/Object;)Z
-	public static final fun findPath (IIIIII)Z
-	public static final fun findPath (IIIIIII)Z
-	public static final fun findPath (IIIIIIIZ)Z
-	public static final fun findPath ([[I[[I)Z
-	public static final fun findPath ([[I[[II)Z
-	public static final fun findPath ([[I[[IIZ)Z
-	public static synthetic fun findPath$default (IIIIIIIZILjava/lang/Object;)Z
-	public static synthetic fun findPath$default ([[I[[IIZILjava/lang/Object;)Z
-	public static final fun findPathMultipleGoals (III[I)Z
-	public static final fun findPathMultipleGoals (III[II)Z
-	public static final fun findPathMultipleGoals (III[IIZ)Z
-	public static synthetic fun findPathMultipleGoals$default (III[IIZILjava/lang/Object;)Z
-	public static final fun getCurrentEtherwarpEyeHeight ()D
-	public static final fun getCurrentEtherwarpSneakOffset ()D
-	public static final fun getEtherwarpAnglesArray ()[F
-	public static final fun getEtherwarpLandingCandidates (DDDIDDDD)Lcom/v5/pathfinding/EtherwarpLandingCandidatesResult;
-	public static final fun getEtherwarpLandingCenter (III)[D
-	public static final fun getEtherwarpLastTimeMs ()J
-	public static final fun getEtherwarpNanosecondsPerNode ()D
-	public static final fun getEtherwarpNodesExplored ()I
-	public static final fun getEtherwarpPathArray ()[I
-	public static final fun getEtherwarpPathSize ()I
-	public static final fun getEtherwarpStandOffsetForFlags (I)I
-	public static final fun getEtherwarpVoxelFlagsAt (III)I
-	public static final fun getKeyNodeCount ()I
-	public static final fun getKeyNodeFlagsArray ()[I
-	public static final fun getKeyNodeMetricsArray ()[I
-	public static final fun getKeyNodesArray ()[I
-	public static final fun getLastError ()Ljava/lang/String;
-	public static final fun getLastTimeMs ()J
-	public static final fun getNanosecondsPerNode ()D
-	public static final fun getNodesExplored ()I
-	public static final fun getPathArray ()[I
-	public static final fun getPathFlagBits ()[I
-	public static final fun getPathFlagsArray ()[I
-	public static final fun getPathSignature ()Ljava/lang/String;
-	public static final fun getPathSize ()I
-	public static final fun getSelectedStartIndex ()I
-	public static final fun hasEtherwarpPath ()Z
-	public static final fun hasPath ()Z
-	public static final fun isEtherwarpSupportSolid (I)Z
-	public static final fun isEtherwarpTeleportSpaceClearFlags (I)Z
-	public static final fun isSearching ()Z
-	public static final fun isValidEtherwarpLanding (III)Z
-	public static final fun setSearchVariantSeed (I)V
-}
-
-public final class com/v5/proxy/Proxy {
-	public fun <init> (Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()I
-	public final fun component3 ()Ljava/lang/String;
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()Z
-	public final fun copy (Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lcom/v5/proxy/Proxy;
-	public static synthetic fun copy$default (Lcom/v5/proxy/Proxy;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Lcom/v5/proxy/Proxy;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getIp ()Ljava/lang/String;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getPassword ()Ljava/lang/String;
-	public final fun getPort ()I
-	public final fun getUsername ()Ljava/lang/String;
-	public fun hashCode ()I
-	public final fun isEnabled ()Z
-	public final fun setEnabled (Z)V
-	public final fun setIp (Ljava/lang/String;)V
-	public final fun setName (Ljava/lang/String;)V
-	public final fun setPassword (Ljava/lang/String;)V
-	public final fun setPort (I)V
-	public final fun setUsername (Ljava/lang/String;)V
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/v5/proxy/ProxyInfo {
-	public static final field INSTANCE Lcom/v5/proxy/ProxyInfo;
-	public final fun addProxy (Lcom/v5/proxy/Proxy;)V
-	public final fun getEnabledProxies ()Ljava/util/List;
-	public final fun getProxies ()Ljava/util/List;
-	public final fun removeProxy (Lcom/v5/proxy/Proxy;)V
-	public final fun setProxyEnabled (Lcom/v5/proxy/Proxy;Z)V
-	public final fun updateProxy (Lcom/v5/proxy/Proxy;Lcom/v5/proxy/Proxy;)V
-}
-
-public final class com/v5/qol/DiscordRPC {
-	public static final field INSTANCE Lcom/v5/qol/DiscordRPC;
-	public static final fun resetTimestamp ()V
-	public static final fun revertToIdle ()V
-	public static final fun stayOn ()V
-	public static final fun turnOff ()V
-	public static final fun updatePresence (Ljava/lang/String;Ljava/lang/String;)V
-}
-
-public final class com/v5/qol/Xray {
-	public static final field INSTANCE Lcom/v5/qol/Xray;
-	public static field alpha I
-	public static field isEnabled Z
-	public static final fun returnAlpha (Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)I
-	public static final fun setAlpha (I)V
-	public static final fun setDisabled ()V
-	public static final fun setEnabled ()V
-}
-
-public final class com/v5/render/NVGRenderer {
-	public static final field INSTANCE Lcom/v5/render/NVGRenderer;
-	public static field vg J
-	public static final fun beginFrame (FF)V
-	public static final fun clearImageCache ()V
-	public static final fun destroy ()V
-	public static final fun drawCheckerboard (FFFFF)V
-	public static final fun drawCheckerboard (FFFFFF)V
-	public static synthetic fun drawCheckerboard$default (FFFFFFILjava/lang/Object;)V
-	public static final fun drawCircle (FFFI)V
-	public static final fun drawDropShadow (FFFFFFFI)V
-	public static final fun drawGLTexture (IIIFFFF)V
-	public static final fun drawGLTexture (IIIFFFFF)V
-	public static final fun drawGLTexture (IIIFFFFFF)V
-	public static synthetic fun drawGLTexture$default (IIIFFFFFFILjava/lang/Object;)V
-	public static final fun drawGLTextureRegion (IIIIIIIFFFF)V
-	public static final fun drawGLTextureRegion (IIIIIIIFFFFF)V
-	public static final fun drawGLTextureRegion (IIIIIIIFFFFFF)V
-	public static synthetic fun drawGLTextureRegion$default (IIIIIIIFFFFFFILjava/lang/Object;)V
-	public static final fun drawGif (Ljava/lang/String;FFFFI)V
-	public static final fun drawGif (Ljava/lang/String;FFFFIF)V
-	public static final fun drawGif (Ljava/lang/String;FFFFIFF)V
-	public static synthetic fun drawGif$default (Ljava/lang/String;FFFFIFFILjava/lang/Object;)V
-	public static final fun drawGradientRect (FFFFIILjava/lang/Object;)V
-	public static final fun drawGradientRect (FFFFIILjava/lang/Object;F)V
-	public static synthetic fun drawGradientRect$default (FFFFIILjava/lang/Object;FILjava/lang/Object;)V
-	public static final fun drawHollowGradientRect (FFFFFIILjava/lang/Object;)V
-	public static final fun drawHollowGradientRect (FFFFFIILjava/lang/Object;F)V
-	public static synthetic fun drawHollowGradientRect$default (FFFFFIILjava/lang/Object;FILjava/lang/Object;)V
-	public static final fun drawHollowRect (FFFFFI)V
-	public static final fun drawHollowRect (FFFFFIF)V
-	public static synthetic fun drawHollowRect$default (FFFFFIFILjava/lang/Object;)V
-	public static final fun drawHueBar (FFFFF)V
-	public static final fun drawImage (Ljava/lang/String;FFFF)V
-	public static final fun drawImage (Ljava/lang/String;FFFFF)V
-	public static final fun drawImage (Ljava/lang/String;FFFFFF)V
-	public static synthetic fun drawImage$default (Ljava/lang/String;FFFFFFILjava/lang/Object;)V
-	public static final fun drawImageFromUrl (Ljava/lang/String;FFFF)V
-	public static final fun drawImageFromUrl (Ljava/lang/String;FFFFF)V
-	public static final fun drawImageFromUrl (Ljava/lang/String;FFFFFF)V
-	public static synthetic fun drawImageFromUrl$default (Ljava/lang/String;FFFFFFILjava/lang/Object;)V
-	public static final fun drawLine (FFFFFI)V
-	public static final fun drawRect (FFFFI)V
-	public static final fun drawRoundedRect (FFFFFI)V
-	public static final fun drawRoundedRectVaried (FFFFIFFFF)V
-	public static final fun endFrame ()V
-	public static final fun getCacheStats ()Ljava/lang/String;
-	public final fun getDefaultFont ()Lcom/v5/render/helper/Font;
-	public static final fun globalAlpha (F)V
-	public static final fun invalidateGLTexture (I)V
-	public static final fun isImageLoaded (Ljava/lang/String;)Z
-	public static final fun linearGradient (FFFFII)V
-	public static final fun loadGif (Ljava/lang/String;)Lcom/v5/render/NVGRenderer$GifData;
-	public static final fun loadImage (Ljava/lang/String;)Ljava/lang/String;
-	public static final fun popScissor ()V
-	public static final fun pushScissor (FFFF)V
-	public static final fun registerV5Render (Ljava/lang/Runnable;)V
-	public static final fun resetScissor ()V
-	public static final fun restore ()V
-	public static final fun rotate (F)V
-	public static final fun runDrawables ()V
-	public static final fun save ()V
-	public static final fun scale (FF)V
-	public static final fun scissor (FFFF)V
-	public static final fun setGlobalCompositeOperation (I)V
-	public static final fun text (Ljava/lang/String;FFFII)V
-	public static final fun text (Ljava/lang/String;FFFILcom/v5/render/helper/Font;I)V
-	public static synthetic fun text$default (Ljava/lang/String;FFFILcom/v5/render/helper/Font;IILjava/lang/Object;)V
-	public static final fun textWidth (Ljava/lang/String;F)F
-	public static final fun textWidth (Ljava/lang/String;FLcom/v5/render/helper/Font;)F
-	public static synthetic fun textWidth$default (Ljava/lang/String;FLcom/v5/render/helper/Font;ILjava/lang/Object;)F
-	public static final fun translate (FF)V
-	public static final fun unloadGif (Ljava/lang/String;)V
-	public static final fun unloadImage (Ljava/lang/String;)V
-	public static final fun unregisterV5Render (Ljava/lang/Runnable;)V
-}
-
-public final class com/v5/render/NVGRenderer$GifData {
-	public fun <init> (III[I)V
-	public final fun component1 ()I
-	public final fun component2 ()I
-	public final fun component3 ()I
-	public final fun component4 ()[I
-	public final fun copy (III[I)Lcom/v5/render/NVGRenderer$GifData;
-	public static synthetic fun copy$default (Lcom/v5/render/NVGRenderer$GifData;III[IILjava/lang/Object;)Lcom/v5/render/NVGRenderer$GifData;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getDelays ()[I
-	public final fun getFrameCount ()I
-	public final fun getHeight ()I
-	public final fun getWidth ()I
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/v5/render/NVGRenderer$imageCache$1 : java/util/LinkedHashMap {
-	public final fun containsKey (Ljava/lang/Object;)Z
-	public fun containsKey (Ljava/lang/String;)Z
-	public fun containsValue (Lcom/v5/render/NVGRenderer$CachedImage;)Z
-	public final fun containsValue (Ljava/lang/Object;)Z
-	public final fun entrySet ()Ljava/util/Set;
-	public final fun get (Ljava/lang/Object;)Lcom/v5/render/NVGRenderer$CachedImage;
-	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun get (Ljava/lang/String;)Lcom/v5/render/NVGRenderer$CachedImage;
-	public fun getEntries ()Ljava/util/Set;
-	public fun getKeys ()Ljava/util/Set;
-	public final fun getOrDefault (Ljava/lang/Object;Lcom/v5/render/NVGRenderer$CachedImage;)Lcom/v5/render/NVGRenderer$CachedImage;
-	public final synthetic fun getOrDefault (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun getOrDefault (Ljava/lang/String;Lcom/v5/render/NVGRenderer$CachedImage;)Lcom/v5/render/NVGRenderer$CachedImage;
-	public fun getSize ()I
-	public fun getValues ()Ljava/util/Collection;
-	public final fun keySet ()Ljava/util/Set;
-	public final fun remove (Ljava/lang/Object;)Lcom/v5/render/NVGRenderer$CachedImage;
-	public final synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
-	public final fun remove (Ljava/lang/Object;Ljava/lang/Object;)Z
-	public fun remove (Ljava/lang/String;)Lcom/v5/render/NVGRenderer$CachedImage;
-	public fun remove (Ljava/lang/String;Lcom/v5/render/NVGRenderer$CachedImage;)Z
-	public final fun size ()I
-	public final fun values ()Ljava/util/Collection;
-}
-
-public final class com/v5/render/RenderUtils {
-	public static final field INSTANCE Lcom/v5/render/RenderUtils;
-	public static final fun drawBox (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;FZ)V
-	public static synthetic fun drawBox$default (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
-	public static final fun drawFilledBox (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;Z)V
-	public static final fun drawFilledBox (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;Z)V
-	public static synthetic fun drawFilledBox$default (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;ZILjava/lang/Object;)V
-	public static synthetic fun drawFilledBox$default (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;ZILjava/lang/Object;)V
-	public static final fun drawHitbox (Lnet/minecraft/entity/Entity;Lcom/v5/render/RenderUtils$Color;FZ)V
-	public static synthetic fun drawHitbox$default (Lnet/minecraft/entity/Entity;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
-	public static final fun drawLine (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZ)V
-	public static synthetic fun drawLine$default (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
-	public static final fun drawSizedBox (Lnet/minecraft/util/math/Vec3d;DDDLcom/v5/render/RenderUtils$Color;ZFZ)V
-	public static synthetic fun drawSizedBox$default (Lnet/minecraft/util/math/Vec3d;DDDLcom/v5/render/RenderUtils$Color;ZFZILjava/lang/Object;)V
-	public static final fun drawStyledBox (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;Lcom/v5/render/RenderUtils$Color;FZ)V
-	public static synthetic fun drawStyledBox$default (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
-	public static final fun drawText (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;FZZZZ)V
-	public static synthetic fun drawText$default (Ljava/lang/String;Lnet/minecraft/util/math/Vec3d;FZZZZILjava/lang/Object;)V
-	public static final fun drawTracer (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZ)V
-	public static synthetic fun drawTracer$default (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
-	public static final fun drawWireFrameBox (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;FZ)V
-	public static final fun drawWireFrameBox (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZ)V
-	public static synthetic fun drawWireFrameBox$default (Lnet/minecraft/util/math/Box;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
-	public static synthetic fun drawWireFrameBox$default (Lnet/minecraft/util/math/Vec3d;Lcom/v5/render/RenderUtils$Color;FZILjava/lang/Object;)V
-}
-
-public final class com/v5/render/RenderUtils$Color {
-	public fun <init> (IIII)V
-	public final fun component1 ()I
-	public final fun component2 ()I
-	public final fun component3 ()I
-	public final fun component4 ()I
-	public final fun copy (IIII)Lcom/v5/render/RenderUtils$Color;
-	public static synthetic fun copy$default (Lcom/v5/render/RenderUtils$Color;IIIIILjava/lang/Object;)Lcom/v5/render/RenderUtils$Color;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getA ()I
-	public final fun getAf ()F
-	public final fun getB ()I
-	public final fun getBf ()F
-	public final fun getG ()I
-	public final fun getGf ()F
-	public final fun getPacked ()I
-	public final fun getR ()I
-	public final fun getRf ()F
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/v5/render/ShaderUtils {
-	public static final field INSTANCE Lcom/v5/render/ShaderUtils;
-	public static final fun currentBackgroundShaderName ()Ljava/lang/String;
-	public static final fun cycleBackgroundShader ()Ljava/lang/String;
-	public static final fun renderBackground (DD)Z
-}
-
-public final class com/v5/render/helper/DrawContextHolder {
-	public static final field INSTANCE Lcom/v5/render/helper/DrawContextHolder;
-	public static final fun getCurrentContext ()Lnet/minecraft/client/gui/DrawContext;
-	public static final fun setCurrentContext (Lnet/minecraft/client/gui/DrawContext;)V
-}
-
-public final class com/v5/render/helper/Font {
-	public fun <init> (Ljava/lang/String;Ljava/io/InputStream;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun buffer ()Ljava/nio/ByteBuffer;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getName ()Ljava/lang/String;
-	public fun hashCode ()I
-}
-
-public final class com/v5/render/helper/FrustumHolder {
-	public static final field INSTANCE Lcom/v5/render/helper/FrustumHolder;
-	public static field currentFrustum Lnet/minecraft/client/render/Frustum;
-}
-
-public final class com/v5/render/helper/FrustumUtils {
-	public static final field INSTANCE Lcom/v5/render/helper/FrustumUtils;
-	public static final fun isVisible (Lnet/minecraft/client/render/Frustum;DDDDDD)Z
-	public static final fun isVisible (Lnet/minecraft/client/render/Frustum;Lnet/minecraft/util/math/Box;)Z
-}
-
-public final class com/v5/render/helper/Image {
-	public static final field Companion Lcom/v5/render/helper/Image$Companion;
-	public fun <init> (Ljava/lang/String;Ljava/io/InputStream;Ljava/nio/ByteBuffer;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/io/InputStream;Ljava/nio/ByteBuffer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun buffer ()Ljava/nio/ByteBuffer;
-	public final fun close ()V
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getIdentifier ()Ljava/lang/String;
-	public final fun getInputStream ()Ljava/io/InputStream;
-	public fun hashCode ()I
-	public final fun isGIF ()Z
-	public final fun isSVG ()Z
-}
-
-public final class com/v5/render/helper/Image$Companion {
-	public final fun fromPath (Ljava/lang/String;)Lcom/v5/render/helper/Image;
-	public final fun fromStream (Ljava/lang/String;Ljava/io/InputStream;)Lcom/v5/render/helper/Image;
-}
-
-public final class com/v5/render/helper/TextureTracker {
-	public static final field INSTANCE Lcom/v5/render/helper/TextureTracker;
-	public static final fun getPrevActiveTexture ()I
-	public static final fun getPrevBoundTexture ()I
-	public static final fun setPrevActiveTexture (I)V
-	public static final fun setPrevBoundTexture (I)V
-}
-
-public final class com/v5/render/objects/RenderLayers {
-	public static final field INSTANCE Lcom/v5/render/objects/RenderLayers;
-	public static final field LINE_LIST Lnet/minecraft/client/render/RenderLayer;
-	public static final field LINE_LIST_ESP Lnet/minecraft/client/render/RenderLayer;
-	public static final field TRIANGLE_STRIP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
-	public static final field TRIANGLE_STRIP_ESP Lnet/minecraft/client/render/RenderLayer$MultiPhase;
-}
-
-public final class com/v5/render/objects/RenderPipelines {
-	public static final field INSTANCE Lcom/v5/render/objects/RenderPipelines;
-	public static final field LINE_LIST Lcom/mojang/blaze3d/pipeline/RenderPipeline;
-	public static final field LINE_LIST_ESP Lcom/mojang/blaze3d/pipeline/RenderPipeline;
-	public static final field TRIANGLE_STRIP Lcom/mojang/blaze3d/pipeline/RenderPipeline;
-	public static final field TRIANGLE_STRIP_ESP Lcom/mojang/blaze3d/pipeline/RenderPipeline;
-}
-
-public final class com/v5/screen/ProxyEditScreen : net/minecraft/client/gui/screen/Screen {
-	public fun <init> (Lcom/v5/screen/ProxyManagerScreen;Lcom/v5/proxy/Proxy;)V
-	public fun close ()V
-	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
-	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
-	public fun renderBackground (Lnet/minecraft/client/gui/DrawContext;IIF)V
-}
-
-public final class com/v5/screen/ProxyManagerScreen : net/minecraft/client/gui/screen/Screen {
-	public fun <init> (Lnet/minecraft/client/gui/screen/Screen;)V
-	public fun close ()V
-	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
-	public fun mouseScrolled (DDDD)Z
-	public final fun refreshList ()V
-	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
-	public fun renderBackground (Lnet/minecraft/client/gui/DrawContext;IIF)V
-}
-
-public final class com/v5/screen/ScreenHelper {
-	public static final field INSTANCE Lcom/v5/screen/ScreenHelper;
-	public static final field smallerFont Lcom/v5/render/helper/Font;
-	public static final field titleFont Lcom/v5/render/helper/Font;
-	public static final fun argb (IIII)I
-	public static final fun drawMenuButton (Ljava/lang/String;FFFFZLjava/lang/Integer;)V
-	public static synthetic fun drawMenuButton$default (Ljava/lang/String;FFFFZLjava/lang/Integer;ILjava/lang/Object;)V
-}
-
-public final class com/v5/screen/ScreenHelper$MenuButton {
-	public fun <init> (Ljava/lang/String;IIIILkotlin/jvm/functions/Function0;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()I
-	public final fun component3 ()I
-	public final fun component4 ()I
-	public final fun component5 ()I
-	public final fun component6 ()Lkotlin/jvm/functions/Function0;
-	public final fun copy (Ljava/lang/String;IIIILkotlin/jvm/functions/Function0;)Lcom/v5/screen/ScreenHelper$MenuButton;
-	public static synthetic fun copy$default (Lcom/v5/screen/ScreenHelper$MenuButton;Ljava/lang/String;IIIILkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/v5/screen/ScreenHelper$MenuButton;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getHeight ()I
-	public final fun getLabel ()Ljava/lang/String;
-	public final fun getOnClick ()Lkotlin/jvm/functions/Function0;
-	public final fun getWidth ()I
-	public final fun getX ()I
-	public final fun getY ()I
-	public fun hashCode ()I
-	public final fun isHovered (II)Z
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/v5/screen/V5MainMenuScreen : net/minecraft/client/gui/screen/Screen {
-	public fun <init> ()V
-	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
-	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
-	public fun renderBackground (Lnet/minecraft/client/gui/DrawContext;IIF)V
-	public fun shouldCloseOnEsc ()Z
-}
-
-public final class com/v5/screen/WelcomeScreen : net/minecraft/client/gui/screen/Screen {
-	public static final field Companion Lcom/v5/screen/WelcomeScreen$Companion;
-	public fun <init> ()V
-	public fun mouseClicked (Lnet/minecraft/client/gui/Click;Z)Z
-	public fun mouseReleased (Lnet/minecraft/client/gui/Click;)Z
-	public static final fun open ()V
-	public fun render (Lnet/minecraft/client/gui/DrawContext;IIF)V
-	public fun shouldCloseOnEsc ()Z
-}
-
-public final class com/v5/screen/WelcomeScreen$Companion {
-	public final fun open ()V
-}
-
 public final class com/v5/storage/V5MixinStorage {
 	public static fun applyMethod (Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;
 	public static fun get (Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;
 	public static fun getBoolean (Ljava/lang/String;Z)Z
 	public static fun getString (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public static fun set (Ljava/lang/String;Ljava/lang/Object;)V
-}
-
-public final class com/v5/swift/Swift : net/fabricmc/api/ClientModInitializer {
-	public static final field CHUNKS_PER_TICK I
-	public static final field Companion Lcom/v5/swift/Swift$Companion;
-	public static final field MAXIMUM_CACHED_CHUNKS I
-	public static final field executor Ljava/util/concurrent/ExecutorService;
-	public fun <init> ()V
-	public fun onInitializeClient ()V
-}
-
-public final class com/v5/swift/Swift$Companion {
-}
-
-public final class com/v5/swift/cache/CachedChunk {
-	public static final field AIR_FLAGS S
-	public static final field Companion Lcom/v5/swift/cache/CachedChunk$Companion;
-	public final field maxY I
-	public final field minY I
-	public field ready Z
-	public fun <init> (II)V
-	public final fun copySectionFlags (I[SI)V
-	public final fun getFlags (III)S
-	public final fun hasSection (I)Z
-	public final fun setFlags (IIIS)V
-	public final fun setSection (I[S)V
-}
-
-public final class com/v5/swift/cache/CachedChunk$Companion {
-}
-
-public final class com/v5/swift/cache/CachedWorld {
-	public static final field INSTANCE Lcom/v5/swift/cache/CachedWorld;
-	public final fun clear ()V
-	public static final fun getBlockFlags (III)Ljava/lang/Short;
-	public final fun getCacheStats ()Ljava/lang/String;
-	public static final fun getChunk (II)Lcom/v5/swift/cache/CachedChunk;
-	public final fun load (Ljava/lang/String;)V
-	public final fun onPacketReceive (Lnet/minecraft/network/packet/Packet;)V
-	public final fun processPendingChunks ()V
-	public final fun saveAndClear (Ljava/lang/String;)V
-	public final fun setUnlimitedChunkCache (Z)V
-	public final fun setWorldKey (Ljava/lang/String;)V
-	public final fun waitForLoad ()V
-}
-
-public final class com/v5/swift/integration/HypixelManager {
-	public static final field INSTANCE Lcom/v5/swift/integration/HypixelManager;
-	public final fun init ()V
-	public final fun onDisconnect ()V
-}
-
-public final class com/v5/swift/integration/WynncraftManager {
-	public static final field INSTANCE Lcom/v5/swift/integration/WynncraftManager;
-	public final fun init ()V
-	public final fun onDisconnect ()V
-}
-
-public final class com/v5/swift/io/WorldSerializer {
-	public static final field INSTANCE Lcom/v5/swift/io/WorldSerializer;
-	public final fun load (Ljava/lang/String;)Ljava/util/concurrent/ConcurrentHashMap;
-	public final fun save (Ljava/lang/String;Ljava/util/Map;)V
-}
-
-public final class com/v5/swift/nativepath/NativeEtherwarpResult {
-	public final field angles [F
-	public final field nanosecondsPerNode D
-	public final field nodesExplored I
-	public final field path [I
-	public final field timeMs J
-	public fun <init> ([I[FJID)V
-}
-
-public final class com/v5/swift/nativepath/NativePathResult {
-	public final field keyNodeFlags [I
-	public final field keyNodeMetrics [I
-	public final field keyPath [I
-	public final field nanosecondsPerNode D
-	public final field nodesExplored I
-	public final field path [I
-	public final field pathFlags [I
-	public final field pathSignature Ljava/lang/String;
-	public final field selectedStartIndex I
-	public final field timeMs J
-	public fun <init> ([I[IJIDI[I[I[ILjava/lang/String;)V
-}
-
-public final class com/v5/swift/nativepath/NativePathfinderBridge {
-	public static final field INSTANCE Lcom/v5/swift/nativepath/NativePathfinderBridge;
-	public static final fun applyBlockUpdates ([I)V
-	public static final fun cancelSearch ()V
-	public static final fun clearWorld ()V
-	public static final fun findEtherwarpPath (Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;)Lcom/v5/swift/nativepath/NativeEtherwarpResult;
-	public static final fun findPath (Lcom/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest;)Lcom/v5/swift/nativepath/NativePathResult;
-	public static final fun getLastError ()Ljava/lang/String;
-	public static final fun isAvailable ()Z
-	public static final fun setWorld (Ljava/lang/String;II)V
-	public static final fun upsertChunk (IIIIJ[S)V
-}
-
-public final class com/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest {
-	public fun <init> (IIIDDDIIDDDDDDD)V
-	public final fun component1 ()I
-	public final fun component10 ()D
-	public final fun component11 ()D
-	public final fun component12 ()D
-	public final fun component13 ()D
-	public final fun component14 ()D
-	public final fun component15 ()D
-	public final fun component2 ()I
-	public final fun component3 ()I
-	public final fun component4 ()D
-	public final fun component5 ()D
-	public final fun component6 ()D
-	public final fun component7 ()I
-	public final fun component8 ()I
-	public final fun component9 ()D
-	public final fun copy (IIIDDDIIDDDDDDD)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;
-	public static synthetic fun copy$default (Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;IIIDDDIIDDDDDDDILjava/lang/Object;)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativeEtherwarpSearchRequest;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getEyeHeight ()D
-	public final fun getGoalX ()I
-	public final fun getGoalY ()I
-	public final fun getGoalZ ()I
-	public final fun getHeuristicWeight ()D
-	public final fun getMaxIterations ()I
-	public final fun getNewNodeCost ()D
-	public final fun getPitchStep ()D
-	public final fun getRayLength ()D
-	public final fun getRewireEpsilon ()D
-	public final fun getStartEyeX ()D
-	public final fun getStartEyeY ()D
-	public final fun getStartEyeZ ()D
-	public final fun getThreadCount ()I
-	public final fun getYawStep ()D
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest {
-	public fun <init> ([I[IZIDDI[I[D)V
-	public final fun component1 ()[I
-	public final fun component2 ()[I
-	public final fun component3 ()Z
-	public final fun component4 ()I
-	public final fun component5 ()D
-	public final fun component6 ()D
-	public final fun component7 ()I
-	public final fun component8 ()[I
-	public final fun component9 ()[D
-	public final fun copy ([I[IZIDDI[I[D)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest;
-	public static synthetic fun copy$default (Lcom/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest;[I[IZIDDI[I[DILjava/lang/Object;)Lcom/v5/swift/nativepath/NativePathfinderBridge$NativePathSearchRequest;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAvoidMeta ()[I
-	public final fun getAvoidPenalty ()[D
-	public final fun getEndPoints ()[I
-	public final fun getHeuristicWeight ()D
-	public final fun getMaxIterations ()I
-	public final fun getMoveOrderOffset ()I
-	public final fun getNonPrimaryStartPenalty ()D
-	public final fun getStartPoints ()[I
-	public fun hashCode ()I
-	public final fun isFly ()Z
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/v5/swift/nativepath/NativePathfinderJNI {
-	public static final field INSTANCE Lcom/v5/swift/nativepath/NativePathfinderJNI;
-	public static final fun applyBlockUpdates ([I)V
-	public static final fun cancelSearch ()V
-	public static final fun clearWorld ()V
-	public static final fun findEtherwarpPath (IIIDDDIIDDDDDDD)Lcom/v5/swift/nativepath/NativeEtherwarpResult;
-	public static final fun findPath ([I[IZIDDI[I[D)Lcom/v5/swift/nativepath/NativePathResult;
-	public static final fun getLoadError ()Ljava/lang/String;
-	public static final fun initNative ()Z
-	public static final fun initialize ()Z
-	public static final fun isAvailable ()Z
-	public static final fun setWorld (Ljava/lang/String;II)V
-	public static final fun upsertChunk (IIIIJ[S)V
-}
-
-public final class com/v5/swift/nativepath/NativeStateEncoder {
-	public static final field INSTANCE Lcom/v5/swift/nativepath/NativeStateEncoder;
-	public static final fun flagsForState (Lnet/minecraft/block/BlockState;)I
-	public static final fun flagsForStateId (I)I
-	public static final fun flagsShortForState (Lnet/minecraft/block/BlockState;)S
-	public static final fun flagsShortForStateId (I)S
-}
-
-public final class com/v5/swift/nativepath/NativeVoxelFlags {
-	public static final field BLOCKING_WALL I
-	public static final field CARPET_LIKE I
-	public static final field ETHER_FEET_BLOCKER I
-	public static final field ETHER_PASSABLE I
-	public static final field ETHER_TELEPORT_CLEAR I
-	public static final field FENCE_LIKE I
-	public static final field FLUID I
-	public static final field INSTANCE Lcom/v5/swift/nativepath/NativeVoxelFlags;
-	public static final field PASSABLE I
-	public static final field PASSABLE_FLY I
-	public static final field SLAB_BOTTOM I
-	public static final field SLAB_TOP I
-	public static final field SOLID I
-	public static final field STAIRS_BOTTOM I
-}
-
-public final class com/v5/visuals/StructureFinder {
-	public static final field INSTANCE Lcom/v5/visuals/StructureFinder;
-	public static final fun clear ()V
-	public static final fun getRenderBlocksArray ()[I
-	public static final fun shutdown ()V
-	public static final fun submitBlockUpdate (III)V
-	public static final fun submitChunkScan (II)V
 }
 

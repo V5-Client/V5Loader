@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.render.ShaderUtils;
+import com.chattriggers.ctjs.api.render.ShaderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;

@@ -178,7 +178,7 @@ std::vector<jfloat> toJFloatVector(const std::vector<float>& values) {
 
 extern "C" {
 
-JNIEXPORT jboolean JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_initNative(JNIEnv* env, jclass) {
+JNIEXPORT jboolean JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_initNative(JNIEnv* env, jclass) {
   try {
     return JNI_TRUE;
   } catch (const std::exception& ex) {
@@ -190,7 +190,7 @@ JNIEXPORT jboolean JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_init
   }
 }
 
-JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_setWorld(
+JNIEXPORT void JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_setWorld(
   JNIEnv* env,
   jclass,
   jstring worldKey,
@@ -218,7 +218,7 @@ JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_setWorld
   }
 }
 
-JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_clearWorld(JNIEnv* env, jclass) {
+JNIEXPORT void JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_clearWorld(JNIEnv* env, jclass) {
   try {
     g_worldState.clear();
   } catch (const std::exception& ex) {
@@ -228,7 +228,7 @@ JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_clearWor
   }
 }
 
-JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_upsertChunk(
+JNIEXPORT void JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_upsertChunk(
   JNIEnv* env,
   jclass,
   jint chunkX,
@@ -266,7 +266,7 @@ JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_upsertCh
   }
 }
 
-JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_applyBlockUpdates(
+JNIEXPORT void JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_applyBlockUpdates(
   JNIEnv* env,
   jclass,
   jintArray updates
@@ -300,7 +300,7 @@ JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_applyBlo
   }
 }
 
-JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findPath(
+JNIEXPORT jobject JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_findPath(
   JNIEnv* env,
   jclass,
   jintArray startPoints,
@@ -432,7 +432,7 @@ JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findP
       return nullptr;
     }
 
-    jclass resultClass = env->FindClass("com/v5/swift/nativepath/NativePathResult");
+    jclass resultClass = env->FindClass("com/chattriggers/ctjs/api/world/pathfinding/NativePathResult");
     if (resultClass == nullptr) {
       return nullptr;
     }
@@ -469,7 +469,7 @@ JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findP
   }
 }
 
-JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findEtherwarpPath(
+JNIEXPORT jobject JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_findEtherwarpPath(
   JNIEnv* env,
   jclass,
   jint goalX,
@@ -533,7 +533,7 @@ JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findE
       env->SetFloatArrayRegion(angleArray, 0, static_cast<jsize>(packedAngles.size()), packedAngles.data());
     }
 
-    jclass resultClass = env->FindClass("com/v5/swift/nativepath/NativeEtherwarpResult");
+    jclass resultClass = env->FindClass("com/chattriggers/ctjs/api/world/pathfinding/NativeEtherwarpResult");
     if (resultClass == nullptr) {
       return nullptr;
     }
@@ -561,7 +561,7 @@ JNIEXPORT jobject JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_findE
   }
 }
 
-JNIEXPORT void JNICALL Java_com_v5_swift_nativepath_NativePathfinderJNI_cancelSearch(JNIEnv* env, jclass) {
+JNIEXPORT void JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_cancelSearch(JNIEnv* env, jclass) {
   try {
     g_cancelSearch.store(true);
   } catch (const std::exception& ex) {

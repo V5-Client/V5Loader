@@ -1,7 +1,7 @@
 package com.v5.mixins;
 
-import com.v5.proxy.Proxy;
-import com.v5.proxy.ProxyInfo;
+import com.chattriggers.ctjs.api.client.Proxy;
+import com.chattriggers.ctjs.api.client.ProxyInfo;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.proxy.Socks5ProxyHandler;
 import net.minecraft.network.ClientConnection;
