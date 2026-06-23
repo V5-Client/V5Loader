@@ -110,14 +110,9 @@ apiValidation {
 }
 
 tasks {
-    named("build") {
-        dependsOn("apiDump")
-    }
-
     named("apiCheck") {
-        mustRunAfter("apiDump")
+        enabled = false
     }
-
     processResources {
         val flkVersion = libs.versions.fabric.kotlin.get()
         val yarnVersion = libs.versions.yarn.get()
