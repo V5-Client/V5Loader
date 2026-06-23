@@ -22,6 +22,7 @@ import kotlinx.serialization.json.Json
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.loader.api.FabricLoader
+import java.io.File
 import java.net.URI
 import java.net.URLConnection
 import java.security.MessageDigest

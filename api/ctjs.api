@@ -57,6 +57,7 @@ public final class com/chattriggers/ctjs/api/Config : gg/essential/vigilance/Vig
 	public static final fun getOpenConsoleOnError ()Z
 	public static final fun getSendStatistics ()Z
 	public static final fun getShowUpdatesInChat ()Z
+	public static final fun markWelcomeShown ()V
 	public static final fun setAutoUpdateModules (Z)V
 	public static final fun setClearConsoleOnLoad (Z)V
 	public static final fun setConsoleBackgroundColor (Ljava/awt/Color;)V
@@ -72,6 +73,7 @@ public final class com/chattriggers/ctjs/api/Config : gg/essential/vigilance/Vig
 	public static final fun setOpenConsoleOnError (Z)V
 	public static final fun setSendStatistics (Z)V
 	public static final fun setShowUpdatesInChat (Z)V
+	public static final fun wasWelcomeShown ()Z
 }
 
 public final class com/chattriggers/ctjs/api/Config$ConsoleSettings {
