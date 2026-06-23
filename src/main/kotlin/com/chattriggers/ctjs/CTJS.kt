@@ -5,6 +5,7 @@ import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.KeyBind
 import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.client.Sound
+import com.chattriggers.ctjs.api.client.V5MainMenuScreen
 import com.chattriggers.ctjs.api.client.WelcomeScreen
 import com.chattriggers.ctjs.api.commands.DynamicCommands
 import com.chattriggers.ctjs.api.message.ChatLib
@@ -22,6 +23,7 @@ import kotlinx.serialization.json.Json
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.client.gui.screen.TitleScreen
 import java.io.File
 import java.net.URI
 import java.net.URLConnection
@@ -33,9 +35,14 @@ class CTJS : ClientModInitializer {
     override fun onInitializeClient() {
         Client.referenceSystemTime = System.nanoTime()
         Initializer.initializers.forEach(Initializer::init)
+        Config.loadData()
+
         var autoOpenTriggered = false
         ClientTickEvents.END_CLIENT_TICK.register { client ->
-            if (autoOpenTriggered || Config.wasWelcomeShown() || client.currentScreen == null) return@register
+            val currentScreen = client.currentScreen ?: return@register
+            val isMenuScreen = currentScreen is TitleScreen || currentScreen is V5MainMenuScreen
+
+            if (autoOpenTriggered || Config.wasWelcomeShown() || !isMenuScreen) return@register
             autoOpenTriggered = true
             WelcomeScreen.open()
         }
@@ -43,8 +50,6 @@ class CTJS : ClientModInitializer {
         thread {
             reportHashedUUID()
         }
-
-        Config.loadData()
         SecureLoader.onInitialize()
 
         Runtime.getRuntime().addShutdownHook(Thread {
