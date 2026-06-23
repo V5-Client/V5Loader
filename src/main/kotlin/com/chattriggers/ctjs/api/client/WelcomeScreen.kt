@@ -1,5 +1,6 @@
 package com.chattriggers.ctjs.api.client
 
+import com.chattriggers.ctjs.api.Config
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ConfirmLinkScreen
@@ -10,7 +11,6 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Util
 import java.awt.Color
-
 class WelcomeScreen : Screen(Text.literal("Welcome Screen")) {
 
     companion object {
@@ -83,7 +83,8 @@ class WelcomeScreen : Screen(Text.literal("Welcome Screen")) {
         )
 
         closeButton = ButtonWidget.builder(Text.literal("Close")) { _ ->
-            if (inputBox.text.equals(REQUIRED_TEXT, ignoreCase = true)) close()
+            Config.markWelcomeShown()
+            close()
         }.dimensions(5, y, 100, 20).build()
         closeButton.active = false
         addDrawableChild(closeButton)
