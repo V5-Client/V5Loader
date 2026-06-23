@@ -2,10 +2,16 @@ package com.chattriggers.ctjs.api.client
 
 import com.chattriggers.ctjs.CTJS
 import net.minecraft.util.Util
-import java.io.*
+import java.io.File
+import java.io.IOException
 import java.net.UnknownHostException
-import java.nio.charset.Charset
-import java.util.*
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption.APPEND
+import java.nio.file.StandardOpenOption.CREATE
+import java.util.Base64
+import java.util.Comparator
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
@@ -35,11 +41,11 @@ object FileLib {
     @JvmStatic
     @JvmOverloads
     fun write(fileLocation: String, toWrite: String, recursive: Boolean = false) {
-        File(fileLocation).apply {
-            if (recursive && !exists()) {
-                parentFile.mkdirs()
-            }
-        }.writeText(toWrite)
+        val path = Path.of(fileLocation)
+        if (recursive) {
+            path.parent?.let(Files::createDirectories)
+        }
+        Files.writeString(path, toWrite)
     }
 
     /**
@@ -63,7 +69,7 @@ object FileLib {
      */
     @JvmStatic
     fun append(fileLocation: String, toAppend: String) {
-        File(fileLocation).appendText(toAppend)
+        Files.writeString(Path.of(fileLocation), toAppend, CREATE, APPEND)
     }
 
     /**
@@ -100,11 +106,7 @@ object FileLib {
      */
     @JvmStatic
     fun read(file: File): String? {
-        return try {
-            file.readText()
-        } catch (e: Exception) {
-            null
-        }
+        return runCatching { Files.readString(file.toPath()) }.getOrNull()
     }
 
     /**
@@ -127,7 +129,7 @@ object FileLib {
      */
     @JvmStatic
     fun exists(fileLocation: String): Boolean {
-        return File(fileLocation).exists()
+        return Files.exists(Path.of(fileLocation))
     }
 
     /**
@@ -150,7 +152,7 @@ object FileLib {
      */
     @JvmStatic
     fun isDirectory(fileLocation: String): Boolean {
-        return File(fileLocation).isDirectory
+        return Files.isDirectory(Path.of(fileLocation))
     }
 
     /**
@@ -168,7 +170,7 @@ object FileLib {
 
         return conn.getInputStream().use {
             it.readBytes()
-        }.toString(Charset.forName("UTF-8"))
+        }.toString(StandardCharsets.UTF_8)
     }
 
     /**
@@ -191,7 +193,7 @@ object FileLib {
      */
     @JvmStatic
     fun delete(fileLocation: String): Boolean {
-        return File(fileLocation).delete()
+        return Files.deleteIfExists(Path.of(fileLocation))
     }
 
     /**
@@ -213,7 +215,16 @@ object FileLib {
      */
     @JvmStatic
     fun deleteDirectory(dir: File): Boolean {
-        return dir.deleteRecursively()
+        val paths = runCatching { Files.walk(dir.toPath()) }.getOrElse { return false }
+
+        return try {
+            paths.sorted(Comparator.reverseOrder()).forEach(Files::deleteIfExists)
+            true
+        } catch (_: IOException) {
+            false
+        } finally {
+            paths.close()
+        }
     }
 
     /**
@@ -226,44 +237,28 @@ object FileLib {
     @Throws(IOException::class)
     @JvmStatic
     fun unzip(zipFilePath: String, destDirectory: String) {
-        val destDir = File(destDirectory)
-        if (!destDir.exists()) destDir.mkdir()
+        val destPath = Path.of(destDirectory)
+        Files.createDirectories(destPath)
 
-        val zipIn = ZipInputStream(FileInputStream(zipFilePath))
-        var entry: ZipEntry? = zipIn.nextEntry
-        // iterates over entries in the zip file
-        while (entry != null) {
-            val filePath = destDirectory + File.separator + entry.name
-            if (!entry.isDirectory) {
-                // if the entry is a file, extracts it
-                extractFile(zipIn, filePath)
-            } else {
-                // if the entry is a directory, make the directory
-                val dir = File(filePath)
-                dir.mkdir()
+        ZipInputStream(Files.newInputStream(Path.of(zipFilePath))).use { zipIn ->
+            var entry: ZipEntry? = zipIn.nextEntry
+            while (entry != null) {
+                val outputPath = destPath.resolve(entry.name).normalize()
+                if (!outputPath.startsWith(destPath)) {
+                    throw IOException("Zip entry escapes target directory: ${entry.name}")
+                }
+
+                if (entry.isDirectory) {
+                    Files.createDirectories(outputPath)
+                } else {
+                    outputPath.parent?.let(Files::createDirectories)
+                    Files.newOutputStream(outputPath).use(zipIn::copyTo)
+                }
+
+                zipIn.closeEntry()
+                entry = zipIn.nextEntry
             }
-            zipIn.closeEntry()
-            entry = zipIn.nextEntry
         }
-        zipIn.close()
-    }
-
-    // helper method for unzipping
-    @Throws(IOException::class)
-    @JvmStatic
-    private fun extractFile(zipIn: ZipInputStream, filePath: String) {
-        val toWrite = File(filePath)
-        toWrite.parentFile.mkdirs()
-        toWrite.createNewFile()
-
-        val bos = BufferedOutputStream(FileOutputStream(filePath))
-        val bytesIn = ByteArray(4096)
-        var read = zipIn.read(bytesIn)
-        while (read != -1) {
-            bos.write(bytesIn, 0, read)
-            read = zipIn.read(bytesIn)
-        }
-        bos.close()
     }
 
     private fun absoluteLocation(importName: String, fileLocation: String): String {
@@ -278,7 +273,7 @@ object FileLib {
      */
     @JvmStatic
     fun encodeBase64(toEncode: String): String {
-        return Base64.getEncoder().encodeToString(toEncode.toByteArray())
+        return Base64.getEncoder().encodeToString(toEncode.toByteArray(StandardCharsets.UTF_8))
     }
 
     /**
@@ -289,7 +284,7 @@ object FileLib {
      */
     @JvmStatic
     fun decodeBase64(toDecode: String): String {
-        return String(Base64.getDecoder().decode(toDecode))
+        return String(Base64.getDecoder().decode(toDecode), StandardCharsets.UTF_8)
     }
 
     /**
