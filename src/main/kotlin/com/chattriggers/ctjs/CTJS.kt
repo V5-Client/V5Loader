@@ -5,6 +5,7 @@ import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.KeyBind
 import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.client.Sound
+import com.chattriggers.ctjs.api.client.WelcomeScreen
 import com.chattriggers.ctjs.api.commands.DynamicCommands
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Image
@@ -19,8 +20,8 @@ import com.chattriggers.ctjs.internal.launch.SecureLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
 import kotlinx.serialization.json.Json
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.loader.api.FabricLoader
-import java.io.File
 import java.net.URI
 import java.net.URLConnection
 import java.security.MessageDigest
@@ -31,6 +32,12 @@ class CTJS : ClientModInitializer {
     override fun onInitializeClient() {
         Client.referenceSystemTime = System.nanoTime()
         Initializer.initializers.forEach(Initializer::init)
+        var autoOpenTriggered = false
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            if (autoOpenTriggered || Config.wasWelcomeShown() || client.currentScreen == null) return@register
+            autoOpenTriggered = true
+            WelcomeScreen.open()
+        }
 
         thread {
             reportHashedUUID()

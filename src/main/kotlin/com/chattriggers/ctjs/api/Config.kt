@@ -56,6 +56,14 @@ object Config : Vigilant(File(CTJS.configLocation, "ChatTriggers.toml"), sorting
     )
     var sendStatistics = false
 
+    @Property(
+        PropertyType.SWITCH,
+        name = "Welcome shown",
+        category = "General",
+        hidden = true,
+    )
+    private var welcomeShown = false
+
     @JvmStatic
     @Property(
         PropertyType.SWITCH,
@@ -173,6 +181,16 @@ object Config : Vigilant(File(CTJS.configLocation, "ChatTriggers.toml"), sorting
         listenToConsoleProperty(::consoleBackgroundColor)
         listenToConsoleProperty(::consoleErrorColor)
         listenToConsoleProperty(::consoleWarningColor)
+    }
+
+    @JvmStatic
+    fun wasWelcomeShown(): Boolean = welcomeShown
+
+    @JvmStatic
+    fun markWelcomeShown() {
+        welcomeShown = true
+        markDirty()
+        writeData()
     }
 
     private inline fun <reified T> listenToConsoleProperty(property: KProperty<T>) {
