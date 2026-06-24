@@ -58,6 +58,9 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
         if (depth > MAX_DEPTH || decl in classes || decl is KSTypeParameter || !decl.isPublic())
             return
 
+        if (decl is KSClassDeclaration && decl.classKind == ClassKind.ENUM_ENTRY)
+            return
+
         if (decl is KSTypeAlias) {
             collectAllReachableClasses(decl.type.resolve().declaration, classes, depth)
             return

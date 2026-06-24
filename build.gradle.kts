@@ -2,6 +2,7 @@ import org.gradle.kotlin.dsl.support.unzipTo
 import org.jetbrains.dokka.versioning.VersioningConfiguration
 import org.jetbrains.dokka.versioning.VersioningPlugin
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.jvm.toolchain.JavaLanguageVersion
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -17,7 +18,6 @@ plugins {
     alias(libs.plugins.loom)
     alias(libs.plugins.dokka)
     alias(libs.plugins.validator)
-    alias(libs.plugins.ksp)
     id("io.github.izhangzhihao.unmeta") version "1.0.3"
 }
 
@@ -60,9 +60,6 @@ dependencies {
     dokkaPlugin(libs.versioning)
 
     implementation(kotlin("stdlib-jdk8"))
-    implementation(project(":typing-generator"))
-    ksp(project(":typing-generator"))
-
     // Discord IPC
     implementation("meteordevelopment:discord-ipc:1.1")
     include("meteordevelopment:discord-ipc:1.1")
@@ -99,9 +96,12 @@ base {
 
 java {
     withSourcesJar()
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(25))
+    }
 
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 apiValidation {
@@ -111,6 +111,9 @@ apiValidation {
 
 tasks {
     named("apiCheck") {
+        enabled = false
+    }
+    named("apiBuild") {
         enabled = false
     }
     processResources {
@@ -137,12 +140,13 @@ tasks {
     }
 
     withType<JavaCompile>().configureEach {
-        options.release.set(21)
+        options.release.set(25)
     }
 
     kotlin {
+        jvmToolchain(25)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
+            jvmTarget.set(JvmTarget.JVM_25)
             freeCompilerArgs = listOf("-Xcontext-receivers")
         }
     }
@@ -183,7 +187,7 @@ tasks {
         val branch = getBranch()
         dokkaSourceSets {
             configureEach {
-                jdkVersion.set(21)
+                jdkVersion.set(25)
 
                 perPackageOption {
                     matchingRegex.set("com\\.chattriggers\\.ctjs\\.internal(\$|\\.).*")

@@ -238,7 +238,7 @@ class Gui @JvmOverloads constructor(
      */
     override fun onMouseClicked(mouseX: Double, mouseY: Double, mouseButton: Int) {
         super.onMouseClicked(mouseX, mouseY, mouseButton)
-        onClick?.trigger(arrayOf(mouseX, mouseY, mouseButton))
+        onClick?.trigger(arrayOf<Any?>(mouseX, mouseY, mouseButton))
     }
 
     /**
@@ -248,7 +248,7 @@ class Gui @JvmOverloads constructor(
      */
     override fun onMouseReleased(mouseX: Double, mouseY: Double, state: Int) {
         super.onMouseReleased(mouseX, mouseY, state)
-        onMouseReleased?.trigger(arrayOf(mouseX, mouseY, state))
+        onMouseReleased?.trigger(arrayOf<Any?>(mouseX, mouseY, state))
     }
 
     /**
@@ -283,7 +283,7 @@ class Gui @JvmOverloads constructor(
 
         this.mouseX = mouseX
         this.mouseY = mouseY
-        onDraw?.trigger(arrayOf(mouseX, mouseY, partialTicks))
+        onDraw?.trigger(arrayOf<Any?>(mouseX, mouseY, partialTicks))
 
         Renderer.popMatrix()
     }
@@ -298,7 +298,7 @@ class Gui @JvmOverloads constructor(
             var char = keyCode.toChar()
             if (modifiers?.isShift != true)
                 char = char.lowercaseChar()
-            onKeyTyped?.trigger(arrayOf(char, keyCode))
+            onKeyTyped?.trigger(arrayOf<Any?>(char, keyCode))
         }
     }
 
