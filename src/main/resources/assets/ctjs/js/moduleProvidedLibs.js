@@ -22,6 +22,10 @@
         class: getJavaClass,
     };
 
+    Object.defineProperty(global, "Hand", {
+        get: () => Packages.net.minecraft.world.InteractionHand,
+    });
+
     global.sync = (func, lock) => new org.mozilla.javascript.Synchronizer(func, lock);
 
     global.setTimeout = function (func, delay) {

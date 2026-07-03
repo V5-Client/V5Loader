@@ -2,10 +2,10 @@ package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.api.client.Client;
 import com.chattriggers.ctjs.internal.engine.CTEvents;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.render.block.entity.state.BlockEntityRenderState;
-import net.minecraft.client.render.command.ModelCommandRenderer;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,25 +16,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class BlockEntityRenderStateMixin {
 
     @Unique
-    private static final MatrixStack stack = new MatrixStack();
+    private static final PoseStack stack = new PoseStack();
 
     @Inject(
-        method = "updateBlockEntityRenderState(Lnet/minecraft/block/entity/BlockEntity;Lnet/minecraft/client/render/block/entity/state/BlockEntityRenderState;Lnet/minecraft/client/render/command/ModelCommandRenderer$CrumblingOverlayCommand;)V",
+        method = "extractBase(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/BlockEntityRenderState;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V",
         at = @At("HEAD")
     )
-    private static void onUpdate(BlockEntity blockEntity, BlockEntityRenderState state, ModelCommandRenderer.CrumblingOverlayCommand crumblingOverlay, CallbackInfo ci) {
-        if (blockEntity.getWorld() != null && blockEntity.getWorld().isClient()) {
+    private static void onUpdate(BlockEntity blockEntity, BlockEntityRenderState state, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, CallbackInfo ci) {
+        if (blockEntity.getLevel() != null && blockEntity.getLevel().isClientSide()) {
 
-            stack.push();
+            stack.pushPose();
 
             CTEvents.RENDER_BLOCK_ENTITY.invoker().render(
                 stack,
                 blockEntity,
-                Client.getMinecraft().getRenderTickCounter().getDynamicDeltaTicks(),
+                Client.getMinecraft().getDeltaTracker().getGameTimeDeltaTicks(),
                 ci
             );
 
-            stack.pop();
+            stack.popPose();
         }
     }
 }

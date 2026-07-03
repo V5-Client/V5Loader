@@ -11,7 +11,7 @@ object WynncraftManager {
 
   fun init() {
     ClientPlayConnectionEvents.JOIN.register { _, _, client ->
-      val active = isWynncraftHost(client.currentServerEntry?.address)
+      val active = isWynncraftHost(client.currentServer?.ip)
       sessionActive = active
       CachedWorld.setUnlimitedChunkCache(active)
 

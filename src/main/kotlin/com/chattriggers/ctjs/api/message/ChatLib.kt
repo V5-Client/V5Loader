@@ -1,15 +1,15 @@
 package com.chattriggers.ctjs.api.message
 
 import com.chattriggers.ctjs.api.client.Client
-import com.chattriggers.ctjs.api.client.Settings.toMC
 import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.internal.listeners.ClientListener
-import com.chattriggers.ctjs.internal.mixins.ChatHudAccessor
+import com.chattriggers.ctjs.internal.mixins.ChatComponentAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import net.fabricmc.fabric.impl.command.client.ClientCommandInternals
-import net.minecraft.client.gui.hud.ChatHud
-import net.minecraft.client.gui.hud.ChatHudLine
-import net.minecraft.client.gui.hud.MessageIndicator
+import net.minecraft.client.gui.components.ChatComponent
+import net.minecraft.client.multiplayer.chat.GuiMessage
+import net.minecraft.client.multiplayer.chat.GuiMessageSource
+import net.minecraft.client.multiplayer.chat.GuiMessageTag
 import org.mozilla.javascript.regexp.NativeRegExp
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
@@ -17,8 +17,8 @@ import java.util.regex.Pattern
 import kotlin.math.roundToInt
 
 object ChatLib {
-    private val chatLineIds = mutableMapOf<ChatHudLine, Int>()
-    private val chatHudAccessor get() = Client.getChatGui()?.asMixin<ChatHudAccessor>()
+    private val chatLineIds = mutableMapOf<GuiMessage, Int>()
+    private val chatHudAccessor get() = Client.getChatGui()?.asMixin<ChatComponentAccessor>()
 
     /**
      * Prints text in the chat.
@@ -84,7 +84,7 @@ object ChatLib {
      * @param text the message to be sent
      */
     @JvmStatic
-    fun say(text: String) = Client.getMinecraft().networkHandler?.sendChatMessage(text)
+    fun say(text: String) = Client.getMinecraft().connection?.sendChat(text)
 
     /**
      * Runs a command.
@@ -96,7 +96,7 @@ object ChatLib {
     @JvmOverloads
     fun command(text: String, clientSide: Boolean = false) {
         if (clientSide) ClientCommandInternals.executeCommand(text)
-        else Client.getMinecraft().networkHandler?.sendChatCommand(text)
+        else Client.getMinecraft().connection?.sendCommand(text)
     }
 
     /**
@@ -104,7 +104,7 @@ object ChatLib {
      */
     @JvmStatic
     fun clearChat() {
-        Client.getChatGui()?.clear(false)
+        Client.getChatGui()?.clearMessages(false)
         chatLineIds.clear()
     }
 
@@ -131,7 +131,7 @@ object ChatLib {
      */
     @JvmStatic
     fun getChatWidth(): Int {
-        return ChatHud.getWidth(toMC().chatWidth.getValue())
+        return ChatComponent.getWidth(Client.getMinecraft().options.chatWidth().get())
     }
 
     /**
@@ -263,11 +263,11 @@ object ChatLib {
         editLines(replacements) { matcher(TextComponent(it.content)) }
     }
 
-    private fun editLines(replacements: Array<out Any>, matcher: (ChatHudLine) -> Boolean) {
+    private fun editLines(replacements: Array<out Any>, matcher: (GuiMessage) -> Boolean) {
         val mc = Client.getMinecraft()
-        val indicator = if (mc.isConnectedToLocalServer) MessageIndicator.singlePlayer() else MessageIndicator.system()
+        val indicator = if (mc.isSingleplayer) GuiMessageTag.systemSinglePlayer() else GuiMessageTag.system()
         var edited = false
-        val it = chatHudAccessor?.messages?.listIterator() ?: return
+        val it = chatHudAccessor?.allMessages?.listIterator() ?: return
 
         while (it.hasNext()) {
             val next = it.next()
@@ -277,7 +277,7 @@ object ChatLib {
                 chatLineIds.remove(next)
                 for (replacement in replacements) {
                     val message = replacement as? TextComponent ?: TextComponent(replacement)
-                    val line = ChatHudLine(next.creationTick, message, null, indicator)
+                    val line = GuiMessage(next.addedTime, message, null, GuiMessageSource.SYSTEM_CLIENT, indicator)
                     if (message.getChatLineId() != -1)
                         chatLineIds[line] = message.getChatLineId()
 
@@ -287,7 +287,7 @@ object ChatLib {
         }
 
         if (edited)
-            chatHudAccessor!!.invokeRefresh()
+            chatHudAccessor!!.invokeRefreshTrimmedMessages()
     }
 
     /**
@@ -355,9 +355,9 @@ object ChatLib {
         removeLines { matcher(TextComponent(it.content)) }
     }
 
-    private fun removeLines(matcher: (ChatHudLine) -> Boolean) {
+    private fun removeLines(matcher: (GuiMessage) -> Boolean) {
         var removed = false
-        val it = chatHudAccessor?.messages?.listIterator() ?: return
+        val it = chatHudAccessor?.allMessages?.listIterator() ?: return
 
         while (it.hasNext()) {
             val next = it.next()
@@ -369,7 +369,7 @@ object ChatLib {
         }
 
         if (removed)
-            chatHudAccessor!!.invokeRefresh()
+            chatHudAccessor!!.invokeRefreshTrimmedMessages()
     }
 
     /**
@@ -394,9 +394,9 @@ object ChatLib {
     @JvmOverloads
     fun addToSentMessageHistory(index: Int = -1, message: String) {
         if (index == -1) {
-            Client.getMinecraft().inGameHud.chatHud.addToMessageHistory(message)
+            Client.getMinecraft().gui.chat.addRecentChat(message)
         } else {
-            Client.getMinecraft().inGameHud.chatHud.messageHistory.add(index, message)
+            Client.getMinecraft().gui.chat.recentChat.add(index, message)
         }
     }
 
@@ -404,8 +404,8 @@ object ChatLib {
         require(message.getChatLineId() != -1)
 
         val chatGui = Client.getChatGui() ?: return
-        chatGui.addMessage(message)
-        val newChatLine = chatHudAccessor!!.messages[0]
+        chatGui.addClientSystemMessage(message)
+        val newChatLine = chatHudAccessor!!.allMessages[0]
 
         check(message == newChatLine.content()) {
             "Expected new chat message to be at index 0"
@@ -418,7 +418,7 @@ object ChatLib {
         chatLineIds.clear()
     }
 
-    internal fun onChatHudLineRemoved(line: ChatHudLine) {
+    internal fun onChatHudLineRemoved(line: GuiMessage) {
         chatLineIds.remove(line)
     }
 }

@@ -1,15 +1,17 @@
 package com.chattriggers.ctjs.api.render
 
+import com.mojang.blaze3d.pipeline.ColorTargetState
 import com.mojang.blaze3d.pipeline.BlendFunction
+import com.mojang.blaze3d.pipeline.DepthStencilState
 import com.mojang.blaze3d.pipeline.RenderPipeline
-import com.mojang.blaze3d.platform.DepthTestFunction
+import com.mojang.blaze3d.platform.CompareOp
 import com.mojang.blaze3d.platform.DestFactor
 import com.mojang.blaze3d.platform.SourceFactor
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.RenderSetup
+import net.minecraft.client.renderer.rendertype.RenderType
+import net.minecraft.client.renderer.rendertype.RenderSetup
 
 object LegacyPipelineBuilder {
-    private val layerList = mutableMapOf<String, RenderLayer>()
+    private val layerList = mutableMapOf<String, RenderType>()
     private val pipelineList = mutableMapOf<String, RenderPipeline>()
     private var cull: Boolean? = null
     private var depth: Boolean? = null
@@ -58,19 +60,17 @@ object LegacyPipelineBuilder {
         val basePipeline = RenderPipeline.builder(snippet.mcSnippet)
             .withLocation("ctjs/custom/pipeline${hashCode()}")
             .withVertexFormat(vertexFormat.toMC(), drawMode.toUC().mcMode)
-        if (blend == true) basePipeline.withBlend(BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO))
+        if (blend == true) basePipeline.withColorTargetState(ColorTargetState(BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO)))
 
         if (cull != null) basePipeline.withCull(cull!!)
 
         if (depth == true) {
             basePipeline
-                .withDepthWrite(depth!!)
-                .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+                .withDepthStencilState(DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true))
         }
         else if (depth == false) {
             basePipeline
-                .withDepthWrite(depth!!)
-                .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+                .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false))
         }
 
         val pipeline = basePipeline.build()
@@ -79,7 +79,7 @@ object LegacyPipelineBuilder {
         return pipeline
     }
 
-    fun layer(): RenderLayer {
+    fun layer(): RenderType {
         if (layerList.containsKey(state())) return layerList[state()]!!
 
         // FIXME: icba to do this

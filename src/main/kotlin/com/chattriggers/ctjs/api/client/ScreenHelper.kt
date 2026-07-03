@@ -2,7 +2,7 @@ package com.chattriggers.ctjs.api.client
 
 import com.chattriggers.ctjs.api.render.Font
 import com.chattriggers.ctjs.api.render.NVGRenderer
-import net.minecraft.util.math.ColorHelper
+import net.minecraft.util.ARGB
 import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER
 import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_MIDDLE
 
@@ -56,5 +56,5 @@ object ScreenHelper {
     }
 
     @JvmStatic
-    fun argb(a: Int, r: Int, g: Int, b: Int): Int = ColorHelper.getArgb(a, r, g, b)
+    fun argb(a: Int, r: Int, g: Int, b: Int): Int = ARGB.color(a, r, g, b)
 }

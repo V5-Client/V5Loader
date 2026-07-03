@@ -4,33 +4,25 @@
     "package": "com.v5.mixins",
     "compatibilityLevel": "JAVA_25",
     "client": [
-        "AbstractBlockStateMixin",
-        "AbstractTerrainRenderContextMixin",
         "BlockMixin",
-        "BlockModelRendererMixin",
-        "BlockRenderLayersMixin",
         "CameraMixin",
-        "ChatHudMixin",
-        "ChunkOcclusionDataBuilderMixin",
-        "ClientConnectionProxyMixin",
+      "ChatComponentMixin",
+      "ConnectionProxyMixin",
         "DrawContextCapture",
         "EntityRendererMixin",
         "FirmamentModAnnouncerMixin",
         "GameRendererMixin",
         "KeyboardInputMixin",
-        "LightTextureManagerMixin",
-        "MinecraftClientMixin",
-        "MouseMixin",
-        "MultiplayerScreenMixin",
-        "PlayerListHudMixin",
-        "ScreenPanoramaMixin",
-        "TitleScreenRedirectMixin",
+      "MinecraftMixin",
+      "MouseHandlerMixin",
+      "JoinMultiplayerScreenMixin",
+      "PlayerTabOverlayMixin",
         "TranslationMixin",
-        "WorldRendererMixin",
+      "LevelRendererMixin",
         "YggdrasilServicesKeyInfoMixin"
     ],
     "mixins": [
-        "ClientConnectionMixin"
+      "ConnectionMixin"
     ],
     "injectors": {
         "defaultRequire": 1

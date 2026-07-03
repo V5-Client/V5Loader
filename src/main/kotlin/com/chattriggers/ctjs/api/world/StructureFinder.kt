@@ -6,10 +6,10 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import net.minecraft.client.MinecraftClient
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.chunk.ChunkStatus
+import net.minecraft.client.Minecraft
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.chunk.status.ChunkStatus
 
 object StructureFinder {
     private const val MAX_SCAN_RETRIES = 3
@@ -35,7 +35,7 @@ object StructureFinder {
 
     @JvmStatic
     fun submitChunkScan(chunkX: Int, chunkZ: Int) {
-        val key = ChunkPos.toLong(chunkX, chunkZ)
+        val key = ChunkPos.pack(chunkX, chunkZ)
         synchronized(pendingLock) {
             if (!pendingScans.add(key)) return
         }
@@ -87,10 +87,10 @@ object StructureFinder {
     }
 
     private fun scanChunk(chunkX: Int, chunkZ: Int, retriesLeft: Int) {
-        val world = MinecraftClient.getInstance().world ?: return
-        worldBottomY = world.bottomY
+        val world = Minecraft.getInstance().level ?: return
+        worldBottomY = world.minY
 
-        val chunk = world.chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false)
+        val chunk = world.chunkSource.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false)
         if (chunk == null) {
             if (retriesLeft > 0) {
                 worker.schedule({ scanChunk(chunkX, chunkZ, retriesLeft - 1) }, RETRY_DELAY_MS, TimeUnit.MILLISECONDS)
@@ -99,17 +99,17 @@ object StructureFinder {
         }
 
         if (chunk.isEmpty) {
-            removeChunk(ChunkPos.toLong(chunkX, chunkZ))
+            removeChunk(ChunkPos.pack(chunkX, chunkZ))
             return
         }
 
         val matched = IntOpenHashSet()
-        val sections = chunk.sectionArray
-        val minY = world.bottomY
+        val sections = chunk.sections
+        val minY = world.minY
 
         for (sectionIndex in sections.indices) {
             val section = sections[sectionIndex]
-            if (section.isEmpty) continue
+            if (section.hasOnlyAir()) continue
 
             val sectionBaseY = (sectionIndex shl 4) + minY
             for (localY in 0..15) {
@@ -122,7 +122,7 @@ object StructureFinder {
                     for (localX in 0..15) {
                         val state = section.getBlockState(localX, localY, localZ)
                         if (state.isAir) continue
-                        val key = state.block.translationKey
+                        val key = state.block.descriptionId
                         if (!isTargetKey(key)) continue
 
                         matched.add((packedY shl 8) or zBits or localX)
@@ -131,7 +131,7 @@ object StructureFinder {
             }
         }
 
-        val chunkKey = ChunkPos.toLong(chunkX, chunkZ)
+        val chunkKey = ChunkPos.pack(chunkX, chunkZ)
         synchronized(stateLock) {
             if (matched.isEmpty()) {
                 chunkBlocks.remove(chunkKey)
@@ -143,15 +143,15 @@ object StructureFinder {
     }
 
     private fun updateBlock(blockX: Int, blockY: Int, blockZ: Int) {
-        val world = MinecraftClient.getInstance().world ?: return
-        worldBottomY = world.bottomY
+        val world = Minecraft.getInstance().level ?: return
+        worldBottomY = world.minY
 
         val state = world.getBlockState(BlockPos(blockX, blockY, blockZ))
-        val isTarget = isTargetKey(state.block.translationKey)
+        val isTarget = isTargetKey(state.block.descriptionId)
         val chunkX = blockX shr 4
         val chunkZ = blockZ shr 4
-        val chunkKey = ChunkPos.toLong(chunkX, chunkZ)
-        val packed = packLocal(blockX, blockY, blockZ, world.bottomY)
+        val chunkKey = ChunkPos.pack(chunkX, chunkZ)
+        val packed = packLocal(blockX, blockY, blockZ, world.minY)
 
         if (packed < 0) return
 
@@ -193,8 +193,8 @@ object StructureFinder {
         val entryIterator = chunkBlocks.long2ObjectEntrySet().fastIterator()
         while (entryIterator.hasNext()) {
             val entry = entryIterator.next()
-            val chunkX = ChunkPos.getPackedX(entry.longKey)
-            val chunkZ = ChunkPos.getPackedZ(entry.longKey)
+            val chunkX = ChunkPos.getX(entry.longKey)
+            val chunkZ = ChunkPos.getZ(entry.longKey)
             val baseX = chunkX shl 4
             val baseZ = chunkZ shl 4
             val blockSet = entry.value

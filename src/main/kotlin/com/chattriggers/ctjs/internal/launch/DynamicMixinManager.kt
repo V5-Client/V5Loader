@@ -66,7 +66,7 @@ internal object DynamicMixinManager {
             put("required", JsonPrimitive(true))
             put("minVersion", JsonPrimitive("0.8"))
             put("package", JsonPrimitive("com.chattriggers.ctjs.generated_mixins"))
-            put("compatibilityLevel", JsonPrimitive("JAVA_17"))
+            put("compatibilityLevel", JsonPrimitive("JAVA_25"))
             putJsonObject("injectors") {
                 put("defaultRequire", JsonPrimitive(1))
             }

@@ -6,9 +6,9 @@ import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.floor
 import kotlin.math.max
-import net.minecraft.client.MinecraftClient
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.chunk.ChunkStatus
+import net.minecraft.client.Minecraft
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.chunk.status.ChunkStatus
 
 object PathManager {
   private const val NON_PRIMARY_START_PENALTY = 250.0
@@ -74,21 +74,21 @@ object PathManager {
   )
 
   private data class PathSnapshot(
-    val points: List<BlockPos>,
-    val keyNodes: List<BlockPos>,
-    val isFly: Boolean,
-    val timeMs: Long,
-    val nodesExplored: Int,
-    val nanosecondsPerNode: Double,
-    val selectedStartIndex: Int
+      val points: List<BlockPos>,
+      val keyNodes: List<BlockPos>,
+      val isFly: Boolean,
+      val timeMs: Long,
+      val nodesExplored: Int,
+      val nanosecondsPerNode: Double,
+      val selectedStartIndex: Int
   )
 
   private data class EtherwarpSnapshot(
-    val points: List<BlockPos>,
-    val angles: FloatArray,
-    val timeMs: Long,
-    val nodesExplored: Int,
-    val nanosecondsPerNode: Double
+      val points: List<BlockPos>,
+      val angles: FloatArray,
+      val timeMs: Long,
+      val nodesExplored: Int,
+      val nanosecondsPerNode: Double
   )
 
   private data class EtherwarpLandingCandidate(
@@ -379,8 +379,8 @@ object PathManager {
       return false
     }
 
-    val client = MinecraftClient.getInstance()
-    val world = client.world ?: run {
+    val client = Minecraft.getInstance()
+    val world = client.level ?: run {
       lastError = "World is not loaded"
       return false
     }
@@ -396,8 +396,8 @@ object PathManager {
       return false
     }
 
-    val minSupportY = world.bottomY
-    val maxSupportY = world.topYInclusive - 2
+    val minSupportY = world.minY
+    val maxSupportY = world.maxY - 2
     if (goalY !in minSupportY..maxSupportY) {
       lastError = "Etherwarp goal Y must be between $minSupportY and $maxSupportY"
       return false
@@ -558,11 +558,11 @@ object PathManager {
     endPoints: Array<IntArray>,
     isFly: Boolean
   ): String? {
-    val world = MinecraftClient.getInstance().world ?: return "World is not loaded"
+    val world = Minecraft.getInstance().level ?: return "World is not loaded"
 
     if (isFly) {
-      val minY = world.bottomY
-      val maxY = world.topYInclusive - 1
+      val minY = world.minY
+      val maxY = world.maxY - 1
 
       if (startPoints.any { it[1] !in minY..maxY }) {
         return "Fly start Y must be between $minY and $maxY"
@@ -573,8 +573,8 @@ object PathManager {
       return null
     }
 
-    val minFeetY = world.bottomY + 1
-    val maxFeetY = world.topYInclusive - 1
+    val minFeetY = world.minY + 1
+    val maxFeetY = world.maxY - 1
     if (startPoints.any { it[1] !in minFeetY..maxFeetY }) {
       return "Walk start Y must be between $minFeetY and $maxFeetY"
     }
@@ -608,7 +608,7 @@ object PathManager {
   }
 
   private fun validateEtherwarpLanding(label: String, x: Int, y: Int, z: Int): String? {
-    val world = MinecraftClient.getInstance().world ?: return "World is not loaded"
+    val world = Minecraft.getInstance().level ?: return "World is not loaded"
 
     val supportFlags = resolveEtherwarpValidationFlags(world, x, y, z) ?: return null
     if (!isEtherwarpStandable(supportFlags)) {
@@ -629,10 +629,10 @@ object PathManager {
     return null
   }
 
-  private fun resolveEtherwarpValidationFlags(world: net.minecraft.client.world.ClientWorld, x: Int, y: Int, z: Int): Int? {
+  private fun resolveEtherwarpValidationFlags(world: net.minecraft.client.multiplayer.ClientLevel, x: Int, y: Int, z: Int): Int? {
     val chunkX = x shr 4
     val chunkZ = z shr 4
-    if (world.chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) != null) {
+    if (world.chunkSource.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) != null) {
       return NativeStateEncoder.flagsForState(world.getBlockState(BlockPos(x, y, z)))
     }
 
@@ -656,7 +656,7 @@ object PathManager {
       (flags and NativeVoxelFlags.ETHER_FEET_BLOCKER) == 0
   }
 
-  private fun isValidEtherwarpLanding(world: net.minecraft.client.world.ClientWorld, x: Int, y: Int, z: Int): Boolean {
+  private fun isValidEtherwarpLanding(world: net.minecraft.client.multiplayer.ClientLevel, x: Int, y: Int, z: Int): Boolean {
     val supportFlags = resolveEtherwarpValidationFlags(world, x, y, z) ?: return false
     if (!isEtherwarpStandable(supportFlags)) {
       return false
@@ -668,7 +668,7 @@ object PathManager {
     return isEtherwarpTeleportSpaceClear(feetFlags) && isEtherwarpTeleportSpaceClear(headFlags)
   }
 
-  private fun getEtherwarpLandingCenter(world: net.minecraft.client.world.ClientWorld, x: Int, y: Int, z: Int): DoubleArray {
+  private fun getEtherwarpLandingCenter(world: net.minecraft.client.multiplayer.ClientLevel, x: Int, y: Int, z: Int): DoubleArray {
     val supportFlags = resolveEtherwarpValidationFlags(world, x, y, z) ?: return doubleArrayOf(
       x + 0.5,
       y + 1.0,
@@ -683,13 +683,13 @@ object PathManager {
 
   @JvmStatic
   fun isValidEtherwarpLanding(x: Int, y: Int, z: Int): Boolean {
-    val world = MinecraftClient.getInstance().world ?: return false
+    val world = Minecraft.getInstance().level ?: return false
     return isValidEtherwarpLanding(world, x, y, z)
   }
 
   @JvmStatic
   fun getEtherwarpLandingCenter(x: Int, y: Int, z: Int): DoubleArray? {
-    val world = MinecraftClient.getInstance().world ?: return null
+    val world = Minecraft.getInstance().level ?: return null
     return getEtherwarpLandingCenter(world, x, y, z)
   }
 
@@ -704,7 +704,7 @@ object PathManager {
     sortOriginY: Double,
     sortOriginZ: Double
   ): EtherwarpLandingCandidatesResult? {
-    val world = MinecraftClient.getInstance().world ?: return null
+    val world = Minecraft.getInstance().level ?: return null
     if (!anchorX.isFinite() || !anchorY.isFinite() || !anchorZ.isFinite()) {
       return null
     }
@@ -900,7 +900,7 @@ object PathManager {
 
   @JvmStatic
   fun getEtherwarpVoxelFlagsAt(x: Int, y: Int, z: Int): Int {
-    val world = MinecraftClient.getInstance().world ?: return 0
+    val world = Minecraft.getInstance().level ?: return 0
     return resolveEtherwarpValidationFlags(world, x, y, z) ?: 0
   }
 

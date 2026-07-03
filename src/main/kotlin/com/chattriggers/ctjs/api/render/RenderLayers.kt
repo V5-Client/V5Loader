@@ -1,95 +1,93 @@
 package com.chattriggers.ctjs.api.render
 
+import com.mojang.blaze3d.pipeline.ColorTargetState
 import com.mojang.blaze3d.pipeline.BlendFunction
+import com.mojang.blaze3d.pipeline.DepthStencilState
 import com.mojang.blaze3d.pipeline.RenderPipeline
-import com.mojang.blaze3d.platform.DepthTestFunction
-import com.mojang.blaze3d.vertex.VertexFormat.DrawMode
-import net.minecraft.client.render.*
-import net.minecraft.client.gl.RenderPipelines as MinecraftRenderPipelines
+import com.mojang.blaze3d.platform.CompareOp
+import com.mojang.blaze3d.vertex.DefaultVertexFormat
+import com.mojang.blaze3d.vertex.VertexFormat.Mode
+import net.minecraft.client.renderer.rendertype.LayeringTransform
+import net.minecraft.client.renderer.rendertype.RenderSetup
+import net.minecraft.client.renderer.rendertype.RenderType
+import net.minecraft.client.renderer.RenderPipelines as MinecraftRenderPipelines
 
 object RenderPipelines {
     @JvmField
     val LINE_LIST: RenderPipeline = MinecraftRenderPipelines.register(
-        RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(MinecraftRenderPipelines.RENDERTYPE_LINES_SNIPPET))
-            .withLocation("pipeline/lines")
-            .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH, DrawMode.LINES)
+        RenderPipeline.builder(MinecraftRenderPipelines.LINES_SNIPPET)
+            .withLocation("pipeline/ctjs_lines")
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH, Mode.LINES)
             .withCull(false)
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withDepthWrite(true)
-            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+            .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true))
             .build()
     )
 
     @JvmField
     val LINE_LIST_ESP: RenderPipeline = MinecraftRenderPipelines.register(
-        RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(MinecraftRenderPipelines.RENDERTYPE_LINES_SNIPPET))
-            .withLocation("pipeline/lines")
-            .withShaderDefine("shad")
-            .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL_LINE_WIDTH, DrawMode.LINES)
+        RenderPipeline.builder(MinecraftRenderPipelines.LINES_SNIPPET)
+            .withLocation("pipeline/ctjs_lines_esp")
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH, Mode.LINES)
             .withCull(false)
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withDepthWrite(false)
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .build()
     )
 
     @JvmField
     val TRIANGLE_STRIP: RenderPipeline = MinecraftRenderPipelines.register(
-        RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(MinecraftRenderPipelines.POSITION_COLOR_SNIPPET))
-            .withLocation("pipeline/debug_filled_box")
+        RenderPipeline.builder(MinecraftRenderPipelines.DEBUG_FILLED_SNIPPET)
+            .withLocation("pipeline/ctjs_debug_filled_box")
             .withCull(false)
-            .withVertexFormat(VertexFormats.POSITION_COLOR, DrawMode.QUADS)
-            .withDepthWrite(true)
-            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
-            .withBlend(BlendFunction.TRANSLUCENT)
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, Mode.QUADS)
+            .withDepthStencilState(DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true))
+            .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
             .build()
     )
 
     @JvmField
     val TRIANGLE_STRIP_ESP: RenderPipeline = MinecraftRenderPipelines.register(
-        RenderPipeline.builder(*arrayOf<RenderPipeline.Snippet?>(MinecraftRenderPipelines.POSITION_COLOR_SNIPPET))
-            .withLocation("pipeline/debug_filled_box")
+        RenderPipeline.builder(MinecraftRenderPipelines.DEBUG_FILLED_SNIPPET)
+            .withLocation("pipeline/ctjs_debug_filled_box_esp")
             .withCull(false)
-            .withVertexFormat(VertexFormats.POSITION_COLOR, DrawMode.QUADS)
-            .withDepthWrite(false)
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .withBlend(BlendFunction.TRANSLUCENT)
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, Mode.QUADS)
+            .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false))
+            .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
             .build()
     )
 }
 
 object RenderLayers {
     @JvmField
-    val LINE_LIST: RenderLayer = RenderLayer.of(
+    val LINE_LIST: RenderType = RenderType.create(
         "line-list",
         RenderSetup.builder(RenderPipelines.LINE_LIST)
-            .layeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
-            .outputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-            .build()
+            .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+            .createRenderSetup()
     )
 
     @JvmField
-    val LINE_LIST_ESP: RenderLayer = RenderLayer.of(
+    val LINE_LIST_ESP: RenderType = RenderType.create(
         "line-list-esp",
         RenderSetup.builder(RenderPipelines.LINE_LIST_ESP)
-            .outputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-            .build()
+            .createRenderSetup()
     )
 
     @JvmField
-    val TRIANGLE_STRIP: RenderLayer = RenderLayer.of(
+    val TRIANGLE_STRIP: RenderType = RenderType.create(
         "triangle_strip",
         RenderSetup.builder(RenderPipelines.TRIANGLE_STRIP)
-            .layeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
-            .translucent()
-            .build()
+            .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+            .sortOnUpload()
+            .createRenderSetup()
     )
 
     @JvmField
-    val TRIANGLE_STRIP_ESP: RenderLayer = RenderLayer.of(
+    val TRIANGLE_STRIP_ESP: RenderType = RenderType.create(
         "triangle_strip_esp",
         RenderSetup.builder(RenderPipelines.TRIANGLE_STRIP_ESP)
-            .translucent()
-            .build()
+            .sortOnUpload()
+            .createRenderSetup()
     )
 }

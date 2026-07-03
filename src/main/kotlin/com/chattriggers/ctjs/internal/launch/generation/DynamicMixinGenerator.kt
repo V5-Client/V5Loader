@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Mixin as SPMixin
 
 internal class DynamicMixinGenerator(private val ctx: GenerationContext, private val details: MixinDetails) {
     fun generate(): ByteArray {
-        val mixinClassNode = assembleClass(public, ctx.generatedClassFullPath, version = Opcodes.V17) {
+        val mixinClassNode = assembleClass(public, ctx.generatedClassFullPath, version = Opcodes.V25) {
             for ((id, injector) in details.injectors) {
                 when (injector) {
                     is Inject -> InjectGenerator(ctx, id, injector).generate()

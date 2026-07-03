@@ -1,28 +1,13 @@
-import org.gradle.kotlin.dsl.support.unzipTo
-import org.jetbrains.dokka.versioning.VersioningConfiguration
-import org.jetbrains.dokka.versioning.VersioningPlugin
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.gradle.jvm.toolchain.JavaLanguageVersion
-import java.net.HttpURLConnection
-import java.net.URL
 
-buildscript {
-    dependencies {
-        classpath(libs.versioning)
-    }
-}
-//comment here to force workflow aa
 plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.serialization)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.loom)
-    alias(libs.plugins.dokka)
     alias(libs.plugins.validator)
     id("io.github.izhangzhihao.unmeta") version "1.0.3"
-}
-
-sourceSets.main {
-    resources.srcDir("typing-generator/src/main/resources")
 }
 
 unmeta {
@@ -36,7 +21,6 @@ repositories {
     maven("https://maven.fabricmc.net")
     maven("https://jitpack.io")
     maven("https://maven.meteordev.org/releases")
-    maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
     maven("https://maven.terraformersmc.com/releases")
     maven("https://repo.essential.gg/repository/maven-public")
     maven("https://repo.hypixel.net/repository/Hypixel/")
@@ -46,44 +30,50 @@ repositories {
 dependencies {
     // To change the versions see the gradle/libs.versions.toml
     minecraft(libs.minecraft)
-    mappings(variantOf(libs.yarn) { classifier("v2") })
-    modImplementation(libs.bundles.fabric)
+    implementation(libs.fabric.loader)
+    implementation(libs.fabric.api)
+    implementation(libs.fabric.kotlin)
 
-    modImplementation(libs.bundles.included) { include(this) }
-    modImplementation(libs.bundles.essential) {
-        exclude("gg.essential", "universalcraft-1.18.1-fabric")
+    implementation(libs.bundles.included) { include(this) }
+    implementation(libs.universalcraft) {
         include(this)
+        exclude("gg.essential", "universalcraft-1.18.1-fabric")
+    }
+    implementation(libs.elementa) { include(this) }
+    implementation(libs.vigilance) {
+        include(this)
+        exclude(group = "gg.essential", module = "elementa")
     }
 
-    // modApi(libs.modmenu)
-    modRuntimeOnly(libs.devauth)
-    dokkaPlugin(libs.versioning)
+    compileOnly(libs.sponge.mixin)
+    ksp(project(":typing-generator"))
 
     implementation(kotlin("stdlib-jdk8"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.10.2")
     // Discord IPC
     implementation("meteordevelopment:discord-ipc:1.1")
     include("meteordevelopment:discord-ipc:1.1")
 
     // NanoVG (with natives)
-    modImplementation(libs.lwjgl.nanovg) { include(this) }
+    implementation(libs.lwjgl.nanovg) { include(this) }
     listOf("windows", "linux", "macos", "macos-arm64").forEach {
-        modImplementation(variantOf(libs.lwjgl.nanovg) { classifier("natives-$it") }) {
+        implementation(variantOf(libs.lwjgl.nanovg) { classifier("natives-$it") }) {
             include(this)
         }
     }
 
     // Mixin Extras
-    modImplementation("io.github.llamalad7:mixinextras-fabric:0.5.0")
-    include("io.github.llamalad7:mixinextras-fabric:0.5.0")
+    implementation(libs.mixinextras) { include(this) }
 
     // Proxy support
-    implementation("io.netty:netty-handler-proxy:4.1.97.Final")
-    include("io.netty:netty-handler-proxy:4.1.97.Final")
-    implementation("io.netty:netty-codec-socks:4.1.97.Final")
-    include("io.netty:netty-codec-socks:4.1.97.Final")
+    implementation("io.netty:netty-handler-proxy:4.2.7.Final")
+    include("io.netty:netty-handler-proxy:4.2.7.Final")
+    implementation("io.netty:netty-codec-socks:4.2.7.Final")
+    include("io.netty:netty-codec-socks:4.2.7.Final")
 
-    implementation("net.hypixel:mod-api:1.0.1")
-    modImplementation("maven.modrinth:hypixel-mod-api:1.0.1+build.1+mc1.21") { include(this) }
+    compileOnly(libs.hypixel.mod.api)
+    compileOnly(libs.hypixel.modrinth.api)
 }
 
 loom {
@@ -117,13 +107,17 @@ tasks {
         enabled = false
     }
     processResources {
+        val mcVersion = libs.versions.minecraft.get()
         val flkVersion = libs.versions.fabric.kotlin.get()
-        val yarnVersion = libs.versions.yarn.get()
         val fapiVersion = libs.versions.fabric.api.get()
         val loaderVersion = libs.versions.loader.get()
 
+        from("typing-generator/src/main/resources") {
+            include("provided-types.properties")
+        }
+
         inputs.property("version", project.version)
-        inputs.property("yarn_mappings", yarnVersion)
+        inputs.property("minecraft_version", mcVersion)
         inputs.property("fabric_kotlin_version", flkVersion)
         inputs.property("fabric_api_version", fapiVersion)
         inputs.property("loader_version", loaderVersion)
@@ -131,7 +125,7 @@ tasks {
         filesMatching("fabric.mod.json") {
             expand(
                 "version" to project.version,
-                "yarn_mappings" to yarnVersion,
+                "minecraft_version" to mcVersion,
                 "fabric_kotlin_version" to flkVersion,
                 "fabric_api_version" to fapiVersion,
                 "loader_version" to loaderVersion
@@ -151,114 +145,18 @@ tasks {
         }
     }
 
-    // shit fix for file name but ehh
     jar {
         archiveFileName.set("V5-Loader.jar")
         exclude("typings.d.ts")
     }
 
-    remapJar {
-        archiveFileName.set("V5-Loader.jar")
-        exclude("typings.d.ts")
+    register<Copy>("generateTypings") {
+        description = "Regenerates typing-generator/src/main/resources/typings.d.ts"
+        group = "build"
+        dependsOn("kspKotlin")
+        from(layout.buildDirectory.dir("generated/ksp/main/resources")) {
+            include("typings.d.ts")
+        }
+        into(layout.projectDirectory.dir("typing-generator/src/main/resources"))
     }
-
-    dokkaHtml {
-        // Just use the module name here since the MC version doesn't affect CT's API
-        // across the same mod version
-        moduleVersion.set(project.version.toString())
-        moduleName.set("ctjs")
-
-        val docVersionsDir = projectDir.resolve("build/javadocs")
-        val currentVersion = project.version.toString()
-        val currentDocsDir = docVersionsDir.resolve(currentVersion)
-        outputs.upToDateWhen { docVersionsDir.exists() }
-
-        outputDirectory.set(file(currentDocsDir))
-
-        pluginConfiguration<VersioningPlugin, VersioningConfiguration> {
-            version = project.version.toString()
-            olderVersionsDir = docVersionsDir
-            renderVersionsNavigationOnAllPages = true
-        }
-
-        suppressObviousFunctions.set(true)
-        suppressInheritedMembers.set(true)
-
-        val branch = getBranch()
-        dokkaSourceSets {
-            configureEach {
-                jdkVersion.set(25)
-
-                perPackageOption {
-                    matchingRegex.set("com\\.chattriggers\\.ctjs\\.internal(\$|\\.).*")
-                    suppress.set(true)
-                }
-
-                sourceLink {
-                    localDirectory.set(file("src/main/kotlin"))
-                    remoteUrl.set(URL("https://github.com/Synnerz/ctjs/blob/$branch/src/main/kotlin"))
-                    remoteLineSuffix.set("#L")
-                }
-
-                externalDocumentationLink {
-                    val yarnVersion = libs.versions.yarn.get()
-
-                    url.set(URL("https://maven.fabricmc.net/docs/yarn-$yarnVersion/"))
-                    packageListUrl.set(URL("https://maven.fabricmc.net/docs/yarn-$yarnVersion/element-list"))
-                }
-            }
-        }
-
-        doFirst {
-            val archiveBase = "https://www.chattriggers.com/javadocs-archive/"
-            val versions = String(downloadFile(archiveBase + "versions")).lines().map(String::trim)
-            val tmpFile = File(temporaryDir, "oldVersionsZip.zip")
-
-            versions.filter(String::isNotEmpty).map(String::trim).forEach { version ->
-                val zipBytes = downloadFile("$archiveBase$version.zip")
-                tmpFile.writeBytes(zipBytes)
-                unzipTo(docVersionsDir, tmpFile)
-            }
-
-            tmpFile.delete()
-        }
-
-        doLast {
-            // At this point we have a structure that looks something like this:
-            // javadocs
-            //   \-- 2.2.0-1.8.9
-            //   \-- 3.0.0
-            //         \-- older
-            //
-            // The "older" directory contains all old versions, so we want to
-            // delete the top-level older versions and move everything inside the
-            // latest directory to the top level so the GitHub actions workflow
-            // doesn't need to figure out the correct version name
-
-            docVersionsDir.listFiles()?.forEach {
-                if (it.name != version)
-                    it.deleteRecursively()
-            }
-
-            val latestVersionDir = docVersionsDir.listFiles()!!.single()
-            latestVersionDir.listFiles()!!.forEach {
-                it.renameTo(File(it.parentFile.parentFile, it.name))
-            }
-            latestVersionDir.deleteRecursively()
-        }
-    }
-}
-
-fun downloadFile(url: String): ByteArray {
-    return (URL(url).openConnection() as HttpURLConnection).apply {
-        requestMethod = "GET"
-        doOutput = true
-    }.inputStream.readAllBytes()
-}
-
-fun getBranch(): String {
-    val process = ProcessBuilder("git", "rev-parse", "HEAD")
-        .redirectErrorStream(true)
-        .start()
-    return process.inputStream.bufferedReader().use { it.readText().trim() }
 }

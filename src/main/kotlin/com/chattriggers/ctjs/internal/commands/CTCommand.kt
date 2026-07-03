@@ -20,19 +20,17 @@ import com.mojang.brigadier.arguments.ArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
-import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
-import net.minecraft.command.CommandSource
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.Text
-import java.io.File
+import net.minecraft.commands.SharedSuggestionProvider
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.Component
 import java.io.IOException
 import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.thread
@@ -95,24 +93,6 @@ internal object CTCommand : Initializer {
                     )
                     .onExecute { dump(DumpType.CHAT) }
             )
-            .then(
-                literal("migrate")
-                    .then(
-                        argument("input", FileArgumentType(File(CTJS.MODULES_FOLDER)))
-                            .then(
-                                argument("output", FileArgumentType(File(CTJS.MODULES_FOLDER)))
-                                    .onExecute {
-                                        val input = FileArgumentType.getFile(it, "input")
-                                        val output = FileArgumentType.getFile(it, "output")
-                                        Migration.migrate(input, output)
-                                    }
-                            )
-                            .onExecute {
-                                val input = FileArgumentType.getFile(it, "input")
-                                Migration.migrate(input, input)
-                            }
-                    )
-            )
             .onExecute { ChatLib.chat(getUsage()) }
 
         dispatcher.register(command)
@@ -157,7 +137,6 @@ internal object CTCommand : Initializer {
         &c/ct simulate <message> &7- &oSimulates a received chat message.
         &c/ct dump &7- &oDumps previous chat messages into chat.
         &c/ct config &7- &oOpens the ChatTriggers settings.
-        &c/ct migrate <input> [output]&7 - &oMigrate a module from version 2.X to 3.X 
         &c/ct &7- &oDisplays this help dialog.
         &b&m${ChatLib.getChatBreak()}
     """.trimIndent()
@@ -180,7 +159,7 @@ internal object CTCommand : Initializer {
 
         for (i in 0 until toDump) {
             val msg = ChatLib.replaceFormatting(messages[messages.size - toDump + i].formattedText)
-            TextComponent(Text.literal(msg).styled {
+            TextComponent(Component.literal(msg).withStyle {
                 it.withClickEvent(ClickEvent.CopyToClipboard(msg))
                     .withHoverEvent(
                         HoverEvent.ShowText(TextComponent("&eClick here to copy this message."))
@@ -211,57 +190,6 @@ internal object CTCommand : Initializer {
         }
     }
 
-    private class FileArgumentType(private val relativeTo: File) : ArgumentType<File> {
-        override fun parse(reader: StringReader): File {
-            val isquoted = StringReader.isQuotedStringStart(reader.peek())
-            val path = if (isquoted) {
-                reader.readQuotedString()
-            } else reader.readStringUntilOrEof(' ')
-            return File(relativeTo, path)
-        }
-
-        override fun getExamples(): MutableCollection<String> {
-            return mutableListOf(
-                "/foo/bar/baz",
-                "C:\\foo\\bar\\baz",
-                "\"/path/with/spaces in the name\"",
-            )
-        }
-
-        // Copy and pasted from StringReader, but doesn't throw on EOF
-        fun StringReader.readStringUntilOrEof(terminator: Char): String {
-            val result = StringBuilder()
-            var escaped = false
-            while (canRead()) {
-                val c = read()
-                when {
-                    escaped -> {
-                        escaped = if (c == terminator || c == '\\') {
-                            result.append(c)
-                            false
-                        } else {
-                            cursor -= 1
-                            throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.readerInvalidEscape()
-                                .createWithContext(this, c.toString())
-                        }
-                    }
-                    c == '\\' -> escaped = true
-                    c == terminator -> {
-                        cursor -= 1
-                        return result.toString()
-                    }
-                    else -> result.append(c)
-                }
-            }
-
-            return result.toString()
-        }
-
-        companion object {
-            fun getFile(ctx: CommandContext<*>, name: String) = ctx.getArgument(name, File::class.java)
-        }
-    }
-
     private object ModuleArgumentType : ArgumentType<String> {
         override fun parse(reader: StringReader): String {
             val string = reader.readUnquotedString()
@@ -269,15 +197,15 @@ internal object CTCommand : Initializer {
 
             return modules.find {
                 it.equals(string, ignoreCase = true)
-            } ?: throw SimpleCommandExceptionType(Text.literal("No modules found with name \"$string\""))
+            } ?: throw SimpleCommandExceptionType(Component.literal("No modules found with name \"$string\""))
                 .createWithContext(reader)
         }
 
         override fun <S : Any?> listSuggestions(
-            context: CommandContext<S>?,
-            builder: SuggestionsBuilder?
+            context: CommandContext<S>,
+            builder: SuggestionsBuilder
         ): CompletableFuture<Suggestions> {
-            return CommandSource.suggestMatching(ModuleManager.cachedModules.map { it.name }, builder)
+            return SharedSuggestionProvider.suggest(ModuleManager.cachedModules.map { it.name }, builder)
         }
 
         fun getModule(ctx: CommandContext<FabricClientCommandSource>, module: String): String {

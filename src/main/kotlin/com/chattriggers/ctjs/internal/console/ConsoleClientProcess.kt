@@ -75,15 +75,15 @@ class ConsoleClientProcess(private val port: Int, private val hostPid: Long) {
                                 onEval = { text ->
                                     val future = CompletableFuture<String>()
                                     val id = nextEvalId++
-                                    socketOut.println(Json.encodeToString<C2HMessage>(EvalTextMessage(id, text)))
+                                    socketOut.println(Json.encodeToString(C2HMessage.serializer(), EvalTextMessage(id, text)))
                                     pendingEvalFutures[id] = future
                                     future
                                 },
                                 onReload = {
-                                    socketOut.println(Json.encodeToString<C2HMessage>(ReloadCTMessage))
+                                    socketOut.println(Json.encodeToString(C2HMessage.serializer(), ReloadCTMessage))
                                 },
                                 fontSizeListener = { delta ->
-                                    socketOut.println(Json.encodeToString<C2HMessage>(FontSizeMessage(delta)))
+                                    socketOut.println(Json.encodeToString(C2HMessage.serializer(), FontSizeMessage(delta)))
                                 }
                             )
                         }

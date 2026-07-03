@@ -13,19 +13,19 @@ import com.chattriggers.ctjs.api.world.block.BlockPos
 import com.chattriggers.ctjs.internal.Skippable
 import com.chattriggers.ctjs.internal.TooltipOverridable
 import com.chattriggers.ctjs.internal.utils.asMixin
-import net.minecraft.block.pattern.CachedBlockPosition
-import net.minecraft.client.render.OverlayTexture
-import net.minecraft.client.render.item.ItemRenderState
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.item.Item.TooltipContext
-import net.minecraft.item.ItemStack
-import net.minecraft.item.ItemDisplayContext
-import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.util.crash.CrashException
-import net.minecraft.util.crash.CrashReport
+import net.minecraft.world.level.block.state.pattern.BlockInWorld
+import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.renderer.item.ItemStackRenderState
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.item.Item.TooltipContext
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.ItemDisplayContext
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.ReportedException
+import net.minecraft.CrashReport
 import kotlin.jvm.optionals.getOrNull
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.GuiGraphicsExtractor
 
 class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
     val type: ItemType = ItemType(mcValue.item)
@@ -36,9 +36,9 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
         }
     }
 
-    constructor(type: ItemType) : this(type.toMC().defaultStack)
+    constructor(type: ItemType) : this(type.toMC().defaultInstance)
 
-    fun getHolder(): Entity? = mcValue.holder?.let(Entity::fromMC)
+    fun getHolder(): Entity? = null
 
     fun getStackSize(): Int = mcValue.count
 
@@ -46,21 +46,21 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
         mcValue.count = size
     }
 
-    fun getEnchantments() = EnchantmentHelper.getEnchantments(mcValue).enchantments.associate {
-        it.key.getOrNull() to EnchantmentHelper.getLevel(it, mcValue)
+    fun getEnchantments() = EnchantmentHelper.getEnchantmentsForCrafting(mcValue).keySet().associate {
+        it.unwrapKey().getOrNull() to EnchantmentHelper.getItemEnchantmentLevel(it, mcValue)
     }
 
     fun isEnchantable() = mcValue.isEnchantable
 
-    fun isEnchanted() = mcValue.hasEnchantments()
+    fun isEnchanted() = mcValue.isEnchanted
 
     fun canPlaceOn(pos: BlockPos) =
-        mcValue.canPlaceOn(CachedBlockPosition(World.toMC(), pos.toMC(), false))
+        mcValue.canPlaceOnBlockInAdventureMode(BlockInWorld(requireNotNull(World.toMC()), pos.toMC(), false))
 
     fun canPlaceOn(block: Block) = canPlaceOn(block.pos)
 
     fun canHarvest(pos: BlockPos) =
-        mcValue.canBreak(CachedBlockPosition(World.toMC(), pos.toMC(), false))
+        mcValue.canBreakBlockInAdventureMode(BlockInWorld(requireNotNull(World.toMC()), pos.toMC(), false))
 
     fun canHarvest(block: Block) = canHarvest(block.pos)
 
@@ -68,14 +68,14 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
 
     fun getMaxDamage() = mcValue.maxDamage
 
-    fun getDamage() = mcValue.damage
+    fun getDamage() = mcValue.damageValue
 
-    fun isDamageable() = mcValue.isDamageable
+    fun isDamageable() = mcValue.isDamageableItem
 
-    fun getName(): String = TextComponent(mcValue.name).formattedText
+    fun getName(): String = TextComponent(mcValue.hoverName).formattedText
 
     fun setName(name: TextComponent?) = apply {
-        mcValue.set(DataComponentTypes.CUSTOM_NAME, name)
+        mcValue.set(DataComponents.CUSTOM_NAME, name)
     }
 
     fun resetName() {
@@ -85,10 +85,10 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
     @JvmOverloads
     fun getLore(advanced: Boolean = false): List<TextComponent> {
         mcValue.asMixin<Skippable>().ctjs_setShouldSkip(true)
-        val tooltip = mcValue.getTooltip(
-            TooltipContext.DEFAULT,
+        val tooltip = mcValue.getTooltipLines(
+            TooltipContext.EMPTY,
             Player.toMC(),
-            if (advanced) TooltipType.ADVANCED else TooltipType.BASIC,
+            if (advanced) TooltipFlag.ADVANCED else TooltipFlag.NORMAL,
         ).mapTo(mutableListOf()) { TextComponent(it) }
 
         mcValue.asMixin<Skippable>().ctjs_setShouldSkip(false)
@@ -115,16 +115,16 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
         if (mcValue.isEmpty) return
         val context = DrawContextHolder.currentContext ?: return
 
-        context.matrices.pushMatrix()
-        context.matrices.translate(x, y)
-        context.matrices.scale(scale, scale)
+        context.pose().pushMatrix()
+        context.pose().translate(x, y)
+        context.pose().scale(scale, scale)
 
         try {
-            context.drawItem(mcValue, 0, 0)
+            context.item(mcValue, 0, 0)
         } catch (e: Exception) {
             println("Draw Error: ${e.message}")
         } finally {
-            context.matrices.popMatrix()
+            context.pose().popMatrix()
         }
     }
 

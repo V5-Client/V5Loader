@@ -1,6 +1,6 @@
 package com.chattriggers.ctjs.internal;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public interface IRenderState {
     void ctjs$setEntity(Entity entity);

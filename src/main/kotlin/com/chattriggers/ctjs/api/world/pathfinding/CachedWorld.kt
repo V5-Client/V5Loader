@@ -1,11 +1,11 @@
 package com.chattriggers.ctjs.api.world.pathfinding
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.network.packet.Packet
-import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket
-import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket
-import net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket
-import net.minecraft.world.chunk.ChunkStatus
+import net.minecraft.client.Minecraft
+import net.minecraft.network.protocol.Packet
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket
+import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket
+import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
+import net.minecraft.world.level.chunk.status.ChunkStatus
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.locks.ReentrantLock
@@ -79,16 +79,16 @@ object CachedWorld {
 
   fun onPacketReceive(packet: Packet<*>) {
     when (packet) {
-      is ChunkDataS2CPacket -> {
-        pendingChunks.add(chunkKey(packet.chunkX, packet.chunkZ))
+      is ClientboundLevelChunkWithLightPacket -> {
+        pendingChunks.add(chunkKey(packet.x, packet.z))
       }
 
-      is BlockUpdateS2CPacket -> {
+      is ClientboundBlockUpdatePacket -> {
         val pos = packet.pos
         val key = chunkKey(pos.x shr 4, pos.z shr 4)
         val chunk = chunks[key]
         if (chunk != null && chunk.ready) {
-          val flags = NativeStateEncoder.flagsForState(packet.state).toShort()
+          val flags = NativeStateEncoder.flagsForState(packet.blockState).toShort()
           chunk.setFlags(pos.x and 15, pos.y, pos.z and 15, flags)
           queueNativeUpdate(pos.x, pos.y, pos.z, flags.toInt() and 0xFFFF)
           if (cacheKey == key) {
@@ -97,8 +97,8 @@ object CachedWorld {
         }
       }
 
-      is ChunkDeltaUpdateS2CPacket -> {
-        packet.visitUpdates { pos, state ->
+      is ClientboundSectionBlocksUpdatePacket -> {
+        packet.runUpdates { pos, state ->
           val key = chunkKey(pos.x shr 4, pos.z shr 4)
           val chunk = chunks[key]
           if (chunk != null && chunk.ready) {
@@ -115,12 +115,12 @@ object CachedWorld {
   }
 
   fun processPendingChunks() {
-    val mc = MinecraftClient.getInstance()
-    val world = mc.world ?: return
+    val mc = Minecraft.getInstance()
+    val world = mc.level ?: return
     if (isCacheLoading) return
 
-    val minY = world.bottomY
-    val maxY = world.topYInclusive + 1
+    val minY = world.minY
+    val maxY = world.maxY + 1
 
     ensureNativeWorld(minY, maxY)
 
@@ -129,18 +129,18 @@ object CachedWorld {
       val chunkX = (next shr 32).toInt()
       val chunkZ = next.toInt()
 
-      val worldChunk = world.chunkManager.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false)
+      val worldChunk = world.chunkSource.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false)
       if (worldChunk == null) {
         pendingChunks.add(chunkKey(chunkX, chunkZ))
         return@repeat
       }
 
       val cached = CachedChunk(minY, maxY)
-      val sections = worldChunk.sectionArray
+      val sections = worldChunk.sections
 
       for (sectionIndex in sections.indices) {
         val section = sections[sectionIndex]
-        if (section.isEmpty) continue
+        if (section.hasOnlyAir()) continue
 
         val sectionData = ShortArray(4096) { CachedChunk.AIR_FLAGS }
 

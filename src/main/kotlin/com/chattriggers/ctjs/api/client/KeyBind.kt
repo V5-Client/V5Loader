@@ -4,19 +4,19 @@ import com.chattriggers.ctjs.api.triggers.RegularTrigger
 import com.chattriggers.ctjs.api.triggers.TriggerType
 import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.internal.BoundKeyUpdater
-import com.chattriggers.ctjs.internal.mixins.GameOptionsAccessor
-import com.chattriggers.ctjs.internal.mixins.KeyBindingAccessor
+import com.chattriggers.ctjs.internal.mixins.OptionsAccessor
+import com.chattriggers.ctjs.internal.mixins.KeyMappingAccessor
 import com.chattriggers.ctjs.internal.utils.Initializer
 import com.chattriggers.ctjs.internal.utils.asMixin
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.minecraft.client.option.KeyBinding
-import net.minecraft.client.resource.language.I18n
-import net.minecraft.util.Identifier
+import net.minecraft.client.KeyMapping
+import net.minecraft.client.resources.language.I18n
+import net.minecraft.resources.Identifier
 import org.apache.commons.lang3.ArrayUtils
 import java.util.concurrent.CopyOnWriteArrayList
 
 class KeyBind {
-    private val keyBinding: KeyBinding
+    private val keyBinding: KeyMapping
     private var onKeyPress: RegularTrigger? = null
     private var onKeyRelease: RegularTrigger? = null
     private var onKeyDown: RegularTrigger? = null
@@ -33,10 +33,10 @@ class KeyBind {
      */
     @JvmOverloads
     constructor(description: String, keyCode: Int, category: String = "ChatTriggers") {
-        val possibleDuplicate = Client.getMinecraft().options.allKeys.find {
-            I18n.translate(it.boundKeyTranslationKey) == I18n.translate(description) &&
+        val possibleDuplicate = Client.getMinecraft().options.keyMappings.find {
+            I18n.get(it.saveString()) == I18n.get(description) &&
                 // TODO: check if this is right
-                I18n.translate(it.category.id.toTranslationKey("key.category")) == I18n.translate(category)
+                I18n.get(it.category.id.toLanguageKey("key.category")) == I18n.get(category)
         }
 
         if (possibleDuplicate != null) {
@@ -46,22 +46,22 @@ class KeyBind {
             }
             keyBinding = possibleDuplicate
         } else {
-            val categoryList = KeyBindingAccessor.Category.getCategoryList()
+            val categoryList = KeyMappingAccessor.Category.getCategoryList()
 
             if (!categoryList.stream().anyMatch { it.id.path.equals(category) }) {
                 uniqueCategories[category] = 0
             }
-            val categoryId = Identifier.of(category)
+            val categoryId = Identifier.parse(category)
             val keyCategory = categoryList.firstOrNull { it.id == categoryId }
-                ?: KeyBinding.Category.create(categoryId)
+                ?: KeyMapping.Category.register(categoryId)
             uniqueCategories[category] = uniqueCategories[category]!! + 1
-            keyBinding = KeyBinding(description, keyCode, keyCategory)
+            keyBinding = KeyMapping(description, keyCode, keyCategory)
 
             // We need to update the bound key for the KeyBind we just made to the previous binding,
             // just in case it existed last time the game was opened. This will only matter for the first
             // time launching the game, as subsequent CT loads will cause possibleDuplicate to be found.
             Client.getMinecraft().options.asMixin<BoundKeyUpdater>().ctjs_updateBoundKey(keyBinding)
-            KeyBinding.updateKeysByCode()
+            KeyMapping.resetMapping()
 
             addKeyBinding(keyBinding)
             customKeyBindings.add(keyBinding)
@@ -70,7 +70,7 @@ class KeyBind {
         keyBinds.add(this)
     }
 
-    constructor(keyBinding: KeyBinding) {
+    constructor(keyBinding: KeyMapping) {
         this.keyBinding = keyBinding
         keyBinds.add(this)
     }
@@ -105,7 +105,7 @@ class KeyBind {
     internal fun onTick() {
         if (isPressed() && !down) {
             if (keyBinding in customKeyBindings) {
-                while (keyBinding.wasPressed()) {
+                while (keyBinding.consumeClick()) {
                     // consume the key press if not built-in keybinding
                 }
             }
@@ -120,7 +120,7 @@ class KeyBind {
         }
 
         if (down && !isKeyDown()) {
-            while (keyBinding.wasPressed()) {
+            while (keyBinding.consumeClick()) {
                 // consume the rest of the key presses
             }
 
@@ -134,35 +134,35 @@ class KeyBind {
      *
      * @return whether the key is pressed
      */
-    fun isKeyDown(): Boolean = keyBinding.isPressed
+    fun isKeyDown(): Boolean = keyBinding.isDown
 
     /**
      * Returns true on the initial key press. For continuous querying use [isKeyDown].
      *
      * @return whether the key has just been pressed
      */
-    fun isPressed(): Boolean = keyBinding.asMixin<KeyBindingAccessor>().timesPressed > 0
+    fun isPressed(): Boolean = keyBinding.asMixin<KeyMappingAccessor>().clickCount > 0
 
     /**
      * Gets the description of the key.
      *
      * @return the description
      */
-    fun getDescription(): String = keyBinding.boundKeyTranslationKey
+    fun getDescription(): String = keyBinding.saveString()
 
     /**
      * Gets the key code of the key.
      *
      * @return the integer key code
      */
-    fun getKeyCode(): Int = keyBinding.asMixin<KeyBindingAccessor>().boundKey.code
+    fun getKeyCode(): Int = keyBinding.asMixin<KeyMappingAccessor>().key.value
 
     /**
      * Gets the category of the key.
      *
      * @return the category
      */
-    fun getCategory(): String = keyBinding.category.id.toTranslationKey("key.category")
+    fun getCategory(): String = keyBinding.category.id.toLanguageKey("key.category")
 
     /**
      * Sets the state of the key.
@@ -170,7 +170,7 @@ class KeyBind {
      * @param pressed True to press, False to release
      */
     fun setState(pressed: Boolean) =
-        KeyBinding.setKeyPressed(keyBinding.asMixin<KeyBindingAccessor>().boundKey, pressed)
+        KeyMapping.set(keyBinding.asMixin<KeyMappingAccessor>().key, pressed)
 
     override fun toString() = "KeyBind{" +
         "description=${getDescription()}, " +
@@ -179,7 +179,7 @@ class KeyBind {
         "}"
 
     companion object : Initializer {
-        private val customKeyBindings = mutableSetOf<KeyBinding>()
+        private val customKeyBindings = mutableSetOf<KeyMapping>()
         private val uniqueCategories = mutableMapOf<String, Int>()
         private val keyBinds = CopyOnWriteArrayList<KeyBind>()
 
@@ -204,14 +204,14 @@ class KeyBind {
             keyBinds.clear()
         }
 
-        internal fun getCategoryName(category: KeyBinding.Category): String {
+        internal fun getCategoryName(category: KeyMapping.Category): String {
             return category.id.path
         }
 
-        private fun removeKeyBinding(keyBinding: KeyBinding) {
-            Client.getMinecraft().options.asMixin<GameOptionsAccessor>().setAllKeys(
+        private fun removeKeyBinding(keyBinding: KeyMapping) {
+            Client.getMinecraft().options.asMixin<OptionsAccessor>().setKeyMappings(
                 ArrayUtils.removeElement(
-                    Client.getMinecraft().options.allKeys,
+                    Client.getMinecraft().options.keyMappings,
                     keyBinding
                 )
             )
@@ -223,7 +223,7 @@ class KeyBind {
 
                 if (uniqueCategories[categoryName] == 0) {
                     uniqueCategories.remove(categoryName)
-                    KeyBindingAccessor.Category.getCategoryList().removeIf { it.id.equals(category.id) }
+                    KeyMappingAccessor.Category.getCategoryList().removeIf { it.id.equals(category.id) }
                 }
             }
         }
@@ -237,16 +237,16 @@ class KeyBind {
             keyBinds.remove(keyBind)
         }
 
-        private fun addKeyBinding(keyBinding: KeyBinding): KeyBinding {
-            Client.getMinecraft().options.asMixin<GameOptionsAccessor>().setAllKeys(
+        private fun addKeyBinding(keyBinding: KeyMapping): KeyMapping {
+            Client.getMinecraft().options.asMixin<OptionsAccessor>().setKeyMappings(
                 ArrayUtils.add(
-                    Client.getMinecraft().options.allKeys,
+                    Client.getMinecraft().options.keyMappings,
                     keyBinding
                 )
             )
 
             if (uniqueCategories[getCategoryName(keyBinding.category)] == 1) {
-                KeyBindingAccessor.Category.getCategoryList().add(keyBinding.category)
+                KeyMappingAccessor.Category.getCategoryList().add(keyBinding.category)
             }
 
             return keyBinding

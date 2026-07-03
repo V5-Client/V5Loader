@@ -55,10 +55,10 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
     }
 
     private fun collectAllReachableClasses(decl: KSDeclaration, classes: MutableSet<KSClassDeclaration>, depth: Int) {
-        if (depth > MAX_DEPTH || decl in classes || decl is KSTypeParameter || !decl.isPublic())
+        if (decl is KSClassDeclaration && decl.classKind == ClassKind.ENUM_ENTRY)
             return
 
-        if (decl is KSClassDeclaration && decl.classKind == ClassKind.ENUM_ENTRY)
+        if (depth > MAX_DEPTH || decl in classes || decl is KSTypeParameter || !decl.isPublic())
             return
 
         if (decl is KSTypeAlias) {
@@ -118,8 +118,7 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
             val pkg = getPackage(it.packageName.asString()) ?: return@forEach
             val name = it.name
 
-            require(name !in pkg.classes)
-            pkg.classes[name] = it
+            pkg.classes.putIfAbsent(name, it)
 
             classNames.add("${pkg.path()}.$name")
         }
@@ -176,11 +175,11 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
         val (staticProperties, instanceProperties) = properties.partition { it.isStatic() }
         val isEnum = clazz.classKind == ClassKind.ENUM_CLASS
 
-        val nestedClasses = clazz.declarations.filterIsInstance<KSClassDeclaration>().filter {
-            it.isPublic()
-        }.filter {
-            it.classKind == ClassKind.ENUM_CLASS || it.classKind == ClassKind.CLASS
-        }.toList()
+        val nestedClasses = clazz.declarations
+            .filterIsInstance<KSClassDeclaration>()
+            .filter { it.classKind == ClassKind.ENUM_CLASS || it.classKind == ClassKind.CLASS }
+            .filter { it.isPublic() }
+            .toList()
 
         // Output static object first, if necessary
         if (staticProperties.isNotEmpty() || staticFunctions.isNotEmpty() || nestedClasses.isNotEmpty() || isEnum) {
@@ -236,7 +235,7 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
                     buildType(ref, resolver).let {
                         if (it == "number") "kotlin.Number" else it
                     }
-                }.filter { it != "unknown" }.joinToString()
+                }.filter { it != "unknown" && it != "any" }.joinToString()
                 if (clause.isNotBlank()) {
                     append(" extends ")
                     append(clause.trim())
@@ -260,7 +259,7 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
                 if (functionalMethod != null) {
                     buildFunction(functionalMethod, resolver, omitName = true)
                 }
-            } else if (clazz.path.startsWith("kotlin.Function") && clazz.path != "kotlin.Function") {
+            } else if (clazz.path?.startsWith("kotlin.Function") == true && clazz.path != "kotlin.Function") {
                 val functionalMethod = clazz.getDeclaredFunctions().single()
                 buildFunction(functionalMethod, resolver, omitName = true)
             }
@@ -383,6 +382,7 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
                     append("object")
                 else -> {
                     val path = when (val path = type.declaration.path) {
+                        null -> return "unknown"
                         "kotlin.Any" -> "any"
                         "kotlin.Nothing" -> "never"
                         "kotlin.Unit" -> "void"
@@ -474,18 +474,18 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
             } else simpleName.asString()
         }
 
-    private val classPathCache = mutableMapOf<KSDeclaration, String>()
-    private val KSDeclaration.path: String
+    private val classPathCache = mutableMapOf<KSDeclaration, String?>()
+    private val KSDeclaration.path: String?
         get() = classPathCache.getOrPut(this) {
             if (this is KSClassDeclaration) {
                 val parent = parentDeclaration
                 if (parent is KSClassDeclaration) {
                     // Omit the parent class from the path
-                    return qualifiedName!!.getQualifier().substringBeforeLast('.') + ".$name"
+                    return qualifiedName?.getQualifier()?.substringBeforeLast('.')?.let { "$it.$name" }
                 }
             }
 
-            qualifiedName!!.asString()
+            qualifiedName?.asString()
         }
 
     fun KSPropertyDeclaration.isStatic() = Modifier.JAVA_STATIC in modifiers ||

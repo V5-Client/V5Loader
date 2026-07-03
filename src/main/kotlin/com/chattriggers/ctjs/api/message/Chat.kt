@@ -1,40 +1,40 @@
 package com.chattriggers.ctjs.api.message
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.text.Style
-import net.minecraft.text.Text
-import net.minecraft.text.TextColor
-import net.minecraft.util.Formatting
-import net.minecraft.util.math.ColorHelper
+import net.minecraft.client.Minecraft
+import net.minecraft.network.chat.Style
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.TextColor
+import net.minecraft.ChatFormatting
+import net.minecraft.util.ARGB
 
 object Chat {
 
-    private val mc = MinecraftClient.getInstance()
+    private val mc = Minecraft.getInstance()
     @JvmStatic
     fun sendGradientMsg(prefix: String, startRgb: Int, endRgb: Int, vararg messages: Any) {
-        val finalMessage = Text.empty()
+        val finalMessage = Component.empty()
 
         if (prefix.length <= 1) {
-            finalMessage.append(Text.literal(prefix).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(startRgb))))
+            finalMessage.append(Component.literal(prefix).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(startRgb))))
         } else {
             for (i in prefix.indices) {
-                val rgb = ColorHelper.lerp(i.toFloat() / (prefix.length - 1), startRgb, endRgb)
+                val rgb = ARGB.srgbLerp(i.toFloat() / (prefix.length - 1), startRgb, endRgb)
                 finalMessage.append(
-                    Text.literal(prefix[i].toString()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(rgb)))
+                    Component.literal(prefix[i].toString()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(rgb)))
                 )
             }
         }
-        finalMessage.append(Text.literal(" ").formatted(Formatting.RESET))
+        finalMessage.append(Component.literal(" ").withStyle(ChatFormatting.RESET))
 
         for (part in messages) {
-            val partText: Text = when (part) {
-                is Text -> part
+            val partText: Component = when (part) {
+                is Component -> part
                 is String -> TextComponent(part)
-                else -> Text.literal(part.toString())
+                else -> Component.literal(part.toString())
             }
             finalMessage.append(partText)
         }
 
-        mc.inGameHud.chatHud.addMessage(finalMessage)
+        mc.gui.chat.addClientSystemMessage(finalMessage)
     }
 }

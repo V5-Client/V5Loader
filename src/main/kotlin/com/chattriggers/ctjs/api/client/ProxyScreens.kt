@@ -1,19 +1,19 @@
 package com.chattriggers.ctjs.api.client
 
 import com.chattriggers.ctjs.api.render.NVGRenderer
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.components.EditBox
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
 import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_BOTTOM
 import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER
 import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT
 import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_MIDDLE
 import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP
 
-class ProxyManagerScreen(private val parent: Screen) : Screen(Text.literal("Proxy Manager")) {
+class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal("Proxy Manager")) {
     private val rowHeight = 24
     private val listTop = 40
     private val listWidth = 340
@@ -28,23 +28,23 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Text.literal("Prox
 
         val buttonY = height - 28
         addButton = ScreenHelper.MenuButton("Add Proxy", width / 2 - 102, buttonY, 100, 20) {
-            client?.setScreen(ProxyEditScreen(this, null))
+            minecraft?.setScreen(ProxyEditScreen(this, null))
         }
         backButton = ScreenHelper.MenuButton("Back", width / 2 + 2, buttonY, 100, 20) {
-            client?.setScreen(parent)
+            minecraft?.setScreen(parent)
         }
     }
 
-    override fun close() {
-        client?.setScreen(parent)
+    override fun onClose() {
+        minecraft?.setScreen(parent)
     }
 
-    override fun renderBackground(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        renderPanoramaBackground(context, delta)
+    override fun extractBackground(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        super.extractBackground(context, mouseX, mouseY, delta)
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        renderBackground(context, mouseX, mouseY, delta)
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        extractBackground(context, mouseX, mouseY, delta)
 
         val listX = width / 2 - 170
         val listHeight = height - 76
@@ -257,7 +257,7 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Text.literal("Prox
         scrollOffset = scrollOffset.coerceIn(0f, getMaxScroll(contentHeight))
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         val mouseX = click.x.toInt()
         val mouseY = click.y.toInt()
 
@@ -314,7 +314,7 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Text.literal("Prox
                     return true
                 }
                 mouseX in editX until (editX + editW) && mouseY in btnY until (btnY + btnH) -> {
-                    client?.setScreen(ProxyEditScreen(this, proxy))
+                    minecraft?.setScreen(ProxyEditScreen(this, proxy))
                     return true
                 }
                 mouseX in deleteX until (deleteX + deleteW) && mouseY in btnY until (btnY + btnH) -> {
@@ -350,13 +350,13 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Text.literal("Prox
 class ProxyEditScreen(
     private val parent: ProxyManagerScreen,
     private val existingProxy: Proxy?
-) : Screen(Text.literal(if (existingProxy == null) "Add Proxy" else "Edit Proxy")) {
+) : Screen(Component.literal(if (existingProxy == null) "Add Proxy" else "Edit Proxy")) {
 
-    private lateinit var nameField: TextFieldWidget
-    private lateinit var ipField: TextFieldWidget
-    private lateinit var portField: TextFieldWidget
-    private lateinit var usernameField: TextFieldWidget
-    private lateinit var passwordField: TextFieldWidget
+    private lateinit var nameField: EditBox
+    private lateinit var ipField: EditBox
+    private lateinit var portField: EditBox
+    private lateinit var usernameField: EditBox
+    private lateinit var passwordField: EditBox
 
     private lateinit var saveButton: ScreenHelper.MenuButton
     private lateinit var cancelButton: ScreenHelper.MenuButton
@@ -377,28 +377,28 @@ class ProxyEditScreen(
             save()
         }
         cancelButton = ScreenHelper.MenuButton("Cancel", centerX + 5, height - 40, 100, 20) {
-            client?.setScreen(parent)
+            minecraft?.setScreen(parent)
         }
     }
 
-    override fun close() {
-        client?.setScreen(parent)
+    override fun onClose() {
+        minecraft?.setScreen(parent)
     }
 
-    private fun createField(centerX: Int, y: Int, placeholder: String, value: String?): TextFieldWidget {
-        val field = TextFieldWidget(textRenderer, centerX - 100, y, 200, 20, Text.literal(""))
-        field.text = value ?: ""
-        field.setPlaceholder(Text.literal(placeholder).formatted(Formatting.GRAY))
-        addDrawableChild(field)
+    private fun createField(centerX: Int, y: Int, placeholder: String, value: String?): EditBox {
+        val field = EditBox(font, centerX - 100, y, 200, 20, Component.literal(""))
+        field.setValue(value ?: "")
+        field.setHint(Component.literal(placeholder).withStyle(ChatFormatting.GRAY))
+        addRenderableWidget(field)
         return field
     }
 
     private fun save() {
-        val name = nameField.text.trim()
-        val ip = ipField.text.trim()
-        val portStr = portField.text.trim()
-        val username = usernameField.text.trim()
-        val password = passwordField.text.trim()
+        val name = nameField.value.trim()
+        val ip = ipField.value.trim()
+        val portStr = portField.value.trim()
+        val username = usernameField.value.trim()
+        val password = passwordField.value.trim()
 
         if (ip.isBlank() || portStr.isBlank()) return
         val port = portStr.toIntOrNull() ?: return
@@ -412,16 +412,16 @@ class ProxyEditScreen(
         }
 
         parent.refreshList()
-        client?.setScreen(parent)
+        minecraft?.setScreen(parent)
     }
 
-    override fun renderBackground(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        renderPanoramaBackground(context, delta)
+    override fun extractBackground(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        super.extractBackground(context, mouseX, mouseY, delta)
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        renderBackground(context, mouseX, mouseY, delta)
-        super.render(context, mouseX, mouseY, delta)
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        extractBackground(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
 
         val startX = width / 2 - 100
         val startY = 45 - 11
@@ -465,7 +465,7 @@ class ProxyEditScreen(
             )
 
             NVGRenderer.text(
-                "Logged in as ${client?.session?.username ?: "Unknown"}",
+                "Logged in as ${minecraft?.user?.name ?: "Unknown"}",
                 8f,
                 height - 8f,
                 8.5f,
@@ -478,7 +478,7 @@ class ProxyEditScreen(
         }
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         val mouseX = click.x.toInt()
         val mouseY = click.y.toInt()
 

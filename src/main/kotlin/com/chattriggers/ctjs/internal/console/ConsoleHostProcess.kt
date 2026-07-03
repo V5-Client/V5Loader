@@ -8,10 +8,10 @@ import com.chattriggers.ctjs.internal.engine.CTEvents
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
 import kotlinx.serialization.json.Json
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
-import net.minecraft.client.option.KeyBinding
-import net.minecraft.client.util.InputUtil
-import net.minecraft.util.Identifier
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
+import net.minecraft.client.KeyMapping
+import com.mojang.blaze3d.platform.InputConstants
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
 import org.lwjgl.glfw.GLFW
 import java.awt.Color
@@ -60,17 +60,17 @@ object ConsoleHostProcess : Initializer {
     private val pendingMessages = mutableListOf<H2CMessage>()
 
     override fun init() {
-        val keybind = KeyBindingHelper.registerKeyBinding(
-            KeyBinding(
+        val keybind = KeyMappingHelper.registerKeyMapping(
+            KeyMapping(
                 "ctjs.key.binding.console",
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_GRAVE_ACCENT,
-                KeyBinding.Category.create(Identifier.of("ctjs.key.category")),
+                KeyMapping.Category.register(Identifier.parse("ctjs.key.category")),
             )
         )
 
         CTEvents.RENDER_GAME.register {
-            if (keybind.wasPressed())
+            if (keybind.consumeClick())
                 show()
         }
     }
@@ -82,7 +82,7 @@ object ConsoleHostProcess : Initializer {
 
         val urlObjects = (Thread.currentThread().contextClassLoader.parent as URLClassLoader).urLs
         val urls = urlObjects.joinToString(File.pathSeparator) {
-            val str = if (Util.getOperatingSystem().equals(Util.OperatingSystem.WINDOWS)) it.toString().replace("file:/", "") else it.toString()
+            val str = if (Util.getPlatform().equals(Util.OS.WINDOWS)) it.toString().replace("file:/", "") else it.toString()
             URLDecoder.decode(str, Charset.defaultCharset())
         }
 
@@ -125,8 +125,8 @@ object ConsoleHostProcess : Initializer {
                     )
 
                     synchronized(socketOut) {
-                        socketOut.println(Json.encodeToString<H2CMessage>(initMessage))
-                        pendingMessages.forEach { socketOut.println(Json.encodeToString<H2CMessage>(it)) }
+                        socketOut.println(Json.encodeToString(H2CMessage.serializer(), initMessage))
+                        pendingMessages.forEach { socketOut.println(Json.encodeToString(H2CMessage.serializer(), it)) }
                     }
 
                     while (running) {
@@ -214,7 +214,7 @@ object ConsoleHostProcess : Initializer {
 
         if (connected) {
             synchronized(socketOut) {
-                socketOut.println(Json.encodeToString(message))
+                socketOut.println(Json.encodeToString(H2CMessage.serializer(), message))
             }
         } else {
             pendingMessages.add(message)

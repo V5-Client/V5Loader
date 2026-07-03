@@ -8,14 +8,19 @@ import java.lang.invoke.CallSite
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 import java.lang.invoke.MutableCallSite
-import kotlin.reflect.jvm.javaMethod
 
 internal object InvokeDynamicSupport {
     internal val BOOTSTRAP_HANDLE = Handle(
         Opcodes.H_INVOKESTATIC,
         InvokeDynamicSupport::class.qualifiedName!!.replace('.', '/'),
         "bootstrapInvokeMixin",
-        Type.getMethodDescriptor(::bootstrapInvokeMixin.javaMethod),
+        Type.getMethodDescriptor(
+            Type.getType(CallSite::class.java),
+            Type.getType(MethodHandles.Lookup::class.java),
+            Type.getType(String::class.java),
+            Type.getType(MethodType::class.java),
+            Type.INT_TYPE,
+        ),
         false,
     )
 

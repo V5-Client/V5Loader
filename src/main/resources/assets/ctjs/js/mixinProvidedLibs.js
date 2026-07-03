@@ -36,7 +36,7 @@
 
     global.ArrayList = Packages.java.util.ArrayList;
     global.HashMap = Packages.java.util.HashMap;
-    global.Hand = Packages.net.minecraft.util.Hand;
+    global.Hand = Packages.net.minecraft.world.InteractionHand;
 
     // Descriptor helpers
     global.void_ = 'V';

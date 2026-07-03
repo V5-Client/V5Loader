@@ -1,17 +1,18 @@
 package com.chattriggers.ctjs.api.client
 
 import com.chattriggers.ctjs.api.Config
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.ConfirmLinkScreen
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.ConfirmLinkScreen
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
 import net.minecraft.util.Util
 import java.awt.Color
-class WelcomeScreen : Screen(Text.literal("Welcome Screen")) {
+class WelcomeScreen : Screen(Component.literal("Welcome Screen")) {
 
     companion object {
         private const val SITE_URL = "https://rdbt.top/"
@@ -30,18 +31,18 @@ class WelcomeScreen : Screen(Text.literal("Welcome Screen")) {
 
         @JvmStatic
         fun open() {
-            val client = MinecraftClient.getInstance()
+            val client = Minecraft.getInstance()
             client.execute { client.setScreen(WelcomeScreen()) }
         }
     }
 
     private val forcedMultiplier = calculateForcedMultiplier()
-    private lateinit var inputBox: TextFieldWidget
-    private lateinit var closeButton: ButtonWidget
+    private lateinit var inputBox: EditBox
+    private lateinit var closeButton: Button
     private var contentOffsetY = 0f
 
     private fun calculateForcedMultiplier(): Float {
-        val currentScale = MinecraftClient.getInstance().window.scaleFactor.toFloat()
+        val currentScale = Minecraft.getInstance().window.guiScale.toFloat()
         return if (currentScale < TARGET_SCALE) TARGET_SCALE / currentScale else 1.0f
     }
 
@@ -65,33 +66,33 @@ class WelcomeScreen : Screen(Text.literal("Welcome Screen")) {
     }
 
     private fun setupInputBox(y: Int) {
-        inputBox = TextFieldWidget(textRenderer, -100, y, 200, 20, Text.literal("Verify"))
-        inputBox.setChangedListener { text ->
+        inputBox = EditBox(font, -100, y, 200, 20, Component.literal("Verify"))
+        inputBox.setResponder { text ->
             closeButton.active = text.equals(REQUIRED_TEXT, ignoreCase = true)
         }
-        addDrawableChild(inputBox)
+        addRenderableWidget(inputBox)
     }
 
     private fun setupButtons(y: Int) {
-        addDrawableChild(
-            ButtonWidget.builder(Text.literal("Read the Guide")) { _ ->
-                client?.setScreen(ConfirmLinkScreen({ confirmed ->
-                    if (confirmed) Util.getOperatingSystem().open(GUIDE_URL)
-                    client?.setScreen(this)
+        addRenderableWidget(
+            Button.builder(Component.literal("Read the Guide")) { _ ->
+                minecraft?.setScreen(ConfirmLinkScreen({ confirmed ->
+                    if (confirmed) Util.getPlatform().openUri(GUIDE_URL)
+                    minecraft?.setScreen(this)
                 }, GUIDE_URL, true))
-            }.dimensions(-105, y, 100, 20).build()
+            }.bounds(-105, y, 100, 20).build()
         )
 
-        closeButton = ButtonWidget.builder(Text.literal("Close")) { _ ->
+        closeButton = Button.builder(Component.literal("Close")) { _ ->
             Config.markWelcomeShown()
-            close()
-        }.dimensions(5, y, 100, 20).build()
+            onClose()
+        }.bounds(5, y, 100, 20).build()
         closeButton.active = false
-        addDrawableChild(closeButton)
+        addRenderableWidget(closeButton)
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        val matrices = context.matrices
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        val matrices = context.pose()
 
         matrices.pushMatrix()
         matrices.translate(width / 2f, 0f)
@@ -103,18 +104,18 @@ class WelcomeScreen : Screen(Text.literal("Welcome Screen")) {
         val scaledMouseX = ((mouseX - (width / 2f)) / forcedMultiplier).toInt()
         val scaledMouseY = (mouseY / forcedMultiplier).toInt()
 
-        super.render(context, scaledMouseX, scaledMouseY, delta)
+        super.extractRenderState(context, scaledMouseX, scaledMouseY, delta)
         matrices.popMatrix()
     }
 
-    private fun renderTitle(context: DrawContext) {
-        val matrices = context.matrices
+    private fun renderTitle(context: GuiGraphicsExtractor) {
+        val matrices = context.pose()
 
         matrices.pushMatrix()
         matrices.scale(TITLE_SCALE, TITLE_SCALE)
 
         val titleText = "Welcome to V5"
-        val totalWidth = textRenderer.getWidth(titleText)
+        val totalWidth = font.width(titleText)
         var currentX = -totalWidth / 2f
         val yPos = ((contentOffsetY + 10) / TITLE_SCALE).toInt()
 
@@ -122,42 +123,43 @@ class WelcomeScreen : Screen(Text.literal("Welcome Screen")) {
             val charStr = char.toString()
             val hue = ((System.currentTimeMillis() + (currentX * 10).toLong()) % 2000) / 2000f
             val color = Color.getHSBColor(hue, 0.9f, 1f).rgb
-            context.drawText(textRenderer, charStr, currentX.toInt(), yPos, color, true)
-            currentX += textRenderer.getWidth(charStr)
+            context.text(font, charStr, currentX.toInt(), yPos, color, true)
+            currentX += font.width(charStr)
         }
 
         matrices.popMatrix()
     }
 
-    private fun renderWarningText(context: DrawContext) {
+    private fun renderWarningText(context: GuiGraphicsExtractor) {
         val lines = arrayOf(
-            Text.literal("⚠ THE OFFICIAL V5 WEBSITE IS: ").formatted(Formatting.RED)
-                .append(Text.literal(SITE_URL).formatted(Formatting.BLUE, Formatting.UNDERLINE))
-                .append(Text.literal(" ⚠").formatted(Formatting.RED)),
-            Text.literal("⚠ IF YOU DOWNLOADED THIS FROM ANYWHERE ELSE, IT MAY BE A VIRUS! ⚠").formatted(Formatting.RED),
-            Text.empty(),
-            Text.literal("BEWARE OF FAKE RELEASES:").formatted(Formatting.RED),
-            Text.literal("If you did not download this from the official Discord,"),
-            Text.literal("your account may be at risk!"),
-            Text.literal("Click \"Read the Guide\" to learn how to protect your account."),
-            Text.empty(),
-            Text.literal("TO ACCESS THE CLIENT:").formatted(Formatting.YELLOW),
-            Text.literal("If you understand the risks and are using the official version,"),
-            Text.literal("type \"I understand\" in the box below and click Close.")
+            Component.literal("⚠ THE OFFICIAL V5 WEBSITE IS: ").withStyle(ChatFormatting.RED)
+                .append(Component.literal(SITE_URL).withStyle(ChatFormatting.BLUE, ChatFormatting.UNDERLINE))
+                .append(Component.literal(" ⚠").withStyle(ChatFormatting.RED)),
+            Component.literal("⚠ IF YOU DOWNLOADED THIS FROM ANYWHERE ELSE, IT MAY BE A VIRUS! ⚠").withStyle(
+                ChatFormatting.RED),
+            Component.empty(),
+            Component.literal("BEWARE OF FAKE RELEASES:").withStyle(ChatFormatting.RED),
+            Component.literal("If you did not download this from the official Discord,"),
+            Component.literal("your account may be at risk!"),
+            Component.literal("Click \"Read the Guide\" to learn how to protect your account."),
+            Component.empty(),
+            Component.literal("TO ACCESS THE CLIENT:").withStyle(ChatFormatting.YELLOW),
+            Component.literal("If you understand the risks and are using the official version,"),
+            Component.literal("type \"I understand\" in the box below and click Close.")
         )
 
         var yPosition = contentOffsetY + TITLE_HEIGHT
         for (line in lines) {
-            val xPos = -textRenderer.getWidth(line) / 2
-            context.drawText(textRenderer, line, xPos, yPosition.toInt(), -1, true)
+            val xPos = -font.width(line) / 2
+            context.text(font, line, xPos, yPosition.toInt(), -1, true)
             yPosition += LINE_HEIGHT
         }
     }
 
-    override fun mouseClicked(click: net.minecraft.client.gui.Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         val scaledX = (click.x - (width / 2.0)) / forcedMultiplier
         val scaledY = click.y / forcedMultiplier
-        val scaledClick = net.minecraft.client.gui.Click(scaledX, scaledY, click.buttonInfo())
+        val scaledClick = MouseButtonEvent(scaledX, scaledY, click.buttonInfo())
 
         if (handleSiteLinkClick(scaledX, scaledY)) return true
 
@@ -168,9 +170,9 @@ class WelcomeScreen : Screen(Text.literal("Welcome Screen")) {
     private fun handleSiteLinkClick(scaledX: Double, scaledY: Double): Boolean {
         val prefix = "⚠ THE OFFICIAL V5 WEBSITE IS: "
         val fullLine = "$prefix$SITE_URL ⚠"
-        val fullWidth = textRenderer.getWidth(fullLine)
-        val prefixWidth = textRenderer.getWidth(prefix)
-        val linkWidth = textRenderer.getWidth(SITE_URL)
+        val fullWidth = font.width(fullLine)
+        val prefixWidth = font.width(prefix)
+        val linkWidth = font.width(SITE_URL)
 
         val linkStartX = (-fullWidth / 2.0) + prefixWidth
         val linkEndX = linkStartX + linkWidth
@@ -178,9 +180,9 @@ class WelcomeScreen : Screen(Text.literal("Welcome Screen")) {
         val linkYEnd = linkYStart + LINE_HEIGHT
 
         if (scaledX in linkStartX..linkEndX && scaledY in linkYStart..linkYEnd) {
-            client?.setScreen(ConfirmLinkScreen({ confirmed ->
-                if (confirmed) Util.getOperatingSystem().open(SITE_URL)
-                client?.setScreen(this)
+            minecraft?.setScreen(ConfirmLinkScreen({ confirmed ->
+                if (confirmed) Util.getPlatform().openUri(SITE_URL)
+                minecraft?.setScreen(this)
             }, SITE_URL, true))
             return true
         }
@@ -192,10 +194,10 @@ class WelcomeScreen : Screen(Text.literal("Welcome Screen")) {
         if (inputBox.isFocused) focused = inputBox
     }
 
-    override fun mouseReleased(click: net.minecraft.client.gui.Click): Boolean {
+    override fun mouseReleased(click: MouseButtonEvent): Boolean {
         val scaledX = (click.x - (width / 2.0)) / forcedMultiplier
         val scaledY = click.y / forcedMultiplier
-        val scaledClick = net.minecraft.client.gui.Click(scaledX, scaledY, click.buttonInfo())
+        val scaledClick = MouseButtonEvent(scaledX, scaledY, click.buttonInfo())
         return super.mouseReleased(scaledClick)
     }
 

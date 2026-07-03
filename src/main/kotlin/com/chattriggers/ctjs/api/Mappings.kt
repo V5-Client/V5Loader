@@ -1,53 +1,35 @@
 package com.chattriggers.ctjs.api
 
-import com.chattriggers.ctjs.CTJS
-import com.chattriggers.ctjs.internal.utils.urlEncode
 import net.fabricmc.loader.api.FabricLoader
-import net.fabricmc.mappingio.MappingReader
-import net.fabricmc.mappingio.tree.MappingTree.ElementMapping
-import net.fabricmc.mappingio.tree.MappingTree.MethodArgMapping
-import net.fabricmc.mappingio.tree.MappingTreeView
-import net.fabricmc.mappingio.tree.MemoryMappingTree
+import net.fabricmc.loader.impl.launch.FabricLauncherBase
+import net.fabricmc.loader.impl.lib.mappingio.MappingReader
+import net.fabricmc.loader.impl.lib.mappingio.tree.MemoryMappingTree
+import net.fabricmc.loader.impl.lib.mappingio.tree.MappingTree
+import net.fabricmc.loader.impl.lib.mappingio.tree.MappingTree.ElementMapping
+import net.fabricmc.loader.impl.lib.mappingio.tree.MappingTree.MethodArgMapping
+import net.fabricmc.loader.impl.lib.mappingio.tree.MappingTreeView
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.spongepowered.asm.mixin.transformer.ClassInfo
 import org.spongepowered.asm.service.MixinService
-import java.io.ByteArrayInputStream
-import java.net.URI
-import java.nio.file.Files
-import java.util.zip.ZipFile
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 
 /**
  * Allows runtime inspection of mappings
  */
 object Mappings {
-    private const val YARN_MAPPINGS_URL_PREFIX = "https://maven.fabricmc.net/net/fabricmc/yarn/"
-
     // If this is changed, also change the Java.type function in mixinProvidedLibs.js
     internal val mappedPackages = setOf("Lnet/minecraft/", "Lcom/mojang/blaze3d/")
 
     private val unmappedClasses = mutableMapOf<String, MappedClass>()
     private val mappedToUnmappedClassNames = mutableMapOf<String, String>()
+    private val runtimeNamespace by lazy { detectRuntimeNamespace() }
+    private const val SCRIPT_NAMESPACE = "named"
+    private const val EMBEDDED_MAPPINGS = "/ctjs-mappings.tiny"
 
     internal fun initialize() {
-        val container = FabricLoader.getInstance().getModContainer(CTJS.MOD_ID)
-        val mappingVersion = if (container.isPresent) {
-            container.get().metadata.getCustomValue("${CTJS.MOD_ID}:yarn-mappings").asString
-        } else {
-            "1.21.11+build.3"
-        }
-        val jarName = "yarn-$mappingVersion-v2.jar".urlEncode()
-
-        val jarBytes = URI("$YARN_MAPPINGS_URL_PREFIX${mappingVersion.urlEncode()}/$jarName").toURL().readBytes()
-        val tempFile = Files.createTempFile(CTJS.MOD_ID, "mapping").toFile()
-        tempFile.writeBytes(jarBytes)
-
-        val mappingBytes = ZipFile(tempFile).use { file ->
-            file.getInputStream(file.getEntry("mappings/mappings.tiny")).readAllBytes()
-        }
-
-        val tree = MemoryMappingTree()
-        MappingReader.read(ByteArrayInputStream(mappingBytes).bufferedReader(), tree)
+        val tree: MappingTree = loadMappingTree()
 
         tree.classes.forEach { clazz ->
             val fields = mutableMapOf<String, MappedField>()
@@ -69,8 +51,10 @@ object Mappings {
                     MappedMethod(
                         name = Mapping.fromMapped(method),
                         parameters = method.args.sortedBy { it.lvIndex }.mapIndexed { index, param ->
+                            // Runtime mappings often omit argument names; a stable placeholder is good enough here.
+                            val paramName = param.namedName ?: param.srcName ?: "arg${param.argPosition}"
                             MappedParameter(
-                                Mapping(param.unmappedName, param.mappedName),
+                                Mapping(paramName, param.mappedName),
                                 Mapping(
                                     unmappedType.argumentTypes[index].descriptor,
                                     mappedType.argumentTypes[index].descriptor,
@@ -89,11 +73,32 @@ object Mappings {
                 methods
             )
 
-            if (CTJS.isDevelopment) {
-                mappedToUnmappedClassNames[clazz.unmappedName] = clazz.unmappedName
-            } else {
-                mappedToUnmappedClassNames[clazz.mappedName] = clazz.unmappedName
+            classAliases(clazz).forEach {
+                mappedToUnmappedClassNames[it] = clazz.unmappedName
             }
+        }
+    }
+
+    private fun loadMappingTree(): MappingTree {
+        val mappings = javaClass.getResourceAsStream(EMBEDDED_MAPPINGS) ?: return FabricLauncherBase.getLauncher().mappingConfiguration.mappings
+        val tree = MemoryMappingTree()
+
+        InputStreamReader(mappings, StandardCharsets.UTF_8).use {
+            MappingReader.read(it, tree)
+        }
+
+        return tree
+    }
+
+    private fun detectRuntimeNamespace(): String {
+        val launcher = FabricLauncherBase.getLauncher()
+
+        fun hasClass(path: String) = launcher.getResourceAsStream(path)?.use { true } == true
+
+        return when {
+            hasClass("net/minecraft/client/Minecraft.class") -> SCRIPT_NAMESPACE
+            hasClass("net/minecraft/class_310.class") -> "intermediary"
+            else -> launcher.mappingConfiguration.runtimeNamespace
         }
     }
 
@@ -187,7 +192,7 @@ object Mappings {
 
     internal data class Mapping(val original: String, val mapped: String) {
         val value: String
-            get() = if (CTJS.isDevelopment) original else mapped
+            get() = if (FabricLoader.getInstance().isDevelopmentEnvironment) original else mapped
 
         companion object {
             fun fromMapped(mapped: ElementMapping) = Mapping(mapped.unmappedName, mapped.mappedName)
@@ -246,18 +251,30 @@ object Mappings {
     }
 
     private val ElementMapping.unmappedName: String
-        get() = getName("named")!!
+        get() = getName(SCRIPT_NAMESPACE) ?: srcName
 
     private val ElementMapping.mappedName: String
-        get() = getName("intermediary")!!
+        get() = getName(runtimeNamespace) ?: srcName
 
-    // Parameters do not have "intermediary" mappings
+    private fun classAliases(clazz: ElementMapping) = listOfNotNull(
+        clazz.srcName,
+        clazz.unmappedName,
+        clazz.mappedName,
+        clazz.getName("official"),
+        clazz.getName("intermediary"),
+        clazz.getName("named"),
+    ).distinct()
+
+    // Parameters often have no runtime name mapping at all.
     private val MethodArgMapping.mappedName: String
-        get() = unmappedName
+        get() = getName(runtimeNamespace) ?: namedName ?: srcName ?: "arg${argPosition}"
+
+    private val MethodArgMapping.namedName: String?
+        get() = getName(SCRIPT_NAMESPACE)
 
     private val MappingTreeView.MemberMappingView.unmappedType: Type
-        get() = Type.getType(getDesc("named"))
+        get() = Type.getType(tree.getNamespaceId(SCRIPT_NAMESPACE).takeIf { it >= 0 }?.let(::getDesc) ?: srcDesc)
 
     private val MappingTreeView.MemberMappingView.mappedType: Type
-        get() = Type.getType(getDesc("intermediary"))
+        get() = Type.getType(tree.getNamespaceId(runtimeNamespace).takeIf { it >= 0 }?.let(::getDesc) ?: srcDesc)
 }

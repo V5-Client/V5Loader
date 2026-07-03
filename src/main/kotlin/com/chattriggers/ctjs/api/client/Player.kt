@@ -13,12 +13,12 @@ import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.api.world.block.BlockFace
 import com.chattriggers.ctjs.api.world.block.BlockPos
 import gg.essential.universal.UMath
-import net.minecraft.client.gui.screen.ingame.HandledScreen
-import net.minecraft.util.Hand
-import net.minecraft.util.hit.BlockHitResult
-import net.minecraft.util.hit.EntityHitResult
-import net.minecraft.util.hit.HitResult
-import net.minecraft.util.math.Vec2f
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.EntityHitResult
+import net.minecraft.world.phys.HitResult
+import net.minecraft.world.phys.Vec2
 import org.mozilla.javascript.NativeObject
 import java.util.*
 
@@ -39,7 +39,7 @@ object Player {
     fun getPlayer() = toMC()
 
     @JvmStatic
-    fun getTeam(): Team? = Scoreboard.toMC()?.getTeam(getName())?.let(::Team)
+    fun getTeam(): Team? = Scoreboard.toMC()?.getPlayerTeam(getName())?.let(::Team)
 
     @JvmStatic
     fun asPlayerMP(): PlayerMP? = toMC()?.let(::PlayerMP)
@@ -57,16 +57,16 @@ object Player {
     fun getPos(): BlockPos = BlockPos(getX(), getY(), getZ())
 
     @JvmStatic
-    fun getRotation() = toMC()?.rotationClient ?: Vec2f(0f, 0f)
+    fun getRotation() = toMC()?.rotationVector ?: Vec2(0f, 0f)
 
     @JvmStatic
-    fun getLastX(): Double = toMC()?.lastRenderX ?: 0.0
+    fun getLastX(): Double = toMC()?.xOld ?: 0.0
 
     @JvmStatic
-    fun getLastY(): Double = toMC()?.lastRenderY ?: 0.0
+    fun getLastY(): Double = toMC()?.yOld ?: 0.0
 
     @JvmStatic
-    fun getLastZ(): Double = toMC()?.lastRenderZ ?: 0.0
+    fun getLastZ(): Double = toMC()?.zOld ?: 0.0
 
     @JvmStatic
     fun getRenderX(): Double = getLastX() + (getX() - getLastX()) * Renderer.partialTicks
@@ -84,7 +84,7 @@ object Player {
      * @return the player's x motion
      */
     @JvmStatic
-    fun getMotionX(): Double = toMC()?.velocity?.x ?: 0.0
+    fun getMotionX(): Double = toMC()?.deltaMovement?.x ?: 0.0
 
     /**
      * Gets the player's y motion.
@@ -93,7 +93,7 @@ object Player {
      * @return the player's y motion
      */
     @JvmStatic
-    fun getMotionY(): Double = toMC()?.velocity?.y ?: 0.0
+    fun getMotionY(): Double = toMC()?.deltaMovement?.y ?: 0.0
 
     /**
      * Gets the player's z motion.
@@ -102,7 +102,7 @@ object Player {
      * @return the player's z motion
      */
     @JvmStatic
-    fun getMotionZ(): Double = toMC()?.velocity?.z ?: 0.0
+    fun getMotionZ(): Double = toMC()?.deltaMovement?.z ?: 0.0
 
     /**
      * Gets the player's camera pitch.
@@ -110,7 +110,7 @@ object Player {
      * @return the player's camera pitch
      */
     @JvmStatic
-    fun getPitch(): Double = UMath.wrapAngleTo180(toMC()?.pitch?.toDouble() ?: 0.0)
+    fun getPitch(): Double = UMath.wrapAngleTo180(toMC()?.xRot?.toDouble() ?: 0.0)
 
     /**
      * Gets the player's camera yaw.
@@ -118,7 +118,7 @@ object Player {
      * @return the player's camera yaw
      */
     @JvmStatic
-    fun getYaw(): Double = UMath.wrapAngleTo180(toMC()?.yaw?.toDouble() ?: 0.0)
+    fun getYaw(): Double = UMath.wrapAngleTo180(toMC()?.yRot?.toDouble() ?: 0.0)
 
     /**
      * Gets the player's username.
@@ -126,7 +126,7 @@ object Player {
      * @return the player's username
      */
     @JvmStatic
-    fun getName(): String = Client.getMinecraft().session.username
+    fun getName(): String = Client.getMinecraft().user.name
 
     /**
      * Gets the Java UUID object of the player.
@@ -140,15 +140,6 @@ object Player {
     @JvmStatic
     fun getHP(): Float = toMC()?.health ?: 0f
 
-    @JvmStatic
-    fun getHunger(): Int = toMC()?.hungerManager?.foodLevel ?: 0
-
-    @JvmStatic
-    fun getSaturation(): Float = toMC()?.hungerManager?.saturationLevel ?: 0f
-
-    @JvmStatic
-    fun getArmorPoints(): Int = toMC()?.armor ?: 0
-
     /**
      * Gets the player's air level.
      *
@@ -159,35 +150,16 @@ object Player {
      * @return the player's air level
      */
     @JvmStatic
-    fun getAirLevel(): Int = toMC()?.air ?: 0
+    fun getAirLevel(): Int = toMC()?.airSupply ?: 0
 
     @JvmStatic
     fun getXPLevel(): Int = toMC()?.experienceLevel ?: 0
 
     @JvmStatic
-    fun getXPProgress(): Float = toMC()?.experienceProgress ?: 0f
+    fun isMoving(): Boolean = toMC()?.speed?.let { it != 0f } ?: false
 
     @JvmStatic
-    fun getBiome(): String {
-        val pos = toMC()?.blockPos ?: return ""
-        val biomeEntry = World.toMC()?.getBiome(pos) ?: return ""
-
-        return biomeEntry.key.get().value.path
-    }
-
-    /**
-     * Gets the light level at the player's current position.
-     *
-     * @return the light level at the player's current position
-     */
-    @JvmStatic
-    fun getLightLevel(): Int = World.toMC()?.getLightLevel(toMC()?.blockPos) ?: 0
-
-    @JvmStatic
-    fun isMoving(): Boolean = toMC()?.movementSpeed?.let { it != 0f } ?: false
-
-    @JvmStatic
-    fun isSneaking(): Boolean = toMC()?.isSneaking ?: false
+    fun isSneaking(): Boolean = toMC()?.isShiftKeyDown ?: false
 
     @JvmStatic
     fun isSprinting(): Boolean = toMC()?.isSprinting ?: false
@@ -236,7 +208,7 @@ object Player {
      */
     @JvmStatic
     fun getActivePotionEffects(): List<PotionEffect> =
-        toMC()?.activeStatusEffects?.values?.map(::PotionEffect).orEmpty()
+        toMC()?.activeEffectsMap?.values?.map(::PotionEffect).orEmpty()
 
     /**
      * Gets the current object that the player is looking at,
@@ -247,13 +219,13 @@ object Player {
      */
     @JvmStatic
     fun lookingAt(): Any? {
-        val target = Client.getMinecraft().crosshairTarget
+        val target = Client.getMinecraft().hitResult
 
         return when (target?.type) {
             HitResult.Type.MISS -> null
             HitResult.Type.BLOCK -> {
                 val block = target as BlockHitResult
-                World.getBlockAt(BlockPos(block.blockPos)).withFace(BlockFace.fromMC(block.side))
+                World.getBlockAt(BlockPos(block.blockPos)).withFace(BlockFace.fromMC(block.direction))
             }
             HitResult.Type.ENTITY -> {
                 Entity.fromMC((target as EntityHitResult).entity)
@@ -270,8 +242,8 @@ object Player {
      */
     @JvmOverloads
     @JvmStatic
-    fun getHeldItem(hand: Hand = Hand.MAIN_HAND): Item? {
-        return toMC()?.getStackInHand(hand)?.let(Item::fromMC)
+    fun getHeldItem(hand: InteractionHand = InteractionHand.MAIN_HAND): Item? {
+        return toMC()?.getItemInHand(hand)?.let(Item::fromMC)
     }
 
     /**
@@ -335,7 +307,7 @@ object Player {
      * @return the currently opened container
      */
     @JvmStatic
-    fun getContainer(): Inventory? = (Client.getMinecraft().currentScreen as? HandledScreen<*>)?.let(::Inventory)
+    fun getContainer(): Inventory? = (Client.getMinecraft().screen as? AbstractContainerScreen<*>)?.let(::Inventory)
 
     /**
      * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]

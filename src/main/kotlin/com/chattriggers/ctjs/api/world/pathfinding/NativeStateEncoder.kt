@@ -1,39 +1,39 @@
 package com.chattriggers.ctjs.api.world.pathfinding
 
-import net.minecraft.block.AbstractRailBlock
-import net.minecraft.block.AbstractSkullBlock
-import net.minecraft.block.BannerBlock
-import net.minecraft.block.Block
-import net.minecraft.block.BlockState
-import net.minecraft.block.ButtonBlock
-import net.minecraft.block.CarpetBlock
-import net.minecraft.block.ComparatorBlock
-import net.minecraft.block.DoorBlock
-import net.minecraft.block.FenceBlock
-import net.minecraft.block.FenceGateBlock
-import net.minecraft.block.FlowerPotBlock
-import net.minecraft.block.LadderBlock
-import net.minecraft.block.LeverBlock
-import net.minecraft.block.PlantBlock
-import net.minecraft.block.PressurePlateBlock
-import net.minecraft.block.RedstoneWireBlock
-import net.minecraft.block.SignBlock
-import net.minecraft.block.SlabBlock
-import net.minecraft.block.SnowBlock
-import net.minecraft.block.StairsBlock
-import net.minecraft.block.TorchBlock
-import net.minecraft.block.TrapdoorBlock
-import net.minecraft.block.TripwireBlock
-import net.minecraft.block.TripwireHookBlock
-import net.minecraft.block.VineBlock
-import net.minecraft.block.WallBannerBlock
-import net.minecraft.block.WallBlock
-import net.minecraft.block.WallSignBlock
-import net.minecraft.block.enums.BlockHalf
-import net.minecraft.block.enums.SlabType
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.EmptyBlockView
-import net.minecraft.block.ShapeContext
+import net.minecraft.world.level.block.BaseRailBlock
+import net.minecraft.world.level.block.AbstractSkullBlock
+import net.minecraft.world.level.block.BannerBlock
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.ButtonBlock
+import net.minecraft.world.level.block.CarpetBlock
+import net.minecraft.world.level.block.ComparatorBlock
+import net.minecraft.world.level.block.DoorBlock
+import net.minecraft.world.level.block.FenceBlock
+import net.minecraft.world.level.block.FenceGateBlock
+import net.minecraft.world.level.block.FlowerPotBlock
+import net.minecraft.world.level.block.LadderBlock
+import net.minecraft.world.level.block.LeverBlock
+import net.minecraft.world.level.block.VegetationBlock
+import net.minecraft.world.level.block.PressurePlateBlock
+import net.minecraft.world.level.block.RedStoneWireBlock
+import net.minecraft.world.level.block.StandingSignBlock
+import net.minecraft.world.level.block.SlabBlock
+import net.minecraft.world.level.block.SnowLayerBlock
+import net.minecraft.world.level.block.StairBlock
+import net.minecraft.world.level.block.TorchBlock
+import net.minecraft.world.level.block.TrapDoorBlock
+import net.minecraft.world.level.block.TripWireBlock
+import net.minecraft.world.level.block.TripWireHookBlock
+import net.minecraft.world.level.block.VineBlock
+import net.minecraft.world.level.block.WallBannerBlock
+import net.minecraft.world.level.block.WallBlock
+import net.minecraft.world.level.block.WallSignBlock
+import net.minecraft.world.level.block.state.properties.Half
+import net.minecraft.world.level.block.state.properties.SlabType
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.EmptyBlockGetter
+import net.minecraft.world.phys.shapes.CollisionContext
 
 object NativeStateEncoder {
   private const val DEFAULT_EMPTY_FLAGS =
@@ -42,11 +42,11 @@ object NativeStateEncoder {
       NativeVoxelFlags.ETHER_PASSABLE or
       NativeVoxelFlags.ETHER_TELEPORT_CLEAR
 
-  private val ORIGIN: BlockPos = BlockPos.ORIGIN
-  private val EMPTY_VIEW = EmptyBlockView.INSTANCE
-  private val SHAPE_CONTEXT: ShapeContext = ShapeContext.absent()
+  private val ORIGIN: BlockPos = BlockPos.ZERO
+  private val EMPTY_VIEW = EmptyBlockGetter.INSTANCE
+  private val SHAPE_CONTEXT: CollisionContext = CollisionContext.empty()
 
-  private val stateFlags = IntArray(Block.STATE_IDS.size()) { Int.MIN_VALUE }
+  private val stateFlags = IntArray(Block.BLOCK_STATE_REGISTRY.size()) { Int.MIN_VALUE }
 
   @JvmStatic
   fun flagsForStateId(stateId: Int): Int {
@@ -59,7 +59,7 @@ object NativeStateEncoder {
       return cached
     }
 
-    val state = Block.STATE_IDS.get(stateId)
+    val state = Block.BLOCK_STATE_REGISTRY.byId(stateId)
       ?: return DEFAULT_EMPTY_FLAGS
 
     val flags = computeFlags(state)
@@ -69,7 +69,7 @@ object NativeStateEncoder {
 
   @JvmStatic
   fun flagsForState(state: BlockState): Int {
-    val stateId = Block.STATE_IDS.getRawId(state)
+    val stateId = Block.BLOCK_STATE_REGISTRY.getId(state)
     return flagsForStateId(stateId)
   }
 
@@ -106,39 +106,39 @@ object NativeStateEncoder {
     }
 
     val isPassThrough = block is SlabBlock ||
-      block is StairsBlock ||
+      block is StairBlock ||
       block is DoorBlock ||
-      block is TrapdoorBlock ||
+      block is TrapDoorBlock ||
       block is TorchBlock ||
-      block is SignBlock ||
+      block is StandingSignBlock ||
       block is WallSignBlock ||
-      block is PlantBlock ||
-      block is AbstractRailBlock ||
+      block is VegetationBlock ||
+      block is BaseRailBlock ||
       block is VineBlock ||
       block is LadderBlock ||
-      block is SnowBlock ||
+      block is SnowLayerBlock ||
       block is PressurePlateBlock ||
       block is ButtonBlock ||
-      block is RedstoneWireBlock ||
+      block is RedStoneWireBlock ||
       block is LeverBlock ||
       block is BannerBlock ||
       block is WallBannerBlock ||
-      block is TripwireBlock ||
-      block is TripwireHookBlock
+      block is TripWireBlock ||
+      block is TripWireHookBlock
 
     val isFlyPassable = block is LadderBlock ||
       block is VineBlock ||
-      block is AbstractRailBlock ||
-      block is SignBlock ||
+      block is BaseRailBlock ||
+      block is StandingSignBlock ||
       block is WallSignBlock ||
       block is BannerBlock ||
       block is WallBannerBlock ||
-      block is TripwireBlock ||
-      block is TripwireHookBlock ||
+      block is TripWireBlock ||
+      block is TripWireHookBlock ||
       block is LeverBlock ||
       block is ButtonBlock ||
       block is TorchBlock ||
-      block is RedstoneWireBlock ||
+      block is RedStoneWireBlock ||
       block is PressurePlateBlock
 
     if (isFlyPassable) {
@@ -152,16 +152,16 @@ object NativeStateEncoder {
     when (block) {
       is SlabBlock -> {
         flags = flags or NativeVoxelFlags.SOLID
-        when (state.get(SlabBlock.TYPE) ?: SlabType.BOTTOM) {
+        when (state.getValue(SlabBlock.TYPE) ?: SlabType.BOTTOM) {
           SlabType.BOTTOM -> flags = flags or NativeVoxelFlags.SLAB_BOTTOM
           SlabType.TOP -> flags = flags or NativeVoxelFlags.SLAB_TOP or NativeVoxelFlags.BLOCKING_WALL
           SlabType.DOUBLE -> flags = flags or NativeVoxelFlags.BLOCKING_WALL
         }
       }
 
-      is StairsBlock -> {
+      is StairBlock -> {
         flags = flags or NativeVoxelFlags.SOLID
-        if (state.get(StairsBlock.HALF) == BlockHalf.BOTTOM) {
+        if (state.getValue(StairBlock.HALF) == Half.BOTTOM) {
           flags = flags or NativeVoxelFlags.STAIRS_BOTTOM
         }
       }
@@ -171,7 +171,7 @@ object NativeStateEncoder {
           flags = flags or NativeVoxelFlags.PASSABLE
         } else {
           flags = flags or NativeVoxelFlags.SOLID
-          val box = collisionShape.boundingBox
+          val box = collisionShape.bounds()
           if (box.maxY - box.minY >= 0.5 && !isPassThrough) {
             flags = flags or NativeVoxelFlags.BLOCKING_WALL
           }
@@ -187,7 +187,7 @@ object NativeStateEncoder {
       block is ComparatorBlock -> true
       block is FlowerPotBlock -> true
       block is LadderBlock -> true
-      block is SignBlock || block is WallSignBlock -> false
+      block is StandingSignBlock || block is WallSignBlock -> false
       else -> collisionShape.isEmpty
     }
     val etherwarpFeetBlocker = when (block) {
@@ -201,7 +201,7 @@ object NativeStateEncoder {
     // the block is not ray-passable, while small collision blocks still prevent the player body
     // from occupying that space after teleporting.
     val teleportSpaceClear =
-      (etherPassable || block is SignBlock || block is WallSignBlock) && !etherwarpFeetBlocker
+      (etherPassable || block is StandingSignBlock || block is WallSignBlock) && !etherwarpFeetBlocker
 
     if (etherPassable) {
       flags = flags or NativeVoxelFlags.ETHER_PASSABLE

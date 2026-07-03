@@ -5,9 +5,11 @@ import org.mozilla.javascript.JavaObjectMappingProvider
 import java.lang.reflect.Modifier
 
 object CTJavaObjectMappingProvider : JavaObjectMappingProvider {
-    override fun mapClassName(className: String) = Mappings.mapClassName(className)?.replace('/', '.')
+    override fun mapClassName(className: String) =
+        if (isMappedClassName(className)) Mappings.mapClassName(className)?.replace('/', '.') else null
 
-    override fun unmapClassName(className: String) = Mappings.unmapClassName(className)?.replace('/', '.')
+    override fun unmapClassName(className: String) =
+        if (isMappedClassName(className)) Mappings.unmapClassName(className)?.replace('/', '.') else null
 
     override fun findExtraMethods(
         clazz: Class<*>,
@@ -101,4 +103,7 @@ object CTJavaObjectMappingProvider : JavaObjectMappingProvider {
             list.add(JavaObjectMappingProvider.RenameableField(field, unmappedFieldName))
         }
     }
+
+    private fun isMappedClassName(className: String) =
+        className.startsWith("net.minecraft.") || className.startsWith("com.mojang.blaze3d.")
 }

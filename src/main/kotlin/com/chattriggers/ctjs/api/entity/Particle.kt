@@ -10,29 +10,80 @@ import java.awt.Color
 class Particle(override val mcValue: MCParticle) : CTWrapper<MCParticle> {
     private val mixed: ParticleAccessor = mcValue.asMixin()
 
-    var x by mixed::x
-    var y by mixed::y
-    var z by mixed::z
+    var x
+        get() = mixed.x
+        set(value) {
+            mixed.x = value
+        }
 
-    var lastX by mixed::lastX
-    var lastY by mixed::lastY
-    var lastZ by mixed::lastZ
+    var y
+        get() = mixed.y
+        set(value) {
+            mixed.y = value
+        }
+
+    var z
+        get() = mixed.z
+        set(value) {
+            mixed.z = value
+        }
+
+    var lastX
+        get() = mixed.xo
+        set(value) {
+            mixed.xo = value
+        }
+
+    var lastY
+        get() = mixed.yo
+        set(value) {
+            mixed.yo = value
+        }
+
+    var lastZ
+        get() = mixed.zo
+        set(value) {
+            mixed.zo = value
+        }
 
     val renderX get() = lastX + (x - lastX) * Renderer.partialTicks
     val renderY get() = lastY + (y - lastY) * Renderer.partialTicks
     val renderZ get() = lastZ + (z - lastZ) * Renderer.partialTicks
 
-    var motionX by mixed::velocityX
-    var motionY by mixed::velocityY
-    var motionZ by mixed::velocityZ
+    var motionX
+        get() = mixed.xd
+        set(value) {
+            mixed.xd = value
+        }
+
+    var motionY
+        get() = mixed.yd
+        set(value) {
+            mixed.yd = value
+        }
+
+    var motionZ
+        get() = mixed.zd
+        set(value) {
+            mixed.zd = value
+        }
 
 //    var red by mixed::red
 //    var green by mixed::green
 //    var blue by mixed::blue
 //    var alpha by mixed::alpha
 
-    var age by mixed::age
-    var dead by mixed::dead
+    var age
+        get() = mixed.age
+        set(value) {
+            mixed.age = value
+        }
+
+    var dead
+        get() = mixed.removed
+        set(value) {
+            mixed.removed = value
+        }
 
     fun scale(scale: Float) = apply {
         mcValue.scale(scale)
@@ -99,11 +150,11 @@ class Particle(override val mcValue: MCParticle) : CTWrapper<MCParticle> {
      * @param maxAge the particle's max age (in ticks)
      */
     fun setMaxAge(maxAge: Int) = apply {
-        mcValue.maxAge = maxAge
+        mcValue.setLifetime(maxAge)
     }
 
     fun remove() = apply {
-        mcValue.markDead()
+        mcValue.remove()
     }
 
     override fun toString() =

@@ -25,7 +25,7 @@ class Swift : ClientModInitializer {
 
   override fun onInitializeClient() {
     NativePathfinderJNI.initialize()
-    HypixelManager.init()
+    runOptionalPathfindingHook { HypixelManager.init() }
     WynncraftManager.init()
     CachedWorld.setWorldKey(null)
 
@@ -34,14 +34,22 @@ class Swift : ClientModInitializer {
     }
 
     ClientTickEvents.END_CLIENT_TICK.register { client ->
-      if (client.world != null) {
+      if (client.level != null) {
         CachedWorld.processPendingChunks()
       }
     }
 
     ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
       WynncraftManager.onDisconnect()
-      HypixelManager.onDisconnect()
+      runOptionalPathfindingHook { HypixelManager.onDisconnect() }
+    }
+  }
+
+  private inline fun runOptionalPathfindingHook(action: () -> Unit) {
+    try {
+      action()
+    } catch (_: Throwable) {
+      // ponytail: Hypixel support is optional; skip it when the bundled API is absent or mismatched.
     }
   }
 }

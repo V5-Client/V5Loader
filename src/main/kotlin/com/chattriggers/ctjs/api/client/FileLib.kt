@@ -294,7 +294,7 @@ object FileLib {
      */
     @JvmStatic
     fun open(url: String) {
-        Util.getOperatingSystem().open(url)
+        Util.getPlatform().openUri(url)
     }
 
     /**
@@ -304,6 +304,6 @@ object FileLib {
      */
     @JvmStatic
     fun open(path: File) {
-        Util.getOperatingSystem().open(path)
+        Util.getPlatform().openFile(path)
     }
 }

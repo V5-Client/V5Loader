@@ -2,7 +2,7 @@ package com.v5.mixins;
 
 import com.v5.storage.V5MixinStorage;
 import java.util.Set;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,13 +25,13 @@ public class BlockMixin {
                     "block.minecraft.pumpkin_stem",
                     "block.minecraft.carved_pumpkin");
 
-    @Inject(method = "spawnBreakParticles", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "spawnDestroyParticles", at = @At("HEAD"), cancellable = true)
     private void v5$spawnBreakParticles(CallbackInfo ci) {
         if (!V5MixinStorage.getBoolean("hideParticles", false)) {
             return;
         }
 
-        String blockKey = ((Block) (Object) this).getTranslationKey();
+        String blockKey = ((Block) (Object) this).getDescriptionId();
         if (TARGET_KEYS.contains(blockKey)) {
             ci.cancel();
         }

@@ -6,6 +6,7 @@ import com.chattriggers.ctjs.api.entity.Entity
 import com.chattriggers.ctjs.api.entity.PlayerInteraction
 import com.chattriggers.ctjs.api.inventory.Item
 import com.chattriggers.ctjs.api.message.TextComponent
+import com.chattriggers.ctjs.api.render.DrawContextHolder
 import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.api.triggers.CancellableEvent
 import com.chattriggers.ctjs.api.triggers.ChatTrigger
@@ -26,8 +27,8 @@ import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.event.player.*
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
 import org.lwjgl.glfw.GLFW
 import org.mozilla.javascript.Context
 
@@ -70,7 +71,7 @@ object ClientListener : Initializer {
                 }
             }
 
-            if (World.isLoaded() && World.toMC()?.tickManager?.shouldTick() == true) {
+            if (World.isLoaded() && World.toMC()?.tickRateManager()?.runsNormally() == true) {
                 TriggerType.TICK.triggerAll(ticksPassed)
                 ticksPassed++
 
@@ -99,19 +100,22 @@ object ClientListener : Initializer {
 
         ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
             // TODO: Why does Renderer.drawString not work in here?
-            ScreenEvents.beforeRender(screen).register { _, stack, mouseX, mouseY, partialTicks ->
+            ScreenEvents.beforeExtract(screen).register { _, stack, mouseX, mouseY, partialTicks ->
                 if (!JSLoader.hasTriggers(TriggerType.GUI_RENDER)) return@register
-                Renderer.withMatrix(UMatrixStack(stack.matrices).toMC(), partialTicks) {
-                    TriggerType.GUI_RENDER.triggerAll(mouseX, mouseY, screen)
+                DrawContextHolder.withContext(stack) {
+                    Renderer.withMatrix(UMatrixStack(stack.pose()).toMC(), partialTicks) {
+                        TriggerType.GUI_RENDER.triggerAll(mouseX, mouseY, screen)
+                    }
                 }
             }
 
             // TODO: Why does Renderer.drawString not work in here?
-            ScreenEvents.afterRender(screen).register { _, stack, mouseX, mouseY, partialTicks ->
+            ScreenEvents.afterExtract(screen).register { _, stack, mouseX, mouseY, partialTicks ->
                 if (!JSLoader.hasTriggers(TriggerType.POST_GUI_RENDER)) return@register
-                stack.matrices
-                Renderer.withMatrix(UMatrixStack(stack.matrices).toMC(), partialTicks) {
-                    TriggerType.POST_GUI_RENDER.triggerAll(mouseX, mouseY, screen, partialTicks)
+                DrawContextHolder.withContext(stack) {
+                    Renderer.withMatrix(UMatrixStack(stack.pose()).toMC(), partialTicks) {
+                        TriggerType.POST_GUI_RENDER.triggerAll(mouseX, mouseY, screen, partialTicks)
+                    }
                 }
             }
 
@@ -144,8 +148,10 @@ object ClientListener : Initializer {
 
         CTEvents.RENDER_OVERLAY.register { ctx, stack, partialTicks ->
             if (!JSLoader.hasTriggers(TriggerType.RENDER_OVERLAY)) return@register
-            Renderer.withMatrix(stack, partialTicks) {
-                TriggerType.RENDER_OVERLAY.triggerAll(ctx)
+            DrawContextHolder.withContext(ctx) {
+                Renderer.withMatrix(stack, partialTicks) {
+                    TriggerType.RENDER_OVERLAY.triggerAll(ctx)
+                }
             }
         }
 
@@ -164,8 +170,8 @@ object ClientListener : Initializer {
         }
 
         AttackBlockCallback.EVENT.register { player, _, _, pos, direction ->
-            if (!player.entityWorld.isClient) return@register ActionResult.PASS
-            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register ActionResult.PASS
+            if (!player.level().isClientSide) return@register InteractionResult.PASS
+            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -174,12 +180,12 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) ActionResult.FAIL else ActionResult.PASS
+            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
         }
 
         AttackEntityCallback.EVENT.register { player, _, _, entity, _ ->
-            if (!player.entityWorld.isClient) return@register ActionResult.PASS
-            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register ActionResult.PASS
+            if (!player.level().isClientSide) return@register InteractionResult.PASS
+            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -188,7 +194,7 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) ActionResult.FAIL else ActionResult.PASS
+            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
         }
 
         CTEvents.BREAK_BLOCK.register { pos ->
@@ -202,22 +208,22 @@ object ClientListener : Initializer {
         }
 
         UseBlockCallback.EVENT.register { player, _, hand, hitResult ->
-            if (!player.entityWorld.isClient) return@register ActionResult.PASS
-            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register ActionResult.PASS
+            if (!player.level().isClientSide) return@register InteractionResult.PASS
+            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
                 PlayerInteraction.UseBlock(hand),
-                World.getBlockAt(BlockPos(hitResult.blockPos)).withFace(BlockFace.fromMC(hitResult.side)),
+                World.getBlockAt(BlockPos(hitResult.blockPos)).withFace(BlockFace.fromMC(hitResult.direction)),
                 event,
             )
 
-            if (event.isCancelled()) ActionResult.FAIL else ActionResult.PASS
+            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
         }
 
         UseEntityCallback.EVENT.register { player, _, hand, entity, _ ->
-            if (!player.entityWorld.isClient) return@register ActionResult.PASS
-            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register ActionResult.PASS
+            if (!player.level().isClientSide) return@register InteractionResult.PASS
+            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -226,15 +232,15 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) ActionResult.FAIL else ActionResult.PASS
+            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
         }
 
         UseItemCallback.EVENT.register { player, _, hand ->
-            if (!player.entityWorld.isClient) return@register ActionResult.PASS
-            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register ActionResult.PASS
+            if (!player.level().isClientSide) return@register InteractionResult.PASS
+            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
-            val stack = player.getStackInHand(hand)
+            val stack = player.getItemInHand(hand)
 
             TriggerType.PLAYER_INTERACT.triggerAll(
                 PlayerInteraction.UseItem(hand),
@@ -242,7 +248,7 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) ActionResult.FAIL else ActionResult.PASS
+            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
         }
     }
 
@@ -252,7 +258,7 @@ object ClientListener : Initializer {
         }
     }
 
-    private fun handleChatMessage(message: Text, actionBar: Boolean): Boolean {
+    private fun handleChatMessage(message: Component, actionBar: Boolean): Boolean {
         val textComponent = TextComponent(message)
 
         return if (actionBar) {

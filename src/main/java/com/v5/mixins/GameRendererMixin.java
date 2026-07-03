@@ -1,32 +1,22 @@
 package com.v5.mixins;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.chattriggers.ctjs.api.render.NVGRenderer;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.RenderTickCounter;
-import org.objectweb.asm.Opcodes;
+import net.minecraft.client.gui.render.GuiRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(GameRenderer.class)
+@Mixin(GuiRenderer.class)
 public class GameRendererMixin {
-
-    @ModifyExpressionValue(
-        method = "render",
-        at = @At(
-            value = "FIELD",
-            target = "Lnet/minecraft/client/option/GameOptions;pauseOnLostFocus:Z",
-            opcode = Opcodes.GETFIELD
-        )
-    )
-    private boolean v5$render(boolean original) {
-        return false;
+    @Inject(method = "render", at = @At("HEAD"))
+    private void beforeRender(GpuBufferSlice fogBuffer, CallbackInfo ci) {
+        NVGRenderer.runPreDrawables();
     }
 
     @Inject(method = "render", at = @At("TAIL"))
-    private void onRender(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
+    private void onRender(GpuBufferSlice fogBuffer, CallbackInfo ci) {
         NVGRenderer.runDrawables();
     }
 }

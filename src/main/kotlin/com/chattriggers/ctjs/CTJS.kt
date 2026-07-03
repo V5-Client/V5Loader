@@ -3,9 +3,7 @@ package com.chattriggers.ctjs
 import com.chattriggers.ctjs.api.Config
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.KeyBind
-import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.client.Sound
-import com.chattriggers.ctjs.api.client.V5MainMenuScreen
 import com.chattriggers.ctjs.api.client.WelcomeScreen
 import com.chattriggers.ctjs.api.commands.DynamicCommands
 import com.chattriggers.ctjs.api.message.ChatLib
@@ -23,12 +21,10 @@ import kotlinx.serialization.json.Json
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.client.gui.screen.TitleScreen
+import net.minecraft.client.gui.screens.TitleScreen
 import java.io.File
 import java.net.URI
 import java.net.URLConnection
-import java.security.MessageDigest
-import java.util.*
 import kotlin.concurrent.thread
 
 class CTJS : ClientModInitializer {
@@ -39,38 +35,20 @@ class CTJS : ClientModInitializer {
 
         var autoOpenTriggered = false
         ClientTickEvents.END_CLIENT_TICK.register { client ->
-            val currentScreen = client.currentScreen ?: return@register
-            val isMenuScreen = currentScreen is TitleScreen || currentScreen is V5MainMenuScreen
+            val currentScreen = client.screen ?: return@register
+            val isMenuScreen = currentScreen is TitleScreen
 
             if (autoOpenTriggered || Config.wasWelcomeShown() || !isMenuScreen) return@register
             autoOpenTriggered = true
             WelcomeScreen.open()
         }
 
-        thread {
-            reportHashedUUID()
-        }
         SecureLoader.onInitialize()
 
         Runtime.getRuntime().addShutdownHook(Thread {
             TriggerType.GAME_UNLOAD.triggerAll()
             Console.close()
         })
-    }
-
-    private fun reportHashedUUID() {
-        if (!Config.sendStatistics) return
-
-        val uuid = Player.getUUID().toString().encodeToByteArray()
-        val salt = (System.getProperty("user.name") ?: "").encodeToByteArray()
-        val md = MessageDigest.getInstance("SHA-256")
-        md.update(salt)
-        val hashedUUID = md.digest(uuid)
-        val hash = Base64.getUrlEncoder().encodeToString(hashedUUID)
-
-        val url = "$WEBSITE_ROOT/api/statistics/track?hash=$hash&version=$MOD_VERSION"
-        val connection = makeWebRequest(url)
-        connection.getInputStream()
     }
 
     companion object {
@@ -134,7 +112,7 @@ class CTJS : ClientModInitializer {
 
         @JvmStatic
         fun load(asCommand: Boolean = true) {
-            Client.getMinecraft().options.write()
+            Client.getMinecraft().options.save()
             unload(asCommand = false)
 
             if (asCommand)

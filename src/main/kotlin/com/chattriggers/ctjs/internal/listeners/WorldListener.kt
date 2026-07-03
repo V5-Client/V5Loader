@@ -6,11 +6,11 @@ import com.chattriggers.ctjs.internal.engine.CTEvents
 import com.chattriggers.ctjs.api.triggers.CancellableEvent
 import com.chattriggers.ctjs.api.triggers.TriggerType
 import com.chattriggers.ctjs.internal.engine.JSLoader
-import net.minecraft.client.util.math.MatrixStack
-import net.minecraft.util.math.BlockPos
+import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.core.BlockPos
 
 object WorldListener {
-    var matrixStack: MatrixStack? = null
+    var matrixStack: PoseStack? = null
     private var deltaTicks: Float = 1f
 
     fun triggerBlockOutline(bp: MCBlockPos): Boolean {

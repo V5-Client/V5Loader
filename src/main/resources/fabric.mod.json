@@ -25,6 +25,7 @@
     },
     "mixins": ["ctjs.mixins.json", "v5.mixins.json"],
     "depends": {
+        "minecraft": "=$minecraft_version",
         "fabricloader": ">=$loader_version",
         "fabric-api": ">=$fabric_api_version",
         "fabric-language-kotlin": ">=$fabric_kotlin_version"
@@ -34,10 +35,9 @@
         "nvidium": "*"
     },
     "custom": {
-        "ctjs:yarn-mappings": "$yarn_mappings",
         "modmenu": {
             "links": {
-                "modmenu.discord": "https://discord.gg/chattriggers"
+                "modmenu.discord": "https://discord.gg/RvQJq7vE3a"
             }
         }
     },

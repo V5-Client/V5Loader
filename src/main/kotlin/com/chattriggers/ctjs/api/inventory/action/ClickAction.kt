@@ -1,7 +1,7 @@
 package com.chattriggers.ctjs.api.inventory.action
 
 import com.chattriggers.ctjs.api.client.Player
-import net.minecraft.screen.slot.SlotActionType
+import net.minecraft.world.inventory.ContainerInput
 
 class ClickAction(slot: Int, windowId: Int) : Action(slot, windowId) {
     private lateinit var clickType: ClickType
@@ -68,10 +68,10 @@ class ClickAction(slot: Int, windowId: Int) : Action(slot, windowId) {
 
     override fun complete() {
         val mode = when {
-            clickType == ClickType.MIDDLE -> SlotActionType.CLONE
-            holdingShift -> SlotActionType.QUICK_MOVE
-            pickupAll -> SlotActionType.PICKUP_ALL
-            else -> SlotActionType.PICKUP
+            clickType == ClickType.MIDDLE -> ContainerInput.CLONE
+            holdingShift -> ContainerInput.QUICK_MOVE
+            pickupAll -> ContainerInput.PICKUP_ALL
+            else -> ContainerInput.PICKUP
         }
 
         doClick(clickType.button, mode)

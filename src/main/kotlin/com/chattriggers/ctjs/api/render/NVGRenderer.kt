@@ -1,10 +1,11 @@
 package com.chattriggers.ctjs.api.render
 
 import com.mojang.blaze3d.opengl.GlStateManager
+import com.mojang.blaze3d.opengl.GlTexture
+import com.mojang.blaze3d.opengl.DirectStateAccess
+import com.mojang.blaze3d.systems.GpuDevice
 import com.mojang.blaze3d.systems.RenderSystem
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gl.GlBackend
-import net.minecraft.client.texture.GlTexture
+import net.minecraft.client.Minecraft
 import org.lwjgl.nanovg.NVGColor
 import org.lwjgl.nanovg.NVGPaint
 import org.lwjgl.nanovg.NanoVG.*
@@ -30,7 +31,7 @@ import java.net.URL
 
 object NVGRenderer {
 
-    private val mc = MinecraftClient.getInstance()
+    private val mc = Minecraft.getInstance()
     private val nvgColor = NVGColor.malloc()
     private val nvgColor2 = NVGColor.malloc()
     private val nvgPaint = NVGPaint.malloc()
@@ -69,10 +70,21 @@ object NVGRenderer {
     private val downloadQueue = java.util.concurrent.LinkedBlockingQueue<DecodedImage>()
     private const val MAX_DOWNLOADS_PER_FRAME = 5
 
+    private val preRenderCallbacks = CopyOnWriteArrayList<Runnable>()
     private val renderCallbacks = CopyOnWriteArrayList<Runnable>()
 
     private var drawing = false
     @JvmField var vg = -1L
+    private var framebufferWarningPrinted = false
+
+    private val gpuBackendField by lazy {
+        GpuDevice::class.java.getDeclaredField("backend").apply { isAccessible = true }
+    }
+    private val directStateAccessMethod by lazy {
+        Class.forName("com.mojang.blaze3d.opengl.GlDevice")
+            .getDeclaredMethod("directStateAccess")
+            .apply { isAccessible = true }
+    }
 
     data class GifData(
         val width: Int,
@@ -116,10 +128,28 @@ object NVGRenderer {
     }
 
     @JvmStatic
+    fun registerV5PreRender(runnable: Runnable) {
+        preRenderCallbacks.add(runnable)
+    }
+
+    @JvmStatic
+    fun unregisterV5PreRender(runnable: Runnable) {
+        preRenderCallbacks.remove(runnable)
+    }
+
+    @JvmStatic
+    fun runPreDrawables() {
+        runCallbacks(preRenderCallbacks)
+    }
+
+    @JvmStatic
     fun runDrawables() {
         processDownloadQueue()
+        runCallbacks(renderCallbacks)
+    }
 
-        renderCallbacks.forEach { runnable ->
+    private fun runCallbacks(callbacks: List<Runnable>) {
+        callbacks.forEach { runnable ->
             try {
                 runnable.run()
             } catch (e: Exception) {
@@ -129,7 +159,7 @@ object NVGRenderer {
     }
 
     private fun isGameReady(): Boolean {
-        return mc.window != null && mc.window.handle != 0L
+        return mc.window != null && mc.window.handle() != 0L
     }
 
     private fun ensureInitialized() {
@@ -138,29 +168,40 @@ object NVGRenderer {
         if (vg == -1L) throw RuntimeException("Failed to initialize NanoVG")
     }
 
+    private fun mainFramebufferId(): Int {
+        val target = mc.mainRenderTarget
+        val colorTexture = target.colorTexture as? GlTexture ?: return GL33C.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING)
+        return try {
+            val backend = gpuBackendField.get(RenderSystem.getDevice())
+            val directStateAccess = directStateAccessMethod.invoke(backend) as DirectStateAccess
+            colorTexture.getFbo(directStateAccess, target.depthTexture)
+        } catch (e: Exception) {
+            if (!framebufferWarningPrinted) {
+                framebufferWarningPrinted = true
+                println("[V5] Failed to bind NanoVG to main framebuffer: ${e.message}")
+            }
+            GL33C.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING)
+        }
+    }
+
     @JvmStatic
     fun beginFrame(width: Float, height: Float) {
         if (!isGameReady()) return
         ensureInitialized()
         if (drawing) return
 
-        val framebuffer = mc.framebuffer
-        val glFramebuffer = (framebuffer.colorAttachment as GlTexture).getOrCreateFramebuffer(
-            (RenderSystem.getDevice() as GlBackend).bufferManager,
-            null
-        )
-
+        val framebuffer = mc.mainRenderTarget
         val prevFramebuffer = GL33C.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING)
         val prevViewport = IntArray(4)
         GL33C.glGetIntegerv(GL33C.GL_VIEWPORT, prevViewport)
         val prevProgram = GL33C.glGetInteger(GL20C.GL_CURRENT_PROGRAM)
 
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, glFramebuffer)
-        GlStateManager._viewport(0, 0, framebuffer.textureWidth, framebuffer.textureHeight)
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, mainFramebufferId())
+        GlStateManager._viewport(0, 0, framebuffer.width, framebuffer.height)
         GlStateManager._activeTexture(GL30.GL_TEXTURE0)
 
         GL33C.glBindSampler(0, 0)
-        val pixelRatio = if (width > 0) framebuffer.textureWidth.toFloat() / width else 1.0f
+        val pixelRatio = if (width > 0) framebuffer.width.toFloat() / width else 1.0f
 
         nvgBeginFrame(vg, width, height, pixelRatio)
         nvgTextAlign(vg, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)

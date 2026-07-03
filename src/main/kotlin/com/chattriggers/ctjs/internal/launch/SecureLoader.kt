@@ -459,7 +459,7 @@ internal object SecureLoader {
     }
 
     private fun tryOpenUrl(url: String): Boolean {
-        return runCatching { Util.getOperatingSystem().open(URI(url)) }.isSuccess
+        return runCatching { Util.getPlatform().openUri(URI(url)) }.isSuccess
     }
 
     fun onInitialize() {

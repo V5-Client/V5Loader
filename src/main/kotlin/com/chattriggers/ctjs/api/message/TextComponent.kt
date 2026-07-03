@@ -10,11 +10,15 @@ import com.chattriggers.ctjs.internal.utils.toIdentifier
 import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import net.minecraft.item.ItemStack
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket
-import net.minecraft.text.*
-import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket
+import net.minecraft.network.chat.*
+import net.minecraft.network.chat.contents.KeybindContents
+import net.minecraft.network.chat.contents.TranslatableContents
+import net.minecraft.ChatFormatting
+import net.minecraft.resources.Identifier
+import net.minecraft.util.FormattedCharSequence
+import net.minecraft.util.StringDecomposer
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.ScriptRuntime
@@ -45,7 +49,7 @@ class TextComponent private constructor(
     private val parts: MutableList<Part>,
     private val chatLineId: Int = -1,
     private val isRecursive: Boolean = false,
-) : Text, Iterable<NativeObject> {
+) : Component, Iterable<NativeObject> {
     /**
      * Creates an empty [TextComponent] with a single, unstyled, empty part.
      */
@@ -187,13 +191,13 @@ class TextComponent private constructor(
             if (chatLineId != -1) {
                 ChatLib.sendMessageWithId(this)
             } else if (isRecursive) {
-                Client.getMinecraft().networkHandler?.onGameMessage(GameMessageS2CPacket(this, false))
+                Client.getMinecraft().connection?.handleSystemChat(ClientboundSystemChatPacket(this, false))
             } else {
-                Player.toMC()?.sendMessage(this, false)
+                Player.toMC()?.sendSystemMessage(this)
             }
         }
 
-        if (Client.getMinecraft().isOnThread) {
+        if (Client.getMinecraft().isSameThread) {
             runChat()
         } else {
             Client.scheduleTask { runChat() }
@@ -213,13 +217,13 @@ class TextComponent private constructor(
 
         val runActionBar = {
             if (isRecursive) {
-                Client.getMinecraft().networkHandler?.onGameMessage(GameMessageS2CPacket(this, true))
+                Client.getMinecraft().connection?.handleSystemChat(ClientboundSystemChatPacket(this, true))
             } else {
-                Player.toMC()?.sendMessage(this, true)
+                Player.toMC()?.sendOverlayMessage(this)
             }
         }
 
-        if (Client.getMinecraft().isOnThread) {
+        if (Client.getMinecraft().isSameThread) {
             runActionBar()
         } else {
             Client.scheduleTask { runActionBar() }
@@ -228,7 +232,7 @@ class TextComponent private constructor(
 
     override fun toString() = formattedText
 
-    internal fun toMutableText() = Text.empty().apply {
+    internal fun toMutableText() = Component.empty().apply {
         parts.forEach(::append)
     }
 
@@ -243,15 +247,15 @@ class TextComponent private constructor(
     // Text //
     //////////
 
-    override fun getContent(): TextContent = parts[0].content
+    override fun getContents(): ComponentContents = parts[0].content
 
     override fun getString(): String = parts[0].text
 
     override fun getStyle(): Style = parts[0].style_
 
-    override fun getSiblings(): MutableList<Text> = parts.drop(1).toMutableList()
+    override fun getSiblings(): MutableList<Component> = parts.drop(1).toMutableList()
 
-    override fun asOrderedText(): OrderedText = OrderedText { visitor ->
+    override fun getVisualOrderText(): FormattedCharSequence = FormattedCharSequence { visitor ->
         var i = 0
         parts.all {
             it.text.codePoints().toList().all { cp ->
@@ -277,7 +281,7 @@ class TextComponent private constructor(
 
     override fun iterator() = parts.map(Part::nativeObject).iterator()
 
-    private class Part(val content: PartContent) : Text {
+    private class Part(val content: PartContent) : Component {
         val text by content::text
         val style_ by content::style_
 
@@ -298,18 +302,18 @@ class TextComponent private constructor(
                 if (style_.isObfuscated)
                     it.put("obfuscated", it, true)
                 style_.clickEvent?.let { event ->
-                    if (event.action != null) {
+                    if (event.action() != null) {
                         val clickEvent = NativeObject()
-                        clickEvent.put("action", clickEvent, event.action.asString())
+                        clickEvent.put("action", clickEvent, event.action().serializedName)
                         clickEvent.put("value", clickEvent, getEventValue(event))
 
                         it.put("clickEvent", it, clickEvent)
                     }
                 }
                 style_.hoverEvent?.let { event ->
-                    if (event.action != null) {
+                    if (event.action() != null) {
                         val hoverEvent = NativeObject()
-                        hoverEvent.put("action", hoverEvent, event.action.asString())
+                        hoverEvent.put("action", hoverEvent, event.action().serializedName)
                         hoverEvent.put("value", hoverEvent, getEventValue(event))
 
                         it.put("hoverEvent", it, hoverEvent)
@@ -324,17 +328,17 @@ class TextComponent private constructor(
 
         constructor(text: String, style: Style) : this(PartContent(text, style))
 
-        override fun getContent(): TextContent = content
+        override fun getContents(): ComponentContents = content
 
         override fun getString(): String = text
 
         override fun getStyle(): Style = style_
 
-        override fun getSiblings(): MutableList<Text> = mutableListOf()
+        override fun getSiblings(): MutableList<Component> = mutableListOf()
 
-        override fun asTruncatedString(length: Int): String = text.take(length)
+        override fun getString(length: Int): String = text.take(length)
 
-        override fun asOrderedText(): OrderedText = OrderedText { visitor ->
+        override fun getVisualOrderText(): FormattedCharSequence = FormattedCharSequence { visitor ->
             text.codePoints().toList().withIndex().all { (index, cp) ->
                 visitor.accept(index, style_, cp)
             }
@@ -350,10 +354,10 @@ class TextComponent private constructor(
                 }
                 is Part -> listOf(obj)
                 is TextComponent -> obj.parts
-                is Text -> {
+                is Component -> {
                     val parts = mutableListOf<Part>()
 
-                    obj.content.visit({ style, text ->
+                    obj.contents.visit({ style, text ->
                         parts.add(Part(text, style))
                         Optional.empty<Any>()
                     }, obj.style)
@@ -365,7 +369,7 @@ class TextComponent private constructor(
                     val builder = StringBuilder()
                     var lastStyle = Style.EMPTY
 
-                    TextVisitFactory.visitFormatted(ChatLib.addColor(obj.toString()), 0, Style.EMPTY) { _, style, cp ->
+                    StringDecomposer.iterateFormatted(ChatLib.addColor(obj.toString()), 0, Style.EMPTY) { _, style, cp ->
                         if (style != lastStyle) {
                             parts.add(Part(builder.toString(), lastStyle))
                             lastStyle = style
@@ -388,13 +392,13 @@ class TextComponent private constructor(
     }
 
     // Must be a separate class since Text and TextContent have an identical "visit" method which fails loom remapping
-    private class PartContent(val text: String, val style_: Style) : TextContent {
-        override fun <T : Any?> visit(visitor: StringVisitable.Visitor<T>): Optional<T> = visitor.accept(text)
+    private class PartContent(val text: String, val style_: Style) : ComponentContents {
+        override fun <T : Any> visit(visitor: FormattedText.ContentConsumer<T>): Optional<T> = visitor.accept(text)
 
-        override fun getCodec(): MapCodec<out TextContent> = CODEC
+        override fun codec(): MapCodec<out ComponentContents> = CODEC
 
-        override fun <T> visit(visitor: StringVisitable.StyledVisitor<T>, style: Style): Optional<T> {
-            return visitor.accept(this.style_.withParent(style), text)
+        override fun <T : Any> visit(visitor: FormattedText.StyledContentConsumer<T>, style: Style): Optional<T> {
+            return visitor.accept(this.style_.applyTo(style), text)
         }
 
         // override fun getType(): TextContent.Type<*> = TextContent.Type(CODEC, "${CTJS.MOD_ID}_part")
@@ -403,15 +407,15 @@ class TextComponent private constructor(
             private val CODEC: MapCodec<PartContent> = RecordCodecBuilder.mapCodec { builder ->
                 builder.group(
                     Codec.STRING.fieldOf("text").forGetter(PartContent::text),
-                    net.minecraft.text.Style.Codecs.CODEC.fieldOf("style").forGetter(PartContent::style_),
+                    net.minecraft.network.chat.Style.Serializer.CODEC.fieldOf("style").forGetter(PartContent::style_),
                 ).apply(builder) { text, style -> PartContent(text, style) }
             }
         }
     }
 
     internal companion object {
-        private val colorToFormatChar = Formatting.entries.mapNotNull { format ->
-            TextColor.fromFormatting(format)?.let { it to format }
+        private val colorToFormatChar = ChatFormatting.entries.mapNotNull { format ->
+            TextColor.fromLegacyFormat(format)?.let { it to format }
         }.toMap()
 
         internal fun jsObjectToStyle(obj: NativeObject): Style {
@@ -419,9 +423,9 @@ class TextComponent private constructor(
                 .withColor(obj["color"]?.let { color ->
                     when (color) {
                         is TextColor -> color
-                        is Formatting -> TextColor.fromFormatting(color)
+                        is ChatFormatting -> TextColor.fromLegacyFormat(color)
                         is Number -> TextColor.fromRgb(color.toInt())
-                        is CharSequence -> TextColor.parse(color.toString()).result().orElseThrow {
+                        is CharSequence -> TextColor.parseColor(color.toString()).result().orElseThrow {
                             IllegalArgumentException("Could not parse \"$color\" as a text color")
                         }
                         else -> throw IllegalArgumentException("Could not convert type ${color::class.simpleName} to a text color")
@@ -435,7 +439,7 @@ class TextComponent private constructor(
                     obj.getOrDefault("italic", false) as? Boolean
                         ?: error("Expected \"italic\" key to be a boolean")
                 )
-                .withUnderline(
+                .withUnderlined(
                     obj.getOrDefault("underline", false) as? Boolean
                         ?: error("Expected \"underline\" key to be a boolean")
                 )
@@ -457,9 +461,9 @@ class TextComponent private constructor(
                     }
                 )
                 .withFont(
-                    StyleSpriteSource.Font(
+                    FontDescription.Resource(
                         when (val font = obj["font"]) {
-                            null -> Identifier.ofVanilla("default")
+                            null -> Identifier.withDefaultNamespace("default")
                             is CharSequence -> font.toString().toIdentifier()
                             else -> error("Expected \"font\" key to be a String")
                         }
@@ -580,21 +584,21 @@ class TextComponent private constructor(
 
         private fun parseItemContent(obj: Any): HoverEvent.ShowItem {
             return when (obj) {
-                is ItemStack -> obj
-                is Item -> obj.toMC()
-                is CharSequence -> ItemType(obj.toString()).asItem().toMC()
+                is ItemStack -> net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(obj)
+                is Item -> net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(obj.toMC())
+                is CharSequence -> net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(ItemType(obj.toString()).asItem().toMC())
                 is HoverEvent.ShowItem -> return obj
                 else -> error("${obj::class} cannot be parsed as an item HoverEvent")
             }.let(HoverEvent::ShowItem)
         }
 
-        private fun parseEntityContent(obj: Any): HoverEvent.EntityContent? {
+        private fun parseEntityContent(obj: Any): HoverEvent.EntityTooltipInfo {
             return when (obj) {
                 is MCEntity -> obj
                 is Entity -> obj.toMC()
-                is HoverEvent.EntityContent -> return obj
+                is HoverEvent.EntityTooltipInfo -> return obj
                 else -> error("${obj::class} cannot be parsed as an entity HoverEvent")
-            }.let { HoverEvent.EntityContent(it.type, it.uuid, it.name) }
+            }.let { HoverEvent.EntityTooltipInfo(it.type, it.uuid, it.name) }
         }
     }
 }
