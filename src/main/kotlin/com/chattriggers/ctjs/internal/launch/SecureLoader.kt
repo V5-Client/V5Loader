@@ -93,6 +93,57 @@ internal object SecureLoader {
         internalToken = token
     }
 
+    fun reportCtjsJavascriptError(
+        kind: String,
+        message: String?,
+        errorClass: String? = null,
+        sourceName: String? = null,
+        line: Int? = null,
+        lineSource: String? = null,
+        lineOffset: Int? = null,
+        stack: String? = null,
+    ) {
+        val body = buildJsonObject {
+            put("kind", kind)
+            message?.let { put("message", it.take(1000)) }
+            errorClass?.let { put("error_class", it.take(200)) }
+            sourceName?.let { put("source_name", it.take(300)) }
+            line?.let { put("line", it) }
+            lineSource?.let { put("line_source", it.take(1000)) }
+            lineOffset?.let { put("line_offset", it) }
+            stack?.let { put("stack", it.take(5000)) }
+            put("loader_version", LOADER_USER_AGENT)
+            put("mod_version", CTJS.MOD_VERSION)
+        }.toString().toByteArray(StandardCharsets.UTF_8)
+
+        Util.backgroundExecutor().execute {
+            val token = getFreshJwtToken() ?: return@execute
+            val connection = try {
+                openBackendConnection("$BACKEND_URL/api/logs/ctjs-errors").apply {
+                    requestMethod = "POST"
+                    setRequestProperty("Authorization", "Bearer $token")
+                    setRequestProperty("Content-Type", "application/json")
+                    setRequestProperty("Accept", "application/json")
+                    setRequestProperty("User-Agent", LOADER_USER_AGENT)
+                    connectTimeout = 5000
+                    readTimeout = 5000
+                    doOutput = true
+                }
+            } catch (_: Exception) {
+                return@execute
+            }
+
+            try {
+                connection.outputStream.use { it.write(body) }
+                (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
+                    ?.close()
+            } catch (_: Exception) {
+            } finally {
+                connection.disconnect()
+            }
+        }
+    }
+
     @JvmStatic
     fun killClientHard(): Nothing = shutDownHard()
 

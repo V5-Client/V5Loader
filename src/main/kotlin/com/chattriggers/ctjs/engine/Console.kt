@@ -2,6 +2,7 @@ package com.chattriggers.ctjs.engine
 
 import com.chattriggers.ctjs.api.Config
 import com.chattriggers.ctjs.internal.console.ConsoleHostProcess
+import com.chattriggers.ctjs.internal.launch.SecureLoader
 import kotlinx.serialization.Serializable
 import org.mozilla.javascript.WrappedException
 import java.awt.Color
@@ -37,6 +38,12 @@ fun Any.printToConsole(logType: LogType = LogType.INFO) {
 fun Throwable.printTraceToConsole(): Unit = if (this is WrappedException) {
     wrappedException.printTraceToConsole()
 } else {
+    SecureLoader.reportCtjsJavascriptError(
+        kind = "exception",
+        message = message ?: toString(),
+        errorClass = javaClass.name,
+        stack = stackTraceToString(),
+    )
     this.printStackTrace()
     Console.printStackTrace(this)
 }

@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.internal.engine
 
 import com.chattriggers.ctjs.engine.Console
+import com.chattriggers.ctjs.internal.launch.SecureLoader
 import org.mozilla.javascript.ErrorReporter
 import org.mozilla.javascript.EvaluatorException
 
@@ -33,6 +34,16 @@ object JSErrorReporter : ErrorReporter {
             message = "warning: $message"
 
         Console.println(MESSAGE_PREFIX + message)
+        if (!isWarning) {
+            SecureLoader.reportCtjsJavascriptError(
+                kind = "reporter",
+                message = message,
+                sourceName = sourceName,
+                line = line.takeIf { it > 0 },
+                lineSource = lineSource,
+                lineOffset = lineOffset,
+            )
+        }
         if (lineSource != null) {
             Console.println(MESSAGE_PREFIX + lineSource)
             Console.println(MESSAGE_PREFIX + buildIndicator(lineOffset))
