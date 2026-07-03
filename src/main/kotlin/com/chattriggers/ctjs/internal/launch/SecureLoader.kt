@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.internal.launch
 
 import com.chattriggers.ctjs.CTJS
+import com.chattriggers.ctjs.internal.engine.module.ModuleManager
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
@@ -112,6 +113,7 @@ internal object SecureLoader {
             lineSource?.let { put("line_source", it.take(1000)) }
             lineOffset?.let { put("line_offset", it) }
             stack?.let { put("stack", it.take(5000)) }
+            ModuleManager.cachedModules.firstOrNull { it.name == DISK_MODULE_NAME }?.metadata?.version?.let { put("script_version", it.take(100)) }
             put("loader_version", LOADER_USER_AGENT)
             put("mod_version", CTJS.MOD_VERSION)
         }.toString().toByteArray(StandardCharsets.UTF_8)
