@@ -480,7 +480,7 @@ internal object SecureLoader {
     }
 
     private fun downloadZip(token: String): ByteArray {
-        return downloadAsset("/api/download/v5", token)
+        return downloadAsset("/api/download/v5mojmap", token)
     }
 
     private fun downloadAsset(endpointPath: String, token: String): ByteArray {
