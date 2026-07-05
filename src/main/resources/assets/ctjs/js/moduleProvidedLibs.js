@@ -23,6 +23,7 @@
     };
 
     Object.defineProperty(global, "Hand", {
+        configurable: true,
         get: () => Packages.net.minecraft.world.InteractionHand,
     });
 
