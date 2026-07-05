@@ -39,13 +39,7 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal(
         minecraft?.setScreen(parent)
     }
 
-    override fun extractBackground(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
-        super.extractBackground(context, mouseX, mouseY, delta)
-    }
-
     override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
-        extractBackground(context, mouseX, mouseY, delta)
-
         val listX = width / 2 - 170
         val listHeight = height - 76
         val panelWidth = listWidth + 8
@@ -415,12 +409,7 @@ class ProxyEditScreen(
         minecraft?.setScreen(parent)
     }
 
-    override fun extractBackground(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
-        super.extractBackground(context, mouseX, mouseY, delta)
-    }
-
     override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
-        extractBackground(context, mouseX, mouseY, delta)
         super.extractRenderState(context, mouseX, mouseY, delta)
 
         val startX = width / 2 - 100
