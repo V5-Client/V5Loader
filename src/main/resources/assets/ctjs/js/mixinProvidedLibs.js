@@ -12,6 +12,7 @@
 
     const JSLoader = Java.type('com.chattriggers.ctjs.internal.engine.JSLoader').INSTANCE;
     global.Console = Java.type('com.chattriggers.ctjs.engine.Console').INSTANCE;
+    const JSErrorReporter = Java.type('com.chattriggers.ctjs.internal.engine.JSErrorReporter').INSTANCE;
 
     const Condition = Java.type('org.spongepowered.asm.mixin.injection.Constant').Condition;
     const MixinObj = Java.type('com.chattriggers.ctjs.internal.launch.Mixin');
@@ -1041,6 +1042,7 @@
         console.error = function error(...args) {
             const s = _.formatArguments(args);
             _.writeln("error", s);
+            JSErrorReporter.reportConsoleError(s);
         };
 
 

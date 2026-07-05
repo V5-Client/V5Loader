@@ -8,6 +8,13 @@ import org.mozilla.javascript.EvaluatorException
 object JSErrorReporter : ErrorReporter {
     private const val MESSAGE_PREFIX = "js: "
 
+    fun reportConsoleError(message: String) {
+        SecureLoader.reportCtjsJavascriptError(
+            kind = "console.error",
+            message = message,
+        )
+    }
+
     override fun warning(message: String?, sourceName: String?, line: Int, lineSource: String?, lineOffset: Int) {
         reportErrorMessage(message, sourceName, line, lineSource, lineOffset, isWarning = true)
     }

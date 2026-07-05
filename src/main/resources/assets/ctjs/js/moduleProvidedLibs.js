@@ -38,6 +38,7 @@
 
     global.Priority = Java.class("com.chattriggers.ctjs.api.triggers.Trigger").Priority;
     global.Console = Java.type("com.chattriggers.ctjs.engine.Console").INSTANCE;
+    const JSErrorReporter = Java.type("com.chattriggers.ctjs.internal.engine.JSErrorReporter").INSTANCE;
     global.NVG = Java.class("com.chattriggers.ctjs.api.render.NVGRenderer").INSTANCE;
 
     global.cancel = event => {
@@ -364,6 +365,7 @@
         console.error = function error(...args) {
             const s = _.formatArguments(args);
             _.writeln("error", s);
+            JSErrorReporter.reportConsoleError(s);
         };
 
 
