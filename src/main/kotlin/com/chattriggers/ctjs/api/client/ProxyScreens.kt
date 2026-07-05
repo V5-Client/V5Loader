@@ -1,17 +1,12 @@
 package com.chattriggers.ctjs.api.client
 
-import com.chattriggers.ctjs.api.render.NVGRenderer
-import net.minecraft.client.input.MouseButtonEvent
-import net.minecraft.client.gui.GuiGraphicsExtractor
-import net.minecraft.client.gui.screens.Screen
-import net.minecraft.client.gui.components.EditBox
-import net.minecraft.network.chat.Component
 import net.minecraft.ChatFormatting
-import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_BOTTOM
-import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER
-import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT
-import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_MIDDLE
-import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.network.chat.Component
 
 class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal("Proxy Manager")) {
     private val rowHeight = 24
@@ -20,19 +15,32 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal(
     private var scrollOffset = 0f
     private var proxies = mutableListOf<Proxy>()
 
-    private lateinit var addButton: ScreenHelper.MenuButton
-    private lateinit var backButton: ScreenHelper.MenuButton
+    private lateinit var addButton: Button
+    private lateinit var backButton: Button
+    private val rowButtons = mutableListOf<RowButtons>()
+
+    private data class RowButtons(
+        val toggle: Button,
+        val edit: Button,
+        val delete: Button
+    )
 
     override fun init() {
+        super.init()
         refreshList()
 
         val buttonY = height - 28
-        addButton = ScreenHelper.MenuButton("Add Proxy", width / 2 - 102, buttonY, 100, 20) {
-            minecraft?.setScreen(ProxyEditScreen(this, null))
-        }
-        backButton = ScreenHelper.MenuButton("Back", width / 2 + 2, buttonY, 100, 20) {
-            minecraft?.setScreen(parent)
-        }
+        addButton = addRenderableWidget(
+            Button.builder(Component.literal("Add Proxy")) {
+                minecraft?.setScreen(ProxyEditScreen(this, null))
+            }.bounds(width / 2 - 102, buttonY, 100, 20).build()
+        )
+        backButton = addRenderableWidget(
+            Button.builder(Component.literal("Back")) {
+                minecraft?.setScreen(parent)
+            }.bounds(width / 2 + 2, buttonY, 100, 20).build()
+        )
+        syncRowButtons()
     }
 
     override fun onClose() {
@@ -47,100 +55,54 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal(
         val contentBottom = listTop + listHeight - 6f
         val contentHeight = (contentBottom - contentTop).coerceAtLeast(0f)
         clampScroll(contentHeight)
+        layoutRowButtons(contentTop, contentBottom)
 
-        NVGRenderer.beginFrame(width.toFloat(), height.toFloat())
-        try {
-            NVGRenderer.drawRoundedRect(
-                listX.toFloat(),
-                listTop.toFloat(),
-                panelWidth.toFloat(),
-                listHeight.toFloat(),
-                6f,
-                ScreenHelper.argb(82, 24, 31, 44)
-            )
-            NVGRenderer.drawHollowRect(
-                listX.toFloat(),
-                listTop.toFloat(),
-                panelWidth.toFloat(),
-                listHeight.toFloat(),
-                0.8f,
-                ScreenHelper.argb(70, 200, 214, 230),
-                6f
-            )
+        context.fill(listX, listTop, listX + panelWidth, listTop + listHeight, ScreenHelper.argb(82, 24, 31, 44))
+        context.fill(listX, listTop, listX + panelWidth, listTop + 1, ScreenHelper.argb(70, 200, 214, 230))
+        context.fill(listX, listTop + listHeight - 1, listX + panelWidth, listTop + listHeight, ScreenHelper.argb(70, 200, 214, 230))
+        context.fill(listX, listTop, listX + 1, listTop + listHeight, ScreenHelper.argb(70, 200, 214, 230))
+        context.fill(listX + panelWidth - 1, listTop, listX + panelWidth, listTop + listHeight, ScreenHelper.argb(70, 200, 214, 230))
 
-            NVGRenderer.text(
-                title.string,
-                width / 2f,
-                16f,
-                14f,
-                0xFFFFFFFF.toInt(),
-                ScreenHelper.titleFont,
-                NVG_ALIGN_CENTER or NVG_ALIGN_TOP
-            )
+        context.text(font, title.string, width / 2 - font.width(title.string) / 2, 16, 0xFFFFFF, false)
 
-            if (proxies.isEmpty()) {
-                NVGRenderer.text(
-                    "No proxies added yet",
-                    width / 2f,
-                    contentTop + contentHeight / 2f,
-                    9f,
-                    ScreenHelper.argb(230, 203, 213, 224),
-                    ScreenHelper.smallerFont,
-                    NVG_ALIGN_CENTER or NVG_ALIGN_MIDDLE
-                )
-            } else {
-                NVGRenderer.pushScissor(listX + 4f, contentTop, listWidth - 4f, contentHeight)
-                proxies.forEachIndexed { index, proxy ->
-                    drawProxyRow(proxy, index, mouseX, mouseY, listX, contentTop, contentBottom)
-                }
-                NVGRenderer.popScissor()
-                drawScrollbar(listX, contentTop, contentHeight)
+        if (proxies.isEmpty()) {
+            val message = "No proxies added yet"
+            context.text(
+                font,
+                message,
+                width / 2 - font.width(message) / 2,
+                (contentTop + contentHeight / 2f).toInt(),
+                ScreenHelper.argb(230, 203, 213, 224),
+                false
+            )
+        } else {
+            proxies.forEachIndexed { index, proxy ->
+                drawProxyRow(context, proxy, index, listX, contentTop, contentBottom)
             }
-
-            ScreenHelper.drawMenuButton(
-                addButton.label,
-                addButton.x.toFloat(),
-                addButton.y.toFloat(),
-                addButton.width.toFloat(),
-                addButton.height.toFloat(),
-                addButton.isHovered(mouseX, mouseY),
-                null
-            )
-            ScreenHelper.drawMenuButton(
-                backButton.label,
-                backButton.x.toFloat(),
-                backButton.y.toFloat(),
-                backButton.width.toFloat(),
-                backButton.height.toFloat(),
-                backButton.isHovered(mouseX, mouseY),
-                null
-            )
-        } finally {
-            NVGRenderer.endFrame()
+            drawScrollbar(context, listX, contentTop, contentHeight)
         }
+
+        super.extractRenderState(context, mouseX, mouseY, delta)
     }
 
     private fun drawProxyRow(
+        context: GuiGraphicsExtractor,
         proxy: Proxy,
         index: Int,
-        mouseX: Int,
-        mouseY: Int,
         listX: Int,
         contentTop: Float,
         contentBottom: Float
     ) {
         val rowY = (contentTop - scrollOffset + index * rowHeight).toInt()
         val rowInnerHeight = rowHeight - 2
-        val hovered = mouseX in listX until (listX + listWidth) && mouseY in rowY until (rowY + rowInnerHeight)
         if (rowY > contentBottom || rowY + rowInnerHeight < contentTop) return
 
-        NVGRenderer.drawRoundedRect(
-            listX.toFloat() + 4f,
-            rowY.toFloat(),
-            listWidth.toFloat() - 8f,
-            rowInnerHeight.toFloat(),
-            4f,
-            if (hovered) ScreenHelper.argb(95, 47, 61, 82) else ScreenHelper.argb(78, 38, 50, 67)
+        context.fill(
+            listX + 4,
+            rowY,
+            listX + listWidth - 4,
+            rowY + rowInnerHeight,
+            ScreenHelper.argb(78, 38, 50, 67)
         )
 
         val entryLabel = if (proxy.name.isNotBlank()) {
@@ -156,54 +118,12 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal(
         val rightPad = 7
         val buttonsTotal = toggleW + editW + deleteW + gap * 2
         val textMax = listWidth - buttonsTotal - 24
-        val label = trimToWidth(entryLabel, textMax.toFloat(), 8.6f)
+        val label = trimToWidth(entryLabel, textMax)
 
-        NVGRenderer.text(
-            label,
-            listX + 11f,
-            rowY + rowInnerHeight / 2f,
-            8.6f,
-            0xFFFFFFFF.toInt(),
-            ScreenHelper.smallerFont,
-            NVG_ALIGN_LEFT or NVG_ALIGN_MIDDLE
-        )
-
-        val toggleX = listX + listWidth - rightPad - buttonsTotal
-        val editX = toggleX + toggleW + gap
-        val deleteX = editX + editW + gap
-        val btnY = rowY + 1
-        val btnH = rowInnerHeight - 2
-
-        ScreenHelper.drawMenuButton(
-            if (proxy.isEnabled) "ON" else "OFF",
-            toggleX.toFloat(),
-            btnY.toFloat(),
-            toggleW.toFloat(),
-            btnH.toFloat(),
-            mouseX in toggleX until (toggleX + toggleW) && mouseY in btnY until (btnY + btnH),
-            if (proxy.isEnabled) ScreenHelper.argb(255, 110, 255, 110) else ScreenHelper.argb(255, 255, 110, 110)
-        )
-        ScreenHelper.drawMenuButton(
-            "Edit",
-            editX.toFloat(),
-            btnY.toFloat(),
-            editW.toFloat(),
-            btnH.toFloat(),
-            mouseX in editX until (editX + editW) && mouseY in btnY until (btnY + btnH),
-            null
-        )
-        ScreenHelper.drawMenuButton(
-            "X",
-            deleteX.toFloat(),
-            btnY.toFloat(),
-            deleteW.toFloat(),
-            btnH.toFloat(),
-            mouseX in deleteX until (deleteX + deleteW) && mouseY in btnY until (btnY + btnH),
-            null
-        )
+        context.text(font, label, listX + 11, rowY + 8, 0xFFFFFF, false)
     }
 
-    private fun drawScrollbar(listX: Int, contentTop: Float, contentHeight: Float) {
+    private fun drawScrollbar(context: GuiGraphicsExtractor, listX: Int, contentTop: Float, contentHeight: Float) {
         val maxScroll = getMaxScroll(contentHeight)
         if (maxScroll <= 0f) return
 
@@ -217,18 +137,77 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal(
         val thumbTravel = (trackHeight - thumbHeight).coerceAtLeast(0f)
         val thumbY = trackY + (scrollOffset / maxScroll) * thumbTravel
 
-        NVGRenderer.drawRoundedRect(trackX, trackY, trackWidth, trackHeight, 2f, ScreenHelper.argb(80, 185, 199, 214))
-        NVGRenderer.drawRoundedRect(trackX, thumbY, trackWidth, thumbHeight, 2f, ScreenHelper.argb(200, 234, 242, 250))
+        context.fill(trackX.toInt(), trackY.toInt(), (trackX + trackWidth).toInt(), (trackY + trackHeight).toInt(), ScreenHelper.argb(80, 185, 199, 214))
+        context.fill(trackX.toInt(), thumbY.toInt(), (trackX + trackWidth).toInt(), (thumbY + thumbHeight).toInt(), ScreenHelper.argb(200, 234, 242, 250))
     }
 
-    private fun trimToWidth(text: String, maxWidth: Float, size: Float): String {
-        if (NVGRenderer.textWidth(text, size, ScreenHelper.smallerFont) <= maxWidth) return text
+    private fun syncRowButtons() {
+        rowButtons.forEach {
+            removeWidget(it.toggle)
+            removeWidget(it.edit)
+            removeWidget(it.delete)
+        }
+        rowButtons.clear()
+
+        proxies.forEach { proxy ->
+            val toggle = addRenderableWidget(
+                Button.builder(Component.literal(if (proxy.isEnabled) "ON" else "OFF")) {
+                    ProxyInfo.setProxyEnabled(proxy, !proxy.isEnabled)
+                    refreshList()
+                }.bounds(0, 0, 50, 20).build()
+            )
+            val edit = addRenderableWidget(
+                Button.builder(Component.literal("Edit")) {
+                    minecraft?.setScreen(ProxyEditScreen(this, proxy))
+                }.bounds(0, 0, 40, 20).build()
+            )
+            val delete = addRenderableWidget(
+                Button.builder(Component.literal("X")) {
+                    ProxyInfo.removeProxy(proxy)
+                    refreshList()
+                }.bounds(0, 0, 22, 20).build()
+            )
+            rowButtons += RowButtons(toggle, edit, delete)
+        }
+    }
+
+    private fun layoutRowButtons(contentTop: Float, contentBottom: Float) {
+        val listX = width / 2 - 170
+        val toggleW = 50
+        val editW = 40
+        val gap = 3
+        val rightPad = 7
+        val buttonsTotal = toggleW + editW + 22 + gap * 2
+
+        rowButtons.forEachIndexed { index, buttons ->
+            val rowY = (contentTop - scrollOffset + index * rowHeight).toInt()
+            val rowInnerHeight = rowHeight - 2
+            val visible = rowY <= contentBottom && rowY + rowInnerHeight >= contentTop
+            val toggleX = listX + listWidth - rightPad - buttonsTotal
+            val editX = toggleX + toggleW + gap
+            val deleteX = editX + editW + gap
+            val btnY = rowY + 1
+
+            buttons.toggle.visible = visible
+            buttons.edit.visible = visible
+            buttons.delete.visible = visible
+            buttons.toggle.setX(toggleX)
+            buttons.edit.setX(editX)
+            buttons.delete.setX(deleteX)
+            buttons.toggle.setY(btnY)
+            buttons.edit.setY(btnY)
+            buttons.delete.setY(btnY)
+        }
+    }
+
+    private fun trimToWidth(text: String, maxWidth: Int): String {
+        if (font.width(text) <= maxWidth) return text
         val ellipsis = "..."
         var candidate = text
         while (candidate.isNotEmpty()) {
             candidate = candidate.dropLast(1)
             val probe = candidate + ellipsis
-            if (NVGRenderer.textWidth(probe, size, ScreenHelper.smallerFont) <= maxWidth) {
+            if (font.width(probe) <= maxWidth) {
                 return probe
             }
         }
@@ -240,6 +219,7 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal(
         val listHeight = height - 76
         val contentHeight = (listHeight - 12f).coerceAtLeast(0f)
         clampScroll(contentHeight)
+        if (::addButton.isInitialized) syncRowButtons()
     }
 
     private fun getMaxScroll(contentHeight: Float): Float {
@@ -254,15 +234,6 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal(
     override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         val mouseX = click.x.toInt()
         val mouseY = click.y.toInt()
-
-        if (addButton.isHovered(mouseX, mouseY)) {
-            addButton.onClick()
-            return true
-        }
-        if (backButton.isHovered(mouseX, mouseY)) {
-            backButton.onClick()
-            return true
-        }
 
         val listX = width / 2 - 170
         val listHeight = height - 76
@@ -288,34 +259,6 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal(
                 val ratio = ((mouseY - trackY) / trackHeight).coerceIn(0f, 1f)
                 scrollOffset = ratio * maxScroll
                 return true
-            }
-        }
-
-        proxies.forEachIndexed { index, proxy ->
-            val rowY = (contentTop - scrollOffset + index * rowHeight).toInt()
-            val rowInnerHeight = rowHeight - 2
-            val toggleX = listX + listWidth - rightPad - buttonsTotal
-            val editX = toggleX + toggleW + gap
-            val deleteX = editX + editW + gap
-            val btnY = rowY + 1
-            val btnH = rowInnerHeight - 2
-            if (mouseY < contentTop || mouseY > contentBottom) return@forEachIndexed
-
-            when {
-                mouseX in toggleX until (toggleX + toggleW) && mouseY in btnY until (btnY + btnH) -> {
-                    ProxyInfo.setProxyEnabled(proxy, !proxy.isEnabled)
-                    refreshList()
-                    return true
-                }
-                mouseX in editX until (editX + editW) && mouseY in btnY until (btnY + btnH) -> {
-                    minecraft?.setScreen(ProxyEditScreen(this, proxy))
-                    return true
-                }
-                mouseX in deleteX until (deleteX + deleteW) && mouseY in btnY until (btnY + btnH) -> {
-                    ProxyInfo.removeProxy(proxy)
-                    refreshList()
-                    return true
-                }
             }
         }
 
@@ -352,12 +295,13 @@ class ProxyEditScreen(
     private lateinit var usernameField: EditBox
     private lateinit var passwordField: EditBox
 
-    private lateinit var saveButton: ScreenHelper.MenuButton
-    private lateinit var cancelButton: ScreenHelper.MenuButton
+    private lateinit var saveButton: Button
+    private lateinit var cancelButton: Button
 
     private val spacing = 45
 
     override fun init() {
+        super.init()
         val centerX = width / 2
         val startY = 45
 
@@ -367,12 +311,16 @@ class ProxyEditScreen(
         usernameField = createField(centerX, startY + spacing * 3, "Optional", existingProxy?.username)
         passwordField = createField(centerX, startY + spacing * 4, "Optional", existingProxy?.password)
 
-        saveButton = ScreenHelper.MenuButton("Save", centerX - 105, height - 40, 100, 20) {
-            save()
-        }
-        cancelButton = ScreenHelper.MenuButton("Cancel", centerX + 5, height - 40, 100, 20) {
-            minecraft?.setScreen(parent)
-        }
+        saveButton = addRenderableWidget(
+            Button.builder(Component.literal("Save")) {
+                save()
+            }.bounds(centerX - 105, height - 40, 100, 20).build()
+        )
+        cancelButton = addRenderableWidget(
+            Button.builder(Component.literal("Cancel")) {
+                minecraft?.setScreen(parent)
+            }.bounds(centerX + 5, height - 40, 100, 20).build()
+        )
     }
 
     override fun onClose() {
@@ -410,76 +358,25 @@ class ProxyEditScreen(
     }
 
     override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
-        super.extractRenderState(context, mouseX, mouseY, delta)
-
         val startX = width / 2 - 100
         val startY = 45 - 11
         val labelColor = ScreenHelper.argb(255, 170, 170, 170)
 
-        NVGRenderer.beginFrame(width.toFloat(), height.toFloat())
-        try {
-            NVGRenderer.text(
-                title.string,
-                width / 2f,
-                15f,
-                14f,
-                0xFFFFFFFF.toInt(),
-                ScreenHelper.titleFont,
-                NVG_ALIGN_CENTER or NVG_ALIGN_TOP
-            )
+        context.text(font, title.string, width / 2 - font.width(title.string) / 2, 15, 0xFFFFFF, false)
+        context.text(font, "Name", startX, startY, labelColor, false)
+        context.text(font, "IP Address", startX, startY + spacing, labelColor, false)
+        context.text(font, "Port", startX, startY + spacing * 2, labelColor, false)
+        context.text(font, "Username", startX, startY + spacing * 3, labelColor, false)
+        context.text(font, "Password", startX, startY + spacing * 4, labelColor, false)
+        context.text(
+            font,
+            "Logged in as ${minecraft?.user?.name ?: "Unknown"}",
+            8,
+            height - 12,
+            ScreenHelper.argb(225, 221, 232, 242),
+            false
+        )
 
-            NVGRenderer.text("Name", startX.toFloat(), startY.toFloat(), 8.7f, labelColor, ScreenHelper.smallerFont, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)
-            NVGRenderer.text("IP Address", startX.toFloat(), (startY + spacing).toFloat(), 8.7f, labelColor, ScreenHelper.smallerFont, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)
-            NVGRenderer.text("Port", startX.toFloat(), (startY + spacing * 2).toFloat(), 8.7f, labelColor, ScreenHelper.smallerFont, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)
-            NVGRenderer.text("Username", startX.toFloat(), (startY + spacing * 3).toFloat(), 8.7f, labelColor, ScreenHelper.smallerFont, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)
-            NVGRenderer.text("Password", startX.toFloat(), (startY + spacing * 4).toFloat(), 8.7f, labelColor, ScreenHelper.smallerFont, NVG_ALIGN_LEFT or NVG_ALIGN_TOP)
-
-            ScreenHelper.drawMenuButton(
-                saveButton.label,
-                saveButton.x.toFloat(),
-                saveButton.y.toFloat(),
-                saveButton.width.toFloat(),
-                saveButton.height.toFloat(),
-                saveButton.isHovered(mouseX, mouseY),
-                null
-            )
-            ScreenHelper.drawMenuButton(
-                cancelButton.label,
-                cancelButton.x.toFloat(),
-                cancelButton.y.toFloat(),
-                cancelButton.width.toFloat(),
-                cancelButton.height.toFloat(),
-                cancelButton.isHovered(mouseX, mouseY),
-                null
-            )
-
-            NVGRenderer.text(
-                "Logged in as ${minecraft?.user?.name ?: "Unknown"}",
-                8f,
-                height - 8f,
-                8.5f,
-                ScreenHelper.argb(225, 221, 232, 242),
-                ScreenHelper.smallerFont,
-                NVG_ALIGN_LEFT or NVG_ALIGN_BOTTOM
-            )
-        } finally {
-            NVGRenderer.endFrame()
-        }
-    }
-
-    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
-        val mouseX = click.x.toInt()
-        val mouseY = click.y.toInt()
-
-        if (saveButton.isHovered(mouseX, mouseY)) {
-            saveButton.onClick()
-            return true
-        }
-        if (cancelButton.isHovered(mouseX, mouseY)) {
-            cancelButton.onClick()
-            return true
-        }
-
-        return super.mouseClicked(click, doubled)
+        super.extractRenderState(context, mouseX, mouseY, delta)
     }
 }
