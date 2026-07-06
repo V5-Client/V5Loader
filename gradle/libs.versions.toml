@@ -25,7 +25,6 @@ hypixel-modrinth-api = "1.0.2+build.1+mc26.1"
 # Plugin Versions
 kotlin = "2.3.10"
 loom = "1.17-SNAPSHOT"
-validator = "0.18.1"
 ksp = "2.3.9"
 
 [libraries]
@@ -61,5 +60,4 @@ included = ["mapping-io", "rhino", "jackson-core", "textarea", "serialization", 
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 loom = { id = "net.fabricmc.fabric-loom", version.ref = "loom" }
-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "validator" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

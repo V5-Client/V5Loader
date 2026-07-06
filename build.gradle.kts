@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.loom)
-    alias(libs.plugins.validator)
     id("io.github.izhangzhihao.unmeta") version "1.0.3"
 }
 
@@ -94,18 +93,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_25
 }
 
-apiValidation {
-    ignoredProjects += "typing-generator"
-    ignoredPackages += "com.chattriggers.ctjs.internal"
-}
-
 tasks {
-    named("apiCheck") {
-        enabled = false
-    }
-    named("apiBuild") {
-        enabled = false
-    }
     processResources {
         val mcVersion = libs.versions.minecraft.get()
         val flkVersion = libs.versions.fabric.kotlin.get()
