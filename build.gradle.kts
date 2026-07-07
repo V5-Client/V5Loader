@@ -45,8 +45,6 @@ dependencies {
     }
 
     compileOnly(libs.sponge.mixin)
-    ksp(project(":typing-generator"))
-
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.10.2")
