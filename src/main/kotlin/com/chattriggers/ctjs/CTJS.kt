@@ -8,6 +8,7 @@ import com.chattriggers.ctjs.api.client.WelcomeScreen
 import com.chattriggers.ctjs.api.commands.DynamicCommands
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Image
+import com.chattriggers.ctjs.api.render.NVGRenderer
 import com.chattriggers.ctjs.api.triggers.TriggerType
 import com.chattriggers.ctjs.api.world.Scoreboard
 import com.chattriggers.ctjs.api.world.World
@@ -94,6 +95,7 @@ class CTJS : ClientModInitializer {
             Register.clearCustomTriggers()
             StaticCommand.unregisterAll()
             DynamicCommands.unregisterAll()
+            NVGRenderer.clearCallbacks()
 
             if (Config.clearConsoleOnLoad)
                 Console.clear()

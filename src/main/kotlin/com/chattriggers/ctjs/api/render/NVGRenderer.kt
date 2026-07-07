@@ -137,6 +137,11 @@ object NVGRenderer {
         preRenderCallbacks.remove(runnable)
     }
 
+    fun clearCallbacks() {
+        renderCallbacks.clear()
+        preRenderCallbacks.clear()
+    }
+
     @JvmStatic
     fun runPreDrawables() {
         runCallbacks(preRenderCallbacks)
