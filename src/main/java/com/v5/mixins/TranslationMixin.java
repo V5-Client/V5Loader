@@ -10,7 +10,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class TranslationMixin {
     @Inject(method = "getOrDefault", at = @At("HEAD"), cancellable = true)
     private void onGet(String key, String fallback, CallbackInfoReturnable<String> cir) {
-        if (key.equals("key.category.v5.v5_modules")) {
+        if (key.equals("key.category.v5.v5_modules") || 
+            key.equals("key.category.minecraft.v5_modules")) {
             cir.setReturnValue("V5");
             return;
         }
