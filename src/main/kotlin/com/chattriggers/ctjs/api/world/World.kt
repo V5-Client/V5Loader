@@ -99,21 +99,25 @@ object World {
         maxX: Number,
         maxY: Number,
         maxZ: Number,
-        filter: Predicate<Block>? = null,
+        types: List<BlockType> = emptyList(),
     ): Array<Block> {
         val world = toMC() ?: return emptyArray()
         val xRange = sortedRange(minX, maxX)
         val yRange = sortedRange(minY, maxY)
         val zRange = sortedRange(minZ, maxZ)
         val blocks = ArrayList<Block>()
+        val typeSet = types.mapTo(hashSetOf()) { it.mcValue }
 
         for (x in xRange) {
             for (y in yRange) {
                 for (z in zRange) {
-                    val pos = BlockPos(x, y, z)
-                    val block = Block(BlockType(world.getBlockState(pos.toMC()).block), pos)
-                    if (filter?.test(block) != false)
-                        blocks.add(block)
+                    val mcPos = MCBlockPos(x, y, z)
+                    val blockState = world.getBlockState(mcPos)
+                    if (blockState.isAir) continue
+                    val mcBlock = blockState.block
+                    if (typeSet.isEmpty() || mcBlock in typeSet) {
+                        blocks.add(Block(BlockType(mcBlock), BlockPos(x, y, z)))
+                    }
                 }
             }
         }
