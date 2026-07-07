@@ -33,6 +33,8 @@ import net.minecraft.core.particles.VibrationParticleOption
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.level.LightLayer
 import net.minecraft.world.level.gameevent.BlockPositionSource
+import java.util.function.Predicate
+import kotlin.math.floor
 import kotlin.math.roundToInt
 
 object World {
@@ -86,6 +88,43 @@ object World {
     @JvmStatic
     fun getBlockAt(pos: BlockPos): Block {
         return Block(BlockType(getBlockStateAt(pos).block), pos)
+    }
+
+    @JvmOverloads
+    @JvmStatic
+    fun getBlocksInBox(
+        minX: Number,
+        minY: Number,
+        minZ: Number,
+        maxX: Number,
+        maxY: Number,
+        maxZ: Number,
+        filter: Predicate<Block>? = null,
+    ): Array<Block> {
+        val world = toMC() ?: return emptyArray()
+        val xRange = sortedRange(minX, maxX)
+        val yRange = sortedRange(minY, maxY)
+        val zRange = sortedRange(minZ, maxZ)
+        val blocks = ArrayList<Block>()
+
+        for (x in xRange) {
+            for (y in yRange) {
+                for (z in zRange) {
+                    val pos = BlockPos(x, y, z)
+                    val block = Block(BlockType(world.getBlockState(pos.toMC()).block), pos)
+                    if (filter?.test(block) != false)
+                        blocks.add(block)
+                }
+            }
+        }
+
+        return blocks.toTypedArray()
+    }
+
+    private fun sortedRange(a: Number, b: Number): IntRange {
+        val first = floor(a.toDouble()).toInt()
+        val second = floor(b.toDouble()).toInt()
+        return minOf(first, second)..maxOf(first, second)
     }
 
     /**
