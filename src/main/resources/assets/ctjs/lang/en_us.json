@@ -1,4 +1,6 @@
 {
+    "key.category.minecraft.ctjs.key.category": "ChatTriggers",
+    "key.category.minecraft.v5_modules": "V5",
     "ctjs.key.binding.console": "Console",
     "ctjs.key.category": "ChatTriggers"
-}
+  }
