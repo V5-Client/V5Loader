@@ -47221,6 +47221,8 @@ declare global {
 							 *  @return the [Block] at the location
 							 */
               getBlockAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): com.chattriggers.ctjs.api.world.block.Block;
+              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number): Array<com.chattriggers.ctjs.api.world.block.Block>;
+              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number, types: Array<com.chattriggers.ctjs.api.world.block.BlockType>): Array<com.chattriggers.ctjs.api.world.block.Block>;
 							/**
 							 * Gets the [BlockState] at a location in the world.
 							 * 
@@ -47323,6 +47325,8 @@ declare global {
 							 *  @return the [Block] at the location
 							 */
               getBlockAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): com.chattriggers.ctjs.api.world.block.Block;
+              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number): Array<com.chattriggers.ctjs.api.world.block.Block>;
+              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number, types: Array<com.chattriggers.ctjs.api.world.block.BlockType>): Array<com.chattriggers.ctjs.api.world.block.Block>;
 							/**
 							 * Gets the [BlockState] at a location in the world.
 							 * 
@@ -51119,6 +51123,7 @@ declare global {
               destroy(): void;
               new(): com.chattriggers.ctjs.api.render.NVGRenderer;
               getDefaultFont(): com.chattriggers.ctjs.api.render.Font | null | undefined;
+              clearCallbacks(): void;
             }
             const NVGRenderer$GifData: {
               new(width: number, height: number, frameCount: number, delays: Array<number>): com.chattriggers.ctjs.api.render.NVGRenderer$GifData;
@@ -53124,11 +53129,6 @@ declare global {
         interface FirmamentModAnnouncerMixin { 
         }
         interface JoinMultiplayerScreenMixin extends net.minecraft.client.gui.screens.Screen { 
-        }
-        const TranslationMixin: {
-          new(): com.v5.mixins.TranslationMixin;
-        }
-        interface TranslationMixin { 
         }
         const CameraMixin: {
           new(): com.v5.mixins.CameraMixin;
