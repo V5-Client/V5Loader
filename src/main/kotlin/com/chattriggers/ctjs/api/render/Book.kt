@@ -39,7 +39,7 @@ class Book {
      */
     fun insertPage(pageIndex: Int, message: TextComponent) = apply {
         require(pageIndex in customContents.pages.indices) {
-            println("Invalid index $pageIndex for Book with ${customContents.pageCount} pages")
+            "Invalid index $pageIndex for Book with ${customContents.pageCount} pages"
         }
 
         customContents.pages.add(pageIndex, message)
@@ -57,7 +57,7 @@ class Book {
      */
     fun setPage(pageIndex: Int, message: TextComponent) = apply {
         require(pageIndex in customContents.pages.indices) {
-            println("Invalid index $pageIndex for Book with ${customContents.pageCount} pages")
+            "Invalid index $pageIndex for Book with ${customContents.pageCount} pages"
         }
 
         customContents.pages[pageIndex] = message
@@ -68,18 +68,16 @@ class Book {
 
     @JvmOverloads
     fun display(pageIndex: Int = 0) {
-        screen = BookViewScreen(customContents)
+        val newScreen = BookViewScreen(customContents)
+        screen = newScreen
         Client.scheduleTask {
-            Client.getMinecraft().setScreen(screen)
-            screen!!.setPage(pageIndex)
+            Client.getMinecraft().setScreen(newScreen)
+            newScreen.setPage(pageIndex)
         }
     }
 
-    fun isOpen(): Boolean {
-        return Client.currentGui.get() === screen
-    }
+    fun isOpen(): Boolean = Client.currentGui.get() === screen
 
-    fun getCurrentPage(): Int {
-        return if (!isOpen() || screen == null) -1 else screen!!.asMixin<BookViewScreenAccessor>().currentPage
-    }
+    fun getCurrentPage(): Int =
+        screen?.takeIf { Client.currentGui.get() === it }?.asMixin<BookViewScreenAccessor>()?.currentPage ?: -1
 }

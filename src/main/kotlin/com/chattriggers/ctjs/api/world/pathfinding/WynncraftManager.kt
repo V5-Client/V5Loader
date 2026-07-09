@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.api.world.pathfinding
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import java.util.Locale
 
 object WynncraftManager {
 
@@ -32,7 +33,7 @@ object WynncraftManager {
 
   private fun isWynncraftHost(address: String?): Boolean {
     if (address.isNullOrBlank()) return false
-    val host = address.substringBefore(':').trim().trimEnd('.').lowercase()
+    val host = address.substringBefore(':').trim().trimEnd('.').lowercase(Locale.ROOT)
     return host == "wynncraft.com" || host.endsWith(".wynncraft.com")
   }
 }

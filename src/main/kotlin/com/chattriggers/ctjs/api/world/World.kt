@@ -50,12 +50,6 @@ object World {
     @JvmField
     val border = BorderWrapper()
 
-    /**
-     * Gets Minecraft's [ClientWorld] object
-     *
-     * @return The Minecraft [ClientWorld] object
-     */
-    @Deprecated("Use toMC", ReplaceWith("toMC()"))
     @JvmStatic
     fun getWorld(): ClientLevel? = toMC()
 
@@ -192,7 +186,7 @@ object World {
      * @return the players
      */
     @JvmStatic
-    fun getAllPlayers(): List<PlayerMP> = toMC()?.players()?.map(::PlayerMP) ?: listOf()
+    fun getAllPlayers(): List<PlayerMP> = toMC()?.players()?.map(::PlayerMP) ?: emptyList()
 
     /**
      * Gets a player by their username, must be in the currently loaded chunks!
@@ -207,7 +201,7 @@ object World {
     fun getChunk(x: Int, y: Int, z: Int) = Chunk(toMC()!!.getChunkAt(MCBlockPos(x, y, z)))
 
     @JvmStatic
-    fun getAllEntities() = toMC()?.entitiesForRendering()?.map(Entity::fromMC) ?: listOf()
+    fun getAllEntities() = toMC()?.entitiesForRendering()?.map(Entity::fromMC) ?: emptyList()
 
     /**
      * Gets every entity loaded in the world of a certain class
@@ -230,13 +224,10 @@ object World {
             ?.storage?.asMixin<ClientChunkMapAccessor>()
             ?.chunks ?: return emptyList()
 
-        val blockEntities = mutableListOf<BlockEntity>()
-
-        for (i in 0 until chunks.length()) {
-            blockEntities += Chunk(chunks.getPlain(i) ?: continue).getAllBlockEntities()
-        }
-
-        return blockEntities
+        return (0 until chunks.length()).asSequence()
+            .mapNotNull(chunks::getPlain)
+            .flatMap { Chunk(it).getAllBlockEntities().asSequence() }
+            .toList()
     }
 
     @JvmStatic

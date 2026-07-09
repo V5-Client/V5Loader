@@ -32,7 +32,8 @@ sealed interface Descriptor {
         override fun toString() = originalDescriptor()
 
         companion object {
-            val IDENTIFIERS = entries.map { it.toString() }
+            val IDENTIFIERS = entries.mapTo(mutableSetOf()) { it.toString() }
+            val BY_IDENTIFIER = entries.associateBy { it.toString() }
         }
     }
 
@@ -169,9 +170,7 @@ sealed interface Descriptor {
                 append(owner.originalDescriptor())
             append(name)
             if (parameters != null) {
-                append('(')
-                parameters.forEach { append(it.originalDescriptor()) }
-                append(')')
+                append(parameters.originalDescriptor())
                 append(returnType!!.originalDescriptor())
             }
         }
@@ -183,9 +182,7 @@ sealed interface Descriptor {
             append(owner.mappedDescriptor())
             append(mappedName)
             if (parameters != null) {
-                append('(')
-                parameters.forEach { append(it.mappedDescriptor()) }
-                append(')')
+                append(parameters.mappedDescriptor())
                 append(returnType!!.mappedDescriptor())
             }
         }
@@ -214,18 +211,14 @@ sealed interface Descriptor {
 
         override fun originalDescriptor() = buildString {
             if (parameters != null) {
-                append('(')
-                parameters.forEach { append(it.originalDescriptor()) }
-                append(')')
+                append(parameters.originalDescriptor())
             }
             append(type.originalDescriptor())
         }
 
         override fun mappedDescriptor() = buildString {
             if (parameters != null) {
-                append('(')
-                parameters.forEach { append(it.mappedDescriptor()) }
-                append(')')
+                append(parameters.mappedDescriptor())
             }
             append(type.mappedDescriptor())
         }
@@ -250,7 +243,7 @@ sealed interface Descriptor {
             if (done)
                 return null
 
-            listOf("<init>", "<clinit>").forEach {
+            SPECIAL_METHOD_NAMES.forEach {
                 if (text.substring(cursor).startsWith(it)) {
                     cursor += it.length
                     return it
@@ -279,7 +272,7 @@ sealed interface Descriptor {
                 cursor += objectType.length
                 Object(objectType)
             } else if (ch in "VZCBSIFJD") {
-                val primitive = Primitive.entries.first { it.toString() == ch.toString() }
+                val primitive = Primitive.BY_IDENTIFIER.getValue(ch.toString())
                 cursor++
                 primitive
             } else if (ch == '[') {
@@ -383,5 +376,15 @@ sealed interface Descriptor {
                 parameters
             } else null
         }
+
+        private companion object {
+            val SPECIAL_METHOD_NAMES = listOf("<init>", "<clinit>")
+        }
     }
 }
+
+private fun List<Descriptor>.originalDescriptor() =
+    joinToString(separator = "", prefix = "(", postfix = ")") { it.originalDescriptor() }
+
+private fun List<Descriptor>.mappedDescriptor() =
+    joinToString(separator = "", prefix = "(", postfix = ")") { it.mappedDescriptor() }

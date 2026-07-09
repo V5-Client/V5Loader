@@ -7,7 +7,11 @@ import com.chattriggers.ctjs.internal.engine.module.ModuleManager
 import com.chattriggers.ctjs.internal.launch.generation.DynamicMixinGenerator
 import com.chattriggers.ctjs.internal.launch.generation.GenerationContext
 import com.chattriggers.ctjs.internal.launch.generation.Utils
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.putJsonArray
+import kotlinx.serialization.json.putJsonObject
 import org.spongepowered.asm.mixin.Mixins
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -45,15 +49,13 @@ internal object DynamicMixinManager {
     }
 
     fun applyMixins() {
-        val dynamicMixins = mutableListOf<String>()
-
         if (CTJS.isDevelopment) deleteOldMixinClasses()
 
-        for ((mixin, details) in mixins) {
+        val dynamicMixins = mixins.map { (mixin, details) ->
             val ctx = GenerationContext(mixin)
             val generator = DynamicMixinGenerator(ctx, details)
             ByteBasedStreamHandler[ctx.generatedClassFullPath + ".class"] = generator.generate()
-            dynamicMixins += ctx.generatedClassName
+            ctx.generatedClassName
         }
 
         ByteBasedStreamHandler[GENERATED_MIXIN] = createDynamicMixinsJson(dynamicMixins)
@@ -65,7 +67,7 @@ internal object DynamicMixinManager {
         return buildJsonObject {
             put("required", JsonPrimitive(true))
             put("minVersion", JsonPrimitive("0.8"))
-            put("package", JsonPrimitive("com.chattriggers.ctjs.generated_mixins"))
+            put("package", JsonPrimitive(GENERATED_PACKAGE.replace('/', '.')))
             put("compatibilityLevel", JsonPrimitive("JAVA_25"))
             putJsonObject("injectors") {
                 put("defaultRequire", JsonPrimitive(1))
@@ -88,7 +90,7 @@ internal object DynamicMixinManager {
 
     private fun deleteOldMixinClasses() {
         val dir = File(CTJS.configLocation, "ChatTriggers/mixin-classes")
-        dir.listFiles()?.forEach { it.delete() }
+        dir.listFiles()?.forEach { it.deleteRecursively() }
     }
 
     private object ByteBasedStreamHandler : URLStreamHandler() {

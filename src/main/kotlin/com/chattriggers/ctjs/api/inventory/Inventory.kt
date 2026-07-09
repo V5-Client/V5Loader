@@ -7,6 +7,7 @@ import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.MCInventory
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.world.Nameable
+import java.util.Locale
 
 class Inventory {
     val inventory: MCInventory?
@@ -41,7 +42,7 @@ class Inventory {
         val stack = inventory?.getItem(slot)
             ?: screen!!.menu.getSlot(slot).item
 
-        return stack?.let(Item::fromMC)
+        return stack.let(Item::fromMC)
     }
 
     /**
@@ -147,7 +148,7 @@ class Inventory {
     fun drag(type: String, vararg slots: Int) = apply {
         DragAction(-999, getWindowId()).run {
             setStage(DragAction.Stage.BEGIN)
-                .setClickType(DragAction.ClickType.valueOf(type.uppercase()))
+                .setClickType(DragAction.ClickType.valueOf(type.uppercase(Locale.ROOT)))
                 .complete()
 
             setStage(DragAction.Stage.SLOT)

@@ -4,17 +4,12 @@ import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.vec.Vec3f
 import com.chattriggers.ctjs.internal.utils.get
 import com.mojang.blaze3d.systems.RenderSystem
-import gg.essential.elementa.dsl.component1
-import gg.essential.elementa.dsl.component2
-import gg.essential.elementa.dsl.component3
-import gg.essential.elementa.dsl.component4
 import gg.essential.universal.UGraphics
 import net.minecraft.client.gui.Font
 import net.minecraft.util.LightCoordsUtil
 import com.mojang.blaze3d.vertex.Tesselator
 import org.joml.Vector3f
 import org.mozilla.javascript.NativeObject
-import java.awt.Color
 
 object Renderer3d {
     private var firstVertex = true
@@ -116,8 +111,12 @@ object Renderer3d {
      */
     @JvmStatic
     fun color(color: Long) = apply {
-        val (r, g, b, a) = Color(color.toInt())
-        color(r, g, b, a)
+        color(
+            ((color ushr 16) and 0xFF).toInt(),
+            ((color ushr 8) and 0xFF).toInt(),
+            (color and 0xFF).toInt(),
+            ((color ushr 24) and 0xFF).toInt(),
+        )
     }
 
     /**
@@ -158,18 +157,6 @@ object Renderer3d {
     }
 
     /**
-     * Sets the line width when rendering [Renderer.DrawMode.LINES]
-     *
-     * @param width the width of the line
-     * @return [Renderer3d] to allow for method chaining
-     */
-    @JvmStatic
-    @Deprecated("removed since 1.21.11")
-    fun lineWidth(width: Float) = apply {
-//        RenderSystem.lineWidth(width)
-    }
-
-    /**
      * Finalizes vertices and draws the world renderer.
      */
     @JvmStatic
@@ -181,8 +168,7 @@ object Renderer3d {
         worldRenderer.endVertex()
 
         worldRenderer.drawDirect()
-        Renderer.colorize(1f, 1f, 1f, 1f)
-            .disableBlend()
+        Renderer.disableBlend()
             .enableCull()
             .popMatrix()
     }
@@ -209,7 +195,7 @@ object Renderer3d {
         x: Float,
         y: Float,
         z: Float,
-        color: Long = Renderer.colorized ?: Renderer.WHITE,
+        color: Long = Renderer.WHITE,
         renderBlackBox: Boolean = true,
         scale: Float = 1f,
         increase: Boolean = false,
@@ -304,7 +290,7 @@ object Renderer3d {
                 ?: error("Expected \"y\" property in object passed to Renderer3d.drawString"),
             obj.get<Number>("z")?.toFloat()
                 ?: error("Expected \"z\" property in object passed to Renderer3d.drawString"),
-            obj.get<Number>("color")?.toLong() ?: Renderer.colorized ?: Renderer.WHITE,
+            obj.get<Number>("color")?.toLong() ?: Renderer.WHITE,
             obj.get<Boolean>("renderBlackBox") ?: true,
             obj.get<Number>("scale")?.toFloat() ?: 1f,
             obj.get<Boolean>("increase") ?: false,
@@ -323,7 +309,6 @@ object Renderer3d {
      * @param x2 the ending x coordinate
      * @param y2 the ending y coordinate
      * @param z2 the ending z coordinate
-     * @param thickness how thick the line should be
      */
     @JvmStatic
     fun drawLine(
@@ -334,23 +319,18 @@ object Renderer3d {
         x2: Float,
         y2: Float,
         z2: Float,
-        thickness: Float,
     ) {
         Renderer.pushMatrix()
             .disableDepth()
             .disableCull()
-//        RenderSystem.lineWidth(thickness)
-
-        val (r, g, b, a) = Color(color.toInt(), true)
 
         val normalVec = Vector3f(x2 - x1, y2 - y1, z2 - z1).normalize()
 
         begin(Renderer.DrawMode.LINES, Renderer.VertexFormat.LINES, Renderer.RenderSnippet.RENDERTYPE_LINES_SNIPPET)
-        pos(x1, y1, z1).color(r, g, b, a).normal(normalVec.x, normalVec.y, normalVec.z)
-        pos(x2, y2, z2).color(r, g, b, a).normal(normalVec.x, normalVec.y, normalVec.z)
+        pos(x1, y1, z1).color(color).normal(normalVec.x, normalVec.y, normalVec.z)
+        pos(x2, y2, z2).color(color).normal(normalVec.x, normalVec.y, normalVec.z)
         draw()
 
-//        RenderSystem.lineWidth(1f)
         Renderer
             .enableCull()
             .enableDepth()

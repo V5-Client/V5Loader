@@ -101,27 +101,27 @@ internal object CTCommand : Initializer {
     private fun import(moduleName: String) {
         if (ModuleManager.cachedModules.any { it.name.equals(moduleName, ignoreCase = true) }) {
             ChatLib.chat("&cModule $moduleName is already installed!")
-        } else {
-            ChatLib.chat("&cImporting $moduleName...")
-            thread {
-                val (module, dependencies) = ModuleManager.importModule(moduleName)
-                if (module == null) {
-                    ChatLib.chat("&cUnable to import module $moduleName")
-                    return@thread
-                }
+            return
+        }
 
-                val allModules = listOf(module) + dependencies
-                val modVersion = CTJS.MOD_VERSION.toVersion()
-                allModules.forEach {
-                    val version = it.targetModVersion ?: return@forEach
-                    if (version.majorVersion < modVersion.majorVersion)
-                        ModuleManager.tryReportOldVersion(it)
-                }
+        ChatLib.chat("&cImporting $moduleName...")
+        thread {
+            val (module, dependencies) = ModuleManager.importModule(moduleName)
+            if (module == null) {
+                ChatLib.chat("&cUnable to import module $moduleName")
+                return@thread
+            }
 
-                ChatLib.chat("&aSuccessfully imported ${module.metadata.name ?: module.name}")
-                if (Config.moduleImportHelp && module.metadata.helpMessage != null) {
-                    ChatLib.chat(module.metadata.helpMessage.toString().take(383))
-                }
+            val modVersion = CTJS.MOD_VERSION.toVersion()
+            sequenceOf(module).plus(dependencies).forEach {
+                val version = it.targetModVersion ?: return@forEach
+                if (version.majorVersion < modVersion.majorVersion)
+                    ModuleManager.tryReportOldVersion(it)
+            }
+
+            ChatLib.chat("&aSuccessfully imported ${module.metadata.name ?: module.name}")
+            if (Config.moduleImportHelp && module.metadata.helpMessage != null) {
+                ChatLib.chat(module.metadata.helpMessage.toString().take(383))
             }
         }
     }
@@ -153,25 +153,24 @@ internal object CTCommand : Initializer {
     private fun dump(type: DumpType, lines: Int = 100) {
         clearOldDump()
 
-        val messages = type.messageList()
-        val toDump = lines.coerceAtMost(messages.size)
+        val messages = type.messageList().takeLast(lines)
         TextComponent("&6&m${ChatLib.getChatBreak()}").withChatLineId(idFixed).chat()
 
-        for (i in 0 until toDump) {
-            val msg = ChatLib.replaceFormatting(messages[messages.size - toDump + i].formattedText)
+        messages.forEachIndexed { index, message ->
+            val msg = ChatLib.replaceFormatting(message.formattedText)
             TextComponent(Component.literal(msg).withStyle {
                 it.withClickEvent(ClickEvent.CopyToClipboard(msg))
                     .withHoverEvent(
                         HoverEvent.ShowText(TextComponent("&eClick here to copy this message."))
                     )
             })
-                .withChatLineId(idFixed + i + 1)
+                .withChatLineId(idFixed + index + 1)
                 .chat()
         }
 
-        TextComponent("&6&m${ChatLib.getChatBreak()}").withChatLineId(idFixed + lines + 1).chat()
+        TextComponent("&6&m${ChatLib.getChatBreak()}").withChatLineId(idFixed + messages.size + 1).chat()
 
-        idFixedOffset = idFixed + lines + 1
+        idFixedOffset = idFixed + messages.size + 1
     }
 
     private fun clearOldDump() {
@@ -193,11 +192,9 @@ internal object CTCommand : Initializer {
     private object ModuleArgumentType : ArgumentType<String> {
         override fun parse(reader: StringReader): String {
             val string = reader.readUnquotedString()
-            val modules = ModuleManager.cachedModules.map { it.name }
 
-            return modules.find {
-                it.equals(string, ignoreCase = true)
-            } ?: throw SimpleCommandExceptionType(Component.literal("No modules found with name \"$string\""))
+            return ModuleManager.cachedModules.firstOrNull { it.name.equals(string, ignoreCase = true) }?.name
+                ?: throw SimpleCommandExceptionType(Component.literal("No modules found with name \"$string\""))
                 .createWithContext(reader)
         }
 

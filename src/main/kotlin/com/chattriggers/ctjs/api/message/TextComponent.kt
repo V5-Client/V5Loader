@@ -12,7 +12,14 @@ import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.world.item.ItemStack
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket
-import net.minecraft.network.chat.*
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.ComponentContents
+import net.minecraft.network.chat.FontDescription
+import net.minecraft.network.chat.FormattedText
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.Style
+import net.minecraft.network.chat.TextColor
 import net.minecraft.network.chat.contents.KeybindContents
 import net.minecraft.network.chat.contents.TranslatableContents
 import net.minecraft.ChatFormatting
@@ -23,9 +30,9 @@ import org.mozilla.javascript.Context
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.ScriptRuntime
 import java.net.URI
-import java.util.*
+import java.util.Locale
+import java.util.Optional
 import java.util.concurrent.ThreadLocalRandom
-import kotlin.streams.toList
 
 /**
  * A wrapper around the Minecraft Text class and it's various inheritors.
@@ -78,23 +85,21 @@ class TextComponent private constructor(
      *
      * @see Style
      */
-    constructor(vararg parts: Any) : this(parts.flatMap(Part::of).toMutableList().let {
-        if (it.isEmpty()) mutableListOf(Part("", Style.EMPTY)) else it
-    })
+    constructor(vararg parts: Any) : this(
+        parts.flatMap(Part::of)
+            .ifEmpty { listOf(Part("", Style.EMPTY)) }
+            .toMutableList()
+    )
 
     /**
      * Returns the text of all parts concatenated without formatting codes.
      */
-    val unformattedText by lazy {
-        parts.fold("") { prev, curr -> prev + curr.text }
-    }
+    val unformattedText by lazy { parts.joinToString("") { it.text } }
 
     /**
      * Returns the text of all parts concatenated with formatting codes.
      */
-    val formattedText by lazy {
-        parts.fold("") { prev, curr -> prev + curr.style_.formatCodes() + curr.text }
-    }
+    val formattedText by lazy { parts.joinToString("") { it.style_.formatCodes() + it.text } }
 
     /**
      * Get the chat line ID of this message, if it exists. The chat line can be used
@@ -258,7 +263,7 @@ class TextComponent private constructor(
     override fun getVisualOrderText(): FormattedCharSequence = FormattedCharSequence { visitor ->
         var i = 0
         parts.all {
-            it.text.codePoints().toList().all { cp ->
+            it.text.codePoints().allMatch { cp ->
                 visitor.accept(i++, it.style, cp)
             }
         }
@@ -302,26 +307,22 @@ class TextComponent private constructor(
                 if (style_.isObfuscated)
                     it.put("obfuscated", it, true)
                 style_.clickEvent?.let { event ->
-                    if (event.action() != null) {
-                        val clickEvent = NativeObject()
-                        clickEvent.put("action", clickEvent, event.action().serializedName)
-                        clickEvent.put("value", clickEvent, getEventValue(event))
+                    val clickEvent = NativeObject()
+                    clickEvent.put("action", clickEvent, event.action().serializedName)
+                    clickEvent.put("value", clickEvent, getEventValue(event))
 
-                        it.put("clickEvent", it, clickEvent)
-                    }
+                    it.put("clickEvent", it, clickEvent)
                 }
                 style_.hoverEvent?.let { event ->
-                    if (event.action() != null) {
-                        val hoverEvent = NativeObject()
-                        hoverEvent.put("action", hoverEvent, event.action().serializedName)
-                        hoverEvent.put("value", hoverEvent, getEventValue(event))
+                    val hoverEvent = NativeObject()
+                    hoverEvent.put("action", hoverEvent, event.action().serializedName)
+                    hoverEvent.put("value", hoverEvent, getEventValue(event))
 
-                        it.put("hoverEvent", it, hoverEvent)
-                    }
+                    it.put("hoverEvent", it, hoverEvent)
                 }
                 if (style_.insertion != null)
                     it.put("insertion", it, style_.insertion)
-                if (style_.font != null && style_.font.toString() != "minecraft:default")
+                if (style_.font.toString() != "minecraft:default")
                     it.put("font", it, style_.font)
             }
         }
@@ -339,8 +340,9 @@ class TextComponent private constructor(
         override fun getString(length: Int): String = text.take(length)
 
         override fun getVisualOrderText(): FormattedCharSequence = FormattedCharSequence { visitor ->
-            text.codePoints().toList().withIndex().all { (index, cp) ->
-                visitor.accept(index, style_, cp)
+            var index = 0
+            text.codePoints().allMatch { cp ->
+                visitor.accept(index++, style_, cp)
             }
         }
 
@@ -371,7 +373,8 @@ class TextComponent private constructor(
 
                     StringDecomposer.iterateFormatted(ChatLib.addColor(obj.toString()), 0, Style.EMPTY) { _, style, cp ->
                         if (style != lastStyle) {
-                            parts.add(Part(builder.toString(), lastStyle))
+                            if (builder.isNotEmpty())
+                                parts.add(Part(builder.toString(), lastStyle))
                             lastStyle = style
                             builder.clear()
                         }
@@ -496,7 +499,7 @@ class TextComponent private constructor(
 
             val clickAction = when (action) {
                 is ClickEvent.Action -> action
-                is CharSequence -> ClickEvent.Action.valueOf(action.toString().uppercase())
+                is CharSequence -> ClickEvent.Action.valueOf(action.toString().uppercase(Locale.ROOT))
                 null -> if (value != null) {
                     error("Cannot set Style's click value without a click action")
                 } else return null
@@ -523,8 +526,8 @@ class TextComponent private constructor(
                 ClickEvent.Action.SUGGEST_COMMAND -> ClickEvent.SuggestCommand(clickValue)
                 ClickEvent.Action.CHANGE_PAGE -> clickValue.toIntOrNull()?. let { ClickEvent.ChangePage(it) }
                 ClickEvent.Action.COPY_TO_CLIPBOARD -> ClickEvent.CopyToClipboard(clickValue)
-                ClickEvent.Action.SHOW_DIALOG -> TODO()
-                ClickEvent.Action.CUSTOM -> TODO()
+                ClickEvent.Action.SHOW_DIALOG,
+                ClickEvent.Action.CUSTOM -> error("Click action ${clickAction.serializedName} is not supported")
             }
         }
 
@@ -539,7 +542,7 @@ class TextComponent private constructor(
 
             val hoverAction = when (action) {
                 is HoverEvent.Action -> action
-                is CharSequence -> when (action.toString().uppercase()) {
+                is CharSequence -> when (action.toString().uppercase(Locale.ROOT)) {
                     "SHOW_TEXT" -> HoverEvent.Action.SHOW_TEXT
                     "SHOW_ITEM" -> HoverEvent.Action.SHOW_ITEM
                     "SHOW_ENTITY" -> HoverEvent.Action.SHOW_ENTITY

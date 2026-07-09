@@ -1,10 +1,12 @@
 package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.api.message.ChatLib
+import com.chattriggers.ctjs.internal.utils.getOrDefault
 import com.chattriggers.ctjs.internal.utils.getOption
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Style
 import org.mozilla.javascript.NativeObject
+import java.util.Locale
 
 class Text {
     private lateinit var string: String
@@ -34,17 +36,17 @@ class Text {
 
     constructor(string: String, config: NativeObject) {
         setString(string)
-        setColor(config.getOption("color", 0xffffffff))
+        setColor(config.getOrDefault<Number>("color", 0xffffffff).toLong())
         setFormatted(config.getOption("formatted", true))
         setShadow(config.getOption("shadow", false))
         setAlign(config.getOption("align", Align.LEFT))
         setBackground(config.getOption("background", false))
-        setBackgroundColor(config.getOption("backgroundColor", 0x00000000))
-        setX(config.getOption("x", 0))
-        setY(config.getOption("y", 0))
-        setMaxLines((config.getOption("maxLines", Int.MAX_VALUE)))
-        setScale(config.getOption("scale", 1f))
-        setMaxWidth(config.getOption("maxWidth", 0))
+        setBackgroundColor(config.getOrDefault<Number>("backgroundColor", 0x00000000).toLong())
+        setX(config.getOrDefault<Number>("x", 0).toInt())
+        setY(config.getOrDefault<Number>("y", 0).toInt())
+        setMaxLines(config.getOrDefault<Number>("maxLines", Int.MAX_VALUE).toInt())
+        setScale(config.getOrDefault<Number>("scale", 1f).toFloat())
+        setMaxWidth(config.getOrDefault<Number>("maxWidth", 0).toInt())
     }
 
     fun getString(): String = string
@@ -73,7 +75,7 @@ class Text {
 
     fun setAlign(align: Any) = apply {
         this.align = when (align) {
-            is CharSequence -> Align.valueOf(align.toString().uppercase())
+            is CharSequence -> Align.valueOf(align.toString().uppercase(Locale.ROOT))
             is Align -> align
             else -> Align.LEFT
         }
@@ -136,15 +138,9 @@ class Text {
 
     fun getMaxWidth(): Int = maxWidth
 
-    fun getHeight(): Float {
-        return if (lines.size > 1)
-            lines.size.coerceAtMost(maxLines) * 10f
-        else 10f
-    }
+    fun getHeight(): Float = lines.size.coerceAtMost(maxLines).coerceAtLeast(1) * 10f
 
-    fun exceedsMaxLines(): Boolean {
-        return lines.size > maxLines
-    }
+    fun exceedsMaxLines(): Boolean = lines.size > maxLines
 
     @JvmOverloads
     fun draw(ctx: GuiGraphicsExtractor, x: Int? = null, y: Int? = null) = apply {
@@ -170,7 +166,7 @@ class Text {
             }
 
             if (background) {
-                val ox = (backgroundX ?: xHolder)
+                val ox = backgroundX ?: xHolder
 
                 ctx.fill(
                     ox,
@@ -181,8 +177,7 @@ class Text {
                 )
             }
 
-            for (i in 0 until maxLines) {
-                if (i >= lines.size) break
+            for (i in 0 until minOf(maxLines, lines.size)) {
                 ctx.text(Renderer.getFontRenderer(), lines[i], xHolder, yHolder, color.toInt(), shadow)
                 yHolder += 10
             }

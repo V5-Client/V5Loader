@@ -54,6 +54,8 @@ internal class WrapWithConditionGenerator(
             else -> error("Unexpected At.target for WrapWithCondition: ${atTarget.targetName}")
         }
 
+        parameters.addLocals(wrapWithCondition.locals)
+
         return InjectionSignature(
             mappedMethod,
             parameters,
@@ -66,16 +68,11 @@ internal class WrapWithConditionGenerator(
         node.visitAnnotation(SPWrapWithCondition::class.descriptorString(), true).apply {
             visit("method", signature.targetMethod.toFullDescriptor())
             visit("at", Utils.createAtAnnotation(wrapWithCondition.at))
-            if (wrapWithCondition.slice != null)
-                visit("slice", wrapWithCondition.slice.map(Utils::createSliceAnnotation))
-            if (wrapWithCondition.remap != null)
-                visit("remap", wrapWithCondition.remap)
-            if (wrapWithCondition.require != null)
-                visit("require", wrapWithCondition.require)
-            if (wrapWithCondition.expect != null)
-                visit("expect", wrapWithCondition.expect)
-            if (wrapWithCondition.allow != null)
-                visit("allow", wrapWithCondition.allow)
+            visitOptional("slice", wrapWithCondition.slice?.map(Utils::createSliceAnnotation))
+            visitOptional("remap", wrapWithCondition.remap)
+            visitOptional("require", wrapWithCondition.require)
+            visitOptional("expect", wrapWithCondition.expect)
+            visitOptional("allow", wrapWithCondition.allow)
             visitEnd()
         }
     }

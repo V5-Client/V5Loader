@@ -21,9 +21,8 @@ internal class ModifyReturnValueInjector(
             "ModifyReturnValue mixin cannot target a void method"
         }
 
-        val parameters = listOf(Parameter(returnType)) + modifyReturnValue.locals
-            ?.map(Utils::getParameterFromLocal)
-            .orEmpty()
+        val parameters = mutableListOf(Parameter(returnType))
+        parameters.addLocals(modifyReturnValue.locals)
 
         return InjectionSignature(
             mappedMethod,
@@ -37,16 +36,11 @@ internal class ModifyReturnValueInjector(
         node.visitAnnotation(SPModifyReturnValue::class.descriptorString(), true).apply {
             visit("method", listOf(signature.targetMethod.toFullDescriptor()))
             visit("at", Utils.createAtAnnotation(modifyReturnValue.at))
-            if (modifyReturnValue.slice != null)
-                visit("slice", listOf(modifyReturnValue.slice.map(Utils::createSliceAnnotation)))
-            if (modifyReturnValue.remap != null)
-                visit("remap", modifyReturnValue.remap)
-            if (modifyReturnValue.require != null)
-                visit("require", modifyReturnValue.require)
-            if (modifyReturnValue.expect != null)
-                visit("expect", modifyReturnValue.expect)
-            if (modifyReturnValue.allow != null)
-                visit("allow", modifyReturnValue.allow)
+            visitOptional("slice", modifyReturnValue.slice?.map(Utils::createSliceAnnotation))
+            visitOptional("remap", modifyReturnValue.remap)
+            visitOptional("require", modifyReturnValue.require)
+            visitOptional("expect", modifyReturnValue.expect)
+            visitOptional("allow", modifyReturnValue.allow)
             visitEnd()
         }
     }

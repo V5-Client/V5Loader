@@ -1,10 +1,12 @@
 package com.chattriggers.ctjs.api.world.pathfinding
 
 import net.minecraft.client.Minecraft
+import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
+import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.chunk.status.ChunkStatus
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -84,33 +86,25 @@ object CachedWorld {
       }
 
       is ClientboundBlockUpdatePacket -> {
-        val pos = packet.pos
-        val key = chunkKey(pos.x shr 4, pos.z shr 4)
-        val chunk = chunks[key]
-        if (chunk != null && chunk.ready) {
-          val flags = NativeStateEncoder.flagsForState(packet.blockState).toShort()
-          chunk.setFlags(pos.x and 15, pos.y, pos.z and 15, flags)
-          queueNativeUpdate(pos.x, pos.y, pos.z, flags.toInt() and 0xFFFF)
-          if (cacheKey == key) {
-            cacheChunk = chunk
-          }
-        }
+        updateCachedBlock(packet.pos, packet.blockState)
       }
 
       is ClientboundSectionBlocksUpdatePacket -> {
         packet.runUpdates { pos, state ->
-          val key = chunkKey(pos.x shr 4, pos.z shr 4)
-          val chunk = chunks[key]
-          if (chunk != null && chunk.ready) {
-            val flags = NativeStateEncoder.flagsForState(state).toShort()
-            chunk.setFlags(pos.x and 15, pos.y, pos.z and 15, flags)
-            queueNativeUpdate(pos.x, pos.y, pos.z, flags.toInt() and 0xFFFF)
-            if (cacheKey == key) {
-              cacheChunk = chunk
-            }
-          }
+          updateCachedBlock(pos, state)
         }
       }
+    }
+  }
+
+  private fun updateCachedBlock(pos: BlockPos, state: BlockState) {
+    val key = chunkKey(pos.x shr 4, pos.z shr 4)
+    val chunk = chunks[key]?.takeIf { it.ready } ?: return
+    val flags = NativeStateEncoder.flagsForState(state).toShort()
+    chunk.setFlags(pos.x and 15, pos.y, pos.z and 15, flags)
+    queueNativeUpdate(pos.x, pos.y, pos.z, flags.toInt() and 0xFFFF)
+    if (cacheKey == key) {
+      cacheChunk = chunk
     }
   }
 

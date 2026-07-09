@@ -12,7 +12,7 @@ import java.lang.invoke.MutableCallSite
 internal object InvokeDynamicSupport {
     internal val BOOTSTRAP_HANDLE = Handle(
         Opcodes.H_INVOKESTATIC,
-        InvokeDynamicSupport::class.qualifiedName!!.replace('.', '/'),
+        InvokeDynamicSupport::class.java.name.replace('.', '/'),
         "bootstrapInvokeMixin",
         Type.getMethodDescriptor(
             Type.getType(CallSite::class.java),
@@ -72,7 +72,7 @@ internal object InvokeDynamicSupport {
         // Make an initial lookup to the target function. This is where we want our mixin handler method to point to
         val mixinCallback = JSLoader.invokeMixinLookup(mixinId)
 
-        checkNotNull(mixinCallback.handle)
+        val handle = checkNotNull(mixinCallback.handle)
         checkNotNull(mixinCallback.method)
 
         // Until we /ct load, however. When we reload, we need to re-resolve all JS invocation targets since our old
@@ -88,7 +88,7 @@ internal object InvokeDynamicSupport {
         // Note that the mechanism for flipping these switches is in MixinCallback. When the user calls attach(), the
         // invalidator gets invalidated, as the method has changed. This of course happens for all mixins when the user
         // /ct loads, since the scripts are re-run.
-        val guardedTarget = mixinCallback.invalidator.guardWithTest(mixinCallback.handle, initTarget)
+        val guardedTarget = mixinCallback.invalidator.guardWithTest(handle, initTarget)
 
         // We now have a target that is very fast to call back into the target method, and can survive reloads or calls
         // to attach(), so we want our call site to now point to that target.
@@ -96,6 +96,6 @@ internal object InvokeDynamicSupport {
 
         // This method invocation occurred because we actually tried to call the target method with the supplied mixin
         // arguments. So in addition to performing the call site rebinding, we also need to make the actual method call.
-        return mixinCallback.handle!!.invoke(args)
+        return handle.invoke(args)
     }
 }

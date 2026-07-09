@@ -4,23 +4,23 @@ import com.chattriggers.ctjs.api.CTWrapper
 import com.chattriggers.ctjs.api.vec.Vec3i
 import net.minecraft.util.StringRepresentable
 import net.minecraft.core.Direction
+import java.util.Locale
 import java.util.function.Predicate
 
 enum class BlockFace(
-    private val oppositeIndex: Int,
     val axisDirection: AxisDirection,
     val axis: Axis,
     val directionVec: Vec3i,
     override val mcValue: Direction
 ) : StringRepresentable, CTWrapper<Direction> {
-    DOWN(1, AxisDirection.NEGATIVE, Axis.Y, Vec3i(0, -1, 0), Direction.DOWN),
-    UP(0, AxisDirection.POSITIVE, Axis.Y, Vec3i(0, 1, 0), Direction.UP),
-    NORTH(3, AxisDirection.NEGATIVE, Axis.Z, Vec3i(0, 0, -1), Direction.NORTH),
-    SOUTH(2, AxisDirection.POSITIVE, Axis.Z, Vec3i(0, 0, 1), Direction.SOUTH),
-    WEST(5, AxisDirection.NEGATIVE, Axis.X, Vec3i(-1, 0, 0), Direction.WEST),
-    EAST(4, AxisDirection.POSITIVE, Axis.X, Vec3i(1, 0, 0), Direction.EAST);
+    DOWN(AxisDirection.NEGATIVE, Axis.Y, Vec3i(0, -1, 0), Direction.DOWN),
+    UP(AxisDirection.POSITIVE, Axis.Y, Vec3i(0, 1, 0), Direction.UP),
+    NORTH(AxisDirection.NEGATIVE, Axis.Z, Vec3i(0, 0, -1), Direction.NORTH),
+    SOUTH(AxisDirection.POSITIVE, Axis.Z, Vec3i(0, 0, 1), Direction.SOUTH),
+    WEST(AxisDirection.NEGATIVE, Axis.X, Vec3i(-1, 0, 0), Direction.WEST),
+    EAST(AxisDirection.POSITIVE, Axis.X, Vec3i(1, 0, 0), Direction.EAST);
 
-    fun getOpposite() = entries[oppositeIndex]
+    fun getOpposite() = fromMC(mcValue.opposite)
 
     fun getOffsetX() = directionVec.x
 
@@ -60,7 +60,7 @@ enum class BlockFace(
         else -> throw IllegalStateException("Cannot rotate $this around z-axis")
     }
 
-    override fun getSerializedName() = name.lowercase()
+    override fun getSerializedName() = name.lowercase(Locale.ROOT)
 
     enum class Plane : Predicate<BlockFace>, Iterable<BlockFace> {
         HORIZONTAL,
@@ -106,7 +106,7 @@ enum class BlockFace(
 
         override fun test(t: BlockFace) = t.axis == this
 
-        override fun getSerializedName() = name.lowercase()
+        override fun getSerializedName() = name.lowercase(Locale.ROOT)
 
         companion object {
             @JvmStatic

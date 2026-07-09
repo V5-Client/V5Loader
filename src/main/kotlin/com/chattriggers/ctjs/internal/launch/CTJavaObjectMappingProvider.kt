@@ -67,13 +67,8 @@ object CTJavaObjectMappingProvider : JavaObjectMappingProvider {
 
         for ((unmappedMethodName, mappedMethods) in mappedClass.methods) {
             for (mappedMethod in mappedMethods) {
-                val method = clazz.methods.find {
-                    when {
-                        it.name != mappedMethod.name.value -> false
-                        Modifier.isProtected(it.modifiers) && !includeProtected -> false
-                        Modifier.isPrivate(it.modifiers) && !includePrivate -> false
-                        else -> true
-                    }
+                val method = clazz.declaredMethods.firstOrNull {
+                    it.name == mappedMethod.name.value && isIncluded(it.modifiers, includeProtected, includePrivate)
                 } ?: continue
 
                 map[JavaObjectMappingProvider.MethodSignature(unmappedMethodName, method.parameterTypes)] =
@@ -91,17 +86,19 @@ object CTJavaObjectMappingProvider : JavaObjectMappingProvider {
         val mappedClass = Mappings.getMappedClass(clazz.name) ?: return
 
         for ((unmappedFieldName, mappedField) in mappedClass.fields) {
-            val field = clazz.fields.find {
-                when {
-                    it.name != mappedField.name.value -> false
-                    Modifier.isProtected(it.modifiers) && !includeProtected -> false
-                    Modifier.isPrivate(it.modifiers) && !includePrivate -> false
-                    else -> true
-                }
+            val field = clazz.declaredFields.firstOrNull {
+                it.name == mappedField.name.value && isIncluded(it.modifiers, includeProtected, includePrivate)
             } ?: continue
 
             list.add(JavaObjectMappingProvider.RenameableField(field, unmappedFieldName))
         }
+    }
+
+    private fun isIncluded(modifiers: Int, includeProtected: Boolean, includePrivate: Boolean) = when {
+        Modifier.isPublic(modifiers) -> true
+        Modifier.isProtected(modifiers) -> includeProtected
+        Modifier.isPrivate(modifiers) -> includePrivate
+        else -> false
     }
 
     private fun isMappedClassName(className: String) =

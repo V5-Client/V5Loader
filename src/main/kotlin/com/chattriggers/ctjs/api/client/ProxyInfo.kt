@@ -12,9 +12,7 @@ object ProxyInfo {
 
     @JvmStatic
     fun getProxies(): List<Proxy> {
-        if (!isLoaded) {
-            loadProxies()
-        }
+        ensureLoaded()
         return cachedProxies.map { it.copy() }
     }
 
@@ -41,7 +39,7 @@ object ProxyInfo {
 
     @JvmStatic
     fun addProxy(proxy: Proxy) {
-        if (!isLoaded) loadProxies()
+        ensureLoaded()
 
         if (proxy.isEnabled) {
             cachedProxies.forEach { it.isEnabled = false }
@@ -53,8 +51,8 @@ object ProxyInfo {
 
     @JvmStatic
     fun removeProxy(proxy: Proxy) {
-        if (!isLoaded) loadProxies()
-        val index = cachedProxies.indexOfFirst { it.copy(isEnabled = false) == proxy.copy(isEnabled = false) }
+        ensureLoaded()
+        val index = cachedProxies.indexOfMatching(proxy)
         if (index != -1) {
             cachedProxies.removeAt(index)
             saveProxies()
@@ -63,9 +61,9 @@ object ProxyInfo {
 
     @JvmStatic
     fun updateProxy(original: Proxy, newProxy: Proxy) {
-        if (!isLoaded) loadProxies()
+        ensureLoaded()
 
-        val index = cachedProxies.indexOfFirst { it.copy(isEnabled = false) == original.copy(isEnabled = false) }
+        val index = cachedProxies.indexOfMatching(original)
         if (index != -1) {
             if (newProxy.isEnabled && !cachedProxies[index].isEnabled) {
                 cachedProxies.forEach { it.isEnabled = false }
@@ -78,9 +76,9 @@ object ProxyInfo {
 
     @JvmStatic
     fun setProxyEnabled(proxy: Proxy, enabled: Boolean) {
-        if (!isLoaded) loadProxies()
+        ensureLoaded()
 
-        val targetIndex = cachedProxies.indexOfFirst { it.copy(isEnabled = false) == proxy.copy(isEnabled = false) }
+        val targetIndex = cachedProxies.indexOfMatching(proxy)
         if (targetIndex == -1) return
 
         if (enabled) {
@@ -119,6 +117,13 @@ object ProxyInfo {
         deduped.dropWhile { !it.isEnabled }.drop(1).forEach { it.isEnabled = false }
         return deduped
     }
+
+    private fun ensureLoaded() {
+        if (!isLoaded) loadProxies()
+    }
+
+    private fun List<Proxy>.indexOfMatching(proxy: Proxy) =
+        indexOfFirst { it.copy(isEnabled = false) == proxy.copy(isEnabled = false) }
 
     private class StoredProxy {
         var ip: String? = null

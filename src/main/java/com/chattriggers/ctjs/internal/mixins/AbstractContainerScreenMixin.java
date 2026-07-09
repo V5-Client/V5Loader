@@ -18,8 +18,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Objects;
-
 @Mixin(AbstractContainerScreen.class)
 public class AbstractContainerScreenMixin extends Screen {
     @Shadow
@@ -44,7 +42,7 @@ public class AbstractContainerScreenMixin extends Screen {
     private void injectDrawMouseoverTooltip(GuiGraphicsExtractor context, int x, int y, CallbackInfo ci) {
         ItemStack stack = hoveredSlot.getItem();
         TriggerType.ITEM_TOOLTIP.triggerAll(
-            getTooltipFromItem(Objects.requireNonNull(minecraft), stack)
+            getTooltipFromItem(minecraft, stack)
                 .stream()
                 .map(TextComponent::new)
                 .toList(),

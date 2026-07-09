@@ -8,10 +8,8 @@ import com.mojang.blaze3d.platform.CompareOp
 import com.mojang.blaze3d.platform.DestFactor
 import com.mojang.blaze3d.platform.SourceFactor
 import net.minecraft.client.renderer.rendertype.RenderType
-import net.minecraft.client.renderer.rendertype.RenderSetup
 
 object LegacyPipelineBuilder {
-    private val layerList = mutableMapOf<String, RenderType>()
     private val pipelineList = mutableMapOf<String, RenderPipeline>()
     private var cull: Boolean? = null
     private var depth: Boolean? = null
@@ -30,7 +28,7 @@ object LegacyPipelineBuilder {
         this.snippet = snippet
     }
 
-    fun enabledBlend() = apply {
+    fun enableBlend() = apply {
         blend = true
     }
 
@@ -55,44 +53,29 @@ object LegacyPipelineBuilder {
     }
 
     fun build(): RenderPipeline {
-        if (pipelineList.containsKey(state())) return pipelineList[state()]!!
+        val key = state()
+        return pipelineList.getOrPut(key) {
+            val basePipeline = RenderPipeline.builder(snippet.mcSnippet)
+                .withLocation("ctjs/custom/pipeline${hashCode()}")
+                .withVertexFormat(vertexFormat.toMC(), drawMode.toUC().mcMode)
+            if (blend == true) basePipeline.withColorTargetState(ColorTargetState(BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO)))
 
-        val basePipeline = RenderPipeline.builder(snippet.mcSnippet)
-            .withLocation("ctjs/custom/pipeline${hashCode()}")
-            .withVertexFormat(vertexFormat.toMC(), drawMode.toUC().mcMode)
-        if (blend == true) basePipeline.withColorTargetState(ColorTargetState(BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO)))
+            cull?.let(basePipeline::withCull)
 
-        if (cull != null) basePipeline.withCull(cull!!)
+            if (depth == true) {
+                basePipeline
+                    .withDepthStencilState(DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true))
+            }
+            else if (depth == false) {
+                basePipeline
+                    .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false))
+            }
 
-        if (depth == true) {
-            basePipeline
-                .withDepthStencilState(DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true))
+            basePipeline.build()
         }
-        else if (depth == false) {
-            basePipeline
-                .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false))
-        }
-
-        val pipeline = basePipeline.build()
-        pipelineList[state()] = pipeline
-
-        return pipeline
     }
 
     fun layer(): RenderType {
-        if (layerList.containsKey(state())) return layerList[state()]!!
-
-        // FIXME: icba to do this
-//        val layer = RenderLayer.of(
-//            "ctjs/custom/layer${hashCode()}",
-//            1536,
-//            build(),
-//            RenderLayer.MultiPhaseParameters
-//                .builder()
-//                .build(false)
-//        )
-//        layerList[state()] = layer
-
         throw Error("LegacyPipelineBuilder#layer currently not supported")
     }
 

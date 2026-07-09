@@ -7,11 +7,10 @@ import com.chattriggers.ctjs.engine.LogType
 import com.chattriggers.ctjs.engine.printToConsole
 import com.chattriggers.ctjs.internal.engine.JSContextFactory
 import com.chattriggers.ctjs.internal.engine.JSLoader
-import org.apache.commons.io.FileUtils
 import org.mozilla.javascript.Context
 import java.io.File
 import java.net.URLClassLoader
-import java.util.*
+import java.util.Locale
 
 object ModuleManager {
     val cachedModules = mutableListOf<Module>()
@@ -23,7 +22,7 @@ object ModuleManager {
 
         // Get existing modules
         val installedModules = getFoldersInDir(modulesFolder).map(::parseModule).distinctBy {
-            it.name.lowercase()
+            it.name.lowercase(Locale.ROOT)
         }
 
         // Check if those modules have updates
@@ -31,7 +30,7 @@ object ModuleManager {
         cachedModules.addAll(installedModules)
 
         // Import required modules
-        installedModules.distinct().forEach { module ->
+        installedModules.forEach { module ->
             module.metadata.requires?.forEach { ModuleUpdater.importModule(it, module.name) }
         }
 
@@ -46,19 +45,18 @@ object ModuleManager {
 
         // Normalize all metadata
         modules.forEach {
-            it.metadata.entry = it.metadata.entry?.replace('/', File.separatorChar)?.replace('\\', File.separatorChar)
-            it.metadata.mixinEntry =
-                it.metadata.mixinEntry?.replace('/', File.separatorChar)?.replace('\\', File.separatorChar)
+            it.metadata.entry = it.metadata.entry?.normalizeModulePath()
+            it.metadata.mixinEntry = it.metadata.mixinEntry?.normalizeModulePath()
         }
 
         // Get all jars
-        val jars = modules.map { module ->
+        val jars = modules.flatMap { module ->
             module.folder.walk().filter {
                 it.isFile && it.extension == "jar"
             }.map {
                 it.toURI().toURL()
             }.toList()
-        }.flatten()
+        }
 
         JSLoader.setup(jars)
     }
@@ -71,22 +69,17 @@ object ModuleManager {
         var completed = 0
 
         // Load the modules
-        modules.filter {
-            it.metadata.entry != null
-        }.forEach {
-            JSLoader.entryPass(it, File(it.folder, it.metadata.entry!!).toURI())
+        modules.mapNotNull { module ->
+            module.metadata.entry?.let { module to it }
+        }.forEach { (module, entry) ->
+            JSLoader.entryPass(module, File(module.folder, entry).toURI())
             completed++
             completionListener(completed.toFloat() / total)
         }
     }
 
-    private fun getFoldersInDir(dir: File): List<File> {
-        if (!dir.isDirectory) return emptyList()
-
-        return dir.listFiles()?.filter {
-            it.isDirectory
-        } ?: listOf()
-    }
+    private fun getFoldersInDir(dir: File): List<File> =
+        if (dir.isDirectory) dir.listFiles()?.filter { it.isDirectory }.orEmpty() else emptyList()
 
     fun parseModule(directory: File): Module {
         val metadataFile = File(directory, "metadata.json")
@@ -121,7 +114,7 @@ object ModuleManager {
     }
 
     fun deleteModule(name: String): Boolean {
-        val module = cachedModules.find { it.name.lowercase() == name.lowercase() } ?: return false
+        val module = cachedModules.find { it.name.equals(name, ignoreCase = true) } ?: return false
 
         val file = File(modulesFolder, module.name)
         check(file.exists()) { "Expected module to have an existing folder!" }
@@ -167,13 +160,16 @@ object ModuleManager {
         modules.map {
             File(it.folder, "assets")
         }.filter {
-            it.exists() && !it.isFile
-        }.map {
-            it.listFiles()?.toList() ?: emptyList()
-        }.flatten().forEach {
-            FileUtils.copyFileToDirectory(it, CTJS.assetsDir)
+            it.isDirectory
+        }.flatMap {
+            it.listFiles()?.toList().orEmpty()
+        }.forEach {
+            it.copyRecursively(File(CTJS.assetsDir, it.name), overwrite = true)
         }
     }
+
+    private fun String.normalizeModulePath() =
+        replace('/', File.separatorChar).replace('\\', File.separatorChar)
 
     fun teardown() {
         cachedModules.clear()
@@ -184,7 +180,7 @@ object ModuleManager {
         // Topological sort, Depth-first search
         // https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
 
-        val sortedModules = LinkedList<Module>()
+        val sortedModules = mutableListOf<Module>()
         val permanentMarks = mutableSetOf<Module>()
         val temporaryMarks = LinkedHashSet<Module>()
         val unmarkedModules = cachedModules.toMutableSet()
@@ -209,11 +205,8 @@ object ModuleManager {
             sortedModules.add(module)
         }
 
-        while (cachedModules.size != permanentMarks.size) {
-            val module = unmarkedModules.take(1).single()
-            unmarkedModules.remove(module)
-            visit(module)
-        }
+        while (unmarkedModules.isNotEmpty())
+            visit(unmarkedModules.first())
 
         check(sortedModules.size == cachedModules.size)
         cachedModules.clear()

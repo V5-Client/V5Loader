@@ -93,7 +93,8 @@ class CommandTrigger(method: Any) : Trigger(method, TriggerType.COMMAND) {
 
     private fun reInstance() {
         command?.let(StaticCommand::unregister)
-        command = StaticCommand(this, commandName, aliases, overrideExisting, staticCompletions, dynamicCompletions)
-        StaticCommand.register(command!!)
+        val newCommand = StaticCommand(this, commandName, aliases, overrideExisting, staticCompletions, dynamicCompletions)
+        command = newCommand
+        StaticCommand.register(newCommand)
     }
 }

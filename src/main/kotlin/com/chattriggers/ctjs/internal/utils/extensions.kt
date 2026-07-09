@@ -11,11 +11,10 @@ import java.nio.charset.Charset
 import kotlin.reflect.KClass
 
 fun String.toVersion(): Version {
-    val (semvar, extra) = if ('-' in this) {
-        split('-')
-    } else listOf(this, null)
+    val semver = substringBefore('-')
+    val extra = if ('-' in this) substringAfter('-') else null
 
-    val split = semvar!!.split(".").map(String::toInt)
+    val split = semver.split(".").map(String::toInt)
     return Version(split.getOrElse(0) { 0 }, split.getOrElse(1) { 0 }, split.getOrElse(2) { 0 }, extra, null, null)
 }
 
@@ -32,8 +31,8 @@ inline fun <reified T> NativeObject?.get(key: String): T? {
     return this?.get(key) as? T
 }
 
-fun <T> NativeObject?.getOption(key: String, default: Any): T {
-    return (this?.get(key) ?: default) as T
+inline fun <reified T> NativeObject?.getOption(key: String, default: T): T {
+    return this?.get(key) as? T ?: default
 }
 
 // Note: getOrDefault<Number>(...).toInt/Double/Float() should be preferred

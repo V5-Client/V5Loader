@@ -1,6 +1,6 @@
 package com.chattriggers.ctjs.api.vec
 
-import java.util.*
+import java.util.Objects
 import kotlin.math.acos
 import kotlin.math.sqrt
 
@@ -26,7 +26,7 @@ open class Vec3i @JvmOverloads constructor(
     fun dotProduct(other: Vec3i) = x * other.x + y * other.y + z * other.z
 
     fun angleTo(other: Vec3i): Float {
-        return acos(dotProduct(other) / (magnitude() * other.magnitude()).coerceIn(-1f, 1f))
+        return acos((dotProduct(other) / (magnitude() * other.magnitude())).coerceIn(-1f, 1f))
     }
 
     fun normalized() = magnitude().let {
@@ -37,7 +37,7 @@ open class Vec3i @JvmOverloads constructor(
 
     open operator fun plus(other: Vec3i) = Vec3i(x + other.x, y + other.y, z + other.z)
 
-    open operator fun minus(other: Vec3i) = this + (-other)
+    open operator fun minus(other: Vec3i) = Vec3i(x - other.x, y - other.y, z - other.z)
 
     override fun hashCode() = Objects.hash(x, y, z)
 

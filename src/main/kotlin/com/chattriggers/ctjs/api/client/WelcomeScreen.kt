@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.ChatFormatting
 import net.minecraft.util.Util
 import java.awt.Color
+
 class WelcomeScreen : Screen(Component.literal("Welcome Screen")) {
 
     companion object {
@@ -76,10 +77,7 @@ class WelcomeScreen : Screen(Component.literal("Welcome Screen")) {
     private fun setupButtons(y: Int) {
         addRenderableWidget(
             Button.builder(Component.literal("Read the Guide")) { _ ->
-                minecraft?.setScreen(ConfirmLinkScreen({ confirmed ->
-                    if (confirmed) Util.getPlatform().openUri(GUIDE_URL)
-                    minecraft?.setScreen(this)
-                }, GUIDE_URL, true))
+                confirmOpenUrl(GUIDE_URL)
             }.bounds(-105, y, 100, 20).build()
         )
 
@@ -101,10 +99,9 @@ class WelcomeScreen : Screen(Component.literal("Welcome Screen")) {
         renderTitle(context)
         renderWarningText(context)
 
-        val scaledMouseX = ((mouseX - (width / 2f)) / forcedMultiplier).toInt()
-        val scaledMouseY = (mouseY / forcedMultiplier).toInt()
+        val (scaledMouseX, scaledMouseY) = scaled(mouseX.toDouble(), mouseY.toDouble())
 
-        super.extractRenderState(context, scaledMouseX, scaledMouseY, delta)
+        super.extractRenderState(context, scaledMouseX.toInt(), scaledMouseY.toInt(), delta)
         matrices.popMatrix()
     }
 
@@ -157,8 +154,7 @@ class WelcomeScreen : Screen(Component.literal("Welcome Screen")) {
     }
 
     override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
-        val scaledX = (click.x - (width / 2.0)) / forcedMultiplier
-        val scaledY = click.y / forcedMultiplier
+        val (scaledX, scaledY) = scaled(click.x, click.y)
         val scaledClick = MouseButtonEvent(scaledX, scaledY, click.buttonInfo())
 
         if (handleSiteLinkClick(scaledX, scaledY)) return true
@@ -180,10 +176,7 @@ class WelcomeScreen : Screen(Component.literal("Welcome Screen")) {
         val linkYEnd = linkYStart + LINE_HEIGHT
 
         if (scaledX in linkStartX..linkEndX && scaledY in linkYStart..linkYEnd) {
-            minecraft?.setScreen(ConfirmLinkScreen({ confirmed ->
-                if (confirmed) Util.getPlatform().openUri(SITE_URL)
-                minecraft?.setScreen(this)
-            }, SITE_URL, true))
+            confirmOpenUrl(SITE_URL)
             return true
         }
         return false
@@ -195,10 +188,19 @@ class WelcomeScreen : Screen(Component.literal("Welcome Screen")) {
     }
 
     override fun mouseReleased(click: MouseButtonEvent): Boolean {
-        val scaledX = (click.x - (width / 2.0)) / forcedMultiplier
-        val scaledY = click.y / forcedMultiplier
+        val (scaledX, scaledY) = scaled(click.x, click.y)
         val scaledClick = MouseButtonEvent(scaledX, scaledY, click.buttonInfo())
         return super.mouseReleased(scaledClick)
+    }
+
+    private fun scaled(x: Double, y: Double) =
+        (x - width / 2.0) / forcedMultiplier to y / forcedMultiplier
+
+    private fun confirmOpenUrl(url: String) {
+        minecraft.setScreen(ConfirmLinkScreen({ confirmed ->
+            if (confirmed) Util.getPlatform().openUri(url)
+            minecraft.setScreen(this)
+        }, url, true))
     }
 
 }

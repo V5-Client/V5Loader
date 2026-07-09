@@ -1,12 +1,13 @@
 package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.internal.utils.getOption
+import com.chattriggers.ctjs.internal.utils.getOrDefault
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.mozilla.javascript.NativeObject
-import java.util.concurrent.CopyOnWriteArrayList
+import java.util.Locale
 
 class Display() {
-    private var lines = CopyOnWriteArrayList<Text>()
+    private val lines = mutableListOf<Text>()
 
     private var x = 0
     private var y = 0
@@ -22,14 +23,14 @@ class Display() {
     private var height = 0
 
     constructor(config: NativeObject?) : this() {
-        setBackgroundColor(config.getOption("backgroundColor", 0x50000000))
-        setTextColor(config.getOption("textColor", 0xffffffff))
+        setBackgroundColor(config.getOrDefault<Number>("backgroundColor", 0x50000000).toLong())
+        setTextColor(config.getOrDefault<Number>("textColor", 0xffffffff).toLong())
         setBackground(config.getOption("background", Background.NONE))
         setAlign(config.getOption("align", Text.Align.LEFT))
         setOrder(config.getOption("order", Order.NORMAL))
-        setX(config.getOption("x", 0))
-        setY(config.getOption("y", 0))
-        setMinWidth(config.getOption("minWidth", 0))
+        setX(config.getOrDefault<Number>("x", 0).toInt())
+        setY(config.getOrDefault<Number>("y", 0).toInt())
+        setMinWidth(config.getOrDefault<Number>("minWidth", 0).toInt())
     }
 
     fun getTextColor(): Long = textColor
@@ -52,7 +53,7 @@ class Display() {
      */
     fun setAlign(align: Any) = apply {
         this.align = when (align) {
-            is CharSequence -> Text.Align.valueOf(align.toString().uppercase())
+            is CharSequence -> Text.Align.valueOf(align.toString().uppercase(Locale.ROOT))
             is Text.Align -> align
             else -> Text.Align.LEFT
         }
@@ -62,7 +63,7 @@ class Display() {
 
     fun setOrder(order: Any) = apply {
         this.order = when (order) {
-            is CharSequence -> Order.valueOf(order.toString().uppercase())
+            is CharSequence -> Order.valueOf(order.toString().uppercase(Locale.ROOT))
             is Order -> order
             else -> Order.NORMAL
         }
@@ -72,7 +73,7 @@ class Display() {
 
     fun setBackground(background: Any) = apply {
         this.background = when (background) {
-            is CharSequence -> Background.valueOf(background.toString().uppercase().replace(" ", "_"))
+            is CharSequence -> Background.valueOf(background.toString().uppercase(Locale.ROOT).replace(" ", "_"))
             is Background -> background
             else -> Background.NONE
         }
@@ -100,7 +101,8 @@ class Display() {
     fun getLines(): List<Text> = lines
 
     fun setLines(lines: MutableList<Text>) = apply {
-        this.lines = CopyOnWriteArrayList(lines)
+        this.lines.clear()
+        this.lines.addAll(lines)
     }
 
     fun addLine(line: Any) = apply {

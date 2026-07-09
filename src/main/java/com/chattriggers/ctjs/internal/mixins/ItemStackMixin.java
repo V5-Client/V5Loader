@@ -15,23 +15,21 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Mixin(ItemStack.class)
 public class ItemStackMixin implements TooltipOverridable, Skippable {
     @Unique
     private boolean shouldOverrideTooltip = false;
     @Unique
-    private List<Component> overriddenTooltip = new ArrayList<>();
+    private List<Component> overriddenTooltip = List.of();
     @Unique
     private boolean shouldSkipFabricEvent = false;
 
     @Inject(method = "getTooltipLines", at = @At("HEAD"), cancellable = true)
     private void injectGetTooltip(Item.TooltipContext context, @Nullable Player player, TooltipFlag type, CallbackInfoReturnable<List<Component>> cir) {
         if (shouldOverrideTooltip)
-            cir.setReturnValue(Objects.requireNonNull(overriddenTooltip));
+            cir.setReturnValue(overriddenTooltip);
     }
 
     @Inject(method = "getTooltipLines", at = @At(value = "RETURN", ordinal = 1, shift = At.Shift.BEFORE), cancellable = true)

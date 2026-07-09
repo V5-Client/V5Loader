@@ -17,7 +17,7 @@ data class Vec2f @JvmOverloads constructor(val x: Float = 0f, val y: Float = 0f)
     fun dotProduct(other: Vec2f) = x * other.x + y * other.y
 
     fun angleTo(other: Vec2f): Float {
-        return acos(dotProduct(other) / (magnitude() * other.magnitude()).coerceIn(-1f, 1f))
+        return acos((dotProduct(other) / (magnitude() * other.magnitude())).coerceIn(-1f, 1f))
     }
 
     fun normalized() = magnitude().let {
@@ -28,7 +28,7 @@ data class Vec2f @JvmOverloads constructor(val x: Float = 0f, val y: Float = 0f)
 
     operator fun plus(other: Vec2f) = Vec2f(x + other.x, y + other.y)
 
-    operator fun minus(other: Vec2f) = this + (-other)
+    operator fun minus(other: Vec2f) = Vec2f(x - other.x, y - other.y)
 
     override fun toString() = "Vec2f($x, $y)"
 }

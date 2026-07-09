@@ -20,7 +20,6 @@ class TextAreaWriter(
 
     override fun write(cbuf: CharArray, off: Int, len: Int) {
         val s = String(cbuf, off, len)
-        val sc = StyleContext.getDefaultStyleContext()
         val config = configGetter()
 
         val color = customColor ?: when (currentLogType) {
@@ -29,7 +28,7 @@ class TextAreaWriter(
             LogType.ERROR -> Color(config.errorColor)
         }
 
-        val attributes: AttributeSet = sc.addAttribute(
+        val attributes: AttributeSet = StyleContext.getDefaultStyleContext().addAttribute(
             SimpleAttributeSet.EMPTY,
             StyleConstants.Foreground,
             color,
@@ -41,11 +40,9 @@ class TextAreaWriter(
         customColor = null
     }
 
-    override fun flush() {
-    }
+    override fun flush() = Unit
 
-    override fun close() {
-    }
+    override fun close() = Unit
 
     @JvmOverloads
     fun println(s: Any, logType: LogType = LogType.INFO, end: String = "\n", customColor: Color? = null) {

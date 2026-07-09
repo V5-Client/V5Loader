@@ -31,10 +31,8 @@ object WorldListener {
 
     fun triggerRenderLast() {
         val stack = matrixStack ?: return
-        if (JSLoader.hasTriggers(TriggerType.POST_RENDER_WORLD)) {
-            Renderer.withMatrix(stack, deltaTicks) {
-                TriggerType.POST_RENDER_WORLD.triggerAll(deltaTicks)
-            }
+        if (JSLoader.hasTriggers(TriggerType.POST_RENDER_WORLD)) Renderer.withMatrix(stack, deltaTicks) {
+            TriggerType.POST_RENDER_WORLD.triggerAll(deltaTicks)
         }
         CTEvents.POST_RENDER_WORLD.invoker().render(stack, deltaTicks)
     }

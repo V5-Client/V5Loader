@@ -32,11 +32,7 @@ object HypixelManager {
       val newLobby = rawId.replace(Regex("[^a-zA-Z0-9_\\-]"), "_")
 
       if (currentLobby != newLobby) {
-        if (currentLobby != null) {
-          CachedWorld.saveAndClear(currentLobby!!)
-        } else {
-          CachedWorld.clear()
-        }
+        currentLobby?.let(CachedWorld::saveAndClear) ?: CachedWorld.clear()
 
         CachedWorld.setWorldKey(newLobby)
         CachedWorld.load(newLobby)
@@ -46,12 +42,8 @@ object HypixelManager {
   }
 
   fun onDisconnect() {
-    if (currentLobby != null) {
-      CachedWorld.saveAndClear(currentLobby!!)
-      currentLobby = null
-    } else {
-      CachedWorld.clear()
-    }
+    currentLobby?.let(CachedWorld::saveAndClear) ?: CachedWorld.clear()
+    currentLobby = null
 
     CachedWorld.setWorldKey(null)
   }

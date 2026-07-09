@@ -47,16 +47,11 @@ internal class ModifyReceiverGenerator(
         node.visitAnnotation(SPModifyReceiver::class.descriptorString(), true).apply {
             visit("method", listOf(signature.targetMethod.toFullDescriptor()))
             visit("at", Utils.createAtAnnotation(modifyReceiver.at))
-            if (modifyReceiver.slice != null)
-                visit("slice", listOf(modifyReceiver.slice.map(Utils::createSliceAnnotation)))
-            if (modifyReceiver.remap != null)
-                visit("remap", modifyReceiver.remap)
-            if (modifyReceiver.require != null)
-                visit("require", modifyReceiver.require)
-            if (modifyReceiver.expect != null)
-                visit("expect", modifyReceiver.expect)
-            if (modifyReceiver.allow != null)
-                visit("allow", modifyReceiver.allow)
+            visitOptional("slice", modifyReceiver.slice?.map(Utils::createSliceAnnotation))
+            visitOptional("remap", modifyReceiver.remap)
+            visitOptional("require", modifyReceiver.require)
+            visitOptional("expect", modifyReceiver.expect)
+            visitOptional("allow", modifyReceiver.allow)
             visitEnd()
         }
     }

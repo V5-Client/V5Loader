@@ -1,6 +1,18 @@
 package com.chattriggers.ctjs.engine
 
-import com.chattriggers.ctjs.api.triggers.*
+import com.chattriggers.ctjs.api.triggers.ChatTrigger
+import com.chattriggers.ctjs.api.triggers.ClassFilterTrigger
+import com.chattriggers.ctjs.api.triggers.CommandTrigger
+import com.chattriggers.ctjs.api.triggers.CustomTriggerType
+import com.chattriggers.ctjs.api.triggers.EventTrigger
+import com.chattriggers.ctjs.api.triggers.PacketTrigger
+import com.chattriggers.ctjs.api.triggers.RegularTrigger
+import com.chattriggers.ctjs.api.triggers.RenderBlockEntityTrigger
+import com.chattriggers.ctjs.api.triggers.RenderEntityTrigger
+import com.chattriggers.ctjs.api.triggers.SoundPlayTrigger
+import com.chattriggers.ctjs.api.triggers.StepTrigger
+import com.chattriggers.ctjs.api.triggers.Trigger
+import com.chattriggers.ctjs.api.triggers.TriggerType
 import java.util.Locale
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")

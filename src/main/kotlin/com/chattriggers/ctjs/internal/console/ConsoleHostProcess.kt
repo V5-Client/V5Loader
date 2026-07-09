@@ -82,7 +82,7 @@ object ConsoleHostProcess : Initializer {
 
         val urlObjects = (Thread.currentThread().contextClassLoader.parent as URLClassLoader).urLs
         val urls = urlObjects.joinToString(File.pathSeparator) {
-            val str = if (Util.getPlatform().equals(Util.OS.WINDOWS)) it.toString().replace("file:/", "") else it.toString()
+            val str = if (Util.getPlatform() == Util.OS.WINDOWS) it.toString().replace("file:/", "") else it.toString()
             URLDecoder.decode(str, Charset.defaultCharset())
         }
 
@@ -125,8 +125,9 @@ object ConsoleHostProcess : Initializer {
                     )
 
                     synchronized(socketOut) {
-                        socketOut.println(Json.encodeToString(H2CMessage.serializer(), initMessage))
-                        pendingMessages.forEach { socketOut.println(Json.encodeToString(H2CMessage.serializer(), it)) }
+                        socketOut.send(initMessage)
+                        pendingMessages.forEach { socketOut.send(it) }
+                        pendingMessages.clear()
                     }
 
                     while (running) {
@@ -214,7 +215,7 @@ object ConsoleHostProcess : Initializer {
 
         if (connected) {
             synchronized(socketOut) {
-                socketOut.println(Json.encodeToString(H2CMessage.serializer(), message))
+                socketOut.send(message)
             }
         } else {
             pendingMessages.add(message)
@@ -234,4 +235,7 @@ object ConsoleHostProcess : Initializer {
             thread(isDaemon = true, name = "CTJS Console Host") { hostMain() }
         }
     }
+
+    private fun PrintWriter.send(message: H2CMessage) =
+        println(Json.encodeToString(H2CMessage.serializer(), message))
 }

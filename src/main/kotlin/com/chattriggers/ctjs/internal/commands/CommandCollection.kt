@@ -16,6 +16,8 @@ abstract class CommandCollection : Initializer {
 
     private var clientDispatcher: CommandDispatcher<SharedSuggestionProvider>? = null
     private var networkDispatcher: CommandDispatcher<SharedSuggestionProvider>? = null
+    private val dispatchers
+        get() = listOfNotNull(clientDispatcher, networkDispatcher)
 
     @Suppress("UNCHECKED_CAST")
     override fun init() {
@@ -40,14 +42,12 @@ abstract class CommandCollection : Initializer {
         if (clientDispatcher.hasConflict(command) || networkDispatcher.hasConflict(command)) {
             existingCommandWarning(command.name).printToConsole(LogType.WARN)
         } else {
-            clientDispatcher?.let { command.registerImpl(it) }
-            networkDispatcher?.let { command.registerImpl(it) }
+            dispatchers.forEach(command::registerImpl)
         }
     }
 
     fun unregister(command: Command) {
-        for (dispatcher in listOfNotNull(clientDispatcher, networkDispatcher))
-            command.unregisterImpl(dispatcher)
+        dispatchers.forEach(command::unregisterImpl)
     }
 
     fun unregisterAll() {

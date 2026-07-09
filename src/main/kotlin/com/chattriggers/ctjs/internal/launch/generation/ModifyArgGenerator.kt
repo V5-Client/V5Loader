@@ -27,14 +27,12 @@ internal class ModifyArgGenerator(
             error("ModifyArg received an out-of-bounds index ${modifyArg.index}")
 
         val parameters = if (modifyArg.captureAllParams == true) {
-            targetDescriptor.parameters.mapTo(mutableListOf(), ::Parameter)
+            targetDescriptor.parameters.map(::Parameter).toMutableList()
         } else mutableListOf(Parameter(targetDescriptor.parameters[modifyArg.index]))
 
         val returnType = targetDescriptor.parameters[modifyArg.index]
 
-        modifyArg.locals?.forEach {
-            parameters.add(Utils.getParameterFromLocal(it))
-        }
+        parameters.addLocals(modifyArg.locals)
 
         return InjectionSignature(
             mappedMethod,
@@ -47,20 +45,14 @@ internal class ModifyArgGenerator(
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPModifyArg::class.descriptorString(), true).apply {
             visit("method", listOf(signature.targetMethod.toFullDescriptor()))
-            if (modifyArg.slice != null)
-                visit("slice", modifyArg.slice)
+            visitOptional("slice", modifyArg.slice)
             visit("at", Utils.createAtAnnotation(modifyArg.at))
             visit("index", modifyArg.index)
-            if (modifyArg.remap != null)
-                visit("remap", modifyArg.remap)
-            if (modifyArg.require != null)
-                visit("require", modifyArg.require)
-            if (modifyArg.expect != null)
-                visit("expect", modifyArg.expect)
-            if (modifyArg.allow != null)
-                visit("allow", modifyArg.allow)
-            if (modifyArg.constraints != null)
-                visit("constraints", modifyArg.constraints)
+            visitOptional("remap", modifyArg.remap)
+            visitOptional("require", modifyArg.require)
+            visitOptional("expect", modifyArg.expect)
+            visitOptional("allow", modifyArg.allow)
+            visitOptional("constraints", modifyArg.constraints)
         }
     }
 

@@ -2,6 +2,7 @@ package com.chattriggers.ctjs.api.inventory.action
 
 import com.chattriggers.ctjs.api.client.Player
 import net.minecraft.world.inventory.ContainerInput
+import java.util.Locale
 
 class ClickAction(slot: Int, windowId: Int) : Action(slot, windowId) {
     private lateinit var clickType: ClickType
@@ -63,7 +64,7 @@ class ClickAction(slot: Int, windowId: Int) : Action(slot, windowId) {
      * @return the current Action for method chaining
      */
     fun setClickString(clickType: String) = apply {
-        this.clickType = ClickType.valueOf(clickType.uppercase())
+        this.clickType = ClickType.valueOf(clickType.uppercase(Locale.ROOT))
     }
 
     override fun complete() {

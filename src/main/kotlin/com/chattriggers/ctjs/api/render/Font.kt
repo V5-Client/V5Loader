@@ -24,8 +24,8 @@ class Font {
 
     fun buffer(): ByteBuffer {
         val bytes = cachedBytes ?: run {
-            val stream =
-                this::class.java.getResourceAsStream(resourcePath!!) ?: throw FileNotFoundException(resourcePath)
+            val path = requireNotNull(resourcePath)
+            val stream = this::class.java.getResourceAsStream(path) ?: throw FileNotFoundException(path)
             stream.use { it.readBytes() }
         }
 

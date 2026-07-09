@@ -57,10 +57,7 @@ object JSErrorReporter : ErrorReporter {
         }
     }
 
-    private fun buildIndicator(offset: Int) = buildString {
-        repeat(offset) { append('.') }
-        append('^')
-    }
+    private fun buildIndicator(offset: Int) = ".".repeat(offset) + '^'
 
     override fun runtimeError(
         message: String?,

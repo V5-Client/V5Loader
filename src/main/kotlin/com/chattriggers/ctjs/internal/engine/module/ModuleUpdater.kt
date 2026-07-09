@@ -12,7 +12,6 @@ import com.chattriggers.ctjs.internal.engine.module.ModuleManager.modulesFolder
 import com.chattriggers.ctjs.internal.utils.Initializer
 import com.chattriggers.ctjs.internal.utils.toVersion
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import org.apache.commons.io.FileUtils
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -87,18 +86,13 @@ object ModuleUpdater : Initializer {
     }
 
     fun importModule(moduleName: String, requiredBy: String? = null): List<Module> {
-        val alreadyImported = cachedModules.any {
-            if (it.name.equals(moduleName, ignoreCase = true)) {
-                if (requiredBy != null) {
-                    it.metadata.isRequired = true
-                    it.requiredBy.add(requiredBy)
-                }
-
-                true
-            } else false
+        cachedModules.find { it.name.equals(moduleName, ignoreCase = true) }?.let {
+            if (requiredBy != null) {
+                it.metadata.isRequired = true
+                it.requiredBy.add(requiredBy)
+            }
+            return emptyList()
         }
-
-        if (alreadyImported) return emptyList()
 
         val (realName, modVersion) = downloadModule(moduleName) ?: return emptyList()
 
@@ -112,9 +106,12 @@ object ModuleUpdater : Initializer {
         }
 
         cachedModules.add(module)
-        return listOf(module) + (module.metadata.requires?.map {
-            importModule(it, module.name)
-        }?.flatten() ?: emptyList())
+        return buildList {
+            add(module)
+            module.metadata.requires?.forEach {
+                addAll(importModule(it, module.name))
+            }
+        }
     }
 
     data class DownloadResult(val name: String, val modVersion: String)
@@ -125,21 +122,24 @@ object ModuleUpdater : Initializer {
         try {
             val url = "${CTJS.WEBSITE_ROOT}/api/modules/$name/scripts?modVersion=${CTJS.MOD_VERSION}"
             val connection = CTJS.makeWebRequest(url)
-            FileUtils.copyInputStreamToFile(connection.getInputStream(), downloadZip)
+            connection.getInputStream().use {
+                Files.copy(it, downloadZip.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            }
             FileSystems.newFileSystem(downloadZip.toPath()).use {
-                val rootFolder = Files.newDirectoryStream(it.rootDirectories.first()).iterator()
-                if (!rootFolder.hasNext()) throw Exception("Too small")
-                val moduleFolder = rootFolder.next()
-                if (rootFolder.hasNext()) throw Exception("Too big")
+                val rootFolders = Files.newDirectoryStream(it.rootDirectories.first()).use { stream ->
+                    stream.toList()
+                }
+                val moduleFolder = rootFolders.singleOrNull() ?: throw Exception("Expected exactly one module folder")
 
                 val realName = moduleFolder.fileName.toString().trimEnd(File.separatorChar)
                 File(modulesFolder, realName).apply { mkdir() }
-                Files.walk(moduleFolder).forEach { path ->
-                    val resolvedPath = Paths.get(CTJS.MODULES_FOLDER, path.toString())
-                    if (Files.isDirectory(resolvedPath)) {
-                        return@forEach
+                Files.walk(moduleFolder).use { paths ->
+                    paths.forEach { path ->
+                        val resolvedPath = Paths.get(CTJS.MODULES_FOLDER, path.toString())
+                        if (!Files.isDirectory(resolvedPath)) {
+                            Files.copy(path, resolvedPath, StandardCopyOption.REPLACE_EXISTING)
+                        }
                     }
-                    Files.copy(path, resolvedPath, StandardCopyOption.REPLACE_EXISTING)
                 }
                 return DownloadResult(realName, connection.getHeaderField("CT-Version"))
             }

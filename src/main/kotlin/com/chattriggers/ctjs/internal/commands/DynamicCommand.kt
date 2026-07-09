@@ -10,6 +10,7 @@ import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.ArgumentType
 import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.LiteralCommandNode
 import net.minecraft.commands.SharedSuggestionProvider
@@ -46,9 +47,8 @@ object DynamicCommand {
                 check(children.isEmpty())
                 target.initialize(dispatcher)
 
-                parent!!.builder!!.redirect(target.commandNode) {
-                    for ((name, arg) in it.asMixin<CommandContextAccessor>().arguments)
-                        it.source.asMixin<CTClientCommandSource>().setContextValue(name, arg.result)
+                requireNotNull(parent?.builder).redirect(target.commandNode) {
+                    it.copyArgumentsToSource()
                     it.source
                 }
 
@@ -59,35 +59,36 @@ object DynamicCommand {
                 check(method == null)
                 check(children.isEmpty())
 
-                parent!!.builder!!.redirect(target) {
-                    for ((name, arg) in it.asMixin<CommandContextAccessor>().arguments)
-                        it.source.asMixin<CTClientCommandSource>().setContextValue(name, arg.result)
+                requireNotNull(parent?.builder).redirect(target) {
+                    it.copyArgumentsToSource()
                     it.source
                 }
 
                 return
             }
 
-            builder = when (this) {
+            val currentBuilder = when (this) {
                 is Literal -> literal(name)
                 is Argument -> argument(name, type)
-                else -> throw IllegalStateException("unreachable")
             }
+            builder = currentBuilder
 
             // The call to .then() below builds a node which check the command, so we
             // need to call .execute() and child..initialize() before then if necessary
-            if (method != null) {
-                builder!!.executes { ctx ->
+            val execute = method
+            if (execute != null) {
+                currentBuilder.executes { ctx ->
                     val obj = NativeObject()
+                    val commandSource = ctx.source.asMixin<CTClientCommandSource>()
 
-                    for ((key, value) in ctx.source.asMixin<CTClientCommandSource>().contextValues)
+                    for ((key, value) in commandSource.contextValues)
                         ScriptableObject.putProperty(obj, key, value)
                     for ((key, arg) in ctx.asMixin<CommandContextAccessor>().arguments)
                         ScriptableObject.putProperty(obj, key, arg.result)
 
-                    ctx.source.asMixin<CTClientCommandSource>().contextValues.clear()
+                    commandSource.contextValues.clear()
 
-                    JSLoader.invoke(method!!, arrayOf(obj))
+                    JSLoader.invoke(execute, arrayOf(obj))
                     1
                 }
             }
@@ -95,7 +96,7 @@ object DynamicCommand {
             for (child in children)
                 child.initialize(dispatcher)
 
-            parent?.builder?.then(builder)
+            parent?.builder?.then(currentBuilder)
         }
     }
 
@@ -105,8 +106,13 @@ object DynamicCommand {
 
         override fun registerImpl(dispatcher: CommandDispatcher<SharedSuggestionProvider>) {
             node.initialize(dispatcher)
-            val builder = node.builder!! as LiteralArgumentBuilder<SharedSuggestionProvider>
+            val builder = requireNotNull(node.builder) as LiteralArgumentBuilder<SharedSuggestionProvider>
             node.commandNode = dispatcher.register(builder)
         }
+    }
+
+    private fun CommandContext<SharedSuggestionProvider>.copyArgumentsToSource() {
+        for ((name, arg) in asMixin<CommandContextAccessor>().arguments)
+            source.asMixin<CTClientCommandSource>().contextValues[name] = arg.result
     }
 }

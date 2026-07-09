@@ -4,6 +4,7 @@ import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.inventory.Inventory
 import net.minecraft.world.inventory.ContainerInput
+import java.util.Locale
 
 abstract class Action(var slot: Int, var windowId: Int) {
     fun setSlot(slot: Int) = apply {
@@ -39,7 +40,7 @@ abstract class Action(var slot: Int, var windowId: Int) {
          */
         @JvmStatic
         fun of(inventory: Inventory, slot: Int, typeString: String) =
-            when (Type.valueOf(typeString.uppercase())) {
+            when (Type.valueOf(typeString.uppercase(Locale.ROOT))) {
                 Type.CLICK -> ClickAction(slot, inventory.getWindowId())
                 Type.DRAG -> DragAction(slot, inventory.getWindowId())
                 Type.KEY -> KeyAction(slot, inventory.getWindowId())

@@ -3,7 +3,18 @@ package com.chattriggers.ctjs.internal.launch.generation
 import codes.som.koffee.assembleClass
 import codes.som.koffee.modifiers.public
 import com.chattriggers.ctjs.CTJS
-import com.chattriggers.ctjs.internal.launch.*
+import com.chattriggers.ctjs.internal.launch.Inject
+import com.chattriggers.ctjs.internal.launch.MixinDetails
+import com.chattriggers.ctjs.internal.launch.ModifyArg
+import com.chattriggers.ctjs.internal.launch.ModifyArgs
+import com.chattriggers.ctjs.internal.launch.ModifyConstant
+import com.chattriggers.ctjs.internal.launch.ModifyExpressionValue
+import com.chattriggers.ctjs.internal.launch.ModifyReceiver
+import com.chattriggers.ctjs.internal.launch.ModifyReturnValue
+import com.chattriggers.ctjs.internal.launch.ModifyVariable
+import com.chattriggers.ctjs.internal.launch.Redirect
+import com.chattriggers.ctjs.internal.launch.WrapOperation
+import com.chattriggers.ctjs.internal.launch.WrapWithCondition
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import java.io.File
@@ -32,10 +43,8 @@ internal class DynamicMixinGenerator(private val ctx: GenerationContext, private
         val mixinAnnotation = mixinClassNode.visitAnnotation(SPMixin::class.java.descriptorString(), false)
         val mixin = ctx.mixin
         mixinAnnotation.visit("targets", listOf(ctx.mappedClass.name.value))
-        if (mixin.priority != null)
-            mixinAnnotation.visit("priority", mixin.priority)
-        if (mixin.remap != null)
-            mixinAnnotation.visit("remap", mixin.remap)
+        mixinAnnotation.visitOptional("priority", mixin.priority)
+        mixinAnnotation.visitOptional("remap", mixin.remap)
         mixinAnnotation.visitEnd()
 
         val writer = ClassWriter(ClassWriter.COMPUTE_FRAMES)

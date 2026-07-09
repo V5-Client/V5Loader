@@ -116,7 +116,7 @@ object Mappings {
             val type = it.desc
             val fieldName = it.name
 
-            fieldName to MappedField(Mapping(fieldName, fieldName), Mapping(type, mapClassName(type) ?: type))
+            fieldName to MappedField(Mapping(fieldName, fieldName), Mapping(type, mapDescriptor(type)))
         }
 
         val methods = mutableMapOf<String, MutableList<MappedMethod>>()
@@ -132,7 +132,7 @@ object Mappings {
                 params.add(
                     MappedParameter(
                         Mapping(paramName, paramName),
-                        Mapping(paramType, mapClassName(paramType) ?: paramType),
+                        Mapping(paramType, mapDescriptor(paramType)),
                         lvtIndex
                     )
                 )
@@ -150,7 +150,7 @@ object Mappings {
                 MappedMethod(
                     Mapping(methodName, methodName),
                     params,
-                    Mapping(returnType, mapClassName(returnType) ?: returnType)
+                    Mapping(returnType, mapDescriptor(returnType))
                 )
             )
         }
@@ -185,6 +185,8 @@ object Mappings {
      */
     @JvmStatic
     fun mapClassName(className: String) = getMappedClassName(className)
+
+    private fun mapDescriptor(descriptor: String) = mapClassName(descriptor) ?: descriptor
 
     private fun normalizeClassName(className: String) = (if (className.startsWith('L') && className.endsWith(';')) {
         className.drop(1).dropLast(1)

@@ -6,8 +6,8 @@ import net.minecraft.network.protocol.Packet
 
 sealed class ClassFilterTrigger<Wrapped, Unwrapped>(
     method: Any,
-    private val triggerType: ITriggerType,
-    private val wrappedClass: Class<Wrapped>?,
+    triggerType: ITriggerType,
+    private val wrappedClass: Class<Wrapped>,
 ) : Trigger(method, triggerType) {
     @Volatile
     private var triggerClasses: Array<Class<Unwrapped>> = emptyArray()
@@ -17,7 +17,9 @@ sealed class ClassFilterTrigger<Wrapped, Unwrapped>(
      *
      * @param clazz The class for which this trigger should run for
      */
-    fun setFilteredClass(clazz: Class<Unwrapped>) = setFilteredClasses(listOf(clazz))
+    fun setFilteredClass(clazz: Class<Unwrapped>) = apply {
+        triggerClasses = arrayOf(clazz)
+    }
 
     /**
      * Sets which classes this trigger should run for. If the list is empty, it runs
@@ -31,11 +33,10 @@ sealed class ClassFilterTrigger<Wrapped, Unwrapped>(
     }
 
     override fun trigger(args: Array<out Any?>) {
-        val currentWrappedClass = wrappedClass ?: return
-        val arg = args.getOrNull(0) ?: error("First argument of $triggerType trigger can not be null")
+        val arg = args.getOrNull(0) ?: error("First argument of $type trigger can not be null")
 
-        check(currentWrappedClass.isInstance(arg)) {
-            "Expected first argument of $triggerType trigger to be instance of $currentWrappedClass"
+        check(wrappedClass.isInstance(arg)) {
+            "Expected first argument of $type trigger to be instance of $wrappedClass"
         }
 
         val classes = triggerClasses
@@ -45,15 +46,10 @@ sealed class ClassFilterTrigger<Wrapped, Unwrapped>(
         }
 
         @Suppress("UNCHECKED_CAST")
-        val placeholder = unwrap(arg as Wrapped)
+        val unwrapped = unwrap(arg as Wrapped)
 
-        var i = 0
-        while (i < classes.size) {
-            if (classes[i].isInstance(placeholder)) {
-                callMethod(args)
-                return
-            }
-            i++
+        if (classes.any { it.isInstance(unwrapped) }) {
+            callMethod(args)
         }
     }
 

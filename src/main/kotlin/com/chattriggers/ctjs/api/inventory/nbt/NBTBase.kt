@@ -4,7 +4,15 @@ import com.chattriggers.ctjs.api.CTWrapper
 import com.chattriggers.ctjs.MCNbtBase
 import com.chattriggers.ctjs.MCNbtCompound
 import com.chattriggers.ctjs.MCNbtList
-import net.minecraft.nbt.*
+import net.minecraft.nbt.ByteArrayTag
+import net.minecraft.nbt.ByteTag
+import net.minecraft.nbt.DoubleTag
+import net.minecraft.nbt.FloatTag
+import net.minecraft.nbt.IntArrayTag
+import net.minecraft.nbt.IntTag
+import net.minecraft.nbt.LongTag
+import net.minecraft.nbt.ShortTag
+import net.minecraft.nbt.StringTag
 import org.mozilla.javascript.NativeArray
 import org.mozilla.javascript.NativeObject
 
@@ -31,7 +39,7 @@ open class NBTBase(override val mcValue: MCNbtBase) : CTWrapper<MCNbtBase> {
 
     fun hasTags() = !hasNoTags()
 
-    override fun equals(other: Any?) = mcValue == other
+    override fun equals(other: Any?) = other is NBTBase && mcValue == other.mcValue
 
     override fun hashCode() = mcValue.hashCode()
 
@@ -77,11 +85,7 @@ open class NBTBase(override val mcValue: MCNbtBase) : CTWrapper<MCNbtBase> {
         }
 
         fun MCNbtList.toObject(): NativeArray {
-            val tags = mutableListOf<Any?>()
-            for (i in 0 until count()) {
-                tags.add(get(i).toObject())
-            }
-            val array = NativeArray(tags.toTypedArray())
+            val array = NativeArray(Array<Any?>(count()) { get(it).toObject() })
             array.expose()
             return array
         }

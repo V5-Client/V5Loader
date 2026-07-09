@@ -11,7 +11,6 @@ import com.chattriggers.ctjs.internal.mixins.PlayerInfoAccessor
 import com.chattriggers.ctjs.internal.mixins.PlayerTabOverlayAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import com.google.common.collect.ComparisonChain
-import com.google.common.collect.Ordering
 import com.mojang.authlib.GameProfile
 import gg.essential.elementa.state.BasicState
 import net.minecraft.client.multiplayer.PlayerInfo
@@ -20,13 +19,13 @@ import net.minecraft.world.scores.Objective
 import net.minecraft.network.chat.Component
 import net.minecraft.util.Util
 import net.minecraft.world.level.GameType
-import java.util.*
+import java.util.Comparator
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 object TabList {
     private var needsUpdate = true
     private var tabListNames = mutableListOf<Name>()
-    private val playerComparator = Ordering.from(PlayerComparator())
     internal var customHeader = false
     internal var customFooter = false
     private var tabListHeader: TextComponent? = null
@@ -48,11 +47,7 @@ object TabList {
      */
     @JvmStatic
     fun getHeaderComponent(): TextComponent? {
-        if (needsUpdate) {
-            updateNames()
-            needsUpdate = false
-        }
-
+        updateIfNeeded()
         return tabListHeader
     }
 
@@ -96,11 +91,7 @@ object TabList {
      */
     @JvmStatic
     fun getFooterComponent(): TextComponent? {
-        if (needsUpdate) {
-            updateNames()
-            needsUpdate = false
-        }
-
+        updateIfNeeded()
         return tabListFooter
     }
 
@@ -124,12 +115,12 @@ object TabList {
         customFooter = false
         when (footer) {
             is TextComponent? -> {
-                tabListHeader = footer
+                tabListFooter = footer
                 toMC()?.setFooter(footer)
             }
             is CharSequence, is Component -> {
-                tabListHeader = TextComponent(footer)
-                toMC()?.setFooter(tabListHeader)
+                tabListFooter = TextComponent(footer)
+                toMC()?.setFooter(tabListFooter)
             }
         }
         customFooter = true
@@ -163,11 +154,7 @@ object TabList {
      */
     @JvmStatic
     fun getNames(): List<Name> {
-        if (needsUpdate) {
-            updateNames()
-            needsUpdate = false
-        }
-
+        updateIfNeeded()
         return tabListNames
     }
 
@@ -178,11 +165,7 @@ object TabList {
      */
     @JvmStatic
     fun getUnformattedNames(): List<String> {
-        if (needsUpdate) {
-            updateNames()
-            needsUpdate = false
-        }
-
+        updateIfNeeded()
         return tabListNames.map { it.toMC().profile.name }
     }
 
@@ -262,6 +245,12 @@ object TabList {
         }.forEach(Name::remove)
     }
 
+    private fun updateIfNeeded() {
+        if (!needsUpdate) return
+        updateNames()
+        needsUpdate = false
+    }
+
     private fun updateNames() {
         tabListNames.clear()
 
@@ -280,9 +269,10 @@ object TabList {
         if (!customFooter)
             tabListFooter = hud.footer?.let { TextComponent(it) }
 
-        tabListNames = playerComparator
-            .sortedCopy(player.connection.onlinePlayers)
-            .mapTo(mutableListOf(), ::Name)
+        tabListNames = player.connection.onlinePlayers
+            .sortedWith(PlayerComparator())
+            .map(::Name)
+            .toMutableList()
     }
 
     internal fun resetCache() {

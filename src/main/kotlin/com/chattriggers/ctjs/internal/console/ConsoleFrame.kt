@@ -4,11 +4,16 @@ import com.chattriggers.ctjs.engine.LogType
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants
 import org.fife.ui.rsyntaxtextarea.Theme
-import java.awt.*
+import java.awt.BorderLayout
+import java.awt.Color
+import java.awt.Font
+import java.awt.GraphicsEnvironment
+import java.awt.Insets
+import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
-import java.awt.event.KeyListener
 import java.awt.event.WindowEvent
 import java.io.ByteArrayInputStream
+import java.util.Locale
 import java.util.concurrent.CompletableFuture
 import javax.swing.JFrame
 import javax.swing.JScrollPane
@@ -24,15 +29,13 @@ class ConsoleFrame(
     var fontSizeListener: (Int) -> Unit,
 ) {
     private lateinit var currentConfig: ConfigUpdateMessage
-    private var firaFont: Font? = init.firaFontBytes?.let {
+    private val firaFont: Font? = init.firaFontBytes?.let {
         Font.createFont(Font.TRUETYPE_FONT, ByteArrayInputStream(it))
             .deriveFont(9f)
             .also(GraphicsEnvironment.getLocalGraphicsEnvironment()::registerFont)
     }
 
-    private val frame = JFrame(
-        "ChatTriggers ${init.modVersion} JS Console"
-    )
+    private val frame = JFrame("ChatTriggers ${init.modVersion} JS Console")
 
     private val textArea = JTextPane()
     private val inputField = RSyntaxTextArea(5, 1).apply {
@@ -42,7 +45,6 @@ class ConsoleFrame(
         isCodeFoldingEnabled = true
     }
 
-    private val components = mutableSetOf<Component>(textArea)
     private val history = mutableListOf<String>()
     private var historyOffset = 0
 
@@ -60,11 +62,7 @@ class ConsoleFrame(
         val caret = textArea.caret as DefaultCaret
         caret.updatePolicy = DefaultCaret.ALWAYS_UPDATE
 
-        inputField.addKeyListener(object : KeyListener {
-            override fun keyTyped(e: KeyEvent) {}
-
-            override fun keyPressed(e: KeyEvent) {}
-
+        inputField.addKeyListener(object : KeyAdapter() {
             override fun keyReleased(e: KeyEvent) {
                 if (!e.isControlDown) return
 
@@ -90,19 +88,18 @@ class ConsoleFrame(
                             """.trimIndent()
                             )
                         } else {
-                            writer.println("eval> ${command.prependIndent("    > ").substring(6)}")
+                            writer.println("eval> ${command.lineSequence().joinToString("\n    > ")}")
 
                             onEval(command).thenAccept(writer::println)
                         }
                     }
                     KeyEvent.VK_UP -> {
                         historyOffset++
-
-                        try {
-                            val message = history[history.size - historyOffset]
-                            inputField.text = message
-                        } catch (exception: Exception) {
+                        val message = history.getOrNull(history.size - historyOffset)
+                        if (message == null) {
                             historyOffset--
+                        } else {
+                            inputField.text = message
                         }
                     }
                     KeyEvent.VK_DOWN -> {
@@ -110,12 +107,12 @@ class ConsoleFrame(
 
                         if (historyOffset < 0) historyOffset = 0
 
-                        try {
-                            val message = history[history.size - historyOffset]
-                            inputField.text = message
-                        } catch (exception: Exception) {
+                        val message = history.getOrNull(history.size - historyOffset)
+                        if (message == null) {
                             historyOffset = 0
                             inputField.text = ""
+                        } else {
+                            inputField.text = message
                         }
                     }
                     KeyEvent.VK_L -> clearConsole()
@@ -151,7 +148,7 @@ class ConsoleFrame(
     fun printError(error: PrintErrorMessage.Error) {
         fun StringBuilder.appendError(err: PrintErrorMessage.Error) {
             val index = err.trace.indexOfFirst {
-                it.fileName?.lowercase()?.contains("jsloader") ?: false
+                it.fileName?.lowercase(Locale.ROOT)?.contains("jsloader") ?: false
             }
 
             val trimmedTrace = if (index != -1) {
@@ -159,7 +156,7 @@ class ConsoleFrame(
                     val fileNameIndex = it.fileName?.indexOf("ChatTriggers/modules/") ?: return@map it
                     val classNameIndex = it.className.indexOf("ChatTriggers_modules_")
 
-                    if (fileNameIndex != -1) {
+                    if (fileNameIndex != -1 && classNameIndex != -1) {
                         StackTrace(
                             it.className.substring(classNameIndex + 21),
                             it.methodName,
@@ -219,13 +216,11 @@ class ConsoleFrame(
             }
         }
 
-        for (comp in components) {
-            comp.background = bg
-            comp.foreground = fg
-        }
+        textArea.background = bg
+        textArea.foreground = fg
 
         val chosenFont = if (firaFont != null && config.useFiraCode) {
-            firaFont!!
+            firaFont
         } else {
             Font(
                 "DejaVu Sans Mono",

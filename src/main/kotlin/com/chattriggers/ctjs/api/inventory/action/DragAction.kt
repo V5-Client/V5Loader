@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.api.inventory.action
 
 import net.minecraft.world.inventory.ContainerInput
+import java.util.Locale
 
 class DragAction(slot: Int, windowId: Int) : Action(slot, windowId) {
     private lateinit var clickType: ClickType
@@ -39,7 +40,7 @@ class DragAction(slot: Int, windowId: Int) : Action(slot, windowId) {
      * @return the current Action for method chaining
      */
     fun setClickString(clickType: String) = apply {
-        this.clickType = ClickType.valueOf(clickType.uppercase())
+        this.clickType = ClickType.valueOf(clickType.uppercase(Locale.ROOT))
     }
 
     /**
@@ -50,7 +51,7 @@ class DragAction(slot: Int, windowId: Int) : Action(slot, windowId) {
      * @return the current Action for method chaining
      */
     fun setStageString(stage: String) = apply {
-        this.stage = Stage.valueOf(stage.uppercase())
+        this.stage = Stage.valueOf(stage.uppercase(Locale.ROOT))
     }
 
     override fun complete() {
@@ -58,7 +59,6 @@ class DragAction(slot: Int, windowId: Int) : Action(slot, windowId) {
 
         if (stage != Stage.SLOT) {
             slot = -999
-            println("Enforcing slot of -999")
         }
 
         doClick(button, ContainerInput.QUICK_CRAFT)

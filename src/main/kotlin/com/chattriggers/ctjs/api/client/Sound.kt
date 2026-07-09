@@ -29,6 +29,7 @@ import net.minecraft.world.phys.Vec3
 import org.mozilla.javascript.NativeObject
 import java.io.File
 import java.io.InputStream
+import java.util.Locale
 import java.util.Optional
 import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
@@ -323,7 +324,7 @@ class Sound(private val config: NativeObject) {
     private fun makeIdentifier(source: String): Identifier {
         return Identifier.fromNamespaceAndPath(
             CTJS.MOD_ID,
-            Path(source).nameWithoutExtension.lowercase().filter { it in validIdentChars } + "_${counter++}",
+            Path(source).nameWithoutExtension.lowercase(Locale.ROOT).filter { it in validIdentChars } + "_${counter++}",
         )
     }
 
@@ -496,7 +497,7 @@ class Sound(private val config: NativeObject) {
                 is CharSequence -> valueOf(value.toString())
                 is MCAttenuationType -> fromMC(value)
                 is AttenuationType -> value
-                else -> throw IllegalArgumentException("Cannot create Sound.Category from $value")
+                else -> throw IllegalArgumentException("Cannot create Sound.AttenuationType from $value")
             }
         }
     }
@@ -548,11 +549,7 @@ class Sound(private val config: NativeObject) {
             Client.getMinecraft().soundManager.asMixin<SoundManagerAccessor>().soundEngine
         }
 
-        private val validIdentChars = setOf(
-            *('a'..'z').toList().toTypedArray(),
-            *('0'..'9').toList().toTypedArray(),
-            '_', '.', '-', '/',
-        )
+        private const val validIdentChars = "abcdefghijklmnopqrstuvwxyz0123456789_.-/"
         private var counter = 0
     }
 }

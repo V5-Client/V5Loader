@@ -4,16 +4,15 @@ import com.chattriggers.ctjs.api.client.Proxy;
 import com.chattriggers.ctjs.api.client.ProxyInfo;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.proxy.Socks5ProxyHandler;
+import java.net.InetSocketAddress;
+import java.util.List;
+import net.minecraft.network.BandwidthDebugMonitor;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
-import net.minecraft.network.BandwidthDebugMonitor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.net.InetSocketAddress;
-import java.util.List;
 
 @Mixin(Connection.class)
 public abstract class ConnectionProxyMixin {
@@ -43,16 +42,10 @@ public abstract class ConnectionProxyMixin {
         username = (username != null) ? username.trim() : "";
         password = (password != null) ? password.trim() : "";
 
-        if (!username.isEmpty()) {
-            pipeline.addFirst("proxy", new Socks5ProxyHandler(
-                new InetSocketAddress(ip, proxy.getPort()),
-                username,
-                password
-            ));
-        } else {
-            pipeline.addFirst("proxy", new Socks5ProxyHandler(
-                new InetSocketAddress(ip, proxy.getPort())
-            ));
-        }
+        InetSocketAddress address = new InetSocketAddress(ip, proxy.getPort());
+        Socks5ProxyHandler handler = username.isEmpty()
+                ? new Socks5ProxyHandler(address)
+                : new Socks5ProxyHandler(address, username, password);
+        pipeline.addFirst("proxy", handler);
     }
 }

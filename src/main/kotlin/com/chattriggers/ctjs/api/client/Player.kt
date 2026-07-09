@@ -20,7 +20,7 @@ import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec2
 import org.mozilla.javascript.NativeObject
-import java.util.*
+import java.util.UUID
 
 object Player {
     @JvmStatic

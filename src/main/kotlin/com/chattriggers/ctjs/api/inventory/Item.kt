@@ -1,11 +1,8 @@
 package com.chattriggers.ctjs.api.inventory
 
 import com.chattriggers.ctjs.api.CTWrapper
-import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.Player
-import com.chattriggers.ctjs.api.entity.Entity
 import com.chattriggers.ctjs.api.message.TextComponent
-import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.api.render.DrawContextHolder
 import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.api.world.block.Block
@@ -14,18 +11,12 @@ import com.chattriggers.ctjs.internal.Skippable
 import com.chattriggers.ctjs.internal.TooltipOverridable
 import com.chattriggers.ctjs.internal.utils.asMixin
 import net.minecraft.world.level.block.state.pattern.BlockInWorld
-import net.minecraft.client.renderer.texture.OverlayTexture
-import net.minecraft.client.renderer.item.ItemStackRenderState
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.enchantment.EnchantmentHelper
 import net.minecraft.world.item.Item.TooltipContext
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.item.TooltipFlag
-import net.minecraft.ReportedException
-import net.minecraft.CrashReport
 import kotlin.jvm.optionals.getOrNull
-import net.minecraft.client.gui.GuiGraphicsExtractor
 
 class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
     val type: ItemType = ItemType(mcValue.item)
@@ -37,8 +28,6 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
     }
 
     constructor(type: ItemType) : this(type.toMC().defaultInstance)
-
-    fun getHolder(): Entity? = null
 
     fun getStackSize(): Int = mcValue.count
 
@@ -85,15 +74,15 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
     @JvmOverloads
     fun getLore(advanced: Boolean = false): List<TextComponent> {
         mcValue.asMixin<Skippable>().ctjs_setShouldSkip(true)
-        val tooltip = mcValue.getTooltipLines(
-            TooltipContext.EMPTY,
-            Player.toMC(),
-            if (advanced) TooltipFlag.ADVANCED else TooltipFlag.NORMAL,
-        ).mapTo(mutableListOf()) { TextComponent(it) }
-
-        mcValue.asMixin<Skippable>().ctjs_setShouldSkip(false)
-
-        return tooltip
+        try {
+            return mcValue.getTooltipLines(
+                TooltipContext.EMPTY,
+                Player.toMC(),
+                if (advanced) TooltipFlag.ADVANCED else TooltipFlag.NORMAL,
+            ).map { TextComponent(it) }
+        } finally {
+            mcValue.asMixin<Skippable>().ctjs_setShouldSkip(false)
+        }
     }
 
     fun setLore(lore: List<TextComponent>) {

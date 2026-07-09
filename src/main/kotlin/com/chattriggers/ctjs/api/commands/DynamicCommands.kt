@@ -29,7 +29,13 @@ import com.chattriggers.ctjs.internal.utils.asMixin
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.ImmutableStringReader
 import com.mojang.brigadier.StringReader
-import com.mojang.brigadier.arguments.*
+import com.mojang.brigadier.arguments.ArgumentType
+import com.mojang.brigadier.arguments.BoolArgumentType
+import com.mojang.brigadier.arguments.DoubleArgumentType
+import com.mojang.brigadier.arguments.FloatArgumentType
+import com.mojang.brigadier.arguments.IntegerArgumentType
+import com.mojang.brigadier.arguments.LongArgumentType
+import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
@@ -215,44 +221,44 @@ object DynamicCommands : CommandCollection() {
 
     @JvmStatic
     fun argument(name: String, type: ArgumentType<Any>, builder: Function) {
-        requireNotNull(currentNode) { "Call to Commands.argument() outside of Commands.buildCommand()" }
-        require(!currentNode!!.hasRedirect) { "Cannot redirect node with children" }
-        val node = DynamicCommand.Node.Argument(currentNode, name, type)
+        val parent = requireNotNull(currentNode) { "Call to Commands.argument() outside of Commands.buildCommand()" }
+        require(!parent.hasRedirect) { "Cannot redirect node with children" }
+        val node = DynamicCommand.Node.Argument(parent, name, type)
         processNode(node, builder)
-        currentNode!!.children.add(node)
+        parent.children.add(node)
     }
 
     @JvmStatic
     fun literal(name: String, builder: Function) {
-        requireNotNull(currentNode) { "Call to Commands.literal() outside of Commands.buildCommand()" }
-        require(!currentNode!!.hasRedirect) { "Cannot redirect node with children" }
-        val node = DynamicCommand.Node.Literal(currentNode, name)
+        val parent = requireNotNull(currentNode) { "Call to Commands.literal() outside of Commands.buildCommand()" }
+        require(!parent.hasRedirect) { "Cannot redirect node with children" }
+        val node = DynamicCommand.Node.Literal(parent, name)
         processNode(node, builder)
-        currentNode!!.children.add(node)
+        parent.children.add(node)
     }
 
     @JvmStatic
     fun redirect(node: RootCommand) {
-        requireNotNull(currentNode) { "Call to Commands.redirect() outside of Commands.buildCommand()" }
-        require(!currentNode!!.hasRedirect) { "Duplicate call to Commands.redirect()" }
-        currentNode!!.children.add(DynamicCommand.Node.Redirect(currentNode, node as DynamicCommand.Node.Root))
-        currentNode!!.hasRedirect = true
+        val parent = requireNotNull(currentNode) { "Call to Commands.redirect() outside of Commands.buildCommand()" }
+        require(!parent.hasRedirect) { "Duplicate call to Commands.redirect()" }
+        parent.children.add(DynamicCommand.Node.Redirect(parent, node as DynamicCommand.Node.Root))
+        parent.hasRedirect = true
     }
 
     @JvmStatic
     fun redirect(node: CommandNode<SharedSuggestionProvider>) {
-        requireNotNull(currentNode) { "Call to Commands.redirect() outside of Commands.buildCommand()" }
-        require(!currentNode!!.hasRedirect) { "Duplicate call to Commands.redirect()" }
-        currentNode!!.children.add(DynamicCommand.Node.RedirectToCommandNode(currentNode, node))
-        currentNode!!.hasRedirect = true
+        val parent = requireNotNull(currentNode) { "Call to Commands.redirect() outside of Commands.buildCommand()" }
+        require(!parent.hasRedirect) { "Duplicate call to Commands.redirect()" }
+        parent.children.add(DynamicCommand.Node.RedirectToCommandNode(parent, node))
+        parent.hasRedirect = true
     }
 
     @JvmStatic
     fun exec(method: Function) {
-        requireNotNull(currentNode) { "Call to Commands.argument() outside of Commands.buildCommand()" }
-        require(!currentNode!!.hasRedirect) { "Cannot execute node with children" }
-        require(currentNode!!.method == null) { "Duplicate call to Commands.exec()" }
-        currentNode!!.method = method
+        val node = requireNotNull(currentNode) { "Call to Commands.argument() outside of Commands.buildCommand()" }
+        require(!node.hasRedirect) { "Cannot execute node with children" }
+        require(node.method == null) { "Duplicate call to Commands.exec()" }
+        node.method = method
     }
 
     /**
@@ -663,17 +669,17 @@ object DynamicCommands : CommandCollection() {
                 context: CommandContext<S>?,
                 builder: SuggestionsBuilder?
             ): CompletableFuture<Suggestions> {
-                return if (suggest != null) {
+                return suggest?.let {
                     @Suppress("UNCHECKED_CAST")
-                    JSLoader.invoke(suggest, arrayOf(context, builder)) as CompletableFuture<Suggestions>
-                } else super.listSuggestions(context, builder)
+                    JSLoader.invoke(it, arrayOf(context, builder)) as CompletableFuture<Suggestions>
+                } ?: super.listSuggestions(context, builder)
             }
 
             override fun getExamples(): MutableCollection<String> {
-                return if (getExamples != null) {
+                return getExamples?.let {
                     @Suppress("UNCHECKED_CAST")
-                    JSLoader.invoke(getExamples, emptyArray()) as MutableCollection<String>
-                } else super.getExamples()
+                    JSLoader.invoke(it, emptyArray()) as MutableCollection<String>
+                } ?: super.getExamples()
             }
 
             override fun toString() = obj.toString()
@@ -752,9 +758,8 @@ object DynamicCommands : CommandCollection() {
     }
 
     data class BlockPredicateWrapper(val impl: BlockPredicateArgument.Result) {
-        fun test(blockPos: BlockPos): Boolean {
-            return impl.test(BlockInWorld(requireNotNull(World.toMC()), blockPos.toMC(), true))
-        }
+        fun test(blockPos: BlockPos): Boolean =
+            impl.test(BlockInWorld(requireNotNull(World.toMC()), blockPos.toMC(), true))
 
         override fun toString() = "BlockPredicateArgument"
     }
@@ -778,11 +783,10 @@ object DynamicCommands : CommandCollection() {
             }
         }
 
-        fun getEntities(): List<Entity> {
-            return getUnfilteredEntities().filter {
+        fun getEntities(): List<Entity> =
+            getUnfilteredEntities().filter {
                 it.toMC().type.isEnabled(World.toMC()!!.enabledFeatures())
             }
-        }
 
         private fun getUnfilteredEntities(): List<Entity> {
             if (!mixed.includesEntities)
@@ -902,8 +906,7 @@ object DynamicCommands : CommandCollection() {
                 if (i < selector.start)
                     component = component.withText(text.substring(i, selector.start))
 
-                if (nameComponent != null)
-                    component = component.withText(nameComponent)
+                component = component.withText(nameComponent)
 
                 i = selector.end
             }

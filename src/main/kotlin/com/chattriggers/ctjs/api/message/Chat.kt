@@ -17,10 +17,10 @@ object Chat {
         if (prefix.length <= 1) {
             finalMessage.append(Component.literal(prefix).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(startRgb))))
         } else {
-            for (i in prefix.indices) {
-                val rgb = ARGB.srgbLerp(i.toFloat() / (prefix.length - 1), startRgb, endRgb)
+            prefix.forEachIndexed { index, char ->
+                val rgb = ARGB.srgbLerp(index.toFloat() / (prefix.length - 1), startRgb, endRgb)
                 finalMessage.append(
-                    Component.literal(prefix[i].toString()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(rgb)))
+                    Component.literal(char.toString()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(rgb)))
                 )
             }
         }

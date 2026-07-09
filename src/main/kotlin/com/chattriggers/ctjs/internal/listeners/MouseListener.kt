@@ -12,8 +12,10 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import org.lwjgl.glfw.GLFW
 
 internal object MouseListener : Initializer {
-    private val mouseState = IntArray(5) { Int.MIN_VALUE }
-    private val draggedState = arrayOfNulls<State>(5)
+    private const val TRACKED_BUTTONS = 5
+
+    private val mouseState = IntArray(TRACKED_BUTTONS) { Int.MIN_VALUE }
+    private val draggedState = arrayOfNulls<State>(TRACKED_BUTTONS)
     private val extraMouseState = mutableMapOf<Int, Int>()
 
     private class State(val x: Double, val y: Double)
@@ -24,11 +26,11 @@ internal object MouseListener : Initializer {
             if (!World.isLoaded())
                 return@register
 
-            for (button in 0..4) {
-                val previousState = draggedState[button] ?: continue
+            val x = Client.getMouseX()
+            val y = Client.getMouseY()
 
-                val x = Client.getMouseX()
-                val y = Client.getMouseY()
+            for (button in mouseState.indices) {
+                val previousState = draggedState[button] ?: continue
 
                 if (x == previousState.x && y == previousState.y)
                     continue
@@ -73,18 +75,15 @@ internal object MouseListener : Initializer {
     @JvmStatic
     fun onRawMouseInput(button: Int, action: Int) {
         if (!World.isLoaded()) {
-            for (buttonIndex in 0..4) {
-                mouseState[buttonIndex] = Int.MIN_VALUE
-                draggedState[buttonIndex] = null
-            }
-            extraMouseState.clear()
+            resetMouseState()
             return
         }
 
         if (button == -1)
             return
 
-        if ((button in 0..4 && action == mouseState[button]) || (button !in 0..4 && action == extraMouseState[button]))
+        val trackedButton = button in mouseState.indices
+        if ((trackedButton && action == mouseState[button]) || (!trackedButton && action == extraMouseState[button]))
             return
 
         val x = Client.getMouseX()
@@ -92,7 +91,7 @@ internal object MouseListener : Initializer {
 
         CTEvents.MOUSE_CLICKED.invoker().process(x, y, button, action == GLFW.GLFW_PRESS)
 
-        if (button !in 0..4) {
+        if (!trackedButton) {
             extraMouseState[button] = action
             return
         }
@@ -110,5 +109,11 @@ internal object MouseListener : Initializer {
     fun onRawMouseScroll(dy: Double) {
         if (!JSLoader.hasTriggers(TriggerType.SCROLLED)) return
         CTEvents.MOUSE_SCROLLED.invoker().process(Client.getMouseX(), Client.getMouseY(), dy)
+    }
+
+    private fun resetMouseState() {
+        mouseState.fill(Int.MIN_VALUE)
+        draggedState.fill(null)
+        extraMouseState.clear()
     }
 }

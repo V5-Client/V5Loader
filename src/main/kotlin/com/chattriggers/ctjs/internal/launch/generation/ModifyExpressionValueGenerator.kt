@@ -30,9 +30,8 @@ internal class ModifyExpressionValueGenerator(
             "ModifyExpressionValue mixin cannot target a void method"
         }
 
-        val parameters = listOf(Parameter(exprDescriptor)) + modifyExpressionValue.locals
-            ?.map(Utils::getParameterFromLocal)
-            .orEmpty()
+        val parameters = mutableListOf(Parameter(exprDescriptor))
+        parameters.addLocals(modifyExpressionValue.locals)
 
         return InjectionSignature(
             mappedMethod,
@@ -46,16 +45,11 @@ internal class ModifyExpressionValueGenerator(
         node.visitAnnotation(SPModifyExpressionValue::class.descriptorString(), true).apply {
             visit("method", listOf(signature.targetMethod.toFullDescriptor()))
             visit("at", Utils.createAtAnnotation(modifyExpressionValue.at))
-            if (modifyExpressionValue.slice != null)
-                visit("slice", modifyExpressionValue.slice.map(Utils::createSliceAnnotation))
-            if (modifyExpressionValue.remap != null)
-                visit("remap", modifyExpressionValue.remap)
-            if (modifyExpressionValue.require != null)
-                visit("require", modifyExpressionValue.require)
-            if (modifyExpressionValue.expect != null)
-                visit("expect", modifyExpressionValue.expect)
-            if (modifyExpressionValue.allow != null)
-                visit("allow", modifyExpressionValue.allow)
+            visitOptional("slice", modifyExpressionValue.slice?.map(Utils::createSliceAnnotation))
+            visitOptional("remap", modifyExpressionValue.remap)
+            visitOptional("require", modifyExpressionValue.require)
+            visitOptional("expect", modifyExpressionValue.expect)
+            visitOptional("allow", modifyExpressionValue.allow)
             visitEnd()
         }
     }

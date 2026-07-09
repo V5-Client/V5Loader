@@ -126,6 +126,18 @@ object PathManager {
   private var currentTask: Future<*>? = null
   private val searchId = AtomicInteger(0)
 
+  private fun resetResults() {
+    lastError = null
+    currentPath = null
+    currentAnnotations = null
+    currentEtherwarpPath = null
+  }
+
+  private fun fail(message: String): Boolean {
+    lastError = message
+    return false
+  }
+
   private fun resolveEtherwarpThreadCount(threadCount: Int): Int {
     val maxThreads = max(1, Runtime.getRuntime().availableProcessors())
     if (threadCount == ETHERWARP_AUTO_THREAD_COUNT) {
@@ -185,43 +197,34 @@ object PathManager {
   fun findPath(startPoints: Array<IntArray>, endPoints: Array<IntArray>, maxIterations: Int = 500_000, isFly: Boolean = false): Boolean {
     cancelSearch()
 
-    lastError = null
-    currentPath = null
-    currentAnnotations = null
-    currentEtherwarpPath = null
+    resetResults()
 
     if (maxIterations <= 0) {
-      lastError = "maxIterations must be > 0"
-      return false
+      return fail("maxIterations must be > 0")
     }
 
     val startValidation = validatePoints("Start points", startPoints)
     if (startValidation != null) {
-      lastError = startValidation
-      return false
+      return fail(startValidation)
     }
 
     val endValidation = validatePoints("End points", endPoints)
     if (endValidation != null) {
-      lastError = endValidation
-      return false
+      return fail(endValidation)
     }
 
     if (isFly && (startPoints.size != 1 || endPoints.size != 1)) {
-      lastError = "Fly pathfinder only supports one start point and one end point"
-      return false
+      return fail("Fly pathfinder only supports one start point and one end point")
     }
 
     val nativeValidation = validateNativeAvailability()
     if (nativeValidation != null) {
-      lastError = nativeValidation
-      return false
+      return fail(nativeValidation)
     }
 
     val heightValidation = validateHeights(startPoints, endPoints, isFly)
     if (heightValidation != null) {
-      lastError = heightValidation
-      return false
+      return fail(heightValidation)
     }
 
     val avoidZones = consumeTransientAvoidZones()
@@ -325,42 +328,31 @@ object PathManager {
   ): Boolean {
     cancelSearch()
 
-    lastError = null
-    currentPath = null
-    currentAnnotations = null
-    currentEtherwarpPath = null
+    resetResults()
 
     if (maxIterations <= 0) {
-      lastError = "maxIterations must be > 0"
-      return false
+      return fail("maxIterations must be > 0")
     }
     if (threadCount < ETHERWARP_AUTO_THREAD_COUNT) {
-      lastError = "threadCount must be >= 0 (0 = auto)"
-      return false
+      return fail("threadCount must be >= 0 (0 = auto)")
     }
     if (!yawStep.isFinite() || yawStep <= 0.0) {
-      lastError = "yawStep must be > 0"
-      return false
+      return fail("yawStep must be > 0")
     }
     if (!pitchStep.isFinite() || pitchStep <= 0.0) {
-      lastError = "pitchStep must be > 0"
-      return false
+      return fail("pitchStep must be > 0")
     }
     if (!newNodeCost.isFinite() || newNodeCost <= 0.0) {
-      lastError = "newNodeCost must be > 0"
-      return false
+      return fail("newNodeCost must be > 0")
     }
     if (!heuristicWeight.isFinite() || heuristicWeight <= 0.0) {
-      lastError = "heuristicWeight must be > 0"
-      return false
+      return fail("heuristicWeight must be > 0")
     }
     if (!rayLength.isFinite() || rayLength <= 0.0) {
-      lastError = "rayLength must be > 0"
-      return false
+      return fail("rayLength must be > 0")
     }
     if (!rewireEpsilon.isFinite() || rewireEpsilon < 0.0) {
-      lastError = "rewireEpsilon must be >= 0"
-      return false
+      return fail("rewireEpsilon must be >= 0")
     }
     val resolvedEyeHeight = when {
       eyeHeight.isNaN() -> getCurrentEtherwarpEyeHeight()
@@ -368,43 +360,36 @@ object PathManager {
       else -> Double.NaN
     }
     if (!resolvedEyeHeight.isFinite() || resolvedEyeHeight <= 0.0) {
-      lastError = "eyeHeight must be > 0 or NaN for auto"
-      return false
+      return fail("eyeHeight must be > 0 or NaN for auto")
     }
     val resolvedSupportEyeHeight = resolvedEyeHeight + 1.0
 
     val nativeValidation = validateNativeAvailability()
     if (nativeValidation != null) {
-      lastError = nativeValidation
-      return false
+      return fail(nativeValidation)
     }
 
     val client = Minecraft.getInstance()
     val world = client.level ?: run {
-      lastError = "World is not loaded"
-      return false
+      return fail("World is not loaded")
     }
     val player = client.player ?: run {
-      lastError = "Player is not loaded"
-      return false
+      return fail("Player is not loaded")
     }
     val originX = player.x
     val originY = player.y + resolvedEyeHeight
     val originZ = player.z
     if (!originX.isFinite() || !originY.isFinite() || !originZ.isFinite()) {
-      lastError = "Unable to resolve player eye origin"
-      return false
+      return fail("Unable to resolve player eye origin")
     }
 
     val minSupportY = world.minY
     val maxSupportY = world.maxY - 2
     if (goalY !in minSupportY..maxSupportY) {
-      lastError = "Etherwarp goal Y must be between $minSupportY and $maxSupportY"
-      return false
+      return fail("Etherwarp goal Y must be between $minSupportY and $maxSupportY")
     }
     validateEtherwarpLanding("Goal block", goalX, goalY, goalZ)?.let {
-      lastError = it
-      return false
+      return fail(it)
     }
 
     val currentId = searchId.incrementAndGet()
@@ -996,9 +981,6 @@ object PathManager {
   @JvmStatic
   fun clear() {
     cancelSearch()
-    currentPath = null
-    currentAnnotations = null
-    currentEtherwarpPath = null
-    lastError = null
+    resetResults()
   }
 }

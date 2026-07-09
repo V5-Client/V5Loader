@@ -6,22 +6,23 @@
     "client": [
         "BlockMixin",
         "CameraMixin",
-      "ChatComponentMixin",
-      "ConnectionProxyMixin",
+        "ChatComponentMixin",
+        "ConnectionProxyMixin",
         "DrawContextCapture",
         "EntityRendererMixin",
         "FirmamentModAnnouncerMixin",
+        "FramerateLimitTrackerMixin",
         "GameRendererMixin",
         "KeyboardInputMixin",
-      "MinecraftMixin",
-      "MouseHandlerMixin",
-      "JoinMultiplayerScreenMixin",
-      "PlayerTabOverlayMixin",
-      "LevelRendererMixin",
+        "MinecraftMixin",
+        "MouseHandlerMixin",
+        "JoinMultiplayerScreenMixin",
+        "PlayerTabOverlayMixin",
+        "LevelRendererMixin",
         "YggdrasilServicesKeyInfoMixin"
     ],
     "mixins": [
-      "ConnectionMixin"
+        "ConnectionMixin"
     ],
     "injectors": {
         "defaultRequire": 1

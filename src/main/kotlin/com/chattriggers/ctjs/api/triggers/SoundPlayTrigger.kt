@@ -1,6 +1,5 @@
 package com.chattriggers.ctjs.api.triggers
 
-
 class SoundPlayTrigger(method: Any) : Trigger(method, TriggerType.SOUND_PLAY) {
     private var soundNameCriteria = ""
 
@@ -14,10 +13,11 @@ class SoundPlayTrigger(method: Any) : Trigger(method, TriggerType.SOUND_PLAY) {
 
     override fun trigger(args: Array<out Any?>) {
         if (args[1] is CharSequence
-            && soundNameCriteria != ""
+            && soundNameCriteria.isNotEmpty()
             && !args[1].toString().equals(soundNameCriteria, ignoreCase = true)
-        )
+        ) {
             return
+        }
 
         callMethod(args)
     }

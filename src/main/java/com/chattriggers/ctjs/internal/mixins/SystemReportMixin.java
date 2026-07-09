@@ -2,7 +2,6 @@ package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.internal.engine.module.Module;
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager;
-import com.chattriggers.ctjs.internal.engine.module.ModuleMetadata;
 import net.minecraft.SystemReport;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -10,10 +9,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Mixin(SystemReport.class)
 public abstract class SystemReportMixin {
@@ -22,29 +20,13 @@ public abstract class SystemReportMixin {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void addModules(CallbackInfo ci) {
-        setDetail("ChatTriggers Modules", () -> {
-            List<Module> modules = new ArrayList<>(ModuleManager.INSTANCE.getCachedModules());
-            modules.sort(Comparator.comparing(Module::getName));
-
-            StringBuilder sb = new StringBuilder();
-
-            for (Module module : modules) {
-                sb
-                    .append("\n")
-                    .append("\t\t")
-                    .append(module.getName())
-                    .append(": ");
-
-                ModuleMetadata metadata = module.getMetadata();
-                if (metadata.getVersion() != null) {
-                        sb.append("v")
-                        .append(module.getMetadata().getVersion());
-                } else {
-                    sb.append("No module version specified");
-                }
-            }
-
-            return sb.toString();
-        });
+        setDetail("ChatTriggers Modules", () -> ModuleManager.INSTANCE.getCachedModules().stream()
+            .sorted(Comparator.comparing(Module::getName))
+            .map(module -> {
+                var version = module.getMetadata().getVersion();
+                return "\n\t\t" + module.getName() + ": " +
+                    (version == null ? "No module version specified" : "v" + version);
+            })
+            .collect(Collectors.joining()));
     }
 }

@@ -13,10 +13,6 @@ import com.chattriggers.ctjs.internal.utils.toRadians
 import com.mojang.blaze3d.opengl.GlStateManager
 import com.mojang.blaze3d.opengl.GlTexture
 import com.mojang.blaze3d.pipeline.RenderPipeline.Snippet
-import gg.essential.elementa.dsl.component1
-import gg.essential.elementa.dsl.component2
-import gg.essential.elementa.dsl.component3
-import gg.essential.elementa.dsl.component4
 import gg.essential.universal.UGraphics
 import gg.essential.universal.UMatrixStack
 import net.minecraft.client.gui.Font
@@ -28,17 +24,19 @@ import com.mojang.blaze3d.vertex.PoseStack
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.mozilla.javascript.NativeObject
-import java.awt.Color
-import java.util.*
 import kotlin.collections.ArrayDeque
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.atan
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
+import kotlin.math.sin
 import org.lwjgl.opengl.GL13.GL_TEXTURE0
 
 object Renderer {
     private val NEWLINE_REGEX = """\n|\r\n?""".toRegex()
-
-    @JvmField
-    var colorized: Long? = null
 
     // The currently-active matrix stack
     internal lateinit var matrixStack: UMatrixStack
@@ -188,29 +186,10 @@ object Renderer {
     fun enableDepth() = apply { LegacyPipelineBuilder.enableDepth() }
 
     @JvmStatic
-    fun depthFunc(func: Int) = apply { UGraphics.depthFunc(func) }
-
-    @JvmStatic
-    fun depthMask(flag: Boolean) = apply { UGraphics.depthMask(flag) }
-
-    @JvmStatic
     fun disableBlend() = apply { LegacyPipelineBuilder.disableBlend() }
 
     @JvmStatic
-    fun enableBlend() = apply { LegacyPipelineBuilder.enabledBlend() }
-
-    @JvmStatic
-    fun blendFunc(func: Int) = apply { UGraphics.blendEquation(func) }
-
-    @JvmStatic
-    fun tryBlendFuncSeparate(
-        sourceFactor: Int,
-        destFactor: Int,
-        sourceFactorAlpha: Int,
-        destFactorAlpha: Int,
-    ) = apply {
-        UGraphics.tryBlendFuncSeparate(sourceFactor, destFactor, sourceFactorAlpha, destFactorAlpha)
-    }
+    fun enableBlend() = apply { LegacyPipelineBuilder.enableBlend() }
 
     @JvmStatic
     @JvmOverloads
@@ -269,21 +248,6 @@ object Renderer {
     fun multiply(quaternion: Quaternionf) = apply {
         matrixStack.multiply(quaternion)
     }
-
-    @JvmStatic
-    @JvmOverloads
-    fun colorize(red: Float, green: Float, blue: Float, alpha: Float = 1f) =
-        colorize(
-            (red * 255).toInt(),
-            (green * 255).toInt(),
-            (blue * 255).toInt(),
-            (alpha * 255).toInt()
-        )
-
-    @JvmStatic
-    @JvmOverloads
-    @Deprecated("There is no longer an easy way to change the color globally, you need to find out each color you do.")
-    fun colorize(red: Int, green: Int, blue: Int, alpha: Int = 255) = apply {}
 
     @JvmStatic
     fun fixAlpha(color: Long): Long {
@@ -376,8 +340,7 @@ object Renderer {
      */
     @JvmStatic
     fun color(color: Long) = apply {
-        val (r, g, b, a) = Color(color.toInt(), true)
-        Renderer3d.color(r, g, b, a)
+        Renderer3d.color(color)
     }
 
     /**
@@ -418,17 +381,6 @@ object Renderer {
     }
 
     /**
-     * Sets the line width when rendering [DrawMode.LINES]
-     *
-     * @param width the width of the line
-     * @return [Renderer] to allow for method chaining
-     */
-    @JvmStatic
-    fun lineWidth(width: Float) = apply {
-        Renderer3d.lineWidth(width)
-    }
-
-    /**
      * Finalizes vertices and draws the world renderer.
      */
     @JvmStatic
@@ -459,17 +411,16 @@ object Renderer {
             return@apply
         }
 
-        val pos = mutableListOf(x, y, x + width, y + height)
-        if (pos[0] > pos[2])
-            Collections.swap(pos, 0, 2)
-        if (pos[1] > pos[3])
-            Collections.swap(pos, 1, 3)
+        val left = min(x, x + width)
+        val right = max(x, x + width)
+        val top = min(y, y + height)
+        val bottom = max(y, y + height)
 
         begin(vertexFormat = VertexFormat.POSITION_COLOR)
-        pos(pos[0], pos[3], 0f).color(color)
-        pos(pos[2], pos[3], 0f).color(color)
-        pos(pos[2], pos[1], 0f).color(color)
-        pos(pos[0], pos[1], 0f).color(color)
+        pos(left, bottom, 0f).color(color)
+        pos(right, bottom, 0f).color(color)
+        pos(right, top, 0f).color(color)
+        pos(left, top, 0f).color(color)
         draw()
     }
 
@@ -531,7 +482,7 @@ object Renderer {
         text: String,
         x: Float,
         y: Float,
-        color: Long = colorized ?: WHITE,
+        color: Long = WHITE,
         shadow: Boolean = false,
     ) {
         val fr = getFontRenderer()
@@ -566,7 +517,7 @@ object Renderer {
 
     @JvmStatic
     @JvmOverloads
-    fun drawStringWithShadow(text: String, x: Float, y: Float, color: Long = colorized ?: WHITE) =
+    fun drawStringWithShadow(text: String, x: Float, y: Float, color: Long = WHITE) =
         drawString(text, x, y, color, shadow = true)
 
     internal data class TextLines(val lines: List<String>, val width: Float, val height: Float)
@@ -582,19 +533,16 @@ object Renderer {
 
     @JvmStatic
     fun drawImage(image: Image, x: Float, y: Float, width: Float, height: Float) {
-        if (colorized == null)
-            colorize(1f, 1f, 1f, 1f)
-
         scale(1f, 1f, 50f)
 
         // FIXME: icba to do this
 //        RenderSystem.setShaderTexture(0, image.getTexture()?.glTextureView)
 
         begin(DrawMode.QUADS, VertexFormat.POSITION_TEXTURE_COLOR, snippet = RenderSnippet.POSITION_TEX_COLOR_SNIPPET)
-        pos(x, y + height, 0f).tex(0f, 1f).color(colorized!!)
-        pos(x + width, y + height, 0f).tex(1f, 1f).color(colorized!!)
-        pos(x + width, y, 0f).tex(1f, 0f).color(colorized!!)
-        pos(x, y, 0f).tex(0f, 0f).color(colorized!!)
+        pos(x, y + height, 0f).tex(0f, 1f).color(WHITE)
+        pos(x + width, y + height, 0f).tex(1f, 1f).color(WHITE)
+        pos(x + width, y, 0f).tex(1f, 0f).color(WHITE)
+        pos(x, y, 0f).tex(0f, 0f).color(WHITE)
         draw()
     }
 

@@ -22,9 +22,7 @@ internal class ModifyArgsGenerator(
 
         val parameters = mutableListOf<Parameter>()
         parameters.add(Parameter(Args::class.descriptor()))
-        modifyArgs.locals?.forEach {
-            parameters.add(Utils.getParameterFromLocal(it))
-        }
+        parameters.addLocals(modifyArgs.locals)
 
         return InjectionSignature(
             mappedMethod,
@@ -37,17 +35,13 @@ internal class ModifyArgsGenerator(
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPModifyArgs::class.descriptorString(), true).apply {
             visit("method", listOf(signature.targetMethod.toFullDescriptor()))
-            if (modifyArgs.slice != null)
-                visit("slice", modifyArgs.slice)
+            visitOptional("slice", modifyArgs.slice)
             visit("at", Utils.createAtAnnotation(modifyArgs.at))
-            if (modifyArgs.remap != null)
-                visit("remap", modifyArgs.remap)
-            if (modifyArgs.expect != null)
-                visit("expect", modifyArgs.expect)
-            if (modifyArgs.allow != null)
-                visit("allow", modifyArgs.allow)
-            if (modifyArgs.constraints != null)
-                visit("constraints", modifyArgs.constraints)
+            visitOptional("remap", modifyArgs.remap)
+            visitOptional("require", modifyArgs.require)
+            visitOptional("expect", modifyArgs.expect)
+            visitOptional("allow", modifyArgs.allow)
+            visitOptional("constraints", modifyArgs.constraints)
         }
     }
 

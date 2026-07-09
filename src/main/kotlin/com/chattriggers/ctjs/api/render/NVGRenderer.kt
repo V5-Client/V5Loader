@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileInputStream
-import java.net.URL
+import java.net.URI
 
 object NVGRenderer {
 
@@ -164,7 +164,7 @@ object NVGRenderer {
     }
 
     private fun isGameReady(): Boolean {
-        return mc.window != null && mc.window.handle() != 0L
+        return mc.window.handle() != 0L
     }
 
     private fun ensureInitialized() {
@@ -474,7 +474,7 @@ object NVGRenderer {
     private fun readImage(path: String): ByteArray {
         val trimmed = path.trim()
         val stream = when {
-            trimmed.startsWith("http://") || trimmed.startsWith("https://") -> URL(trimmed).openStream()
+            trimmed.startsWith("http://") || trimmed.startsWith("https://") -> URI.create(trimmed).toURL().openStream()
             File(trimmed).isFile -> FileInputStream(trimmed)
             else -> NVGRenderer::class.java.getResourceAsStream(trimmed)
                 ?: throw FileNotFoundException("Cannot find image: $trimmed")
@@ -698,7 +698,7 @@ object NVGRenderer {
         if (pendingDownloads.add(url)) {
             Thread({
                 try {
-                    val connection = java.net.URL(url).openConnection().apply {
+                    val connection = URI.create(url).toURL().openConnection().apply {
                         connectTimeout = 5000
                         readTimeout = 5000
                         setRequestProperty("User-Agent", "Mozilla/5.0")

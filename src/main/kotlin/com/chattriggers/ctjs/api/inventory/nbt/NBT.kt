@@ -4,9 +4,19 @@ import com.chattriggers.ctjs.MCNbtBase
 import com.chattriggers.ctjs.MCNbtCompound
 import com.chattriggers.ctjs.MCNbtList
 import com.chattriggers.ctjs.internal.utils.getOption
-import net.minecraft.nbt.*
+import net.minecraft.nbt.ByteArrayTag
+import net.minecraft.nbt.ByteTag
+import net.minecraft.nbt.DoubleTag
+import net.minecraft.nbt.FloatTag
+import net.minecraft.nbt.IntArrayTag
+import net.minecraft.nbt.IntTag
+import net.minecraft.nbt.LongArrayTag
+import net.minecraft.nbt.LongTag
+import net.minecraft.nbt.ShortTag
+import net.minecraft.nbt.StringTag
 import org.mozilla.javascript.NativeArray
 import org.mozilla.javascript.NativeObject
+import java.util.Locale
 
 object NBT {
     /**
@@ -106,7 +116,7 @@ object NBT {
         val number = res[1]
         val suffix = res[2]
 
-        return when (suffix.lowercase()) {
+        return when (suffix.lowercase(Locale.ROOT)) {
             "" -> {
                 if (number.contains(".")) {
                     DoubleTag.valueOf(number.toDouble())

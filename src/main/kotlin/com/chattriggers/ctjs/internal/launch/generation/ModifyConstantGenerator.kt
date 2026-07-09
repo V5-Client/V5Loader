@@ -17,7 +17,8 @@ internal class ModifyConstantGenerator(
         val (mappedMethod, method) = ctx.findMethod(modifyConstant.method)
 
         val type = modifyConstant.constant.getTypeDescriptor()
-        val parameters = listOf(Parameter(type)) + modifyConstant.locals?.map(Utils::getParameterFromLocal).orEmpty()
+        val parameters = mutableListOf(Parameter(type))
+        parameters.addLocals(modifyConstant.locals)
 
         return InjectionSignature(
             mappedMethod,
@@ -30,19 +31,13 @@ internal class ModifyConstantGenerator(
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPModifyConstant::class.descriptorString(), true).apply {
             visit("method", signature.targetMethod.toFullDescriptor())
-            if (modifyConstant.slice != null)
-                visit("slice", modifyConstant.slice.map(Utils::createSliceAnnotation))
+            visitOptional("slice", modifyConstant.slice?.map(Utils::createSliceAnnotation))
             visit("constant", listOf(Utils.createConstantAnnotation(modifyConstant.constant)))
-            if (modifyConstant.remap != null)
-                visit("remap", modifyConstant.remap)
-            if (modifyConstant.require != null)
-                visit("require", modifyConstant.require)
-            if (modifyConstant.expect != null)
-                visit("expect", modifyConstant.expect)
-            if (modifyConstant.allow != null)
-                visit("allow", modifyConstant.allow)
-            if (modifyConstant.constraints != null)
-                visit("constraints", modifyConstant.constraints)
+            visitOptional("remap", modifyConstant.remap)
+            visitOptional("require", modifyConstant.require)
+            visitOptional("expect", modifyConstant.expect)
+            visitOptional("allow", modifyConstant.allow)
+            visitOptional("constraints", modifyConstant.constraints)
             visitEnd()
         }
     }

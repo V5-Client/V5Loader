@@ -1,10 +1,15 @@
 package com.chattriggers.ctjs.internal.launch.generation
 
 import com.chattriggers.ctjs.api.Mappings
-import com.chattriggers.ctjs.internal.launch.*
+import com.chattriggers.ctjs.internal.launch.At
+import com.chattriggers.ctjs.internal.launch.Constant
+import com.chattriggers.ctjs.internal.launch.Descriptor
+import com.chattriggers.ctjs.internal.launch.Local
+import com.chattriggers.ctjs.internal.launch.Slice
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.lib.classtweaker.api.visitor.AccessWidenerVisitor
+import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.spongepowered.asm.mixin.transformer.ClassInfo
@@ -15,25 +20,16 @@ import org.spongepowered.asm.mixin.injection.Slice as SPSlice
 internal object Utils {
     fun createAtAnnotation(at: At): AnnotationNode {
         return AnnotationNode(SPAt::class.descriptorString()).apply {
-            if (at.id != null)
-                visit("id", at.id)
+            visitOptional("id", at.id)
             visit("value", at.value)
-            if (at.slice != null)
-                visit("slice", at.slice)
-            if (at.shift != null)
-                visit("shift", arrayOf(SPAt.Shift::class.java.descriptorString(), at.shift.name))
-            if (at.by != null)
-                visit("by", at.by)
-            if (at.args != null)
-                visit("args", at.args)
-            if (at.target != null)
-                visit("target", at.atTarget.descriptor.mappedDescriptor())
-            if (at.ordinal != null)
-                visit("ordinal", at.ordinal)
-            if (at.opcode != null)
-                visit("opcode", at.opcode)
-            if (at.remap != null)
-                visit("remap", at.remap)
+            visitOptional("slice", at.slice)
+            visitOptional("shift", at.shift?.let { arrayOf(SPAt.Shift::class.java.descriptorString(), it.name) })
+            visitOptional("by", at.by)
+            visitOptional("args", at.args)
+            visitOptional("target", at.target?.let { at.atTarget.descriptor.mappedDescriptor() })
+            visitOptional("ordinal", at.ordinal)
+            visitOptional("opcode", at.opcode)
+            visitOptional("remap", at.remap)
 
             visitEnd()
         }
@@ -41,51 +37,39 @@ internal object Utils {
 
     fun createSliceAnnotation(slice: Slice): AnnotationNode {
         return AnnotationNode(SPSlice::class.descriptorString()).apply {
-            if (slice.id != null)
-                visit("id", slice.id)
-            if (slice.from != null)
-                visit("from", createAtAnnotation(slice.from))
-            if (slice.to != null)
-                visit("to", createAtAnnotation(slice.to))
+            visitOptional("id", slice.id)
+            visitOptional("from", slice.from?.let(::createAtAnnotation))
+            visitOptional("to", slice.to?.let(::createAtAnnotation))
             visitEnd()
         }
     }
 
     fun createConstantAnnotation(constant: Constant): AnnotationNode {
         return AnnotationNode(SPConstant::class.descriptorString()).apply {
-            if (constant.nullValue != null)
-                visit("nullValue", constant.nullValue)
-            if (constant.intValue != null)
-                visit("intValue", constant.intValue)
-            if (constant.floatValue != null)
-                visit("floatValue", constant.floatValue)
-            if (constant.longValue != null)
-                visit("longValue", constant.longValue)
-            if (constant.doubleValue != null)
-                visit("doubleValue", constant.doubleValue)
-            if (constant.stringValue != null)   
-                visit("stringValue", constant.stringValue)
+            visitOptional("nullValue", constant.nullValue)
+            visitOptional("intValue", constant.intValue)
+            visitOptional("floatValue", constant.floatValue)
+            visitOptional("longValue", constant.longValue)
+            visitOptional("doubleValue", constant.doubleValue)
+            visitOptional("stringValue", constant.stringValue)
             if (constant.classValue != null) {
                 val name = Mappings.getMappedClassName(constant.classValue)
                     ?: error("Unknown class \"${constant.classValue}\"")
                 visit("classValue", Type.getObjectType(name))
             }
-            if (constant.ordinal != null)
-                visit("ordinal", constant.ordinal)
-            if (constant.slice != null)
-                visit("slice", constant.slice)
-            if (constant.expandZeroConditions != null)
-                visit("expandZeroConditions", constant.expandZeroConditions)
-            if (constant.log != null)
-                visit("log", constant.log)
+            visitOptional("ordinal", constant.ordinal)
+            visitOptional("slice", constant.slice)
+            visitOptional("expandZeroConditions", constant.expandZeroConditions)
+            visitOptional("log", constant.log)
         }
     }
 
     fun widenField(mappedClass: Mappings.MappedClass, fieldName: String, isMutable: Boolean) {
         val field = mappedClass.fields[fieldName]
             ?: error("Unable to find field $fieldName in class ${mappedClass.name.original}")
+        val widener = requireNotNull(FabricLoaderImpl.INSTANCE.classTweaker.visitAccessWidener(mappedClass.name.value))
 
-        requireNotNull(FabricLoaderImpl.INSTANCE.classTweaker.visitAccessWidener(mappedClass.name.value)).visitField(
+        widener.visitField(
             field.name.value,
             field.type.value,
             AccessWidenerVisitor.AccessType.ACCESSIBLE,
@@ -93,7 +77,7 @@ internal object Utils {
         )
 
         if (isMutable) {
-            requireNotNull(FabricLoaderImpl.INSTANCE.classTweaker.visitAccessWidener(mappedClass.name.value)).visitField(
+            widener.visitField(
                 field.name.value,
                 field.type.value,
                 AccessWidenerVisitor.AccessType.MUTABLE,
@@ -109,8 +93,9 @@ internal object Utils {
     ) {
         val descriptor = Descriptor.Parser(methodName).parseMethod(full = false)
         val mappedMethod = findMethod(mappedClass, descriptor).first
+        val widener = requireNotNull(FabricLoaderImpl.INSTANCE.classTweaker.visitAccessWidener(mappedClass.name.value))
 
-        requireNotNull(FabricLoaderImpl.INSTANCE.classTweaker.visitAccessWidener(mappedClass.name.value)).visitMethod(
+        widener.visitMethod(
             mappedMethod.name.value,
             mappedMethod.toDescriptor(),
             AccessWidenerVisitor.AccessType.ACCESSIBLE,
@@ -118,7 +103,7 @@ internal object Utils {
         )
 
         if (isMutable) {
-            requireNotNull(FabricLoaderImpl.INSTANCE.classTweaker.visitAccessWidener(mappedClass.name.value)).visitMethod(
+            widener.visitMethod(
                 mappedMethod.name.value,
                 mappedMethod.toDescriptor(),
                 AccessWidenerVisitor.AccessType.MUTABLE,
@@ -195,4 +180,14 @@ internal object Utils {
 
         return InjectorGenerator.Parameter(descriptor, local)
     }
+
+}
+
+internal fun AnnotationVisitor.visitOptional(name: String, value: Any?) {
+    if (value != null)
+        visit(name, value)
+}
+
+internal fun MutableList<InjectorGenerator.Parameter>.addLocals(locals: List<Local>?) {
+    locals?.mapTo(this) { Utils.getParameterFromLocal(it) }
 }

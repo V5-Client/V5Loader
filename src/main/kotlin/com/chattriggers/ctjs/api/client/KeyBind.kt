@@ -12,7 +12,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.resources.language.I18n
 import net.minecraft.resources.Identifier
-import org.apache.commons.lang3.ArrayUtils
 import java.util.concurrent.CopyOnWriteArrayList
 
 class KeyBind {
@@ -48,13 +47,13 @@ class KeyBind {
         } else {
             val categoryList = KeyMappingAccessor.Category.getCategoryList()
 
-            if (!categoryList.stream().anyMatch { it.id.path.equals(category) }) {
+            if (categoryList.none { it.id.path == category }) {
                 uniqueCategories[category] = 0
             }
             val categoryId = Identifier.parse(category)
             val keyCategory = categoryList.firstOrNull { it.id == categoryId }
                 ?: KeyMapping.Category.register(categoryId)
-            uniqueCategories[category] = uniqueCategories[category]!! + 1
+            uniqueCategories[category] = uniqueCategories.getOrDefault(category, 0) + 1
             keyBinding = KeyMapping(description, keyCode, keyCategory)
 
             // We need to update the bound key for the KeyBind we just made to the previous binding,
@@ -204,27 +203,20 @@ class KeyBind {
             keyBinds.clear()
         }
 
-        internal fun getCategoryName(category: KeyMapping.Category): String {
-            return category.id.path
-        }
+        internal fun getCategoryName(category: KeyMapping.Category) = category.id.path
 
         private fun removeKeyBinding(keyBinding: KeyMapping) {
-            Client.getMinecraft().options.asMixin<OptionsAccessor>().setKeyMappings(
-                ArrayUtils.removeElement(
-                    Client.getMinecraft().options.keyMappings,
-                    keyBinding
-                )
-            )
+            val options = Client.getMinecraft().options
+            options.asMixin<OptionsAccessor>().setKeyMappings(options.keyMappings.filterNot { it === keyBinding }.toTypedArray())
             val category = keyBinding.category
             val categoryName = getCategoryName(category)
 
-            if (categoryName in uniqueCategories) {
-                uniqueCategories[categoryName] = uniqueCategories[categoryName]!! - 1
-
-                if (uniqueCategories[categoryName] == 0) {
-                    uniqueCategories.remove(categoryName)
-                    KeyMappingAccessor.Category.getCategoryList().removeIf { it.id.equals(category.id) }
-                }
+            val count = uniqueCategories[categoryName] ?: return
+            if (count <= 1) {
+                uniqueCategories.remove(categoryName)
+                KeyMappingAccessor.Category.getCategoryList().removeIf { it.id == category.id }
+            } else {
+                uniqueCategories[categoryName] = count - 1
             }
         }
 
@@ -237,19 +229,13 @@ class KeyBind {
             keyBinds.remove(keyBind)
         }
 
-        private fun addKeyBinding(keyBinding: KeyMapping): KeyMapping {
-            Client.getMinecraft().options.asMixin<OptionsAccessor>().setKeyMappings(
-                ArrayUtils.add(
-                    Client.getMinecraft().options.keyMappings,
-                    keyBinding
-                )
-            )
+        private fun addKeyBinding(keyBinding: KeyMapping) {
+            val options = Client.getMinecraft().options
+            options.asMixin<OptionsAccessor>().setKeyMappings(options.keyMappings + keyBinding)
 
             if (uniqueCategories[getCategoryName(keyBinding.category)] == 1) {
                 KeyMappingAccessor.Category.getCategoryList().add(keyBinding.category)
             }
-
-            return keyBinding
         }
     }
 }

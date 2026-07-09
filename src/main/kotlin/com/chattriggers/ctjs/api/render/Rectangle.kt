@@ -49,7 +49,7 @@ class Rectangle(
 
     fun setShadowOffsetX(x: Float) = apply { shadow.offset = Vec2f(x, shadow.offset.y) }
 
-    fun setShadowOffsetY(y: Float) = apply { shadow.offset = Vec2f(shadow.offset.y, y) }
+    fun setShadowOffsetY(y: Float) = apply { shadow.offset = Vec2f(shadow.offset.x, y) }
 
     fun getShadowColor(): Long = shadow.color
 

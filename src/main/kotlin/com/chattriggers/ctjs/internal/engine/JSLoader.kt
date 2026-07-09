@@ -17,13 +17,18 @@ import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 import java.net.URI
 import java.net.URL
-import java.util.ArrayDeque
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import org.mozilla.javascript.*
+import org.mozilla.javascript.Callable
+import org.mozilla.javascript.Context
+import org.mozilla.javascript.ImporterTopLevel
+import org.mozilla.javascript.NativeJavaClass
+import org.mozilla.javascript.ScriptRuntime
+import org.mozilla.javascript.Scriptable
+import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.commonjs.module.ModuleScriptProvider
 import org.mozilla.javascript.commonjs.module.Require
 import org.mozilla.javascript.commonjs.module.provider.StrongCachingModuleScriptProvider
@@ -40,11 +45,6 @@ object JSLoader {
     private val triggers = ConcurrentHashMap<ITriggerType, TriggerBucket>()
     private val emptyArgs = emptyArray<Any?>()
     private val dispatchContext = ThreadLocal<Context?>()
-    private val oneArgPool = ThreadLocal.withInitial { ArrayDeque<Array<Any?>>() }
-    private val twoArgPool = ThreadLocal.withInitial { ArrayDeque<Array<Any?>>() }
-    private val threeArgPool = ThreadLocal.withInitial { ArrayDeque<Array<Any?>>() }
-    private val fourArgPool = ThreadLocal.withInitial { ArrayDeque<Array<Any?>>() }
-    private val fiveArgPool = ThreadLocal.withInitial { ArrayDeque<Array<Any?>>() }
 
     private lateinit var moduleScope: Scriptable
     private lateinit var evalScope: Scriptable
@@ -95,9 +95,11 @@ object JSLoader {
         loadMixinLibs()
 
         wrapInContext {
-            modules.forEach { module ->
+            modules.mapNotNull { module ->
+                module.metadata.mixinEntry?.let { module to it }
+            }.forEach { (module, mixinEntry) ->
                 try {
-                    val uri = File(module.folder, module.metadata.mixinEntry!!).normalize().toURI()
+                    val uri = File(module.folder, mixinEntry).normalize().toURI()
                     require.loadCTModule(uri.toString(), uri)
                 } catch (e: Throwable) {
                     e.printTraceToConsole()
@@ -138,77 +140,31 @@ object JSLoader {
     }
 
     fun exec(type: ITriggerType, args: Array<out Any?>) {
-        val snapshot = getSnapshot(type) ?: return
-        if (snapshot.isEmpty()) return
-
-        execSnapshot(snapshot, args)
+        execSnapshot(type, args)
     }
 
     fun exec(type: ITriggerType, arg0: Any?) {
-        val snapshot = getSnapshot(type) ?: return
-        if (snapshot.isEmpty()) return
-
-        withArgs(oneArgPool, 1) { args ->
-            args[0] = arg0
-            execSnapshot(snapshot, args)
-        }
+        execSnapshot(type, arrayOf(arg0))
     }
 
     fun exec(type: ITriggerType, arg0: Any?, arg1: Any?) {
-        val snapshot = getSnapshot(type) ?: return
-        if (snapshot.isEmpty()) return
-
-        withArgs(twoArgPool, 2) { args ->
-            args[0] = arg0
-            args[1] = arg1
-            execSnapshot(snapshot, args)
-        }
+        execSnapshot(type, arrayOf(arg0, arg1))
     }
 
     fun exec(type: ITriggerType, arg0: Any?, arg1: Any?, arg2: Any?) {
-        val snapshot = getSnapshot(type) ?: return
-        if (snapshot.isEmpty()) return
-
-        withArgs(threeArgPool, 3) { args ->
-            args[0] = arg0
-            args[1] = arg1
-            args[2] = arg2
-            execSnapshot(snapshot, args)
-        }
+        execSnapshot(type, arrayOf(arg0, arg1, arg2))
     }
 
     fun exec(type: ITriggerType, arg0: Any?, arg1: Any?, arg2: Any?, arg3: Any?) {
-        val snapshot = getSnapshot(type) ?: return
-        if (snapshot.isEmpty()) return
-
-        withArgs(fourArgPool, 4) { args ->
-            args[0] = arg0
-            args[1] = arg1
-            args[2] = arg2
-            args[3] = arg3
-            execSnapshot(snapshot, args)
-        }
+        execSnapshot(type, arrayOf(arg0, arg1, arg2, arg3))
     }
 
     fun exec(type: ITriggerType, arg0: Any?, arg1: Any?, arg2: Any?, arg3: Any?, arg4: Any?) {
-        val snapshot = getSnapshot(type) ?: return
-        if (snapshot.isEmpty()) return
-
-        withArgs(fiveArgPool, 5) { args ->
-            args[0] = arg0
-            args[1] = arg1
-            args[2] = arg2
-            args[3] = arg3
-            args[4] = arg4
-            execSnapshot(snapshot, args)
-        }
+        execSnapshot(type, arrayOf(arg0, arg1, arg2, arg3, arg4))
     }
 
     fun execNoArgs(type: ITriggerType) {
-        val snapshot = getSnapshot(type) ?: return
-        if (snapshot.isEmpty()) return
-
-        execSnapshot(snapshot, emptyArgs)
+        execSnapshot(type, emptyArgs)
     }
 
     fun hasTriggers(type: ITriggerType): Boolean {
@@ -287,47 +243,41 @@ object JSLoader {
     }
 
     fun invoke(method: Callable, args: Array<out Any?>, thisObj: Scriptable = moduleScope): Any? {
-        val cx = dispatchContext.get()
-        if (cx != null) return invokeInContext(cx, method, args, thisObj)
-
-        return wrapInContext { invokeInContext(it, method, args, thisObj) }
+        return withDispatchContext { invokeInContext(it, method, args, thisObj) }
     }
 
     fun invokeVoid(method: Callable, args: Array<out Any?>, thisObj: Scriptable = moduleScope) {
-        val cx = dispatchContext.get()
-        if (cx != null) {
-            invokeVoidInContext(cx, method, args, thisObj)
-            return
-        }
-
-        wrapInContext { invokeVoidInContext(it, method, args, thisObj) }
+        withDispatchContext { invokeVoidInContext(it, method, args, thisObj) }
     }
 
     fun trigger(trigger: Trigger, method: Any, args: Array<out Any?>) {
-        try {
-            require(method is Callable) {
-                "Need to pass actual function to the register function, not the name!"
-            }
-            invoke(method, args)
-        } catch (e: Throwable) {
-            e.printTraceToConsole()
-            removeTrigger(trigger)
+        withCallableTrigger(trigger, method) { callable ->
+            invoke(callable, args)
         }
     }
 
     fun triggerVoid(trigger: Trigger, method: Any, args: Array<out Any?>) {
+        withCallableTrigger(trigger, method) { callable ->
+            invokeVoid(callable, args)
+        }
+    }
+
+    private inline fun withCallableTrigger(trigger: Trigger, method: Any, block: (Callable) -> Unit) {
         try {
             require(method is Callable) {
                 "Need to pass actual function to the register function, not the name!"
             }
-            invokeVoid(method, args)
+            block(method)
         } catch (e: Throwable) {
             e.printTraceToConsole()
             removeTrigger(trigger)
         }
     }
 
-    private fun execSnapshot(snapshot: Array<Trigger>, args: Array<out Any?>) {
+    private fun execSnapshot(type: ITriggerType, args: Array<out Any?>) {
+        val snapshot = getSnapshot(type) ?: return
+        if (snapshot.isEmpty()) return
+
         wrapInContext {
             val previous = dispatchContext.get()
             dispatchContext.set(it)
@@ -342,6 +292,11 @@ object JSLoader {
                 else dispatchContext.set(previous)
             }
         }
+    }
+
+    private inline fun <T> withDispatchContext(crossinline block: (Context) -> T): T {
+        val cx = dispatchContext.get()
+        return if (cx != null) block(cx) else wrapInContext(block = block)
     }
 
     private fun getSnapshot(type: ITriggerType): Array<Trigger>? {
@@ -373,25 +328,6 @@ object JSLoader {
             thisObj: Scriptable = moduleScope
     ) {
         method.call(context, moduleScope, thisObj, args)
-    }
-
-    private inline fun withArgs(
-            poolRef: ThreadLocal<ArrayDeque<Array<Any?>>>,
-            size: Int,
-            block: (Array<Any?>) -> Unit
-    ) {
-        val pool = poolRef.get()
-        val args = if (pool.isEmpty()) arrayOfNulls<Any?>(size) else pool.removeLast()
-        try {
-            block(args)
-        } finally {
-            var i = 0
-            while (i < size) {
-                args[i] = null
-                i++
-            }
-            pool.addLast(args)
-        }
     }
 
     private fun loadMixinLibs() {

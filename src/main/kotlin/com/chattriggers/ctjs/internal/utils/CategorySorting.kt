@@ -4,15 +4,16 @@ import gg.essential.vigilance.data.Category
 import gg.essential.vigilance.data.SortingBehavior
 
 internal object CategorySorting : SortingBehavior() {
-    override fun getCategoryComparator(): Comparator<in Category> {
-        return Comparator { o1, o2 ->
-            val categories = listOf("General", "Console")
+    private val order = mapOf("General" to 0, "Console" to 1)
 
-            if (o1.name !in categories || o2.name !in categories) {
+    override fun getCategoryComparator(): Comparator<in Category> =
+        Comparator { o1, o2 ->
+            val first = order[o1.name]
+            val second = order[o2.name]
+            if (first == null || second == null) {
                 throw IllegalArgumentException("All categories must be in the list of categories")
             }
 
-            categories.indexOf(o1.name) - categories.indexOf(o2.name)
+            first - second
         }
-    }
 }

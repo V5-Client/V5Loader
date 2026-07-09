@@ -28,7 +28,6 @@ import com.mojang.realmsclient.RealmsMainScreen
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ServerGamePacketListener
 import net.minecraft.network.chat.Component
-import kotlin.math.max
 
 object Client {
     internal var referenceSystemTime: Long = 0
@@ -111,13 +110,13 @@ object Client {
      * @return The GuiNewChat object for the chat gui
      */
     @JvmStatic
-    fun getChatGui(): ChatComponent? = getMinecraft().gui?.chat
+    fun getChatGui(): ChatComponent? = getMinecraft().gui.chat
 
     @JvmStatic
     fun isInChat(): Boolean = getMinecraft().screen is ChatScreen
 
     @JvmStatic
-    fun getTabGui(): PlayerTabOverlay? = getMinecraft().gui?.tabList
+    fun getTabGui(): PlayerTabOverlay? = getMinecraft().gui.tabList
 
     @JvmStatic
     fun isInTab(): Boolean = getMinecraft().options.keyPlayerList.isDown
@@ -150,10 +149,16 @@ object Client {
     fun getSystemTime(): Long = (System.nanoTime() - referenceSystemTime) / 1_000_000
 
     @JvmStatic
-    fun getMouseX() = getMinecraft().mouseHandler.xpos() * getMinecraft().window.guiScaledWidth / max(1, getMinecraft().window.guiScaledWidth)
+    fun getMouseX(): Double {
+        val minecraft = getMinecraft()
+        return minecraft.mouseHandler.xpos() * minecraft.window.guiScaledWidth / minecraft.window.width
+    }
 
     @JvmStatic
-    fun getMouseY() = getMinecraft().mouseHandler.ypos() * getMinecraft().window.guiScaledHeight / max(1, getMinecraft().window.guiScaledHeight)
+    fun getMouseY(): Double {
+        val minecraft = getMinecraft()
+        return minecraft.mouseHandler.ypos() * minecraft.window.guiScaledHeight / minecraft.window.height
+    }
 
     @JvmStatic
     fun isInGui(): Boolean = currentGui.get() != null

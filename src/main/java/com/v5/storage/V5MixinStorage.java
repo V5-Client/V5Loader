@@ -2,31 +2,21 @@ package com.v5.storage;
 
 import com.chattriggers.ctjs.internal.engine.JSLoader;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Undefined;
 
 public final class V5MixinStorage {
-    private static final String STORAGE_KEY = "V5Mixin.storage";
     private static final String METHOD_PREFIX = "method_";
+    private static final Map<String, Object> STORAGE = new HashMap<>();
 
     private V5MixinStorage() {}
 
-    @SuppressWarnings("unchecked")
-    private static HashMap<String, Object> storage() {
-        Object raw = System.getProperties().get(STORAGE_KEY);
-        if (raw instanceof HashMap<?, ?> map) {
-            return (HashMap<String, Object>) map;
-        }
-
-        HashMap<String, Object> created = new HashMap<>();
-        System.getProperties().put(STORAGE_KEY, created);
-        return created;
-    }
-
     public static Object get(String key, Object defaultValue) {
-        HashMap<String, Object> map = storage();
-        return map.containsKey(key) ? map.get(key) : defaultValue;
+        return STORAGE.getOrDefault(key, defaultValue);
     }
 
     public static boolean getBoolean(String key, boolean defaultValue) {
@@ -44,17 +34,13 @@ public final class V5MixinStorage {
         }
 
         if (value instanceof CharSequence sequence) {
-            String normalized = sequence.toString().trim().toLowerCase();
+            String normalized = sequence.toString().trim().toLowerCase(Locale.ROOT);
             if ("true".equals(normalized)) return true;
             if ("false".equals(normalized)) return false;
             return defaultValue;
         }
 
-        try {
-            return ScriptRuntime.toBoolean(value);
-        } catch (Throwable ignored) {
-            return defaultValue;
-        }
+        return convertOrDefault(value, ScriptRuntime::toBoolean, defaultValue);
     }
 
     public static String getString(String key, String defaultValue) {
@@ -67,19 +53,15 @@ public final class V5MixinStorage {
             return str;
         }
 
-        try {
-            return ScriptRuntime.toString(value);
-        } catch (Throwable ignored) {
-            return defaultValue;
-        }
+        return convertOrDefault(value, ScriptRuntime::toString, defaultValue);
     }
 
     public static void set(String key, Object value) {
-        storage().put(key, value);
+        STORAGE.put(key, value);
     }
 
     public static <T> T applyMethod(String methodName, T original, Class<T> expectedType) {
-        Object value = storage().get(METHOD_PREFIX + methodName);
+        Object value = STORAGE.get(METHOD_PREFIX + methodName);
         if (!(value instanceof Callable callable)) {
             return original;
         }
@@ -97,5 +79,13 @@ public final class V5MixinStorage {
         }
 
         return original;
+    }
+
+    private static <T> T convertOrDefault(Object value, Function<Object, T> converter, T defaultValue) {
+        try {
+            return converter.apply(value);
+        } catch (Throwable ignored) {
+            return defaultValue;
+        }
     }
 }

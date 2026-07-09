@@ -26,9 +26,14 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
-import net.fabricmc.fabric.api.event.player.*
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback
+import net.fabricmc.fabric.api.event.player.UseBlockCallback
+import net.fabricmc.fabric.api.event.player.UseEntityCallback
+import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.player.Player as MCPlayer
 import org.lwjgl.glfw.GLFW
 import org.mozilla.javascript.Context
 
@@ -61,12 +66,12 @@ object ClientListener : Initializer {
 
         ClientTickEvents.START_CLIENT_TICK.register {
             synchronized(tasks) {
-                val iter = tasks.iterator()
-                while (iter.hasNext()) {
-                    val task = iter.next()
+                tasks.removeAll { task ->
                     if (task.delay-- <= 0) {
                         Client.getMinecraft().submit(task.callback)
-                        iter.remove()
+                        true
+                    } else {
+                        false
                     }
                 }
             }
@@ -81,21 +86,11 @@ object ClientListener : Initializer {
         }
 
         ClientSendMessageEvents.ALLOW_CHAT.register { message ->
-            if (!JSLoader.hasTriggers(TriggerType.MESSAGE_SENT)) return@register true
-
-            val event = CancellableEvent()
-            TriggerType.MESSAGE_SENT.triggerAll(message, event)
-
-            !event.isCancelled()
+            triggerMessageSent(message)
         }
 
         ClientSendMessageEvents.ALLOW_COMMAND.register { message ->
-            if (!JSLoader.hasTriggers(TriggerType.MESSAGE_SENT)) return@register true
-
-            val event = CancellableEvent()
-            TriggerType.MESSAGE_SENT.triggerAll("/$message", event)
-
-            !event.isCancelled()
+            triggerMessageSent("/$message")
         }
 
         ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
@@ -170,8 +165,7 @@ object ClientListener : Initializer {
         }
 
         AttackBlockCallback.EVENT.register { player, _, _, pos, direction ->
-            if (!player.level().isClientSide) return@register InteractionResult.PASS
-            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register InteractionResult.PASS
+            if (!shouldTriggerPlayerInteract(player)) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -180,12 +174,11 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
+            event.toInteractionResult()
         }
 
         AttackEntityCallback.EVENT.register { player, _, _, entity, _ ->
-            if (!player.level().isClientSide) return@register InteractionResult.PASS
-            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register InteractionResult.PASS
+            if (!shouldTriggerPlayerInteract(player)) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -194,7 +187,7 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
+            event.toInteractionResult()
         }
 
         CTEvents.BREAK_BLOCK.register { pos ->
@@ -208,8 +201,7 @@ object ClientListener : Initializer {
         }
 
         UseBlockCallback.EVENT.register { player, _, hand, hitResult ->
-            if (!player.level().isClientSide) return@register InteractionResult.PASS
-            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register InteractionResult.PASS
+            if (!shouldTriggerPlayerInteract(player)) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -218,12 +210,11 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
+            event.toInteractionResult()
         }
 
         UseEntityCallback.EVENT.register { player, _, hand, entity, _ ->
-            if (!player.level().isClientSide) return@register InteractionResult.PASS
-            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register InteractionResult.PASS
+            if (!shouldTriggerPlayerInteract(player)) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -232,12 +223,11 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
+            event.toInteractionResult()
         }
 
         UseItemCallback.EVENT.register { player, _, hand ->
-            if (!player.level().isClientSide) return@register InteractionResult.PASS
-            if (!JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)) return@register InteractionResult.PASS
+            if (!shouldTriggerPlayerInteract(player)) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             val stack = player.getItemInHand(hand)
@@ -248,7 +238,7 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
+            event.toInteractionResult()
         }
     }
 
@@ -260,23 +250,23 @@ object ClientListener : Initializer {
 
     private fun handleChatMessage(message: Component, actionBar: Boolean): Boolean {
         val textComponent = TextComponent(message)
+        val triggerType = if (actionBar) TriggerType.ACTION_BAR else TriggerType.CHAT
+        val buffer = if (actionBar) actionBarHistoryBuffer else chatHistoryBuffer
 
-        return if (actionBar) {
-            pushHistory(actionBarHistoryBuffer, textComponent)
+        pushHistory(buffer, textComponent)
 
-            if (!JSLoader.hasTriggers(TriggerType.ACTION_BAR)) return true
-            val event = ChatTrigger.Event(textComponent)
-            TriggerType.ACTION_BAR.triggerAll(event)
-            !event.isCancelled()
-        } else {
-            pushHistory(chatHistoryBuffer, textComponent)
+        if (!JSLoader.hasTriggers(triggerType)) return true
+        val event = ChatTrigger.Event(textComponent)
+        triggerType.triggerAll(event)
+        return !event.isCancelled()
+    }
 
-            if (!JSLoader.hasTriggers(TriggerType.CHAT)) return true
-            val event = ChatTrigger.Event(textComponent)
-            TriggerType.CHAT.triggerAll(event)
+    private fun triggerMessageSent(message: String): Boolean {
+        if (!JSLoader.hasTriggers(TriggerType.MESSAGE_SENT)) return true
 
-            !event.isCancelled()
-        }
+        val event = CancellableEvent()
+        TriggerType.MESSAGE_SENT.triggerAll(message, event)
+        return !event.isCancelled()
     }
 
     private fun pushHistory(buffer: ArrayDeque<TextComponent>, message: TextComponent) {
@@ -285,4 +275,10 @@ object ClientListener : Initializer {
         }
         buffer.addLast(message)
     }
+
+    private fun shouldTriggerPlayerInteract(player: MCPlayer) =
+        player.level().isClientSide && JSLoader.hasTriggers(TriggerType.PLAYER_INTERACT)
+
+    private fun CancellableEvent.toInteractionResult(): InteractionResult =
+        if (isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
 }

@@ -57,15 +57,15 @@ object ModulesGui : Screen(net.minecraft.network.chat.Component.literal("Modules
         val mouseX = click.x
         val mouseY = click.y
 
-        var width = Renderer.screen.getWidth() - 100f
-        if (width > 500) width = 500f
+        val width = (Renderer.screen.getWidth() - 100f).coerceAtMost(500f)
+        val right = Renderer.screen.getWidth() / 2f + width / 2f
 
         if (mouseX > Renderer.screen.getWidth() - 20 && mouseY > Renderer.screen.getHeight() - 20) {
             window.scroll = 0f
             return false
         }
 
-        if (mouseX > Renderer.screen.getWidth() / 2f + width / 2f - 25 && mouseX < Renderer.screen.getWidth() / 2f + width / 2f
+        if (mouseX > right - 25 && mouseX < right
             && mouseY > window.scroll + 95 && mouseY < window.scroll + 120
         ) {
             Player.toMC()?.clientSideCloseContainer()

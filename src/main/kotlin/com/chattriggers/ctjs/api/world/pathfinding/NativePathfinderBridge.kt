@@ -41,32 +41,51 @@ object NativePathfinderBridge {
   @JvmStatic
   fun getLastError(): String? = lastError ?: NativePathfinderJNI.getLoadError()
 
-  @JvmStatic
-  fun setWorld(worldKey: String, minY: Int, maxY: Int) {
+  private fun setUnavailableError() {
+    lastError = NativePathfinderJNI.getLoadError() ?: "Native pathfinder unavailable"
+  }
+
+  private fun setError(t: Throwable) {
+    lastError = t.message ?: t.javaClass.simpleName
+  }
+
+  private inline fun runNative(block: () -> Unit) {
     if (!isAvailable()) {
-      lastError = NativePathfinderJNI.getLoadError() ?: "Native pathfinder unavailable"
+      setUnavailableError()
       return
     }
 
     try {
-      NativePathfinderJNI.setWorld(worldKey, minY, maxY)
+      block()
       lastError = null
     } catch (t: Throwable) {
-      lastError = t.message ?: t.javaClass.simpleName
+      setError(t)
+    }
+  }
+
+  private inline fun <T> callNative(noResultError: String, block: () -> T?): T? {
+    if (!isAvailable()) {
+      setUnavailableError()
+      return null
+    }
+
+    return try {
+      block().also {
+        lastError = if (it == null) noResultError else null
+      }
+    } catch (t: Throwable) {
+      setError(t)
+      null
     }
   }
 
   @JvmStatic
-  fun clearWorld() {
-    if (!isAvailable()) return
+  fun setWorld(worldKey: String, minY: Int, maxY: Int) =
+    runNative { NativePathfinderJNI.setWorld(worldKey, minY, maxY) }
 
-    try {
-      NativePathfinderJNI.clearWorld()
-      lastError = null
-    } catch (t: Throwable) {
-      lastError = t.message ?: t.javaClass.simpleName
-    }
-  }
+  @JvmStatic
+  fun clearWorld() =
+    runNative { NativePathfinderJNI.clearWorld() }
 
   @JvmStatic
   fun upsertChunk(
@@ -76,39 +95,21 @@ object NativePathfinderBridge {
     maxY: Int,
     sectionMask: Long,
     sectionFlags: ShortArray
-  ) {
-    if (!isAvailable()) return
-
-    try {
-      NativePathfinderJNI.upsertChunk(chunkX, chunkZ, minY, maxY, sectionMask, sectionFlags)
-      lastError = null
-    } catch (t: Throwable) {
-      lastError = t.message ?: t.javaClass.simpleName
-    }
+  ) = runNative {
+    NativePathfinderJNI.upsertChunk(chunkX, chunkZ, minY, maxY, sectionMask, sectionFlags)
   }
 
   @JvmStatic
   fun applyBlockUpdates(updates: IntArray) {
-    if (!isAvailable()) return
     if (updates.isEmpty()) return
 
-    try {
-      NativePathfinderJNI.applyBlockUpdates(updates)
-      lastError = null
-    } catch (t: Throwable) {
-      lastError = t.message ?: t.javaClass.simpleName
-    }
+    runNative { NativePathfinderJNI.applyBlockUpdates(updates) }
   }
 
   @JvmStatic
-  fun findPath(request: NativePathSearchRequest): NativePathResult? {
-    if (!isAvailable()) {
-      lastError = NativePathfinderJNI.getLoadError() ?: "Native pathfinder unavailable"
-      return null
-    }
-
-    return try {
-      val result = NativePathfinderJNI.findPath(
+  fun findPath(request: NativePathSearchRequest): NativePathResult? =
+    callNative("Native pathfinder returned no path") {
+      NativePathfinderJNI.findPath(
         request.startPoints,
         request.endPoints,
         request.isFly,
@@ -119,29 +120,12 @@ object NativePathfinderBridge {
         request.avoidMeta,
         request.avoidPenalty
       )
-
-      if (result == null) {
-        lastError = "Native pathfinder returned no path"
-      } else {
-        lastError = null
-      }
-
-      result
-    } catch (t: Throwable) {
-      lastError = t.message ?: t.javaClass.simpleName
-      null
     }
-  }
 
   @JvmStatic
-  fun findEtherwarpPath(request: NativeEtherwarpSearchRequest): NativeEtherwarpResult? {
-    if (!isAvailable()) {
-      lastError = NativePathfinderJNI.getLoadError() ?: "Native pathfinder unavailable"
-      return null
-    }
-
-    return try {
-      val result = NativePathfinderJNI.findEtherwarpPath(
+  fun findEtherwarpPath(request: NativeEtherwarpSearchRequest): NativeEtherwarpResult? =
+    callNative("Native etherwarp pathfinder returned no path") {
+      NativePathfinderJNI.findEtherwarpPath(
         request.goalX,
         request.goalY,
         request.goalZ,
@@ -158,19 +142,7 @@ object NativePathfinderBridge {
         request.rewireEpsilon,
         request.eyeHeight
       )
-
-      if (result == null) {
-        lastError = "Native etherwarp pathfinder returned no path"
-      } else {
-        lastError = null
-      }
-
-      result
-    } catch (t: Throwable) {
-      lastError = t.message ?: t.javaClass.simpleName
-      null
     }
-  }
 
   @JvmStatic
   fun cancelSearch() {

@@ -13,7 +13,8 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.resources.ResourceKey
 import net.minecraft.util.Mth
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes
-import java.util.*
+import java.util.Locale
+import java.util.UUID
 import kotlin.math.sqrt
 
 open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
@@ -33,11 +34,11 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
 
     fun getLastZ() = mcValue.zOld
 
-    fun getRenderX() = getLastX() + (getX() - getLastX()) * Renderer.partialTicks
+    fun getRenderX() = renderPosition(getLastX(), getX())
 
-    fun getRenderY() = getLastY() + (getY() - getLastY()) * Renderer.partialTicks
+    fun getRenderY() = renderPosition(getLastY(), getY())
 
-    fun getRenderZ() = getLastZ() + (getZ() - getLastZ()) * Renderer.partialTicks
+    fun getRenderZ() = renderPosition(getLastZ(), getZ())
 
     /**
      * Gets the pitch, the horizontal direction the entity is facing towards.
@@ -93,7 +94,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return List of entities, empty if there are no riders
      */
-    fun getRiders() = mcValue.passengers?.map(::fromMC).orEmpty()
+    fun getRiders() = mcValue.passengers.map(::fromMC)
 
     /**
      * Checks whether the entity is dead.
@@ -213,7 +214,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
     fun getLookVector(partialTicks: Float = Renderer.partialTicks) = mcValue.getViewVector(partialTicks)
 
     @JvmOverloads
-    fun getEyePosition(partialTicks: Float = Renderer.partialTicks) = mcValue.eyePosition
+    fun getEyePosition(partialTicks: Float = Renderer.partialTicks) = mcValue.getEyePosition(partialTicks)
 
     fun canBeCollidedWith() = mcValue.canBeCollidedWith(null)
 
@@ -234,9 +235,12 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
     fun getChunk(): Chunk = Chunk(getWorld().getChunkAt(mcValue.blockPosition()))
 
     override fun toString(): String {
-        val coordStrings = listOf(getX(), getY(), getZ()).map { "%.3f".format(it) }
+        val coordStrings = listOf(getX(), getY(), getZ()).map { "%.3f".format(Locale.ROOT, it) }
         return "${this::class.simpleName}(name=${getName()}, pos=[${coordStrings.joinToString()}])"
     }
+
+    private fun renderPosition(previous: Double, current: Double) =
+        previous + (current - previous) * Renderer.partialTicks
 
     enum class DimensionType(
         override val mcValue: ResourceKey<MCDimensionType>,

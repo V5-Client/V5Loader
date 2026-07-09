@@ -12,7 +12,11 @@ import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.toasts.ToastManager
 import net.minecraft.resources.Identifier
-import org.mozilla.javascript.*
+import org.mozilla.javascript.Callable
+import org.mozilla.javascript.Context
+import org.mozilla.javascript.NativeObject
+import org.mozilla.javascript.Scriptable
+import org.mozilla.javascript.Undefined
 import net.minecraft.client.gui.components.toasts.Toast as MCToast
 
 // https://github.com/Edgeburn/Toasts
@@ -96,21 +100,19 @@ class Toast(config: NativeObject) : MCToast {
     override fun getWantedVisibility(): MCToast.Visibility = visibility
 
     override fun update(manager: ToastManager, time: Long) {
-       if (startTime == null) {
-           startTime = time
-       }
-
+        val startedAt = startTime ?: time.also { startTime = it }
         val duration = displayTime * manager.notificationDisplayTimeMultiplier
-        val elapsed = time - startTime!!
+        val elapsed = time - startedAt
         visibility = if (elapsed < duration) MCToast.Visibility.SHOW else MCToast.Visibility.HIDE
     }
 
     override fun extractRenderState(context: GuiGraphicsExtractor, textRenderer: Font, startTime: Long) {
-        if (customRenderFunction != null) {
+        val render = customRenderFunction
+        if (render != null) {
             DrawContextHolder.withContext(context) {
                 Renderer.withMatrix(UMatrixStack(context.pose()).toMC()) {
                     try {
-                        JSLoader.invoke(customRenderFunction!!, emptyArray(), thisObj = jsReceiver!!)
+                        JSLoader.invoke(render, emptyArray(), thisObj = requireNotNull(jsReceiver))
                     } catch (e: Throwable) {
                         e.printTraceToConsole()
 

@@ -84,6 +84,8 @@ internal class WrapOperationGenerator(
             }
         }
 
+        parameters.addLocals(wrapOperation.locals)
+
         return InjectionSignature(
             mappedMethod,
             parameters,
@@ -95,20 +97,13 @@ internal class WrapOperationGenerator(
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPWrapOperation::class.descriptorString(), true).apply {
             visit("method", signature.targetMethod.toFullDescriptor())
-            if (wrapOperation.at != null)
-                visit("at", Utils.createAtAnnotation(wrapOperation.at))
-            if (wrapOperation.constant != null)
-                visit("constant", Utils.createConstantAnnotation(wrapOperation.constant))
-            if (wrapOperation.slice != null)
-                visit("slice", wrapOperation.slice.map(Utils::createSliceAnnotation))
-            if (wrapOperation.remap != null)
-                visit("remap", wrapOperation.remap)
-            if (wrapOperation.require != null)
-                visit("require", wrapOperation.require)
-            if (wrapOperation.expect != null)
-                visit("expect", wrapOperation.expect)
-            if (wrapOperation.allow != null)
-                visit("allow", wrapOperation.allow)
+            visitOptional("at", wrapOperation.at?.let(Utils::createAtAnnotation))
+            visitOptional("constant", wrapOperation.constant?.let(Utils::createConstantAnnotation))
+            visitOptional("slice", wrapOperation.slice?.map(Utils::createSliceAnnotation))
+            visitOptional("remap", wrapOperation.remap)
+            visitOptional("require", wrapOperation.require)
+            visitOptional("expect", wrapOperation.expect)
+            visitOptional("allow", wrapOperation.allow)
             visitEnd()
         }
     }
@@ -125,7 +120,7 @@ internal class WrapOperationGenerator(
         ldc(operationParameterIndex)
         anewarray<Any>()
 
-        (0 until operationParameterIndex).map {
+        (0 until operationParameterIndex).forEach {
             dup
             ldc(it)
             generateParameterLoad(it)

@@ -28,11 +28,7 @@ object ChatLib {
      */
     @JvmStatic
     fun chat(text: Any?) {
-        when (text) {
-            is TextComponent -> text
-            is CharSequence -> TextComponent(text)
-            else -> TextComponent(text.toString())
-        }.chat()
+        textComponent(text).chat()
     }
 
     /**
@@ -43,11 +39,7 @@ object ChatLib {
      */
     @JvmStatic
     fun actionBar(text: Any?) {
-        when (text) {
-            is TextComponent -> text
-            is CharSequence -> TextComponent(text)
-            else -> TextComponent(text.toString())
-        }.actionBar()
+        textComponent(text).actionBar()
     }
 
     /**
@@ -58,11 +50,7 @@ object ChatLib {
      */
     @JvmStatic
     fun simulateChat(text: Any?) {
-        when (text) {
-            is TextComponent -> text
-            is CharSequence -> TextComponent(text)
-            else -> TextComponent(text.toString())
-        }.withRecursive().chat()
+        textComponent(text).withRecursive().chat()
     }
 
 
@@ -119,6 +107,7 @@ object ChatLib {
     @JvmStatic
     @JvmOverloads
     fun getChatBreak(separator: String = "-"): String {
+        if (separator.isEmpty()) return ""
         val len = Renderer.getStringWidth(separator)
         val times = getChatWidth() / len
         return separator.repeat(times)
@@ -171,13 +160,7 @@ object ChatLib {
             return text
 
         val spaceWidth = (chatWidth - textWidth) / 2f
-        val spaceBuilder = StringBuilder().apply {
-            repeat((spaceWidth / Renderer.getStringWidth(" ")).roundToInt()) {
-                append(' ')
-            }
-        }
-
-        return spaceBuilder.append(text).toString()
+        return " ".repeat((spaceWidth / Renderer.getStringWidth(" ")).roundToInt()) + text
     }
 
     /**
@@ -199,12 +182,7 @@ object ChatLib {
      */
     @JvmStatic
     fun editChat(regexp: NativeRegExp, vararg replacements: Any) {
-        val global = regexp["global"] as Boolean
-        val ignoreCase = regexp["ignoreCase"] as Boolean
-        val multiline = regexp["multiline"] as Boolean
-
-        val flags = (if (ignoreCase) Pattern.CASE_INSENSITIVE else 0) or if (multiline) Pattern.MULTILINE else 0
-        val pattern = Pattern.compile(regexp["source"] as String, flags)
+        val (pattern, global) = regexp.toPattern()
 
         editLines(replacements) {
             val matcher = pattern.matcher(TextComponent(it.content).unformattedText)
@@ -267,7 +245,8 @@ object ChatLib {
         val mc = Client.getMinecraft()
         val indicator = if (mc.isSingleplayer) GuiMessageTag.systemSinglePlayer() else GuiMessageTag.system()
         var edited = false
-        val it = chatHudAccessor?.allMessages?.listIterator() ?: return
+        val accessor = chatHudAccessor ?: return
+        val it = accessor.allMessages.listIterator()
 
         while (it.hasNext()) {
             val next = it.next()
@@ -287,7 +266,7 @@ object ChatLib {
         }
 
         if (edited)
-            chatHudAccessor!!.invokeRefreshTrimmedMessages()
+            accessor.invokeRefreshTrimmedMessages()
     }
 
     /**
@@ -297,12 +276,7 @@ object ChatLib {
      */
     @JvmStatic
     fun deleteChat(regexp: NativeRegExp) {
-        val global = regexp["global"] as Boolean
-        val ignoreCase = regexp["ignoreCase"] as Boolean
-        val multiline = regexp["multiline"] as Boolean
-
-        val flags = (if (ignoreCase) Pattern.CASE_INSENSITIVE else 0) or if (multiline) Pattern.MULTILINE else 0
-        val pattern = Pattern.compile(regexp["source"] as String, flags)
+        val (pattern, global) = regexp.toPattern()
 
         removeLines {
             val matcher = pattern.matcher(TextComponent(it.content).unformattedText)
@@ -357,7 +331,8 @@ object ChatLib {
 
     private fun removeLines(matcher: (GuiMessage) -> Boolean) {
         var removed = false
-        val it = chatHudAccessor?.allMessages?.listIterator() ?: return
+        val accessor = chatHudAccessor ?: return
+        val it = accessor.allMessages.listIterator()
 
         while (it.hasNext()) {
             val next = it.next()
@@ -369,7 +344,7 @@ object ChatLib {
         }
 
         if (removed)
-            chatHudAccessor!!.invokeRefreshTrimmedMessages()
+            accessor.invokeRefreshTrimmedMessages()
     }
 
     /**
@@ -404,8 +379,9 @@ object ChatLib {
         require(message.getChatLineId() != -1)
 
         val chatGui = Client.getChatGui() ?: return
+        val accessor = chatHudAccessor ?: return
         chatGui.addClientSystemMessage(message)
-        val newChatLine = chatHudAccessor!!.allMessages[0]
+        val newChatLine = accessor.allMessages[0]
 
         check(message == newChatLine.content()) {
             "Expected new chat message to be at index 0"
@@ -420,5 +396,18 @@ object ChatLib {
 
     internal fun onChatHudLineRemoved(line: GuiMessage) {
         chatLineIds.remove(line)
+    }
+
+    private fun textComponent(text: Any?) = when (text) {
+        is TextComponent -> text
+        is CharSequence -> TextComponent(text)
+        else -> TextComponent(text.toString())
+    }
+
+    private fun NativeRegExp.toPattern(): Pair<Pattern, Boolean> {
+        val flags = (if (this["ignoreCase"] as Boolean) Pattern.CASE_INSENSITIVE else 0) or
+            if (this["multiline"] as Boolean) Pattern.MULTILINE else 0
+
+        return Pattern.compile(this["source"] as String, flags) to (this["global"] as Boolean)
     }
 }

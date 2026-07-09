@@ -17,9 +17,9 @@ public class ClientPacketListenerMixin {
     @Shadow
     private CommandDispatcher<SharedSuggestionProvider> commands;
 
+    @SuppressWarnings("unchecked")
     @Inject(method = "handleCommands", at = @At("TAIL"))
     private void injectOnCommandTree(ClientboundCommandsPacket packet, CallbackInfo ci) {
-        //noinspection unchecked
         CTEvents.NETWORK_COMMAND_DISPATCHER_REGISTER.invoker().register(
             (CommandDispatcher<FabricClientCommandSource>) (Object) commands
         );

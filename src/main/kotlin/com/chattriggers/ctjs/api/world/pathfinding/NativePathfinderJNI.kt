@@ -3,6 +3,7 @@ package com.chattriggers.ctjs.api.world.pathfinding
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Files
+import java.util.Locale
 
 internal object NativePathfinderJNI {
 
@@ -54,7 +55,7 @@ internal object NativePathfinderJNI {
   }
 
   private fun loadNativeFromResource(resourcePath: String): Boolean {
-    val os = System.getProperty("os.name").lowercase()
+    val os = System.getProperty("os.name").lowercase(Locale.ROOT)
     val ext = extensionForOs(os)
 
     val input = NativePathfinderJNI::class.java.getResourceAsStream(resourcePath)
@@ -78,7 +79,7 @@ internal object NativePathfinderJNI {
   }
 
   private fun nativeResourceCandidates(): List<String> {
-    val os = System.getProperty("os.name").lowercase()
+    val os = System.getProperty("os.name").lowercase(Locale.ROOT)
     val arch = normalizeArch(System.getProperty("os.arch"))
     val ext = extensionForOs(os)
     val lib = "$LIB_BASE$ext"
@@ -107,10 +108,10 @@ internal object NativePathfinderJNI {
     else -> throw IllegalStateException("Unsupported OS for native pathfinder: $os")
   }
 
-  private fun normalizeArch(arch: String): String = when (arch.lowercase()) {
+  private fun normalizeArch(arch: String): String = when (arch.lowercase(Locale.ROOT)) {
     "amd64", "x86_64" -> "x86_64"
     "aarch64", "arm64" -> "arm64"
-    else -> arch.lowercase()
+    else -> arch.lowercase(Locale.ROOT)
   }
 
   @JvmStatic

@@ -15,6 +15,7 @@ import net.minecraft.network.chat.numbers.NumberFormat
 import net.minecraft.network.chat.numbers.StyledFormat
 import net.minecraft.network.chat.Style
 import org.mozilla.javascript.NativeObject
+import java.util.Locale
 
 object Scoreboard {
     private var needsUpdate = true
@@ -25,10 +26,6 @@ object Scoreboard {
 
     @JvmStatic
     fun toMC() = World.toMC()?.scoreboard
-
-    @Deprecated("Use toMC", ReplaceWith("toMC()"))
-    @JvmStatic
-    fun getScoreboard() = toMC()
 
     @JvmStatic
     fun getSidebar(): Objective? = toMC()?.getDisplayObjective(DisplaySlot.SIDEBAR)
@@ -41,11 +38,7 @@ object Scoreboard {
      */
     @JvmStatic
     fun getTitle(): TextComponent {
-        if (needsUpdate) {
-            updateNames()
-            needsUpdate = false
-        }
-
+        updateIfNeeded()
         return scoreboardTitle
     }
 
@@ -75,12 +68,7 @@ object Scoreboard {
     @JvmStatic
     @JvmOverloads
     fun getLines(descending: Boolean = true): List<Score> {
-        // the array will only be updated upon request
-        if (needsUpdate) {
-            updateNames()
-            needsUpdate = false
-        }
-
+        updateIfNeeded()
         return if (descending) scoreboardNames else scoreboardNames.asReversed()
     }
 
@@ -199,6 +187,12 @@ object Scoreboard {
     @JvmStatic
     fun createTeam(name: String): Team = Team(toMC()!!.addPlayerTeam(name))
 
+    private fun updateIfNeeded() {
+        if (!needsUpdate) return
+        updateNames()
+        needsUpdate = false
+    }
+
     private fun updateNames() {
         scoreboardNames.clear()
 
@@ -211,16 +205,14 @@ object Scoreboard {
         if (!customTitle)
             scoreboardTitle = TextComponent(objective.displayName)
 
-        val newScores = scoreboard.trackedPlayers.asSequence().filter {
+        scoreboardNames = scoreboard.trackedPlayers.asSequence().filter {
             objective in scoreboard.listPlayerScores(it)
         }.map {
             scoreboard.getOrCreatePlayerScore(it, objective, true)
-        }.mapTo(mutableListOf(), ::Score)
-
-        scoreboardNames = newScores.sortedWith(compareBy<Score> {
+        }.map(::Score).sortedWith(compareBy<Score> {
             it.getScore()
         }.reversed().thenBy {
-            it.getName().formattedText.lowercase()
+            it.getName().formattedText.lowercase(Locale.ROOT)
         }).toMutableList()
     }
 

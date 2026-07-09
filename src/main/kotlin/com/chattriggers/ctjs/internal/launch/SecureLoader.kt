@@ -18,10 +18,10 @@ import java.io.IOException
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.net.URI
-import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.Arrays
 import java.util.Base64
+import java.util.Locale
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import javax.net.ssl.HttpsURLConnection
@@ -423,7 +423,7 @@ internal object SecureLoader {
             }
 
             val json = jsonParser.parseToJsonElement(responseText).jsonObject
-            val integrity = json["integrity"]?.jsonPrimitive?.contentOrNull?.lowercase()
+            val integrity = json["integrity"]?.jsonPrimitive?.contentOrNull?.lowercase(Locale.ROOT)
 
             when (integrity) {
                 "valid" -> ModLoaderCheckResult(
@@ -567,7 +567,7 @@ internal object SecureLoader {
     }
 
     private fun openBackendConnection(url: String): HttpsURLConnection =
-        URL(url).openConnection() as HttpsURLConnection
+        URI.create(url).toURL().openConnection() as HttpsURLConnection
 
     private fun processZip(zipData: ByteArray) {
         val moduleDir = getV5ModuleDir()

@@ -54,7 +54,7 @@ class Chunk(override val mcValue: MCChunk) : CTWrapper<MCChunk> {
             MCBlockPos(getMinBlockX(), mcValue.minY, getMinBlockZ())
         ).expandTowards(16.0, mcValue.maxY.toDouble(), 16.0)
 
-        return World.toMC()?.getEntitiesOfClass(clazz, box) { true }?.map(Entity::fromMC) ?: listOf()
+        return World.toMC()?.getEntitiesOfClass(clazz, box) { true }?.map(Entity::fromMC) ?: emptyList()
     }
 
     /**

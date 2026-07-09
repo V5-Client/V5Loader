@@ -11,7 +11,6 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption.APPEND
 import java.nio.file.StandardOpenOption.CREATE
 import java.util.Base64
-import java.util.Comparator
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
@@ -215,16 +214,7 @@ object FileLib {
      */
     @JvmStatic
     fun deleteDirectory(dir: File): Boolean {
-        val paths = runCatching { Files.walk(dir.toPath()) }.getOrElse { return false }
-
-        return try {
-            paths.sorted(Comparator.reverseOrder()).forEach(Files::deleteIfExists)
-            true
-        } catch (_: IOException) {
-            false
-        } finally {
-            paths.close()
-        }
+        return dir.deleteRecursively()
     }
 
     /**

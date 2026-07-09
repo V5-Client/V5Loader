@@ -25,7 +25,8 @@ class Image(var image: BufferedImage?) {
         CTJS.images.add(this)
 
         Client.scheduleTask {
-            texture = image!!.toNativeTexture()
+            val source = image ?: return@scheduleTask
+            texture = source.toNativeTexture()
         }
     }
 
@@ -36,18 +37,21 @@ class Image(var image: BufferedImage?) {
     fun getTexture(): DynamicTexture? = texture?.texture
 
     internal fun getIdOrRegister(): Identifier {
-        if (identifier == null) {
-            identifier = Identifier.fromNamespaceAndPath(CTJS.MOD_ID,"image${nextIdentifierIndex++}")
-            if (texture != null) {
-                Client.getMinecraft().textureManager.register(identifier!!, texture!!.texture)
-            } else {
-                Client.scheduleTask {
-                    Client.getMinecraft().textureManager.register(identifier!!, texture!!.texture)
-                }
+        identifier?.let { return it }
+
+        val id = Identifier.fromNamespaceAndPath(CTJS.MOD_ID, "image${nextIdentifierIndex++}")
+        identifier = id
+        val loadedTexture = texture
+
+        if (loadedTexture != null) {
+            Client.getMinecraft().textureManager.register(id, loadedTexture.texture)
+        } else {
+            Client.scheduleTask {
+                texture?.let { Client.getMinecraft().textureManager.register(id, it.texture) }
             }
         }
 
-        return identifier!!
+        return id
     }
 
     /**
@@ -70,7 +74,7 @@ class Image(var image: BufferedImage?) {
     ) = apply {
         val (drawWidth, drawHeight) = when {
             width == null && height == null -> textureWidth.toFloat() to textureHeight.toFloat()
-            width == null -> height!! / aspectRatio to height
+            width == null -> requireNotNull(height) / aspectRatio to height
             height == null -> width to width * aspectRatio
             else -> width to height
         }

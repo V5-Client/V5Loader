@@ -64,10 +64,11 @@ class Shape(private var color: Long) {
         val i = sin(theta) * (thickness / 2)
         val j = cos(theta) * (thickness / 2)
 
-        addVertex(x1 + i, y1 + j)
-        addVertex(x2 + i, y2 + j)
-        addVertex(x2 - i, y2 - j)
-        addVertex(x1 - i, y1 - j)
+        vertexes.add(Vec2f(x1 + i, y1 + j))
+        vertexes.add(Vec2f(x2 + i, y2 + j))
+        vertexes.add(Vec2f(x2 - i, y2 - j))
+        vertexes.add(Vec2f(x1 - i, y1 - j))
+        updateArea()
 
         drawMode = Renderer.DrawMode.QUADS
     }
@@ -88,14 +89,15 @@ class Shape(private var color: Long) {
         var circleY = 0f
 
         for (i in 0..steps) {
-            addVertex(x, y)
-            addVertex(circleX * radius + x, circleY * radius + y)
+            vertexes.add(Vec2f(x, y))
+            vertexes.add(Vec2f(circleX * radius + x, circleY * radius + y))
             xHolder = circleX
             circleX = cos * circleX - sin * circleY
             circleY = sin * xHolder + cos * circleY
-            addVertex(circleX * radius + x, circleY * radius + y)
+            vertexes.add(Vec2f(circleX * radius + x, circleY * radius + y))
         }
 
+        updateArea()
         drawMode = Renderer.DrawMode.TRIANGLE_STRIP
     }
 
@@ -114,15 +116,10 @@ class Shape(private var color: Long) {
     }
 
     private fun updateArea() {
-        area = 0f
-
-        for (i in vertexes.indices) {
+        area = vertexes.indices.sumOf { i ->
             val p1 = vertexes[i]
             val p2 = vertexes[(i + 1) % vertexes.size]
-
-            area += p1.x * p2.y - p2.x * p1.y
-        }
-
-        area /= 2
+            (p1.x * p2.y - p2.x * p1.y).toDouble()
+        }.toFloat() / 2
     }
 }

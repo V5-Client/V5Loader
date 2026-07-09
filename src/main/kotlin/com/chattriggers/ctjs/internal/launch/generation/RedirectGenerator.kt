@@ -33,7 +33,7 @@ internal class RedirectGenerator(
                 val targetMethod = Utils.findMethod(targetClass, descriptor).second
                 if (!targetMethod.isStatic)
                     parameters.add(Parameter(descriptor.owner))
-                descriptor.parameters!!.forEach { parameters.add(Parameter(it)) }
+                descriptor.parameters!!.mapTo(parameters, ::Parameter)
                 returnType = descriptor.returnType!!
             }
             is At.FieldTarget -> {
@@ -51,17 +51,13 @@ internal class RedirectGenerator(
                     parameters.add(Parameter(atTarget.descriptor.type!!))
             }
             is At.NewTarget -> {
-                atTarget.descriptor.parameters?.forEach {
-                    parameters.add(Parameter(it))
-                }
+                atTarget.descriptor.parameters?.mapTo(parameters, ::Parameter)
                 returnType = atTarget.descriptor.type
             }
             else -> error("Invalid target type ${atTarget.targetName} for Redirect inject")
         }
 
-        redirect.locals?.forEach {
-            parameters.add(Utils.getParameterFromLocal(it))
-        }
+        parameters.addLocals(redirect.locals)
 
         return InjectionSignature(
             mappedMethod,
@@ -74,19 +70,13 @@ internal class RedirectGenerator(
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPRedirect::class.descriptorString(), true).apply {
             visit("method", signature.targetMethod.toFullDescriptor())
-            if (redirect.slice != null)
-                visit("slice", Utils.createSliceAnnotation(redirect.slice))
+            visitOptional("slice", redirect.slice?.let(Utils::createSliceAnnotation))
             visit("at", Utils.createAtAnnotation(redirect.at))
-            if (redirect.remap != null)
-                visit("remap", redirect.remap)
-            if (redirect.require != null)
-                visit("require", redirect.require)
-            if (redirect.expect != null)
-                visit("expect", redirect.expect)
-            if (redirect.allow != null)
-                visit("allow", redirect.allow)
-            if (redirect.constraints != null)
-                visit("constraints", redirect.constraints)
+            visitOptional("remap", redirect.remap)
+            visitOptional("require", redirect.require)
+            visitOptional("expect", redirect.expect)
+            visitOptional("allow", redirect.allow)
+            visitOptional("constraints", redirect.constraints)
             visitEnd()
         }
     }

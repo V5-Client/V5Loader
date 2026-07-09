@@ -2,7 +2,9 @@ package com.chattriggers.ctjs.internal.console
 
 import kotlinx.serialization.json.Json
 import java.awt.Color
-import java.io.*
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.PrintWriter
 import java.net.Socket
 import java.util.concurrent.CompletableFuture
 
@@ -29,120 +31,87 @@ class ConsoleClientProcess(private val port: Int, private val hostPid: Long) {
             if (ProcessHandle.of(hostPid).isEmpty)
                 break
         }
-
-        debug("Closing console process...")
     }
 
     private fun socketLoop() {
-        var socket: Socket? = null
-        debug("Connecting...")
         try {
-            socket = Socket("127.0.0.1", port)
+            Socket("127.0.0.1", port).use { socket ->
+                val socketOut = PrintWriter(socket.outputStream, true, Charsets.UTF_8)
+                val socketIn = BufferedReader(InputStreamReader(socket.inputStream, Charsets.UTF_8))
 
-            while (!socket.isConnected)
-                Thread.sleep(200)
-
-            if (!socket.isConnected) {
-                debug("Socket not able to reconnect, breaking from connect loop...")
-                return
-            }
-
-            debug("Connected!")
-            val socketOut = PrintWriter(socket.outputStream, true, Charsets.UTF_8)
-            val socketIn = BufferedReader(InputStreamReader(socket.inputStream, Charsets.UTF_8))
-
-            while (true) {
-                if (socket.isClosed || !socket.isConnected) {
-                    debug("Socket closed\n")
-                    return
-                }
-
-                if (!socketIn.ready()) {
-                    Thread.sleep(50)
-                    continue
-                }
-
-                val messageText = socketIn.readLine() ?: break
-                debug("Received message \"${messageText.take(300)}\"\n")
-                when (val message = Json.decodeFromString<H2CMessage>(messageText)) {
-                    is InitMessage -> {
-                        // The frame won't be null if this message is a result of a reconnection to
-                        // the socket (i.e. this is not the first InitMessage we've received)
-                        if (frame == null) {
-                            frame = ConsoleFrame(
-                                this,
-                                message,
-                                onEval = { text ->
-                                    val future = CompletableFuture<String>()
-                                    val id = nextEvalId++
-                                    socketOut.println(Json.encodeToString(C2HMessage.serializer(), EvalTextMessage(id, text)))
-                                    pendingEvalFutures[id] = future
-                                    future
-                                },
-                                onReload = {
-                                    socketOut.println(Json.encodeToString(C2HMessage.serializer(), ReloadCTMessage))
-                                },
-                                fontSizeListener = { delta ->
-                                    socketOut.println(Json.encodeToString(C2HMessage.serializer(), FontSizeMessage(delta)))
-                                }
-                            )
-                        }
-                    }
-                    is ConfigUpdateMessage -> {
-                        frame?.setConfig(message) ?: error("Received ConfigUpdateMessage before InitMessage")
-                    }
-                    is EvalResultMessage -> {
-                        pendingEvalFutures[message.id]?.complete(message.result)
-                            ?: error("Unknown eval id ${message.id}")
-                    }
-                    OpenMessage -> {
-                        frame?.showConsole() ?: error("Received OpenMessage before InitMessage")
-                    }
-                    TerminateMessage -> {
-                        running = false
+                while (true) {
+                    if (socket.isClosed || !socket.isConnected) {
                         return
                     }
-                    ClearConsoleMessage -> {
-                        frame?.clearConsole() ?: error("Received ClearConsoleMessage before InitMessage")
+
+                    if (!socketIn.ready()) {
+                        Thread.sleep(50)
+                        continue
                     }
-                    is PrintMessage -> {
-                        frame?.println(message.text, message.logType, message.end, message.color?.let(::Color))
-                            ?: error("Received PrintMessage before InitMessage")
-                    }
-                    is PrintErrorMessage -> {
-                        frame?.printError(message.error)
-                            ?: error("Received PrintStackTraceMessage before InitMessage")
+
+                    val messageText = socketIn.readLine() ?: break
+                    when (val message = Json.decodeFromString<H2CMessage>(messageText)) {
+                        is InitMessage -> {
+                            // The frame won't be null if this message is a result of a reconnection to
+                            // the socket (i.e. this is not the first InitMessage we've received)
+                            if (frame == null) {
+                                frame = ConsoleFrame(
+                                    this,
+                                    message,
+                                    onEval = { text ->
+                                        val future = CompletableFuture<String>()
+                                        val id = nextEvalId++
+                                        socketOut.send(EvalTextMessage(id, text))
+                                        pendingEvalFutures[id] = future
+                                        future
+                                    },
+                                    onReload = {
+                                        socketOut.send(ReloadCTMessage)
+                                    },
+                                    fontSizeListener = { delta ->
+                                        socketOut.send(FontSizeMessage(delta))
+                                    }
+                                )
+                            }
+                        }
+                        is ConfigUpdateMessage -> {
+                            frame?.setConfig(message) ?: error("Received ConfigUpdateMessage before InitMessage")
+                        }
+                        is EvalResultMessage -> {
+                            pendingEvalFutures.remove(message.id)?.complete(message.result)
+                                ?: error("Unknown eval id ${message.id}")
+                        }
+                        OpenMessage -> {
+                            frame?.showConsole() ?: error("Received OpenMessage before InitMessage")
+                        }
+                        TerminateMessage -> {
+                            running = false
+                            return
+                        }
+                        ClearConsoleMessage -> {
+                            frame?.clearConsole() ?: error("Received ClearConsoleMessage before InitMessage")
+                        }
+                        is PrintMessage -> {
+                            frame?.println(message.text, message.logType, message.end, message.color?.let(::Color))
+                                ?: error("Received PrintMessage before InitMessage")
+                        }
+                        is PrintErrorMessage -> {
+                            frame?.printError(message.error)
+                                ?: error("Received PrintStackTraceMessage before InitMessage")
+                        }
                     }
                 }
             }
         } catch (e: Throwable) {
             reportException(e)
-        } finally {
-            socket?.close()
         }
-
-        return
     }
 
     internal fun reportException(e: Throwable) {
-        if (ENABLE_DEBUG) {
-            val sw = StringWriter()
-            e.printStackTrace(PrintWriter(sw))
-            debugOutput.appendText(sw.toString())
-        }
-    }
-
-    // Since this is a separate process, the easiest way to print debug output is to just
-    // write it to a file. Use the port number in the name to ensure its unique.
-    private val debugOutput = File("./console_output_$port.txt").also { it.writeText("") }
-    private fun debug(message: String) {
-        if (ENABLE_DEBUG)
-            debugOutput.appendText(message)
+        e.printStackTrace()
     }
 
     companion object {
-        private const val ENABLE_DEBUG = false
-
         @JvmStatic
         fun main(args: Array<String>) {
             val port = args.getOrNull(0)?.toIntOrNull() ?: error("Expected port as first argument")
@@ -153,4 +122,7 @@ class ConsoleClientProcess(private val port: Int, private val hostPid: Long) {
             ConsoleClientProcess(port, hostPid).start()
         }
     }
+
+    private fun PrintWriter.send(message: C2HMessage) =
+        println(Json.encodeToString(C2HMessage.serializer(), message))
 }

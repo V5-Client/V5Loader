@@ -40,18 +40,20 @@ class Module(val name: String, var metadata: ModuleMetadata, val folder: File) {
             16
         } else {
             gui.description.setMaxWidth(width - 5)
+            val descriptionHeight = gui.description.getHeight().toInt()
 
-            ctx.fill(x, y + 13, x + width, y + (gui.description.getHeight().toInt() + 25), 0x50000000)
+            ctx.fill(x, y + 13, x + width, y + descriptionHeight + 25, 0x50000000)
             ctx.text(Renderer.getFontRenderer(), "^", x + width - 10, y + 5, -1, false)
 
             gui.description.draw(ctx, x + 3, y + 15)
 
             if (metadata.version != null) {
+                val versionText = ChatLib.addColor("&8v${metadata.version}")
                 ctx.text(
                     Renderer.getFontRenderer(),
-                    ChatLib.addColor("&8v${metadata.version}"),
-                    x + width - Renderer.getStringWidth(ChatLib.addColor("&8v${metadata.version}")),
-                    y + gui.description.getHeight().toInt() + 15,
+                    versionText,
+                    x + width - Renderer.getStringWidth(versionText),
+                    y + descriptionHeight + 15,
                     -1
                 )
             }
@@ -66,12 +68,12 @@ class Module(val name: String, var metadata: ModuleMetadata, val folder: File) {
                     }
                 ),
                 x + 3,
-                y + gui.description.getHeight().toInt() + 15,
+                y + descriptionHeight + 15,
                 -1
             )
 
             ctx.pose().popMatrix()
-            gui.description.getHeight().toInt() + 27
+            descriptionHeight + 27
         }
     }
 
@@ -85,8 +87,9 @@ class Module(val name: String, var metadata: ModuleMetadata, val folder: File) {
 
         if (gui.collapsed || (metadata.isRequired && requiredBy.isNotEmpty())) return
 
+        val descriptionHeight = gui.description.getHeight()
         if (x > gui.x && x < gui.x + 45
-            && y > gui.y + gui.description.getHeight() + 15 && y < gui.y + gui.description.getHeight() + 25
+            && y > gui.y + descriptionHeight + 15 && y < gui.y + descriptionHeight + 25
         ) {
             ModuleManager.deleteModule(name)
         }

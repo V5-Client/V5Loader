@@ -11,14 +11,14 @@ data class ModuleMetadata(
     val version: String? = null,
     var entry: String? = null,
     var mixinEntry: String? = null,
-    val tags: ArrayList<String>? = null,
+    val tags: List<String>? = null,
     val pictureLink: String? = null,
     @JsonNames("author")
     val creator: String? = null,
     val description: String? = null,
-    val requires: ArrayList<String>? = null,
+    val requires: List<String>? = null,
     val helpMessage: String? = null,
     val changelog: String? = null,
-    val ignored: ArrayList<String>? = null,
+    val ignored: List<String>? = null,
     var isRequired: Boolean = false
 )

@@ -152,7 +152,7 @@ object NativeStateEncoder {
     when (block) {
       is SlabBlock -> {
         flags = flags or NativeVoxelFlags.SOLID
-        when (state.getValue(SlabBlock.TYPE) ?: SlabType.BOTTOM) {
+        when (state.getValue(SlabBlock.TYPE)) {
           SlabType.BOTTOM -> flags = flags or NativeVoxelFlags.SLAB_BOTTOM
           SlabType.TOP -> flags = flags or NativeVoxelFlags.SLAB_TOP or NativeVoxelFlags.BLOCKING_WALL
           SlabType.DOUBLE -> flags = flags or NativeVoxelFlags.BLOCKING_WALL

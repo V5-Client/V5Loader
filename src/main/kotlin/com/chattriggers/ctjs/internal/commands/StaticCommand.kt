@@ -19,18 +19,15 @@ internal class StaticCommand(
         val builder = literal(name)
             .then(argument("args", StringArgumentType.greedyString())
                 .suggests { ctx, builder ->
-                    val suggestions = if (dynamicSuggestions != null) {
+                    val suggestions = dynamicSuggestions?.let { suggest ->
                         val args = try {
                             StringArgumentType.getString(ctx, "args").split(" ")
                         } catch (e: IllegalArgumentException) {
                             emptyList()
                         }
 
-                        // Kotlin compiler bug: Without this null assert, it complains that the receiver is
-                        // nullable, but with it, it says it's unnecessary.
-                        @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
-                        dynamicSuggestions!!(args)
-                    } else staticSuggestions
+                        suggest(args)
+                    } ?: staticSuggestions
 
                     for (suggestion in suggestions)
                         builder.suggest(suggestion)
@@ -47,9 +44,7 @@ internal class StaticCommand(
         // Can't use .redirect() since it doesn't work without arguments
         for (alias in aliases) {
             val aliasNode = literal(alias)
-            node.children.forEach {
-                aliasNode.then(it)
-            }
+            node.children.forEach(aliasNode::then)
             aliasNode.executes(node.command)
 
             dispatcher.register(aliasNode)
@@ -59,7 +54,7 @@ internal class StaticCommand(
     override fun unregisterImpl(dispatcher: CommandDispatcher<SharedSuggestionProvider>) {
         super.unregisterImpl(dispatcher)
         dispatcher.root.asMixin<CommandNodeAccessor>().apply {
-            for (alias in aliases) {
+            aliases.forEach { alias ->
                 childNodes.remove(alias)
                 literals.remove(alias)
             }

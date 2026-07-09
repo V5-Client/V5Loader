@@ -1,8 +1,8 @@
 package com.chattriggers.ctjs.api.triggers
 
 import com.chattriggers.ctjs.api.message.TextComponent
-import java.util.HashMap
 import org.mozilla.javascript.regexp.NativeRegExp
+import java.util.Locale
 
 class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
     private lateinit var chatCriteria: Any
@@ -50,7 +50,7 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
                 if (caseInsensitive)
                     flags.add(RegexOption.IGNORE_CASE)
 
-                if ("" != chatCriteria)
+                if (chatCriteria.isNotEmpty())
                     source = replacedCriteria
             }
             is NativeRegExp -> {
@@ -60,9 +60,7 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
                 if (chatCriteria["multiline"] as Boolean)
                     flags.add(RegexOption.MULTILINE)
 
-                source = (chatCriteria["source"] as String).let {
-                    if ("" == it) ".+" else it
-                }
+                source = (chatCriteria["source"] as String).ifEmpty { ".+" }
 
                 if (!formattedForced)
                     formatted = Regex("[&\u00a7]") in source
@@ -125,25 +123,19 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
      * Adds the "start" parameter
      * @return the trigger object for method chaining
      */
-    fun setStart() = apply {
-        setParameter("start")
-    }
+    fun setStart() = setParameter("start")
 
     /**
      * Adds the "contains" parameter
      * @return the trigger object for method chaining
      */
-    fun setContains() = apply {
-        setParameter("contains")
-    }
+    fun setContains() = setParameter("contains")
 
     /**
      * Adds the "end" parameter
      * @return the trigger object for method chaining
      */
-    fun setEnd() = apply {
-        setParameter("end")
-    }
+    fun setEnd() = setParameter("end")
 
     /**
      * Forces this trigger to be formatted or unformatted. If no argument is
@@ -194,9 +186,8 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
         val chatMessage = getChatMessage(chatEvent.message)
 
         val variables = getVariables(chatMessage) ?: return
-        variables.add(chatEvent)
 
-        callMethod(variables.toTypedArray())
+        callMethod((variables + chatEvent).toTypedArray())
     }
 
     // helper method to get the proper chat message based on the presence of color codes
@@ -208,8 +199,8 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
     }
 
     // helper method to get the variables to pass through
-    private fun getVariables(chatMessage: String): MutableList<Any>? {
-        if (!::criteriaPattern.isInitialized) return ArrayList()
+    private fun getVariables(chatMessage: String): List<Any>? {
+        if (!::criteriaPattern.isInitialized) return emptyList()
 
         val normalizedMessage =
             if ('\n' in chatMessage) chatMessage.replace("\n", "->newLine<-") else chatMessage
@@ -224,7 +215,7 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
      * @param chat the chat message to compare against
      * @return a list of the variables, in order or null if it doesn't match
      */
-    private fun matchesChatCriteria(chat: String): MutableList<Any>? {
+    private fun matchesChatCriteria(chat: String): List<Any>? {
         val regex = criteriaPattern
         val match =
             if (needsExact) {
@@ -234,20 +225,14 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
             }
 
         if (needsStart && match.range.first != 0) return null
-        if (needsEnd && match.range.last != chat.length) return null
+        if (needsEnd && match.range.last + 1 != chat.length) return null
 
         if (!needsExact && !needsContains && !needsStart && !needsEnd) {
             return null
         }
 
         val groups = match.groupValues
-        if (groups.size <= 1) return mutableListOf()
-
-        val extracted = ArrayList<Any>(groups.size - 1)
-        for (i in 1 until groups.size) {
-            extracted.add(groups[i])
-        }
-        return extracted
+        return groups.drop(1)
     }
 
     private fun rebuildParameterMode() {
@@ -278,17 +263,15 @@ class ChatTrigger(method: Any, type: ITriggerType) : Trigger(method, type) {
         START("<s>", "<start>", "s", "start"),
         END("<e>", "<end>", "e", "end");
 
-        var names: List<String> = names.asList()
+        private val names = names.asList()
 
         companion object {
-            private val byName = HashMap<String, Parameter>().apply {
-                Parameter.entries.forEach { parameter ->
-                    parameter.names.forEach { this[it.lowercase()] = parameter }
-                }
-            }
+            private val byName = entries
+                .flatMap { parameter -> parameter.names.map { it.lowercase(Locale.ROOT) to parameter } }
+                .toMap()
 
             fun getParameterByName(name: String) =
-                byName[name.lowercase()]
+                byName[name.lowercase(Locale.ROOT)]
         }
     }
 

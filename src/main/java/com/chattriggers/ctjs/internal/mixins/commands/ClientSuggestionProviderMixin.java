@@ -6,20 +6,16 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(ClientSuggestionProvider.class)
 public abstract class ClientSuggestionProviderMixin implements CTClientCommandSource {
     @Unique
-    private final HashMap<String, Object> contextValues = new HashMap<>();
+    private final Map<String, Object> contextValues = new HashMap<>();
 
     @Override
-    public void setContextValue(String key, Object value) {
-        contextValues.put(key, value);
-    }
-
-    @Override
-    public HashMap<String, Object> getContextValues() {
+    public Map<String, Object> getContextValues() {
         return contextValues;
     }
 }

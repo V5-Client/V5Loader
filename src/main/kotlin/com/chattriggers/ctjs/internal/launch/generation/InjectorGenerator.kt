@@ -24,17 +24,17 @@ internal abstract class InjectorGenerator(protected val ctx: GenerationContext, 
             // Check if the type needs to be wrapped in a ref. Also handle the case where
             // the user provides an explicitly wrapped type
             if (it.local?.mutable == true && !it.descriptor.originalDescriptor()
-                    .startsWith("Lcom/llamalad7/mixinextras/sugar/ref/")
+                .startsWith("Lcom/llamalad7/mixinextras/sugar/ref/")
             ) {
                 when (it.descriptor) {
-                    com.chattriggers.ctjs.internal.launch.Descriptor.Primitive.BOOLEAN -> com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef::class.descriptor()
-                    com.chattriggers.ctjs.internal.launch.Descriptor.Primitive.BYTE -> com.llamalad7.mixinextras.sugar.ref.LocalByteRef::class.descriptor()
-                    com.chattriggers.ctjs.internal.launch.Descriptor.Primitive.CHAR -> com.llamalad7.mixinextras.sugar.ref.LocalCharRef::class.descriptor()
-                    com.chattriggers.ctjs.internal.launch.Descriptor.Primitive.DOUBLE -> com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef::class.descriptor()
-                    com.chattriggers.ctjs.internal.launch.Descriptor.Primitive.FLOAT -> com.llamalad7.mixinextras.sugar.ref.LocalFloatRef::class.descriptor()
-                    com.chattriggers.ctjs.internal.launch.Descriptor.Primitive.INT -> com.llamalad7.mixinextras.sugar.ref.LocalIntRef::class.descriptor()
-                    com.chattriggers.ctjs.internal.launch.Descriptor.Primitive.LONG -> com.llamalad7.mixinextras.sugar.ref.LocalLongRef::class.descriptor()
-                    com.chattriggers.ctjs.internal.launch.Descriptor.Primitive.SHORT -> com.llamalad7.mixinextras.sugar.ref.LocalShortRef::class.descriptor()
+                    Descriptor.Primitive.BOOLEAN -> com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef::class.descriptor()
+                    Descriptor.Primitive.BYTE -> com.llamalad7.mixinextras.sugar.ref.LocalByteRef::class.descriptor()
+                    Descriptor.Primitive.CHAR -> com.llamalad7.mixinextras.sugar.ref.LocalCharRef::class.descriptor()
+                    Descriptor.Primitive.DOUBLE -> com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef::class.descriptor()
+                    Descriptor.Primitive.FLOAT -> com.llamalad7.mixinextras.sugar.ref.LocalFloatRef::class.descriptor()
+                    Descriptor.Primitive.INT -> com.llamalad7.mixinextras.sugar.ref.LocalIntRef::class.descriptor()
+                    Descriptor.Primitive.LONG -> com.llamalad7.mixinextras.sugar.ref.LocalLongRef::class.descriptor()
+                    Descriptor.Primitive.SHORT -> com.llamalad7.mixinextras.sugar.ref.LocalShortRef::class.descriptor()
                     else -> com.llamalad7.mixinextras.sugar.ref.LocalRef::class.descriptor()
                 }
             } else it.descriptor
@@ -157,7 +157,6 @@ internal abstract class InjectorGenerator(protected val ctx: GenerationContext, 
                     Descriptor.Primitive.LONG -> invokevirtual(java.lang.Number::class, "longValue", long)
                     Descriptor.Primitive.FLOAT -> invokevirtual(java.lang.Number::class, "floatValue", float)
                     Descriptor.Primitive.DOUBLE -> invokevirtual(java.lang.Number::class, "doubleValue", double)
-                    else -> throw IllegalStateException()
                 }
             }
             else -> checkcast(descriptor.toMappedType())
@@ -184,9 +183,7 @@ internal abstract class InjectorGenerator(protected val ctx: GenerationContext, 
         val localIndex = (0 until parameterIndex).sumOf {
             val descriptor = parameterDescriptors[it]
             if (descriptor == Descriptor.Primitive.LONG || descriptor == Descriptor.Primitive.DOUBLE) {
-                // Compiler bug
-                @Suppress("USELESS_CAST")
-                2 as Int
+                2
             } else 1
         }
         generateLoad(parameterDescriptors[parameterIndex], localIndex)
