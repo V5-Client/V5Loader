@@ -26,6 +26,7 @@ internal object DynamicMixinManager {
     internal const val GENERATED_PACKAGE = "com/chattriggers/ctjs/generated_mixins"
 
     lateinit var mixins: Map<Mixin, MixinDetails>
+    @Volatile private var prepared = false
 
     fun initialize() {
         mixins = JSLoader.mixinSetup(ModuleManager.cachedModules.filter { it.metadata.mixinEntry != null })
@@ -48,7 +49,22 @@ internal object DynamicMixinManager {
         }
     }
 
+    @Synchronized
+    fun prepare() {
+        if (prepared) return
+
+        Mappings.initialize()
+        SecureLoader.onMixinPlugin()
+        ModuleManager.setup()
+        initialize()
+        applyAccessWideners()
+
+        prepared = true
+    }
+
     fun applyMixins() {
+        prepare()
+
         if (CTJS.isDevelopment) deleteOldMixinClasses()
 
         val dynamicMixins = mixins.map { (mixin, details) ->

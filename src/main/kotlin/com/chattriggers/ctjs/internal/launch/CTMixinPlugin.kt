@@ -1,8 +1,6 @@
 package com.chattriggers.ctjs.internal.launch
 
-import com.chattriggers.ctjs.api.Mappings
 import com.chattriggers.ctjs.engine.printTraceToConsole
-import com.chattriggers.ctjs.internal.engine.module.ModuleManager
 import com.llamalad7.mixinextras.MixinExtrasBootstrap
 import java.io.OutputStream
 import java.io.PrintStream
@@ -14,16 +12,10 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo
 class CTMixinPlugin : IMixinConfigPlugin {
     override fun onLoad(mixinPackage: String?) {
         redirectIO()
-
-        Mappings.initialize()
-
-        SecureLoader.onMixinPlugin()
-        ModuleManager.setup()
         MixinExtrasBootstrap.init()
 
         try {
-            DynamicMixinManager.initialize()
-            DynamicMixinManager.applyAccessWideners()
+            DynamicMixinManager.prepare()
         } catch (e: Throwable) {
             IllegalStateException("Error generating dynamic mixins", e).printTraceToConsole()
         }
