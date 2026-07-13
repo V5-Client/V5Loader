@@ -1,6 +1,14 @@
 {
-    "key.category.minecraft.ctjs.key.category": "ChatTriggers",
-    "key.category.minecraft.v5_modules": "V5",
-    "ctjs.key.binding.console": "Console",
-    "ctjs.key.category": "ChatTriggers"
-  }
+  "key.category.minecraft.ctjs.key.category": "ChatTriggers",
+  "key.category.minecraft.v5_combat": "V5 Combat",
+  "key.category.minecraft.v5_core": "V5 Core",
+  "key.category.minecraft.v5_farming": "V5 Farming",
+  "key.category.minecraft.v5_foraging": "V5 Foraging",
+  "key.category.minecraft.v5_mining": "V5 Mining",
+  "key.category.minecraft.v5_modules": "V5",
+  "key.category.minecraft.v5_other": "V5 Other",
+  "key.category.minecraft.v5_skills": "V5 Skills",
+  "key.category.minecraft.v5_visuals": "V5 Visuals",
+  "ctjs.key.binding.console": "Console",
+  "ctjs.key.category": "ChatTriggers"
+}
