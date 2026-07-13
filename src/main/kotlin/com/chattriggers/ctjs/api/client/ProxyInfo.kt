@@ -106,7 +106,14 @@ object ProxyInfo {
 
     private fun parseProxies(text: String) = runCatching {
         gson.fromJson(text, Array<StoredProxy>::class.java).orEmpty().map {
-            Proxy(it.ip.orEmpty(), it.port ?: 1080, it.name ?: "Proxy", it.username.orEmpty(), it.password.orEmpty(), it.isEnabled ?: false)
+            Proxy(
+                it.ip.orEmpty(),
+                it.port?.takeIf { port -> port in 1..65535 } ?: 1080,
+                it.name ?: "Proxy",
+                it.username.orEmpty(),
+                it.password.orEmpty(),
+                it.isEnabled ?: false,
+            )
         }
     }.getOrDefault(emptyList())
 

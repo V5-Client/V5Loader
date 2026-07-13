@@ -227,7 +227,7 @@ object FileLib {
     @Throws(IOException::class)
     @JvmStatic
     fun unzip(zipFilePath: String, destDirectory: String) {
-        val destPath = Path.of(destDirectory)
+        val destPath = Path.of(destDirectory).toAbsolutePath().normalize()
         Files.createDirectories(destPath)
 
         ZipInputStream(Files.newInputStream(Path.of(zipFilePath))).use { zipIn ->

@@ -328,7 +328,7 @@ class ProxyEditScreen(
         val password = passwordField.value.trim()
 
         if (ip.isBlank() || portStr.isBlank()) return
-        val port = portStr.toIntOrNull() ?: return
+        val port = portStr.toIntOrNull()?.takeIf { it in 1..65535 } ?: return
 
         val newProxy = Proxy(ip, port, name.ifBlank { ip }, username, password, existingProxy?.isEnabled ?: false)
 
