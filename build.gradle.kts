@@ -45,9 +45,6 @@ dependencies {
     }
 
     compileOnly(libs.sponge.mixin)
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.10.2")
     // Discord IPC
     implementation("meteordevelopment:discord-ipc:1.1")
     include("meteordevelopment:discord-ipc:1.1")

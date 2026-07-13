@@ -1,9 +1,6 @@
 package com.chattriggers.ctjs.internal.console
 
 import com.chattriggers.ctjs.engine.LogType
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants
-import org.fife.ui.rsyntaxtextarea.Theme
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Font
@@ -17,6 +14,7 @@ import java.util.Locale
 import java.util.concurrent.CompletableFuture
 import javax.swing.JFrame
 import javax.swing.JScrollPane
+import javax.swing.JTextArea
 import javax.swing.JTextPane
 import javax.swing.SwingUtilities
 import javax.swing.text.DefaultCaret
@@ -38,11 +36,8 @@ class ConsoleFrame(
     private val frame = JFrame("ChatTriggers ${init.modVersion} JS Console")
 
     private val textArea = JTextPane()
-    private val inputField = RSyntaxTextArea(5, 1).apply {
-        syntaxEditingStyle = SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT
-        Theme.load(javaClass.getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/dark.xml")).apply(this)
+    private val inputField = JTextArea(5, 1).apply {
         margin = Insets(5, 5, 5, 5)
-        isCodeFoldingEnabled = true
     }
 
     private val history = mutableListOf<String>()
@@ -153,14 +148,15 @@ class ConsoleFrame(
 
             val trimmedTrace = if (index != -1) {
                 err.trace.dropLast(err.trace.size - index - 1).map {
-                    val fileNameIndex = it.fileName?.indexOf("ChatTriggers/modules/") ?: return@map it
+                    val fileName = it.fileName ?: return@map it
+                    val fileNameIndex = fileName.indexOf("ChatTriggers/modules/")
                     val classNameIndex = it.className.indexOf("ChatTriggers_modules_")
 
                     if (fileNameIndex != -1 && classNameIndex != -1) {
                         StackTrace(
                             it.className.substring(classNameIndex + 21),
                             it.methodName,
-                            it.fileName.substring(fileNameIndex + 21),
+                            fileName.substring(fileNameIndex + 21),
                             it.lineNumber
                         )
                     } else it
@@ -175,9 +171,9 @@ class ConsoleFrame(
                 appendLine(")")
             }
 
-            if (err.cause != null) {
+            err.cause?.let {
                 append("Caused by: ")
-                appendError(err.cause)
+                appendError(it)
             }
         }
 
@@ -218,6 +214,9 @@ class ConsoleFrame(
 
         textArea.background = bg
         textArea.foreground = fg
+        inputField.background = bg
+        inputField.foreground = fg
+        inputField.caretColor = fg
 
         val chosenFont = if (firaFont != null && config.useFiraCode) {
             firaFont

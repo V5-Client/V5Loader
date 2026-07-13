@@ -3,12 +3,12 @@ package com.chattriggers.ctjs.internal.engine.module
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.api.render.Text
-import com.fasterxml.jackson.core.Version
+import com.chattriggers.ctjs.internal.utils.ModVersion
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import java.io.File
 
 class Module(val name: String, var metadata: ModuleMetadata, val folder: File) {
-    var targetModVersion: Version? = null
+    var targetModVersion: ModVersion? = null
     var requiredBy = mutableSetOf<String>()
 
     private val gui = object {

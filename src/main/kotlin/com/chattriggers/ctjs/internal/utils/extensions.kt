@@ -1,7 +1,6 @@
 package com.chattriggers.ctjs.internal.utils
 
 import com.chattriggers.ctjs.internal.launch.Descriptor
-import com.fasterxml.jackson.core.Version
 import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
 import org.mozilla.javascript.NativeObject
@@ -10,12 +9,18 @@ import java.net.URLEncoder
 import java.nio.charset.Charset
 import kotlin.reflect.KClass
 
-fun String.toVersion(): Version {
-    val semver = substringBefore('-')
-    val extra = if ('-' in this) substringAfter('-') else null
+data class ModVersion(
+    val majorVersion: Int,
+    val minorVersion: Int,
+    val patchLevel: Int,
+) : Comparable<ModVersion> {
+    override fun compareTo(other: ModVersion) = compareValuesBy(this, other, ModVersion::majorVersion, ModVersion::minorVersion, ModVersion::patchLevel)
+}
 
+fun String.toVersion(): ModVersion {
+    val semver = substringBefore('-')
     val split = semver.split(".").map(String::toInt)
-    return Version(split.getOrElse(0) { 0 }, split.getOrElse(1) { 0 }, split.getOrElse(2) { 0 }, extra, null, null)
+    return ModVersion(split.getOrElse(0) { 0 }, split.getOrElse(1) { 0 }, split.getOrElse(2) { 0 })
 }
 
 fun String.toIdentifier(): Identifier {
