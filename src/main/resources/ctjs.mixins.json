@@ -4,6 +4,7 @@
     "package": "com.chattriggers.ctjs.internal.mixins",
     "compatibilityLevel": "JAVA_25",
     "client": [
+      "AbstractSignEditScreenAccessor",
         "AbstractSoundInstanceAccessor",
         "BlockEntityRenderStateMixin",
       "BookViewScreenAccessor",
@@ -29,6 +30,7 @@
       "GuiMixin",
       "KeyMappingAccessor",
         "KeyMappingAccessor$Category",
+      "MinecraftAccessor",
       "MinecraftMixin",
       "MouseHandlerMixin",
         "ParticleAccessor",

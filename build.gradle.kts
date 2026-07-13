@@ -45,6 +45,7 @@ dependencies {
     }
 
     compileOnly(libs.sponge.mixin)
+    ksp(project(":typing-generator"))
     // Discord IPC
     implementation("meteordevelopment:discord-ipc:1.1")
     include("meteordevelopment:discord-ipc:1.1")

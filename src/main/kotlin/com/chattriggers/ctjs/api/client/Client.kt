@@ -5,9 +5,11 @@ import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.internal.listeners.ClientListener
 import com.chattriggers.ctjs.internal.mixins.ChatScreenAccessor
+import com.chattriggers.ctjs.internal.mixins.AbstractSignEditScreenAccessor
 import com.chattriggers.ctjs.internal.mixins.MultiPlayerGameModeAccessor
 import com.chattriggers.ctjs.internal.mixins.AbstractContainerScreenAccessor
 import com.chattriggers.ctjs.internal.mixins.KeyMappingAccessor
+import com.chattriggers.ctjs.internal.mixins.MinecraftAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import gg.essential.universal.UKeyboard
 import net.minecraft.client.Minecraft
@@ -17,6 +19,7 @@ import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.TitleScreen
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
+import net.minecraft.client.gui.screens.inventory.AbstractSignEditScreen
 import net.minecraft.client.gui.screens.ConnectScreen
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen
 import net.minecraft.client.multiplayer.ClientPacketListener
@@ -188,6 +191,20 @@ object Client {
             chatGui.asMixin<ChatScreenAccessor>().input.value = message
         } else currentGui.set(ChatScreen(message, false))
     }
+
+    @JvmStatic
+    fun setSignLine(line: Int, text: String) {
+        val messages = (getMinecraft().screen as? AbstractSignEditScreen)
+            ?.asMixin<AbstractSignEditScreenAccessor>()
+            ?.messages ?: return
+        if (line in messages.indices) messages[line] = text
+    }
+
+    @JvmStatic
+    fun leftClick() = KeyMapping.click(getMinecraft().options.keyAttack.asMixin<KeyMappingAccessor>().key)
+
+    @JvmStatic
+    fun rightClick() = KeyMapping.click(getMinecraft().options.keyUse.asMixin<KeyMappingAccessor>().key)
 
     @JvmStatic
     fun sendPacket(packet: Packet<*>) {

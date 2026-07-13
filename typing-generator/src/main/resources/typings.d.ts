@@ -44852,7 +44852,7 @@ declare global {
               isCanceled(): boolean;
             }
             const ClassFilterTrigger: {
-              new<Wrapped, Unwrapped>(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType, wrappedClass: java.lang.Class<Wrapped> | null | undefined): com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<any, any>;
+              new<Wrapped, Unwrapped>(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType, wrappedClass: java.lang.Class<Wrapped>): com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<any, any>;
             }
             interface ClassFilterTrigger<Wrapped, Unwrapped> extends com.chattriggers.ctjs.api.triggers.Trigger { 
 							/**
@@ -45619,7 +45619,6 @@ declare global {
             }
             interface Item extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.item.ItemStack> { 
               getType(): com.chattriggers.ctjs.api.inventory.ItemType;
-              getHolder(): com.chattriggers.ctjs.api.entity.Entity | null | undefined;
               getStackSize(): number;
               setStackSize(size: number): com.chattriggers.ctjs.api.inventory.Item;
               getEnchantments(): Map<net.minecraft.resources.ResourceKey<unknown> | null | undefined, number>;
@@ -47196,11 +47195,6 @@ declare global {
               particle: com.chattriggers.ctjs.api.world.World$ParticleWrapper;
               border: com.chattriggers.ctjs.api.world.World$BorderWrapper;
               toMC(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
-							/**
-							 * Gets Minecraft's [ClientWorld] object
-							 * 
-							 *  @return The Minecraft [ClientWorld] object
-							 */
               getWorld(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
               isLoaded(): boolean;
               isRaining(): boolean;
@@ -47300,11 +47294,6 @@ declare global {
               particle: com.chattriggers.ctjs.api.world.World$ParticleWrapper;
               border: com.chattriggers.ctjs.api.world.World$BorderWrapper;
               toMC(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
-							/**
-							 * Gets Minecraft's [ClientWorld] object
-							 * 
-							 *  @return The Minecraft [ClientWorld] object
-							 */
               getWorld(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
               isLoaded(): boolean;
               isRaining(): boolean;
@@ -47736,7 +47725,6 @@ declare global {
             const Scoreboard: {
               Score: typeof com.chattriggers.ctjs.api.world.Scoreboard$Score;
               toMC(): net.minecraft.world.scores.Scoreboard | null | undefined;
-              getScoreboard(): net.minecraft.world.scores.Scoreboard | null | undefined;
               getSidebar(): net.minecraft.world.scores.Objective | null | undefined;
 							/**
 							 * Gets the top-most string which is displayed on the scoreboard. (doesn't have a score on the side).
@@ -47839,7 +47827,6 @@ declare global {
             }
             interface Scoreboard { 
               toMC(): net.minecraft.world.scores.Scoreboard | null | undefined;
-              getScoreboard(): net.minecraft.world.scores.Scoreboard | null | undefined;
               getSidebar(): net.minecraft.world.scores.Objective | null | undefined;
 							/**
 							 * Gets the top-most string which is displayed on the scoreboard. (doesn't have a score on the side).
@@ -48369,34 +48356,6 @@ declare global {
               getDead(): boolean;
               setDead(value: boolean): void;
               scale(scale: number): com.chattriggers.ctjs.api.entity.Particle;
-							/**
-							 * Sets the color of the particle.
-							 *  @param red the red value between 0 and 1.
-							 *  @param green the green value between 0 and 1.
-							 *  @param blue the blue value between 0 and 1.
-							 */
-              setColor(red: number, green: number, blue: number): com.chattriggers.ctjs.api.entity.Particle;
-							/**
-							 * Sets the color of the particle.
-							 *  @param red the red value between 0 and 1.
-							 *  @param green the green value between 0 and 1.
-							 *  @param blue the blue value between 0 and 1.
-							 *  @param alpha the alpha value between 0 and 1.
-							 */
-              setColor(red: number, green: number, blue: number, alpha: number): com.chattriggers.ctjs.api.entity.Particle;
-              setColor(color: number): com.chattriggers.ctjs.api.entity.Particle;
-              setColor(color: java.awt.Color): com.chattriggers.ctjs.api.entity.Particle;
-							/**
-							 * Sets the alpha of the particle.
-							 *  @param alpha the alpha value between 0 and 1.
-							 */
-              setAlpha(alpha: number): com.chattriggers.ctjs.api.entity.Particle;
-							/**
-							 * Returns the color of the Particle
-							 * 
-							 *  @return A [Color] with the R, G, B and A values
-							 */
-              getColor(): kotlin.Function0<void>;
 							/**
 							 * Sets the amount of ticks this particle will live for
 							 * 
@@ -50054,6 +50013,9 @@ declare global {
 							 *  @param message the message to put in the chat text box.
 							 */
               setCurrentChatMessage(message: string): void;
+              setSignLine(line: number, text: string): void;
+              leftClick(): void;
+              rightClick(): void;
               sendPacket(packet: net.minecraft.network.protocol.Packet<any>): void;
               sendSequencedPacket(packetFactory: kotlin.Function1<number, net.minecraft.network.protocol.Packet<any>>): void;
 							/**
@@ -50201,6 +50163,9 @@ declare global {
 							 *  @param message the message to put in the chat text box.
 							 */
               setCurrentChatMessage(message: string): void;
+              setSignLine(line: number, text: string): void;
+              leftClick(): void;
+              rightClick(): void;
               sendPacket(packet: net.minecraft.network.protocol.Packet<any>): void;
               sendSequencedPacket(packetFactory: kotlin.Function1<number, net.minecraft.network.protocol.Packet<any>>): void;
 							/**
@@ -51145,7 +51110,7 @@ declare global {
             interface LegacyPipelineBuilder { 
               new(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
               begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat, snippet: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
-              enabledBlend(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
+              enableBlend(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
               disableBlend(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
               enableCull(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
               disableCull(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
@@ -51291,7 +51256,6 @@ declare global {
               VertexFormat: typeof com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
               RenderSnippet: typeof com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
               ScreenWrapper: typeof com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
-              colorized: number | null | undefined;
               screen: com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
               getPartialTicks(): number;
               BLACK: number;
@@ -51373,12 +51337,8 @@ declare global {
               enableLighting(): com.chattriggers.ctjs.api.render.Renderer;
               disableDepth(): com.chattriggers.ctjs.api.render.Renderer;
               enableDepth(): com.chattriggers.ctjs.api.render.Renderer;
-              depthFunc(func: number): com.chattriggers.ctjs.api.render.Renderer;
-              depthMask(flag: boolean): com.chattriggers.ctjs.api.render.Renderer;
               disableBlend(): com.chattriggers.ctjs.api.render.Renderer;
               enableBlend(): com.chattriggers.ctjs.api.render.Renderer;
-              blendFunc(func: number): com.chattriggers.ctjs.api.render.Renderer;
-              tryBlendFuncSeparate(sourceFactor: number, destFactor: number, sourceFactorAlpha: number, destFactorAlpha: number): com.chattriggers.ctjs.api.render.Renderer;
               bindTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
               bindTexture(texture: com.chattriggers.ctjs.api.render.Image, textureIndex: number): com.chattriggers.ctjs.api.render.Renderer;
               deleteTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
@@ -51395,10 +51355,6 @@ declare global {
               rotate(angle: number, x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
               rotate(angle: number, x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
               multiply(quaternion: org.joml.Quaternionf): com.chattriggers.ctjs.api.render.Renderer;
-              colorize(red: number, green: number, blue: number): com.chattriggers.ctjs.api.render.Renderer;
-              colorize(red: number, green: number, blue: number, alpha: number): com.chattriggers.ctjs.api.render.Renderer;
-              colorize(red: number, green: number, blue: number): com.chattriggers.ctjs.api.render.Renderer;
-              colorize(red: number, green: number, blue: number, alpha: number): com.chattriggers.ctjs.api.render.Renderer;
               fixAlpha(color: number): number;
 							/**
 							 * Begin drawing with the world renderer
@@ -51487,13 +51443,6 @@ declare global {
 							 *  @return [Renderer] to allow for method chaining
 							 */
               light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the line width when rendering [DrawMode.LINES]
-							 * 
-							 *  @param width the width of the line
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              lineWidth(width: number): com.chattriggers.ctjs.api.render.Renderer;
 							/**
 							 * Finalizes vertices and draws the world renderer.
 							 */
@@ -51542,7 +51491,6 @@ declare global {
               new(): com.chattriggers.ctjs.api.render.Renderer;
             }
             interface Renderer { 
-              colorized: number | null | undefined;
               screen: com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
               getPartialTicks(): number;
               BLACK: number;
@@ -51624,12 +51572,8 @@ declare global {
               enableLighting(): com.chattriggers.ctjs.api.render.Renderer;
               disableDepth(): com.chattriggers.ctjs.api.render.Renderer;
               enableDepth(): com.chattriggers.ctjs.api.render.Renderer;
-              depthFunc(func: number): com.chattriggers.ctjs.api.render.Renderer;
-              depthMask(flag: boolean): com.chattriggers.ctjs.api.render.Renderer;
               disableBlend(): com.chattriggers.ctjs.api.render.Renderer;
               enableBlend(): com.chattriggers.ctjs.api.render.Renderer;
-              blendFunc(func: number): com.chattriggers.ctjs.api.render.Renderer;
-              tryBlendFuncSeparate(sourceFactor: number, destFactor: number, sourceFactorAlpha: number, destFactorAlpha: number): com.chattriggers.ctjs.api.render.Renderer;
               bindTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
               bindTexture(texture: com.chattriggers.ctjs.api.render.Image, textureIndex: number): com.chattriggers.ctjs.api.render.Renderer;
               deleteTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
@@ -51646,10 +51590,6 @@ declare global {
               rotate(angle: number, x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
               rotate(angle: number, x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
               multiply(quaternion: org.joml.Quaternionf): com.chattriggers.ctjs.api.render.Renderer;
-              colorize(red: number, green: number, blue: number): com.chattriggers.ctjs.api.render.Renderer;
-              colorize(red: number, green: number, blue: number, alpha: number): com.chattriggers.ctjs.api.render.Renderer;
-              colorize(red: number, green: number, blue: number): com.chattriggers.ctjs.api.render.Renderer;
-              colorize(red: number, green: number, blue: number, alpha: number): com.chattriggers.ctjs.api.render.Renderer;
               fixAlpha(color: number): number;
 							/**
 							 * Begin drawing with the world renderer
@@ -51738,13 +51678,6 @@ declare global {
 							 *  @return [Renderer] to allow for method chaining
 							 */
               light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the line width when rendering [DrawMode.LINES]
-							 * 
-							 *  @param width the width of the line
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              lineWidth(width: number): com.chattriggers.ctjs.api.render.Renderer;
 							/**
 							 * Finalizes vertices and draws the world renderer.
 							 */
@@ -52042,13 +51975,6 @@ declare global {
 							 */
               light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
 							/**
-							 * Sets the line width when rendering [Renderer.DrawMode.LINES]
-							 * 
-							 *  @param width the width of the line
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              lineWidth(width: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
 							 * Finalizes vertices and draws the world renderer.
 							 */
               draw(): void;
@@ -52178,9 +52104,8 @@ declare global {
 							 *  @param x2 the ending x coordinate
 							 *  @param y2 the ending y coordinate
 							 *  @param z2 the ending z coordinate
-							 *  @param thickness how thick the line should be
 							 */
-              drawLine(color: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, thickness: number): void;
+              drawLine(color: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): void;
               new(): com.chattriggers.ctjs.api.render.Renderer3d;
             }
             interface Renderer3d { 
@@ -52310,13 +52235,6 @@ declare global {
 							 */
               light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
 							/**
-							 * Sets the line width when rendering [Renderer.DrawMode.LINES]
-							 * 
-							 *  @param width the width of the line
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              lineWidth(width: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
 							 * Finalizes vertices and draws the world renderer.
 							 */
               draw(): void;
@@ -52446,9 +52364,8 @@ declare global {
 							 *  @param x2 the ending x coordinate
 							 *  @param y2 the ending y coordinate
 							 *  @param z2 the ending z coordinate
-							 *  @param thickness how thick the line should be
 							 */
-              drawLine(color: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, thickness: number): void;
+              drawLine(color: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): void;
               new(): com.chattriggers.ctjs.api.render.Renderer3d;
             }
             const Shape: {
@@ -53072,10 +52989,10 @@ declare global {
     }
     namespace v5 {
       namespace mixins {
-        const LightTextureManagerMixin: {
-          new(): com.v5.mixins.LightTextureManagerMixin;
+        const FramerateLimitTrackerMixin: {
+          new(): com.v5.mixins.FramerateLimitTrackerMixin;
         }
-        interface LightTextureManagerMixin { 
+        interface FramerateLimitTrackerMixin { 
         }
         const MinecraftMixin: {
           new(): com.v5.mixins.MinecraftMixin;
@@ -53097,11 +53014,6 @@ declare global {
           new(): com.v5.mixins.MouseHandlerMixin;
         }
         interface MouseHandlerMixin { 
-        }
-        const AbstractTerrainRenderContextMixin: {
-          new(): com.v5.mixins.AbstractTerrainRenderContextMixin;
-        }
-        interface AbstractTerrainRenderContextMixin { 
         }
         const ConnectionProxyMixin: {
           new(): com.v5.mixins.ConnectionProxyMixin;
