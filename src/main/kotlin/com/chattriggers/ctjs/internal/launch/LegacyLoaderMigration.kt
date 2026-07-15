@@ -3,7 +3,7 @@ package com.chattriggers.ctjs.internal.launch
 import java.io.File
 
 internal object LegacyLoaderMigration {
-    private val legacyLoaderName = Regex("V5ModLoader(?: \\(\\d+\\))?\\.jar", RegexOption.IGNORE_CASE)
+    private val legacyLoaderName = Regex("V5ModLoader.*\\.jar", RegexOption.IGNORE_CASE)
 
     fun stageCachedLoaderIfNeeded(): Boolean {
         val gameDir = System.getProperty("v5.game_dir")?.takeIf(String::isNotBlank)?.let(::File) ?: return false

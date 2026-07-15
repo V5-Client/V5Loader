@@ -21,7 +21,7 @@ import kotlin.io.path.writeText
 
 internal object V5Loader {
     private const val MOD_ID = "ctjs"
-    private val legacyModLoaderName = Regex("V5ModLoader(?: \\(\\d+\\))?\\.jar", RegexOption.IGNORE_CASE)
+    private val legacyModLoaderName = Regex("V5ModLoader.*\\.jar", RegexOption.IGNORE_CASE)
     private val secretLock = Any()
     private var initialized = false
     private var sessionToken = ""
