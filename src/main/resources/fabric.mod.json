@@ -16,6 +16,10 @@
     "environment": "client",
     "entrypoints": {
         "preLaunch": [
+            {
+                "value": "com.v5.loader.V5PreLaunch",
+                "adapter": "kotlin"
+            },
             "com.chattriggers.ctjs.internal.launch.CTJSPreLaunch"
         ],
         "client": [
