@@ -97,6 +97,17 @@ internal object ModLoaderUpdater {
         updatePaths.staleTargets.forEach { target ->
             lines += "    rm -f ${shellQuote(target.absolutePath)} >/dev/null 2>&1 || true"
         }
+        lines += "    rm -f ${shellQuote(updatePaths.backupJar.absolutePath)}"
+        lines += "    rm -f \"\$0\""
+        lines += "    exit 0"
+        lines += "  fi"
+        lines += "  if [ -f ${shellQuote(updatePaths.backupJar.absolutePath)} ]; then"
+        lines += "    mv -f ${shellQuote(updatePaths.backupJar.absolutePath)} ${shellQuote(updatePaths.targetJar.absolutePath)} >/dev/null 2>&1 || true"
+        lines += "  fi"
+        lines += "  ATTEMPT=\$((ATTEMPT + 1))"
+        lines += "  sleep 1"
+        lines += "done"
+        lines += "exit 1"
         script.writeLines(lines)
         return script
     }
