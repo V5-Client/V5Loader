@@ -31,6 +31,17 @@ public class MinecraftMixin {
         return false;
     }
 
+    @ModifyExpressionValue(
+            method = "handleKeybinds",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/MouseHandler;isMouseGrabbed()Z"
+            )
+    )
+    private boolean v5$allowAttackWhileUngrabbed(boolean original) {
+        return original || V5MixinStorage.getBoolean("ungrabbed", false);
+    }
+
     @Inject(method = "handleKeybinds()V", at = @At("HEAD"))
     private void v5$handleInputEvents(CallbackInfo ci) {
         if (!V5MixinStorage.getBoolean("inputLocked", false)) {

@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MouseHandler.class)
 public class MouseHandlerMixin {
@@ -43,13 +42,6 @@ public class MouseHandlerMixin {
             V5MixinStorage.set(
                     "cameraOverridePitch",
                     Mth.clamp(pitchNumber.floatValue() + (float) pitchDelta * 0.15F, -90.0F, 90.0F));
-        }
-    }
-
-    @Inject(method = "isMouseGrabbed()Z", at = @At("HEAD"), cancellable = true)
-    private void v5$isCursorLocked(CallbackInfoReturnable<Boolean> cir) {
-        if (V5MixinStorage.getBoolean("ungrabbed", false)) {
-            cir.setReturnValue(true);
         }
     }
 
