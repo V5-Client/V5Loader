@@ -15,11 +15,20 @@ public abstract class CameraMixin {
     @Shadow
     protected abstract void setPosition(Vec3 pos);
 
+    @Shadow
+    protected abstract void setRotation(float yaw, float pitch);
+
     @Inject(method = "update", at = @At("TAIL"))
     private void v5$applyCameraOverride(DeltaTracker deltaTracker, CallbackInfo ci) {
         Object override = V5MixinStorage.get("cameraOverridePos", null);
         if (override instanceof Vec3 pos) {
             this.setPosition(pos);
+        }
+
+        Object yaw = V5MixinStorage.get("cameraOverrideYaw", null);
+        Object pitch = V5MixinStorage.get("cameraOverridePitch", null);
+        if (yaw instanceof Number yawNumber && pitch instanceof Number pitchNumber) {
+            this.setRotation(yawNumber.floatValue(), pitchNumber.floatValue());
         }
     }
 }

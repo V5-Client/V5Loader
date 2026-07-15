@@ -13,7 +13,7 @@
         "FirmamentModAnnouncerMixin",
         "FramerateLimitTrackerMixin",
         "GameRendererMixin",
-        "KeyboardInputMixin",
+        "KeyboardHandlerMixin",
         "MinecraftMixin",
         "MouseHandlerMixin",
         "JoinMultiplayerScreenMixin",
