@@ -15,7 +15,6 @@ import net.minecraft.util.Util
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.IOException
-import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -30,7 +29,6 @@ internal object SecureLoader {
     private const val BACKEND_URL = "https://backend.rdbt.top"
     private const val DISK_MODULE_NAME = "V5"
     private const val LOADER_USER_AGENT = "V5Loader/1.1"
-    private const val RAT_DETECTED_DOCS_URL = "https://rdbt.top/docs/rat-detected"
     private const val TOKEN_EXPIRY_SKEW_SECONDS = 60L
     private const val SESSION_DIR_NAME = ".v5"
     private const val SESSION_FILE_NAME = "session.json"
@@ -45,20 +43,6 @@ internal object SecureLoader {
     @Volatile private var isLoaded = false
     @Volatile private var internalToken: String? = null
     @Volatile private var didConsumeInitialLoaderToken = false
-
-    private enum class ModLoaderStatus {
-        VALID,
-        OUTDATED,
-        INVALID_TAMPERED,
-        INVALID_INSTALLATION,
-        CHECK_FAILED
-    }
-
-    private data class ModLoaderCheckResult(
-        val status: ModLoaderStatus,
-        val candidates: List<File>,
-        val message: String
-    )
 
     @JvmStatic
     fun getJwtToken(): String? {
@@ -295,21 +279,18 @@ internal object SecureLoader {
 
     fun onMixinPlugin() {
         if (isPluginLoaded) return
-        if (!ensureV5ModLoaderInstalled()) {
-            shutDownHard()
-        }
         println("[V5] Stage: onMixinPlugin")
         try {
             val token = getFreshJwtToken()
             if (token.isNullOrBlank()) {
-                println("[V5] No token passed from modloader.")
+                println("[V5] No loader auth token available.")
                 shutDownHard()
             }
 
             val modulePath = getV5ModuleDir()
             if (modulePath.exists() && isLocalDeveloperModeEnabled()) {
                 isDevMode = true
-                println("[V5] Developer mode with existing V5 module path. Skipping V5 module download.")
+                println("[V5] Developer mode is active. Skipping V5 module download.")
                 isPluginLoaded = true
                 return
             }
@@ -324,28 +305,6 @@ internal object SecureLoader {
         }
     }
 
-    private fun ensureV5ModLoaderInstalled(): Boolean {
-        val result = checkV5ModLoader()
-        return when (result.status) {
-            ModLoaderStatus.VALID -> true
-            ModLoaderStatus.OUTDATED,
-            ModLoaderStatus.INVALID_INSTALLATION -> {
-                println("[V5] ${result.message}")
-                tryAutoUpdateModLoader(result)
-                false
-            }
-            ModLoaderStatus.INVALID_TAMPERED -> {
-                println("[V5] ${result.message}")
-                openRatDetectedDocsPage()
-                false
-            }
-            ModLoaderStatus.CHECK_FAILED -> {
-                println("[V5] ${result.message}")
-                false
-            }
-        }
-    }
-
     private fun isLocalDeveloperModeEnabled(): Boolean {
         return try {
             val stateFile = File(File(CTJS.MODULES_FOLDER, "V5Config"), "developerMode.json")
@@ -357,162 +316,6 @@ internal object SecureLoader {
         } catch (_: Exception) {
             false
         }
-    }
-
-    @Suppress("FunctionName")
-    fun V5ModLoaderCheck(): Boolean {
-        return checkV5ModLoader().status == ModLoaderStatus.VALID
-    }
-
-    private fun checkV5ModLoader(): ModLoaderCheckResult {
-        val modsDir = File(getGameDir(), "mods")
-        val candidates = modsDir.walk()
-            .filter { file -> file.isFile && isV5ModLoaderJar(file.name) }
-            .toList()
-
-        if (candidates.size != 1) {
-            return ModLoaderCheckResult(
-                status = ModLoaderStatus.INVALID_INSTALLATION,
-                candidates = candidates,
-                message = "Expected one V5ModLoader jar in mods, found ${candidates.size}. Repairing install."
-            )
-        }
-
-        val hash = calculateFileSha256(candidates.first())
-        if (hash.isBlank()) {
-            return ModLoaderCheckResult(
-                status = ModLoaderStatus.INVALID_INSTALLATION,
-                candidates = candidates,
-                message = "Failed to compute V5ModLoader hash. Repairing install."
-            )
-        }
-
-        val token = getFreshJwtToken()
-        if (token.isNullOrBlank()) {
-            return ModLoaderCheckResult(
-                status = ModLoaderStatus.CHECK_FAILED,
-                candidates = candidates,
-                message = "Missing auth token for modloader integrity check."
-            )
-        }
-
-        val connection = openBackendConnection("$BACKEND_URL/api/hash/modloader?hash=$hash")
-
-        return try {
-            connection.requestMethod = "GET"
-            connection.setRequestProperty("Authorization", "Bearer $token")
-            connection.setRequestProperty("User-Agent", LOADER_USER_AGENT)
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.connectTimeout = 10000
-            connection.readTimeout = 10000
-
-            val responseCode = connection.responseCode
-            val stream = if (responseCode in 200..299)
-                connection.inputStream
-            else
-                connection.errorStream
-
-            val responseText = stream?.bufferedReader()?.use { it.readText() } ?: ""
-
-            if (responseCode != 200) {
-                return ModLoaderCheckResult(
-                    status = ModLoaderStatus.CHECK_FAILED,
-                    candidates = candidates,
-                    message = "Modloader integrity check failed ($responseCode): $responseText"
-                )
-            }
-
-            val json = jsonParser.parseToJsonElement(responseText).jsonObject
-            val integrity = json["integrity"]?.jsonPrimitive?.contentOrNull?.lowercase(Locale.ROOT)
-
-            when (integrity) {
-                "valid" -> ModLoaderCheckResult(
-                    status = ModLoaderStatus.VALID,
-                    candidates = candidates,
-                    message = "V5ModLoader integrity verified."
-                )
-                "outdated" -> ModLoaderCheckResult(
-                    status = ModLoaderStatus.OUTDATED,
-                    candidates = candidates,
-                    message = "V5ModLoader integrity is outdated. Downloading the latest build from backend."
-                )
-                "invalid" -> ModLoaderCheckResult(
-                    status = ModLoaderStatus.INVALID_TAMPERED,
-                    candidates = candidates,
-                    message = "V5ModLoader integrity is invalid. A malicious modified jar may be installed. Opened $RAT_DETECTED_DOCS_URL for more info."
-                )
-                else -> ModLoaderCheckResult(
-                    status = ModLoaderStatus.CHECK_FAILED,
-                    candidates = candidates,
-                    message = "Modloader integrity check returned unknown state: ${integrity ?: "missing"}"
-                )
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            ModLoaderCheckResult(
-                status = ModLoaderStatus.CHECK_FAILED,
-                candidates = candidates,
-                message = "Failed to verify V5ModLoader against backend."
-            )
-        } finally {
-            connection.disconnect()
-        }
-    }
-
-    fun calculateFileSha256(file: File): String {
-        val digest = java.security.MessageDigest.getInstance("SHA-256")
-
-        FileInputStream(file).use { fis ->
-            val buffer = ByteArray(8192)
-            var read: Int
-
-            while (fis.read(buffer).also { read = it } != -1) {
-                digest.update(buffer, 0, read)
-            }
-        }
-
-        return digest.digest().joinToString("") { "%02x".format(it) }
-    }
-
-    private fun tryAutoUpdateModLoader(result: ModLoaderCheckResult) {
-        val token = getFreshJwtToken()
-        if (token.isNullOrBlank()) {
-            println("[V5] Missing auth token for automatic V5ModLoader repair.")
-            return
-        }
-
-        val modLoaderBytes = try {
-            downloadAsset("/api/download/modloader", token)
-        } catch (e: Exception) {
-            println("[V5] Failed to download the latest V5ModLoader.")
-            e.printStackTrace()
-            return
-        }
-
-        var updateStaged = false
-        try {
-            ModLoaderUpdater.stageUpdateAndRelaunch(getGameDir(), modLoaderBytes, result.candidates)
-            updateStaged = true
-            println("[V5] V5ModLoader update staged. Closing Minecraft now so the helper can swap jars.")
-        } catch (e: Exception) {
-            println("[V5] Failed to stage V5ModLoader update.")
-            e.printStackTrace()
-        } finally {
-            Arrays.fill(modLoaderBytes, 0)
-        }
-
-        if (updateStaged) {
-            forceCloseForModLoaderUpdate()
-        }
-    }
-
-    private fun openRatDetectedDocsPage() {
-        if (tryOpenUrl(RAT_DETECTED_DOCS_URL)) return
-        println("[V5] Failed to open browser automatically. Visit $RAT_DETECTED_DOCS_URL")
-    }
-
-    private fun tryOpenUrl(url: String): Boolean {
-        return runCatching { Util.getPlatform().openUri(URI(url)) }.isSuccess
     }
 
     fun onInitialize() {
@@ -623,32 +426,12 @@ internal object SecureLoader {
         run()
     }
 
-    private fun forceCloseForModLoaderUpdate(): Nothing {
-        try {
-            System.out.flush()
-            System.err.flush()
-            Thread.sleep(150)
-        } catch (_: Exception) {
-        }
-
-        Runtime.getRuntime().halt(0)
-        throw IllegalStateException("Failed to terminate process after staging V5ModLoader update")
-    }
-
     private fun shutDownHard(): Nothing {
         Runtime.getRuntime().halt(0)
         throw IllegalStateException("V5 loader aborted due to unrecoverable error")
     }
 
     fun isLoaded(): Boolean = isLoaded
-
-    private fun isV5ModLoaderJar(fileName: String): Boolean {
-        if (!fileName.endsWith(".jar", ignoreCase = true)) return false
-        if (fileName.startsWith("V5ModLoader", ignoreCase = true)) return true
-        // Gradle publish name (e.g. v5-1.0.0.jar), not V5-Loader.jar (case-insensitive v5- prefix).
-        return fileName.startsWith("v5-", ignoreCase = true) &&
-            !fileName.startsWith("V5-Loader", ignoreCase = true)
-    }
 
     private fun getGameDir(): File {
         return FabricLoader.getInstance().gameDir.toFile()
