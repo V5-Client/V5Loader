@@ -143,6 +143,10 @@ internal object ModLoaderUpdater {
         updatePaths.staleTargets.forEach { target ->
             lines += "del /f /q ${cmdQuote(target.absolutePath)} >nul 2>nul"
         }
+        lines += "del /f /q ${cmdQuote(updatePaths.backupJar.absolutePath)} >nul 2>nul"
+        lines += "powershell -NoProfile -Command ${cmdQuote(buildPowerShellPopupCommand())}"
+        lines += "del /f /q \"%~f0\" >nul 2>nul"
+        lines += "exit /b 0"
         script.writeLines(lines, "\r\n")
         return script
     }
