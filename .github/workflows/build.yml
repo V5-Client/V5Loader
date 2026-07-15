@@ -8,6 +8,9 @@ on:
         required: false
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build
@@ -34,6 +37,15 @@ jobs:
 
       - name: Build
         run: ./gradlew --no-daemon build
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ inputs.sha || github.sha }}
+        run: |
+          tag="build-$SHA"
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --target "$SHA" --title "Build ${SHA:0:7}" --generate-notes
+          gh release upload "$tag" build/libs/V5-Loader.jar --clobber
 
       - name: Setup Node
         uses: actions/setup-node@v4
