@@ -7,9 +7,14 @@ on:
         description: "Commit SHA to run against (optional)."
         required: false
         type: string
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: false
+      CLOUDFLARE_ACCOUNT_ID:
+        required: false
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -17,16 +22,16 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.sha || github.sha }}
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
           java-version: 21
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: |
             ~/.gradle/caches
@@ -38,33 +43,56 @@ jobs:
       - name: Build
         run: ./gradlew --no-daemon build
 
+      - name: Upload Loader
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: V5-Loader
+          path: build/libs/V5-Loader.jar
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: ${{ github.ref == 'refs/heads/26.1.2' }}
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.sha || github.sha }}
+
+      - name: Download Loader
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: V5-Loader
+          path: build/libs
+
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ inputs.sha || github.sha }}
         run: |
-          tag="build-$SHA"
-          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --target "$SHA" --title "Build ${SHA:0:7}" --generate-notes
+          version=$(sed -nE 's/^[[:space:]]*const val MOD_VERSION = "([^"]+)".*/\1/p' src/main/kotlin/com/chattriggers/ctjs/CTJS.kt)
+          test -n "$version"
+          prefix="${version//./\\.}-r"
+          tag=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.target_commitish == \"$SHA\") | .tag_name" | sed -nE "s/^${prefix}[0-9]+$/&/p" | head -n1)
+          if [ -z "$tag" ]; then
+            revision=$(gh release list --limit 1000 --json tagName --jq '.[].tagName' | sed -nE "s/^${prefix}([0-9]+)$/\1/p" | sort -n | tail -n1)
+            tag="${version}-r$(( ${revision:-0} + 1 ))"
+            gh release create "$tag" --target "$SHA" --title "$tag" --generate-notes
+          fi
           gh release upload "$tag" build/libs/V5-Loader.jar --clobber
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
 
-      - name: Cache global npm
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-global-${{ runner.os }}
-          restore-keys: |
-            npm-global-${{ runner.os }}
-
-      - name: Install latest Wrangler
-        run: npm install -g wrangler@latest --prefer-offline
+      - name: Install Wrangler
+        run: npm install -g wrangler@4.110.0 --prefer-offline
 
       - name: Upload Loader to Cloudflare R2
-        if: ${{ github.ref == 'refs/heads/26.1.2' }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

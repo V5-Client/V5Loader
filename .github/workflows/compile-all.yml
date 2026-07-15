@@ -7,8 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  actions: write
+  contents: read
 
 jobs:
   detect-native:
@@ -18,7 +17,7 @@ jobs:
       should_build: ${{ steps.native.outputs.should_build }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
@@ -69,16 +68,22 @@ jobs:
   linux:
     needs: detect-native
     if: ${{ needs['detect-native'].outputs.native_changed == 'true' }}
+    permissions:
+      contents: read
     uses: ./.github/workflows/native-linux-builder.yml
 
   macos:
     needs: detect-native
     if: ${{ needs['detect-native'].outputs.native_changed == 'true' }}
+    permissions:
+      contents: read
     uses: ./.github/workflows/native-macos-builder.yml
 
   windows:
     needs: detect-native
     if: ${{ needs['detect-native'].outputs.native_changed == 'true' }}
+    permissions:
+      contents: read
     uses: ./.github/workflows/native-windows-builder.yml
 
   bundle-natives:
@@ -96,26 +101,30 @@ jobs:
         needs.windows.result == 'success'
       }}
     runs-on: blacksmith-2vcpu-ubuntu-2404
+    permissions:
+      contents: write
+    env:
+      BRANCH: ${{ github.ref_name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Download Linux native
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: native-linux-x86_64
           path: artifact/linux/x86_64
 
       - name: Download macOS natives
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: native-macos
           path: artifact/macos
 
       - name: Download Windows native
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: native-windows-x86_64
           path: artifact/windows/x86_64
@@ -156,7 +165,6 @@ jobs:
             echo "[skip-native-auto]" >> .git/JNI_COMMIT_MSG
             git commit -F .git/JNI_COMMIT_MSG
             rm -f .git/JNI_COMMIT_MSG
-            BRANCH="${{ github.ref_name }}"
             git fetch origin "$BRANCH" --depth=50
             git rebase "origin/$BRANCH"
             git push origin HEAD:"$BRANCH"
@@ -176,11 +184,15 @@ jobs:
         )
       }}
     runs-on: blacksmith-2vcpu-ubuntu-2404
+    permissions:
+      contents: read
+    env:
+      BRANCH: ${{ github.ref_name }}
     outputs:
       head_sha: ${{ steps.resolve_sha.outputs.head_sha }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
@@ -189,8 +201,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          BRANCH="${{ github.ref_name }}"
-
           if [[ "${{ needs['detect-native'].outputs.native_changed }}" == "true" ]]; then
             git fetch origin "$BRANCH" --depth=50
             echo "head_sha=$(git rev-parse "origin/$BRANCH")" >> "$GITHUB_OUTPUT"
@@ -201,7 +211,11 @@ jobs:
   build:
     needs: resolve-head
     if: ${{ always() && needs.resolve-head.result == 'success' }}
+    permissions:
+      contents: write
     uses: ./.github/workflows/build.yml
-    secrets: inherit
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     with:
       sha: ${{ needs.resolve-head.outputs.head_sha }}

@@ -7,6 +7,8 @@ import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint
 
 class CTJSPreLaunch : PreLaunchEntrypoint {
     override fun onPreLaunch() {
+        if (LegacyLoaderMigration.stageCachedLoaderIfNeeded()) return
+
         val prevHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, exception ->
             "Uncaught exception in thread \"${thread.name}\"".printToConsole(LogType.ERROR)
