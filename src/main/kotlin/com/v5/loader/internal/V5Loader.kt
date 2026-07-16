@@ -21,6 +21,7 @@ import kotlin.io.path.writeText
 
 internal object V5Loader {
     private const val MOD_ID = "ctjs"
+    private const val DEVELOPER_JAR_NAME = "V5-Loader-DEV.jar"
     private val legacyModLoaderName = Regex("V5ModLoader.*\\.jar", RegexOption.IGNORE_CASE)
     private val secretLock = Any()
     private var initialized = false
@@ -67,6 +68,10 @@ internal object V5Loader {
 
     private fun checkSelfUpdate(token: String, minecraftVersion: String, gameDir: File) {
         val activeJar = resolveActiveJar()
+        if (activeJar.name == DEVELOPER_JAR_NAME) {
+            println("[V5] Developer jar detected; skipping integrity check.")
+            return
+        }
         val legacyModLoaders = File(gameDir, "mods").listFiles()
             ?.filter { it.isFile && legacyModLoaderName.matches(it.name) }
             .orEmpty()

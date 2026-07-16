@@ -41,13 +41,13 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build
-        run: ./gradlew --no-daemon build
+        run: ./gradlew --no-daemon build -PreleaseBuild
 
       - name: Upload Loader
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: V5-Loader
-          path: build/libs/V5-Loader.jar
+          name: V5-Loader-26.1.2
+          path: build/libs/V5-Loader-26.1.2.jar
           if-no-files-found: error
 
   publish:
@@ -65,7 +65,7 @@ jobs:
       - name: Download Loader
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: V5-Loader
+          name: V5-Loader-26.1.2
           path: build/libs
 
       - name: Publish GitHub release
@@ -82,7 +82,7 @@ jobs:
             tag="${version}-r$(( ${revision:-0} + 1 ))"
             gh release create "$tag" --target "$SHA" --title "$tag" --generate-notes
           fi
-          gh release upload "$tag" build/libs/V5-Loader.jar --clobber
+          gh release upload "$tag" build/libs/V5-Loader-26.1.2.jar --clobber
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -97,6 +97,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          sha256sum build/libs/V5-Loader.jar | awk '{print $1}' > V5-Loader-26.1.2.jar.sha256
+          sha256sum build/libs/V5-Loader-26.1.2.jar | awk '{print $1}' > V5-Loader-26.1.2.jar.sha256
           wrangler r2 object put v5-builds/V5-Loader-26.1.2.jar.sha256 --file V5-Loader-26.1.2.jar.sha256 --remote
-          wrangler r2 object put v5-builds/V5-Loader-26.1.2.jar --file build/libs/V5-Loader.jar --remote
+          wrangler r2 object put v5-builds/V5-Loader-26.1.2.jar --file build/libs/V5-Loader-26.1.2.jar --remote
