@@ -14,10 +14,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MouseHandler.class)
 public class MouseHandlerMixin {
+    private boolean v5$cameraLookEnabled() {
+        return V5MixinStorage.getBoolean("freecamEnabled", false)
+                || V5MixinStorage.getBoolean("freelookEnabled", false);
+    }
+
     @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
     private void v5$cancelFreecamClick(long window, MouseButtonInfo button, int action, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
-        if (V5MixinStorage.getBoolean("freecamEnabled", false)
+        if (v5$cameraLookEnabled()
                 && client.screen == null
                 && (button.button() == 0 || button.button() == 1)) {
             ci.cancel();
@@ -30,7 +35,7 @@ public class MouseHandlerMixin {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V"))
     private void v5$turnFreecam(LocalPlayer player, double yawDelta, double pitchDelta) {
-        if (!V5MixinStorage.getBoolean("freecamEnabled", false)) {
+        if (!v5$cameraLookEnabled()) {
             player.turn(yawDelta, pitchDelta);
             return;
         }
@@ -60,12 +65,20 @@ public class MouseHandlerMixin {
     }
 
     @Inject(method = "onScroll(JDD)V", at = @At("HEAD"), cancellable = true)
-    private void v5$onMouseScroll(CallbackInfo ci) {
+    private void v5$onMouseScroll(long window, double horizontalScroll, double verticalScroll, CallbackInfo ci) {
+        Minecraft client = Minecraft.getInstance();
+        if (V5MixinStorage.getBoolean("freelookEnabled", false) && client.screen == null) {
+            Object storedDistance = V5MixinStorage.get("freelookCameraDistance", 4.0);
+            double distance = storedDistance instanceof Number number ? number.doubleValue() : 4.0;
+            V5MixinStorage.set("freelookCameraDistance", Mth.clamp(distance - verticalScroll, 1.0, 12.0));
+            ci.cancel();
+            return;
+        }
+
         if (!V5MixinStorage.getBoolean("inputLocked", false)) {
             return;
         }
 
-        Minecraft client = Minecraft.getInstance();
         if (client != null && client.screen == null) {
             ci.cancel();
         }
