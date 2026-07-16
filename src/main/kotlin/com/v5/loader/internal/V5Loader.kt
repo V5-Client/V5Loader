@@ -31,7 +31,10 @@ internal object V5Loader {
     fun init() {
         if (initialized) return
 
-        val gameDirPath = resolveGameDirPath()
+        val fabricLoader = FabricLoader.getInstance()
+        val gameDirPath = fabricLoader.gameDir.toAbsolutePath().toString()
+        System.setProperty("v5.game_dir", gameDirPath)
+        System.setProperty("v5.minecraft_version", fabricLoader.rawGameVersion)
         val sessionFilePath = buildSessionFilePath(gameDirPath)
         val minecraftVersion = resolveMinecraftVersion()
 
@@ -212,16 +215,6 @@ internal object V5Loader {
     }
 
     private fun resolveMinecraftVersion(): String = System.getProperty("v5.minecraft_version").orEmpty().trim()
-
-    private fun resolveGameDirPath(): String {
-        System.getProperty("v5.game_dir").orEmpty().trim().ifEmpty {
-            System.getProperty("user.dir").orEmpty().trim()
-        }.ifEmpty {
-            val os = System.getProperty("os.name", "").lowercase()
-            if (os.contains("win")) System.getenv("APPDATA").orEmpty().let { if (it.isBlank()) "" else Path.of(it, ".minecraft").toString() }
-            else System.getenv("HOME").orEmpty().let { if (it.isBlank()) "" else Path.of(it, ".minecraft").toString() }
-        }.let { return it }
-    }
 
     private fun buildSessionFilePath(gameDir: String): String =
         if (gameDir.isEmpty()) "" else Path.of(gameDir, ".v5", "session.json").toString()
