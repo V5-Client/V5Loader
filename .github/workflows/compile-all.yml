@@ -1,9 +1,17 @@
-name: Compile All JNI
+name: Compile JNI and JVM
 
 on:
   push:
     branches:
       - "**"
+    paths:
+      - "NativeSrc/**"
+      - "src/**"
+      - "typing-generator/src/**"
+      - "**/*.gradle.kts"
+      - "gradle/**"
+      - "gradlew"
+      - "gradlew.bat"
   workflow_dispatch:
 
 permissions:
@@ -57,7 +65,7 @@ jobs:
 
           CHANGED="$(git diff --name-only "$BEFORE" "$AFTER" --)"
 
-          if echo "$CHANGED" | grep -Eq '^NativeSrc/|^\.github/workflows/'; then
+          if echo "$CHANGED" | grep -Eq '^NativeSrc/'; then
             echo "native_changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "native_changed=false" >> "$GITHUB_OUTPUT"
