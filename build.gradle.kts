@@ -68,7 +68,7 @@ dependencies {
     include("io.netty:netty-codec-socks:4.2.7.Final")
 
     compileOnly(libs.hypixel.mod.api)
-    compileOnly(libs.hypixel.modrinth.api)
+    implementation(libs.hypixel.modrinth.api) { include(this) }
 }
 
 loom {

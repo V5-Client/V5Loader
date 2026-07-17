@@ -32,7 +32,8 @@
         "minecraft": "=$minecraft_version",
         "fabricloader": ">=$loader_version",
         "fabric-api": ">=$fabric_api_version",
-        "fabric-language-kotlin": ">=$fabric_kotlin_version"
+        "fabric-language-kotlin": ">=$fabric_kotlin_version",
+        "hypixel-mod-api": ">=1.0.2"
     },
     "breaks": {
         "stfu": "*",
