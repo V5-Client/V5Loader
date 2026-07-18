@@ -169,7 +169,14 @@ object StructureFinder {
                                 fairyZ += z
                                 fairyCount++
                             } else {
-                                results.add(FoundStructure(structure.name, x + structure.offsetX, y + structure.offsetY, z + structure.offsetZ))
+                                results.add(
+                                    FoundStructure(
+                                        structure.name,
+                                        x + structure.offsetX,
+                                        y + structure.offsetY,
+                                        z + structure.offsetZ
+                                    )
+                                )
                                 found[index] = true
                             }
                         }
@@ -265,7 +272,7 @@ object StructureFinder {
             val minX = chunkX shl 4
             val minZ = chunkZ shl 4
             return (xRange == null || minX <= xRange.last && minX + 15 >= xRange.first) &&
-                (zRange == null || minZ <= zRange.last && minZ + 15 >= zRange.first)
+                    (zRange == null || minZ <= zRange.last && minZ + 15 >= zRange.first)
         }
     }
 
@@ -339,32 +346,141 @@ object StructureFinder {
 
     private const val FAIRY_GROTTO = "Fairy Grotto"
 
+    // credits to https://github.com/RoseGoldIsntGay/GumTuneClient for these
     private val STRUCTURES = arrayOf(
-        structure("Goblin Hideout", Region.GOBLIN_HIDEOUT, "stone,acacia_log|dark_oak_log,acacia_log|dark_oak_log,acacia_log|dark_oak_log,acacia_log|dark_oak_log,cauldron", offsetY = 5),
-        structure("Mines of Divan", Region.MINES_OF_DIVAN, "quartz_block,quartz_stairs,stone_brick_stairs,stone_bricks", offsetY = 5),
-        structure("Precursor Remnants", Region.PRECURSOR_REMNANTS, "cobblestone,cobblestone,cobblestone,cobblestone,cobblestone_stairs,polished_andesite,polished_andesite,dark_oak_stairs", 24, 0, -17),
+        structure(
+            "Goblin Hideout",
+            Region.GOBLIN_HIDEOUT,
+            "stone,acacia_log|dark_oak_log,acacia_log|dark_oak_log,acacia_log|dark_oak_log,acacia_log|dark_oak_log,cauldron",
+            offsetY = 5
+        ),
+        structure(
+            "Mines of Divan",
+            Region.MINES_OF_DIVAN,
+            "quartz_block,quartz_stairs,stone_brick_stairs,stone_bricks",
+            offsetY = 5
+        ),
+        structure(
+            "Precursor Remnants",
+            Region.PRECURSOR_REMNANTS,
+            "cobblestone,cobblestone,cobblestone,cobblestone,cobblestone_stairs,polished_andesite,polished_andesite,dark_oak_stairs",
+            24,
+            0,
+            -17
+        ),
         structure("Jungle Temple", Region.JUNGLE, "bedrock,clay,clay,#terracotta,#wool,#leaves,#leaves", -45, 47, -18),
-        structure("Goblin King", Region.GOBLIN_HIDEOUT, "#wool,dark_oak_stairs,dark_oak_stairs,dark_oak_stairs", 1, -1, 2),
-        structure("Bal (Magma Fields)", Region.MAGMA_FIELDS, "lava,barrier,barrier,barrier,barrier,barrier,barrier,barrier,barrier,barrier,barrier", offsetY = 1),
+        structure(
+            "Goblin King",
+            Region.GOBLIN_HIDEOUT,
+            "#wool,dark_oak_stairs,dark_oak_stairs,dark_oak_stairs",
+            1,
+            -1,
+            2
+        ),
+        structure(
+            "Bal (Magma Fields)",
+            Region.MAGMA_FIELDS,
+            "lava,barrier,barrier,barrier,barrier,barrier,barrier,barrier,barrier,barrier,barrier",
+            offsetY = 1
+        ),
         structure(FAIRY_GROTTO, Region.ANY, "magenta_stained_glass"),
-        structure("Goblin Hall", Region.GOBLIN_HIDEOUT, "spruce_planks,_,spruce_stairs,spruce_stairs,_,_,spruce_stairs,spruce_stairs,_,_,spruce_stairs,spruce_stairs,_,spruce_planks", offsetY = 7),
-        structure("Goblin Ring", Region.GOBLIN_HIDEOUT, "oak_fence,#skull,_,_,_,_,#wooden_slab:top,#wooden_slab:bottom,_,_,_,spruce_planks", offsetY = 11),
-        structure("Grunt Bridge", Region.MINES_OF_DIVAN, "stone_brick_stairs,_,_,_,_,stone_bricks,stone_bricks,_,#stone_slab,stone_bricks,_,_,_,stone_bricks,#stone_slab", 0, -1, -45),
-        structure("Corleone Dock", Region.MINES_OF_DIVAN, "stone_bricks,stone_bricks,stone_bricks,stone_bricks,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,stone_bricks,stone_bricks,fire,stone_bricks", 23, 11, 17),
-        structure("Corleone Hole", Region.MINES_OF_DIVAN, "#stone_slab:bottom,_,_,_,_,_,_,_,_,_,_,_,_,_,#stone_slab:top,#stone_slab:double,_,#stone_slab:top,stone_bricks", 0, -3, 34),
+        structure(
+            "Goblin Hall",
+            Region.GOBLIN_HIDEOUT,
+            "spruce_planks,_,spruce_stairs,spruce_stairs,_,_,spruce_stairs,spruce_stairs,_,_,spruce_stairs,spruce_stairs,_,spruce_planks",
+            offsetY = 7
+        ),
+        structure(
+            "Goblin Ring",
+            Region.GOBLIN_HIDEOUT,
+            "oak_fence,#skull,_,_,_,_,#wooden_slab:top,#wooden_slab:bottom,_,_,_,spruce_planks",
+            offsetY = 11
+        ),
+        structure(
+            "Grunt Bridge",
+            Region.MINES_OF_DIVAN,
+            "stone_brick_stairs,_,_,_,_,stone_bricks,stone_bricks,_,#stone_slab,stone_bricks,_,_,_,stone_bricks,#stone_slab",
+            0,
+            -1,
+            -45
+        ),
+        structure(
+            "Corleone Dock",
+            Region.MINES_OF_DIVAN,
+            "stone_bricks,stone_bricks,stone_bricks,stone_bricks,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,stone_bricks,stone_bricks,fire,stone_bricks",
+            23,
+            11,
+            17
+        ),
+        structure(
+            "Corleone Hole",
+            Region.MINES_OF_DIVAN,
+            "#stone_slab:bottom,_,_,_,_,_,_,_,_,_,_,_,_,_,#stone_slab:top,#stone_slab:double,_,#stone_slab:top,stone_bricks",
+            0,
+            -3,
+            34
+        ),
         structure("Grunt Rails", Region.MINES_OF_DIVAN, "spruce_planks,_,#wall_sign,_,_,_,_,spruce_planks,tnt"),
-        structure("Grunt Hero Statue", Region.MINES_OF_DIVAN, "#stone_slab:top,diorite,diorite,diorite,diorite,cobblestone,polished_andesite,cobblestone,cobblestone_stairs"),
-        structure("Small Grunt Bridge", Region.MINES_OF_DIVAN, "spruce_stairs,spruce_stairs,_,spruce_stairs,oak_log,oak_fence,torch"),
-        structure("Key Guardian Spiral", Region.JUNGLE, "jungle_stairs,#planks,glowstone,#carpet,_,#wooden_slab,_,jungle_stairs,stone,stone,stone"),
+        structure(
+            "Grunt Hero Statue",
+            Region.MINES_OF_DIVAN,
+            "#stone_slab:top,diorite,diorite,diorite,diorite,cobblestone,polished_andesite,cobblestone,cobblestone_stairs"
+        ),
+        structure(
+            "Small Grunt Bridge",
+            Region.MINES_OF_DIVAN,
+            "spruce_stairs,spruce_stairs,_,spruce_stairs,oak_log,oak_fence,torch"
+        ),
+        structure(
+            "Key Guardian Spiral",
+            Region.JUNGLE,
+            "jungle_stairs,#planks,glowstone,#carpet,_,#wooden_slab,_,jungle_stairs,stone,stone,stone"
+        ),
         structure("Sludge Waterfalls", Region.JUNGLE, "stone,dirt,polished_granite,jungle_stairs,air,air,air,air,air"),
-        structure("Sludge Bridges", Region.JUNGLE, "jungle_planks,jungle_planks,jungle_planks,jungle_stairs,jungle_planks,jungle_planks,jungle_planks,jungle_stairs,jungle_planks,granite,granite"),
-        structure("Yog Bridge", Region.MAGMA_FIELDS, "stone_bricks,stone_brick_stairs,stone_bricks,stone_brick_stairs,andesite,stone_brick_stairs,stone_brick_stairs,stone_brick_stairs,stone_bricks,stone_brick_stairs,andesite,stone_bricks,stone_bricks,stone_bricks,rail", offsetY = 15),
-        structure("Odawa", Region.JUNGLE, "jungle_log,spruce_stairs,spruce_stairs,jungle_log,spruce_stairs,spruce_stairs,jungle_log,jungle_log,jungle_log,hay_block,yellow_terracotta"),
-        structure("Mini Jungle Temple", Region.JUNGLE, "polished_andesite,andesite,stone_brick_stairs,andesite,andesite,stone,andesite,stone,andesite,andesite,stone_brick_stairs,andesite,stone,andesite"),
-        structure("Precursor Tripwire Chamber", Region.PRECURSOR_REMNANTS, "diorite,diorite,#stone_slab:double,#stone_slab:double,#stone_slab:double,diorite,diorite,diorite,#stone_slab:double,#stone_slab:double,diorite,#stone_slab:double,#stone_slab:double,#stone_slab:double"),
-        structure("Precursor Tall Pillars", Region.PRECURSOR_REMNANTS, "polished_diorite,polished_diorite,diorite,diorite,polished_diorite,polished_diorite,polished_andesite,diorite,diorite,diorite,diorite,polished_diorite,diorite,polished_andesite,polished_diorite,diorite,diorite,diorite,diorite,polished_diorite"),
-        structure("Goblin Hole Camp", Region.GOBLIN_HIDEOUT, "netherrack,netherrack,oak_fence,oak_fence,oak_log,oak_log"),
-        structure("Golden Dragon Nest", Region.ANY, "stone,red_terracotta,red_terracotta,red_terracotta,#skull,red_wool", 0, -3, 5),
+        structure(
+            "Sludge Bridges",
+            Region.JUNGLE,
+            "jungle_planks,jungle_planks,jungle_planks,jungle_stairs,jungle_planks,jungle_planks,jungle_planks,jungle_stairs,jungle_planks,granite,granite"
+        ),
+        structure(
+            "Yog Bridge",
+            Region.MAGMA_FIELDS,
+            "stone_bricks,stone_brick_stairs,stone_bricks,stone_brick_stairs,andesite,stone_brick_stairs,stone_brick_stairs,stone_brick_stairs,stone_bricks,stone_brick_stairs,andesite,stone_bricks,stone_bricks,stone_bricks,rail",
+            offsetY = 15
+        ),
+        structure(
+            "Odawa",
+            Region.JUNGLE,
+            "jungle_log,spruce_stairs,spruce_stairs,jungle_log,spruce_stairs,spruce_stairs,jungle_log,jungle_log,jungle_log,hay_block,yellow_terracotta"
+        ),
+        structure(
+            "Mini Jungle Temple",
+            Region.JUNGLE,
+            "polished_andesite,andesite,stone_brick_stairs,andesite,andesite,stone,andesite,stone,andesite,andesite,stone_brick_stairs,andesite,stone,andesite"
+        ),
+        structure(
+            "Precursor Tripwire Chamber",
+            Region.PRECURSOR_REMNANTS,
+            "diorite,diorite,#stone_slab:double,#stone_slab:double,#stone_slab:double,diorite,diorite,diorite,#stone_slab:double,#stone_slab:double,diorite,#stone_slab:double,#stone_slab:double,#stone_slab:double"
+        ),
+        structure(
+            "Precursor Tall Pillars",
+            Region.PRECURSOR_REMNANTS,
+            "polished_diorite,polished_diorite,diorite,diorite,polished_diorite,polished_diorite,polished_andesite,diorite,diorite,diorite,diorite,polished_diorite,diorite,polished_andesite,polished_diorite,diorite,diorite,diorite,diorite,polished_diorite"
+        ),
+        structure(
+            "Goblin Hole Camp",
+            Region.GOBLIN_HIDEOUT,
+            "netherrack,netherrack,oak_fence,oak_fence,oak_log,oak_log"
+        ),
+        structure(
+            "Golden Dragon Nest",
+            Region.ANY,
+            "stone,red_terracotta,red_terracotta,red_terracotta,#skull,red_wool",
+            0,
+            -3,
+            5
+        ),
     )
 
     init {
