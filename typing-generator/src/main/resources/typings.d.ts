@@ -47471,6 +47471,7 @@ declare global {
               submitChunkScan(chunkX: number, chunkZ: number): void;
               submitBlockUpdate(blockX: number, blockY: number, blockZ: number): void;
               getRenderBlocksArray(): Array<number>;
+              getRenderLabelsArray(): Array<string>;
               clear(): void;
               shutdown(): void;
               new(): com.chattriggers.ctjs.api.world.StructureFinder;
@@ -47479,6 +47480,7 @@ declare global {
               submitChunkScan(chunkX: number, chunkZ: number): void;
               submitBlockUpdate(blockX: number, blockY: number, blockZ: number): void;
               getRenderBlocksArray(): Array<number>;
+              getRenderLabelsArray(): Array<string>;
               clear(): void;
               shutdown(): void;
               new(): com.chattriggers.ctjs.api.world.StructureFinder;
