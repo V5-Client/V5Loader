@@ -84,6 +84,7 @@ class CTJS : ClientModInitializer {
 
         @JvmStatic
         fun unload(asCommand: Boolean = true) {
+            Client.unpressKeys()
             TriggerType.WORLD_UNLOAD.triggerAll()
             TriggerType.GAME_UNLOAD.triggerAll()
             Scoreboard.clearCustom()

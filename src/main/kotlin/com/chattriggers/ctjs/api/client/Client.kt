@@ -36,6 +36,9 @@ object Client {
     internal var referenceSystemTime: Long = 0
 
     @JvmField
+    internal var automatedAttackHeld = false
+
+    @JvmField
     val currentGui = CurrentGuiWrapper()
 
     @JvmField
@@ -200,11 +203,80 @@ object Client {
         if (line in messages.indices) messages[line] = text
     }
 
-    @JvmStatic
-    fun leftClick() = KeyMapping.click(getMinecraft().options.keyAttack.asMixin<KeyMappingAccessor>().key)
+    private fun getActionMapping(minecraft: Minecraft, key: String): KeyMapping? = when (key) {
+        "w" -> minecraft.options.keyUp
+        "s" -> minecraft.options.keyDown
+        "a" -> minecraft.options.keyLeft
+        "d" -> minecraft.options.keyRight
+        "space" -> minecraft.options.keyJump
+        "shift" -> minecraft.options.keyShift
+        "sprint" -> minecraft.options.keySprint
+        "leftclick" -> minecraft.options.keyAttack
+        "rightclick" -> minecraft.options.keyUse
+        else -> null
+    }
+
+    private fun canAutomateInput(minecraft: Minecraft) =
+        minecraft.level != null &&
+            minecraft.player != null &&
+            minecraft.screen == null &&
+            minecraft.overlay == null
+
+    private fun mutateInput(action: (Minecraft) -> Unit) = getMinecraft().let { it.execute { action(it) } }
+
+    private fun applyKey(minecraft: Minecraft, key: String, pressed: Boolean): Boolean {
+        val mapping = getActionMapping(minecraft, key) ?: return false
+        if (pressed && !canAutomateInput(minecraft)) return false
+
+        if (key == "leftclick")
+            automatedAttackHeld = pressed
+        mapping.setDown(pressed)
+        return true
+    }
 
     @JvmStatic
-    fun rightClick() = KeyMapping.click(getMinecraft().options.keyUse.asMixin<KeyMappingAccessor>().key)
+    fun leftClick() = click("leftclick")
+
+    @JvmStatic
+    fun rightClick() = click("rightclick")
+
+    private fun click(key: String) = mutateInput { minecraft ->
+        if (canAutomateInput(minecraft)) {
+            val mapping = getActionMapping(minecraft, key) ?: return@mutateInput
+            KeyMapping.click(mapping.asMixin<KeyMappingAccessor>().key)
+        }
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun setKey(key: String, pressed: Boolean = true): Boolean {
+        val minecraft = getMinecraft()
+        if (getActionMapping(minecraft, key) == null) return false
+        if (minecraft.isSameThread) return applyKey(minecraft, key, pressed)
+
+        minecraft.execute { applyKey(minecraft, key, pressed) }
+        return true
+    }
+
+    @JvmStatic
+    fun isKeyDown(key: String): Boolean = getActionMapping(getMinecraft(), key)?.isDown == true
+
+    @JvmStatic
+    fun stopMovement() = mutateInput {
+        it.options.apply {
+            keyUp.setDown(false)
+            keyLeft.setDown(false)
+            keyDown.setDown(false)
+            keyRight.setDown(false)
+            keyJump.setDown(false)
+        }
+    }
+
+    @JvmStatic
+    fun unpressKeys() = mutateInput { minecraft ->
+        automatedAttackHeld = false
+        KeyMapping.releaseAll()
+    }
 
     @JvmStatic
     fun sendPacket(packet: Packet<*>) {

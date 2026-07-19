@@ -38676,6 +38676,16 @@ declare global {
           }
         }
       }
+      namespace loader {
+        namespace api {
+          namespace entrypoint {
+            interface PreLaunchEntrypoint { 
+              onPreLaunch(): void;
+              (): void;
+            }
+          }
+        }
+      }
       namespace api {
         interface ClientModInitializer { 
           onInitializeClient(): void;
@@ -43482,6 +43492,116 @@ declare global {
           valueOf(value: string): com.google.gson.Strictness;
         }
         interface Strictness extends kotlin.Enum<com.google.gson.Strictness> { 
+        }
+      }
+    }
+    namespace v5 {
+      namespace loader {
+        const V5PreLaunch: {
+          new(): com.v5.loader.V5PreLaunch;
+        }
+        interface V5PreLaunch extends net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint { 
+        }
+      }
+      namespace mixins {
+        const FramerateLimitTrackerMixin: {
+          new(): com.v5.mixins.FramerateLimitTrackerMixin;
+        }
+        interface FramerateLimitTrackerMixin { 
+        }
+        const CrossCollisionBlockMixin: {
+          new(): com.v5.mixins.CrossCollisionBlockMixin;
+        }
+        interface CrossCollisionBlockMixin { 
+        }
+        const MinecraftMixin: {
+          new(): com.v5.mixins.MinecraftMixin;
+        }
+        interface MinecraftMixin { 
+          options: net.minecraft.client.Options;
+        }
+        const BlockMixin: {
+          new(): com.v5.mixins.BlockMixin;
+        }
+        interface BlockMixin { 
+        }
+        const KeyboardHandlerMixin: {
+          new(): com.v5.mixins.KeyboardHandlerMixin;
+        }
+        interface KeyboardHandlerMixin { 
+        }
+        const PlayerTabOverlayMixin: {
+          new(): com.v5.mixins.PlayerTabOverlayMixin;
+        }
+        interface PlayerTabOverlayMixin { 
+        }
+        const MouseHandlerMixin: {
+          new(): com.v5.mixins.MouseHandlerMixin;
+        }
+        interface MouseHandlerMixin { 
+        }
+        const ConnectionProxyMixin: {
+          new(): com.v5.mixins.ConnectionProxyMixin;
+        }
+        interface ConnectionProxyMixin { 
+        }
+        const EntityRendererMixin: {
+          new(): com.v5.mixins.EntityRendererMixin;
+        }
+        interface EntityRendererMixin { 
+        }
+        const DrawContextCapture: {
+          new(): com.v5.mixins.DrawContextCapture;
+        }
+        interface DrawContextCapture { 
+        }
+        const GameRendererMixin: {
+          new(): com.v5.mixins.GameRendererMixin;
+        }
+        interface GameRendererMixin { 
+        }
+        const FirmamentModAnnouncerMixin: {
+          new(): com.v5.mixins.FirmamentModAnnouncerMixin;
+        }
+        interface FirmamentModAnnouncerMixin { 
+        }
+        interface JoinMultiplayerScreenMixin extends net.minecraft.client.gui.screens.Screen { 
+        }
+        const CameraMixin: {
+          new(): com.v5.mixins.CameraMixin;
+        }
+        interface CameraMixin { 
+        }
+        const YggdrasilServicesKeyInfoMixin: {
+          new(): com.v5.mixins.YggdrasilServicesKeyInfoMixin;
+        }
+        interface YggdrasilServicesKeyInfoMixin { 
+        }
+        const ConnectionMixin: {
+          new(): com.v5.mixins.ConnectionMixin;
+        }
+        interface ConnectionMixin { 
+        }
+        const LevelRendererMixin: {
+          new(): com.v5.mixins.LevelRendererMixin;
+        }
+        interface LevelRendererMixin { 
+        }
+        const ChatComponentMixin: {
+          new(): com.v5.mixins.ChatComponentMixin;
+        }
+        interface ChatComponentMixin { 
+        }
+      }
+      namespace storage {
+        const V5MixinStorage: {
+          get(key: string, defaultValue: any): any;
+          getBoolean(key: string, defaultValue: boolean): boolean;
+          getString(key: string, defaultValue: string): string;
+          set(key: string, value: any): void;
+          applyMethod<T>(methodName: string, original: T, expectedType: java.lang.Class<T>): T;
+        }
+        interface V5MixinStorage { 
         }
       }
     }
@@ -50018,6 +50138,11 @@ declare global {
               setSignLine(line: number, text: string): void;
               leftClick(): void;
               rightClick(): void;
+              setKey(key: string): boolean;
+              setKey(key: string, pressed: boolean): boolean;
+              isKeyDown(key: string): boolean;
+              stopMovement(): void;
+              unpressKeys(): void;
               sendPacket(packet: net.minecraft.network.protocol.Packet<any>): void;
               sendSequencedPacket(packetFactory: kotlin.Function1<number, net.minecraft.network.protocol.Packet<any>>): void;
 							/**
@@ -50168,6 +50293,11 @@ declare global {
               setSignLine(line: number, text: string): void;
               leftClick(): void;
               rightClick(): void;
+              setKey(key: string): boolean;
+              setKey(key: string, pressed: boolean): boolean;
+              isKeyDown(key: string): boolean;
+              stopMovement(): void;
+              unpressKeys(): void;
               sendPacket(packet: net.minecraft.network.protocol.Packet<any>): void;
               sendSequencedPacket(packetFactory: kotlin.Function1<number, net.minecraft.network.protocol.Packet<any>>): void;
 							/**
@@ -52986,104 +53116,6 @@ declare global {
           getMODULES_FOLDER(): string;
           getConfigLocation(): java.io.File;
           getAssetsDir(): java.io.File;
-        }
-      }
-    }
-    namespace v5 {
-      namespace mixins {
-        const FramerateLimitTrackerMixin: {
-          new(): com.v5.mixins.FramerateLimitTrackerMixin;
-        }
-        interface FramerateLimitTrackerMixin { 
-        }
-        const MinecraftMixin: {
-          new(): com.v5.mixins.MinecraftMixin;
-        }
-        interface MinecraftMixin { 
-          options: net.minecraft.client.Options;
-        }
-        const BlockMixin: {
-          new(): com.v5.mixins.BlockMixin;
-        }
-        interface BlockMixin { 
-        }
-        const PlayerTabOverlayMixin: {
-          new(): com.v5.mixins.PlayerTabOverlayMixin;
-        }
-        interface PlayerTabOverlayMixin { 
-        }
-        const MouseHandlerMixin: {
-          new(): com.v5.mixins.MouseHandlerMixin;
-        }
-        interface MouseHandlerMixin { 
-        }
-        const ConnectionProxyMixin: {
-          new(): com.v5.mixins.ConnectionProxyMixin;
-        }
-        interface ConnectionProxyMixin { 
-        }
-        const EntityRendererMixin: {
-          new(): com.v5.mixins.EntityRendererMixin;
-        }
-        interface EntityRendererMixin { 
-        }
-        const DrawContextCapture: {
-          new(): com.v5.mixins.DrawContextCapture;
-        }
-        interface DrawContextCapture { 
-        }
-        const GameRendererMixin: {
-          new(): com.v5.mixins.GameRendererMixin;
-        }
-        interface GameRendererMixin { 
-        }
-        const FirmamentModAnnouncerMixin: {
-          new(): com.v5.mixins.FirmamentModAnnouncerMixin;
-        }
-        interface FirmamentModAnnouncerMixin { 
-        }
-        interface JoinMultiplayerScreenMixin extends net.minecraft.client.gui.screens.Screen { 
-        }
-        const CameraMixin: {
-          new(): com.v5.mixins.CameraMixin;
-        }
-        interface CameraMixin { 
-        }
-        const YggdrasilServicesKeyInfoMixin: {
-          new(): com.v5.mixins.YggdrasilServicesKeyInfoMixin;
-        }
-        interface YggdrasilServicesKeyInfoMixin { 
-        }
-        const ConnectionMixin: {
-          new(): com.v5.mixins.ConnectionMixin;
-        }
-        interface ConnectionMixin { 
-        }
-        const LevelRendererMixin: {
-          new(): com.v5.mixins.LevelRendererMixin;
-        }
-        interface LevelRendererMixin { 
-        }
-        const KeyboardInputMixin: {
-          new(): com.v5.mixins.KeyboardInputMixin;
-        }
-        interface KeyboardInputMixin extends net.minecraft.client.player.ClientInput { 
-        }
-        const ChatComponentMixin: {
-          new(): com.v5.mixins.ChatComponentMixin;
-        }
-        interface ChatComponentMixin { 
-        }
-      }
-      namespace storage {
-        const V5MixinStorage: {
-          get(key: string, defaultValue: any): any;
-          getBoolean(key: string, defaultValue: boolean): boolean;
-          getString(key: string, defaultValue: string): string;
-          set(key: string, value: any): void;
-          applyMethod<T>(methodName: string, original: T, expectedType: java.lang.Class<T>): T;
-        }
-        interface V5MixinStorage { 
         }
       }
     }

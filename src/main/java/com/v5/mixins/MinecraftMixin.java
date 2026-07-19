@@ -1,5 +1,6 @@
 package com.v5.mixins;
 
+import com.chattriggers.ctjs.api.client.Client;
 import com.v5.storage.V5MixinStorage;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.Minecraft;
@@ -39,7 +40,7 @@ public class MinecraftMixin {
             )
     )
     private boolean v5$allowAttackWhileUngrabbed(boolean original) {
-        return original || V5MixinStorage.getBoolean("ungrabbed", false);
+        return original || Client.automatedAttackHeld;
     }
 
     @Inject(method = "handleKeybinds()V", at = @At("HEAD"))

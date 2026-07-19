@@ -1,11 +1,13 @@
 package com.chattriggers.ctjs.internal.mixins;
 
+import com.chattriggers.ctjs.api.client.Client;
 import com.chattriggers.ctjs.api.world.Scoreboard;
 import com.chattriggers.ctjs.api.world.TabList;
 import com.chattriggers.ctjs.internal.engine.CTEvents;
 import com.chattriggers.ctjs.api.triggers.TriggerType;
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Overlay;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -25,6 +27,9 @@ public abstract class MinecraftMixin {
 
     @Inject(method = "setLevel", at = @At("HEAD"))
     private void injectWorldUnload(ClientLevel world, CallbackInfo ci) {
+        if (world == null)
+            Client.unpressKeys();
+
         if (this.level == null && world != null) {
             TriggerType.SERVER_CONNECT.triggerAll();
         } else if (this.level != null && world == null) {
@@ -58,8 +63,16 @@ public abstract class MinecraftMixin {
 
     @Inject(method = "setScreen", at = @At("HEAD"))
     private void injectScreenOpened(Screen screen, CallbackInfo ci) {
-        if (screen != null)
+        if (screen != null) {
+            Client.automatedAttackHeld = false;
             TriggerType.GUI_OPENED.triggerAll(screen, ci);
+        }
+    }
+
+    @Inject(method = "setOverlay", at = @At("HEAD"))
+    private void injectOverlayOpened(Overlay overlay, CallbackInfo ci) {
+        if (overlay != null)
+            Client.unpressKeys();
     }
 
     @Inject(method = "run", at = @At("HEAD"))
