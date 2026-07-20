@@ -72,7 +72,9 @@ object ChatLib {
      * @param text the message to be sent
      */
     @JvmStatic
-    fun say(text: String) = Client.getMinecraft().connection?.sendChat(text)
+    fun say(text: String) {
+        Client.scheduleTask { Client.getMinecraft().connection?.sendChat(text) }
+    }
 
     /**
      * Runs a command.
@@ -84,7 +86,7 @@ object ChatLib {
     @JvmOverloads
     fun command(text: String, clientSide: Boolean = false) {
         if (clientSide) ClientCommandInternals.executeCommand(text)
-        else Client.getMinecraft().connection?.sendCommand(text)
+        else Client.scheduleTask { Client.getMinecraft().connection?.sendCommand(text) }
     }
 
     /**
