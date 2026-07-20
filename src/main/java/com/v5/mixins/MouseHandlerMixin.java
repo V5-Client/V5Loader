@@ -1,5 +1,7 @@
 package com.v5.mixins;
 
+import com.chattriggers.ctjs.api.client.Client;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.v5.storage.V5MixinStorage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
@@ -11,9 +13,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.lwjgl.glfw.GLFW;
 
 @Mixin(MouseHandler.class)
 public class MouseHandlerMixin {
+    private int v5$guiMouseButton = -1;
+
     private boolean v5$cameraLookEnabled() {
         return V5MixinStorage.getBoolean("freecamEnabled", false)
                 || V5MixinStorage.getBoolean("freelookEnabled", false);
@@ -22,6 +27,16 @@ public class MouseHandlerMixin {
     @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
     private void v5$cancelFreecamClick(long window, MouseButtonInfo button, int action, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
+        if (action == GLFW.GLFW_PRESS && client.screen != null) {
+            v5$guiMouseButton = button.button();
+        } else if (action == GLFW.GLFW_RELEASE) {
+            if (button.button() == v5$guiMouseButton) {
+                v5$guiMouseButton = -1;
+            } else {
+                Client.releaseHeldKey(InputConstants.Type.MOUSE.getOrCreate(button.button()));
+            }
+        }
+
         if (v5$cameraLookEnabled()
                 && client.screen == null
                 && (button.button() == 0 || button.button() == 1)) {
@@ -53,8 +68,14 @@ public class MouseHandlerMixin {
     @Inject(method = "grabMouse()V", at = @At("HEAD"), cancellable = true)
     private void v5$lockCursor(CallbackInfo ci) {
         if (V5MixinStorage.getBoolean("ungrabbed", false)) {
+            Client.resumeHeldKeys();
             ci.cancel();
         }
+    }
+
+    @Inject(method = "grabMouse()V", at = @At("TAIL"))
+    private void v5$restoreHeldKeys(CallbackInfo ci) {
+        Client.resumeHeldKeys();
     }
 
     @Inject(method = "turnPlayer(D)V", at = @At("HEAD"), cancellable = true)

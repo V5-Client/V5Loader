@@ -1,5 +1,7 @@
 package com.v5.mixins;
 
+import com.chattriggers.ctjs.api.client.Client;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.v5.storage.V5MixinStorage;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
@@ -9,11 +11,16 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.lwjgl.glfw.GLFW;
 
 @Mixin(KeyboardHandler.class)
 public class KeyboardHandlerMixin {
     @Inject(method = "keyPress", at = @At("HEAD"), cancellable = true)
     private void v5$cancelFreecamMovement(long window, int action, KeyEvent event, CallbackInfo ci) {
+        if (action == GLFW.GLFW_RELEASE) {
+            Client.releaseHeldKey(InputConstants.getKey(event));
+        }
+
         Minecraft client = Minecraft.getInstance();
         if (!V5MixinStorage.getBoolean("freecamEnabled", false) || client.screen != null) {
             return;

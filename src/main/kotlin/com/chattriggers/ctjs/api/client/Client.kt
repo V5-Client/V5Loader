@@ -11,6 +11,7 @@ import com.chattriggers.ctjs.internal.mixins.AbstractContainerScreenAccessor
 import com.chattriggers.ctjs.internal.mixins.KeyMappingAccessor
 import com.chattriggers.ctjs.internal.mixins.MinecraftAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
+import com.mojang.blaze3d.platform.InputConstants
 import gg.essential.universal.UKeyboard
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.ChatComponent
@@ -34,6 +35,7 @@ import net.minecraft.network.chat.Component
 
 object Client {
     internal var referenceSystemTime: Long = 0
+    private val heldKeys = mutableSetOf<String>()
 
     @JvmField
     internal var automatedAttackHeld = false
@@ -228,10 +230,30 @@ object Client {
         val mapping = getActionMapping(minecraft, key) ?: return false
         if (pressed && !canAutomateInput(minecraft)) return false
 
+        if (pressed) heldKeys += key else heldKeys -= key
         if (key == "leftclick")
             automatedAttackHeld = pressed
         mapping.setDown(pressed)
         return true
+    }
+
+    @JvmStatic
+    fun resumeHeldKeys() {
+        val minecraft = getMinecraft()
+        if (!canAutomateInput(minecraft)) return
+
+        heldKeys.forEach { getActionMapping(minecraft, it)?.setDown(true) }
+        if ("leftclick" in heldKeys)
+            minecraft.asMixin<MinecraftAccessor>().setMissTime(0)
+        automatedAttackHeld = "leftclick" in heldKeys
+    }
+
+    @JvmStatic
+    fun releaseHeldKey(input: InputConstants.Key) {
+        val minecraft = getMinecraft()
+        heldKeys.filter {
+            getActionMapping(minecraft, it)?.asMixin<KeyMappingAccessor>()?.key == input
+        }.forEach { applyKey(minecraft, it, false) }
     }
 
     @JvmStatic
@@ -262,18 +284,13 @@ object Client {
     fun isKeyDown(key: String): Boolean = getActionMapping(getMinecraft(), key)?.isDown == true
 
     @JvmStatic
-    fun stopMovement() = mutateInput {
-        it.options.apply {
-            keyUp.setDown(false)
-            keyLeft.setDown(false)
-            keyDown.setDown(false)
-            keyRight.setDown(false)
-            keyJump.setDown(false)
-        }
+    fun stopMovement() = mutateInput { minecraft ->
+        listOf("w", "a", "s", "d", "space").forEach { applyKey(minecraft, it, false) }
     }
 
     @JvmStatic
     fun unpressKeys() = mutateInput { minecraft ->
+        heldKeys.clear()
         automatedAttackHeld = false
         KeyMapping.releaseAll()
     }
