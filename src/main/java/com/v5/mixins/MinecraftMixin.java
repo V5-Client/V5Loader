@@ -40,7 +40,7 @@ public class MinecraftMixin {
             )
     )
     private boolean v5$allowAttackWhileUngrabbed(boolean original) {
-        return original || Client.automatedAttackHeld;
+        return original || V5MixinStorage.getBoolean("ungrabbed", false) || Client.automatedAttackHeld;
     }
 
     @Inject(method = "handleKeybinds()V", at = @At("HEAD"))
