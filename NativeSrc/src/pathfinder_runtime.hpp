@@ -61,6 +61,13 @@ struct MoveOut {
   double cost = ActionCosts::INF_COST;
 };
 
+struct FlyEnvironment {
+  double groundCost = 0.0;
+  double horizontalCost = 0.0;
+  double enclosureCost = 0.0;
+  bool confined = false;
+};
+
 class Runtime {
  public:
   Runtime(const WorldSnapshot& world, const SearchParams& params);
@@ -80,14 +87,13 @@ class Runtime {
   ActionCosts costs_{};
   mutable WorldVoxelCursor voxelCursor_;
 
-  mutable std::unordered_map<uint64_t, uint16_t> flagsCache_;
   std::unordered_map<uint64_t, uint8_t> safeCache_;
   std::unordered_map<uint64_t, uint8_t> flyClearCache_;
+  std::unordered_map<uint64_t, FlyEnvironment> flyEnvironmentCache_;
   std::unordered_map<uint64_t, double> penaltyCache_;
   mutable std::unordered_map<uint64_t, double> avoidPenaltyCache_;
 
   size_t cacheReserve_ = 0;
-  bool flagsCacheEnabled_ = false;
   bool avoidPenaltyCacheEnabled_ = false;
 
   int walkStartX_ = 0;

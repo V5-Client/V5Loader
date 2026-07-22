@@ -84,25 +84,36 @@ inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, co
   static constexpr std::array<double, 4> baseDistances = {0.0, 1.0, 1.4142135623730951, 1.7320508075688772};
   double cost = baseDistances[static_cast<size_t>(axisCount)] * ActionCosts::FLY_ONE_BLOCK_TIME;
 
-  if (shouldRejectConfined(destX, destY, destZ, progress)) return false;
+  auto [environmentIt, inserted] = flyEnvironmentCache_.try_emplace(coordKey(destX, destY, destZ));
+  auto& environment = environmentIt->second;
+  if (inserted) {
+    environment.confined = shouldRejectConfined(destX, destY, destZ, 0.0);
+    for (int distance = 1; distance <= 5; distance++) {
+      if (!isPassableForFlying(destX, destY - distance, destZ)) {
+        environment.groundCost = groundClearanceCost(distance);
+        break;
+      }
+    }
+    environment.horizontalCost = horizontalClearanceCost(destX, destY, destZ, 0.0);
+    environment.enclosureCost = enclosureCost(destX, destY, destZ, 0.0);
+  }
+
+  if (progress <= 0.92 && environment.confined) return false;
 
   if (dy != 0) {
     cost += (diagonalHorizontal || dx != 0 || dz != 0) ? 0.2 : 1.2;
   }
 
-  for (int distance = 1; distance <= 5; distance++) {
-    if (!isPassableForFlying(destX, destY - distance, destZ)) {
-      cost += groundClearanceCost(distance);
-      break;
-    }
-  }
+  cost += environment.groundCost;
 
   if (progress <= 0.88) {
-    cost += horizontalClearanceCost(destX, destY, destZ, progress);
+    const double scale = progress > 0.84 ? 0.45 : (progress > 0.72 ? 0.7 : 1.0);
+    cost += environment.horizontalCost * scale;
   }
 
   if (progress <= 0.94) {
-    cost += enclosureCost(destX, destY, destZ, progress);
+    const double scale = progress > 0.84 ? 0.5 : (progress > 0.72 ? 0.75 : 1.0);
+    cost += environment.enclosureCost * scale;
   }
 
   out.pos = {destX, destY, destZ};

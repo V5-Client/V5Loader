@@ -14,14 +14,13 @@ inline Runtime::Runtime(const WorldSnapshot& world, const SearchParams& params)
     walkStartZ_(params.starts.empty() ? 0 : params.starts.front().z) {
   const int reserveTarget = std::clamp(params_.maxIterations / 2, 4096, 262144);
   cacheReserve_ = static_cast<size_t>(reserveTarget);
-  flagsCacheEnabled_ = params_.isFly;
   avoidPenaltyCacheEnabled_ = params_.avoidZones.size() >= 3;
 
-  if (flagsCacheEnabled_) {
-    flagsCache_.reserve(cacheReserve_);
-  }
   safeCache_.reserve(cacheReserve_);
   flyClearCache_.reserve(cacheReserve_);
+  if (params_.isFly) {
+    flyEnvironmentCache_.reserve(cacheReserve_);
+  }
   penaltyCache_.reserve(cacheReserve_);
   if (avoidPenaltyCacheEnabled_) {
     avoidPenaltyCache_.reserve(cacheReserve_);
@@ -120,19 +119,7 @@ inline bool Runtime::flyMove(const Int3& current, const Int3& delta, const doubl
 }
 
 inline uint16_t Runtime::flagsAt(const int x, const int y, const int z) const {
-  if (!flagsCacheEnabled_) {
-    return voxelCursor_.getFlags(x, y, z);
-  }
-
-  const uint64_t key = coordKey(x, y, z);
-  const auto it = flagsCache_.find(key);
-  if (it != flagsCache_.end()) {
-    return it->second;
-  }
-
-  const uint16_t flags = voxelCursor_.getFlags(x, y, z);
-  flagsCache_.emplace(key, flags);
-  return flags;
+  return voxelCursor_.getFlags(x, y, z);
 }
 
 inline bool Runtime::isSolid(const int x, const int y, const int z) const {
