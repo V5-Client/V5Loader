@@ -115,7 +115,6 @@ class Runtime {
   [[nodiscard]] double walkHeuristic(int x, int y, int z) const;
   [[nodiscard]] double flyHeuristic(int x, int y, int z) const;
   [[nodiscard]] const Int3& closestFlyGoal(int x, int y, int z) const;
-  [[nodiscard]] double estimateVerticalCost(int x, int y, int z, const Int3& goal) const;
   [[nodiscard]] double calculateProgress(int x, int z, const Int3& goal) const;
 
   [[nodiscard]] int directionMask(int x, int y, int z);
