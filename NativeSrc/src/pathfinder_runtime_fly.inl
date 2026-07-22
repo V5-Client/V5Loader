@@ -5,44 +5,65 @@
 namespace v5pf::detail {
 
 inline double Runtime::flyHeuristic(const int x, const int y, const int z) const {
-  const double dx = static_cast<double>(x - goalFly_.x);
-  const double dz = static_cast<double>(z - goalFly_.z);
+  const auto& goal = closestFlyGoal(x, y, z);
+  const double dx = static_cast<double>(x - goal.x);
+  const double dz = static_cast<double>(z - goal.z);
 
   const double horizontalDist = std::hypot(dx, dz);
-  const double verticalCost = estimateVerticalCost(x, z, y);
+  const double verticalCost = estimateVerticalCost(x, y, z, goal);
 
   double h = (horizontalDist * ActionCosts::FLY_ONE_BLOCK_TIME) + verticalCost;
-  const double crossProduct = std::abs(dx * static_cast<double>(startToGoalDz_) - dz * static_cast<double>(startToGoalDx_));
+  const double crossProduct = std::abs(
+    dx * static_cast<double>(startFly_.z - goal.z) -
+    dz * static_cast<double>(startFly_.x - goal.x)
+  );
   h += crossProduct * 0.001;
 
   return h;
 }
 
-inline double Runtime::estimateVerticalCost(const int x, const int z, const int y) const {
-  const double progress = calculateProgress(x, z);
+inline const Int3& Runtime::closestFlyGoal(const int x, const int y, const int z) const {
+  const auto* best = &params_.goals.front();
+  long long bestDistance = std::numeric_limits<long long>::max();
+  for (const auto& goal : params_.goals) {
+    const long long dx = static_cast<long long>(x) - goal.x;
+    const long long dy = static_cast<long long>(y) - goal.y;
+    const long long dz = static_cast<long long>(z) - goal.z;
+    const long long distance = dx * dx + dy * dy + dz * dz;
+    if (distance < bestDistance) {
+      best = &goal;
+      bestDistance = distance;
+    }
+  }
+  return *best;
+}
+
+inline double Runtime::estimateVerticalCost(const int x, const int y, const int z, const Int3& goal) const {
+  const int cruiseY = std::max(startFly_.y, goal.y) + 6;
+  const double progress = calculateProgress(x, z, goal);
 
   if (progress < 0.3) {
-    const double toCruise = y < cruiseY_ ? static_cast<double>(cruiseY_ - y) * 0.5 : 0.0;
-    const double cruiseToGoal = cruiseY_ > goalFly_.y ? static_cast<double>(cruiseY_ - goalFly_.y) * 0.3 : 0.0;
+    const double toCruise = y < cruiseY ? static_cast<double>(cruiseY - y) * 0.5 : 0.0;
+    const double cruiseToGoal = cruiseY > goal.y ? static_cast<double>(cruiseY - goal.y) * 0.3 : 0.0;
     return toCruise + cruiseToGoal;
   }
 
   if (progress < 0.7) {
-    const double deviation = static_cast<double>(std::abs(y - cruiseY_)) * 0.3;
-    const double toGoal = cruiseY_ > goalFly_.y
-      ? static_cast<double>(cruiseY_ - goalFly_.y) * 0.2
-      : static_cast<double>(std::abs(y - goalFly_.y)) * 0.3;
+    const double deviation = static_cast<double>(std::abs(y - cruiseY)) * 0.3;
+    const double toGoal = cruiseY > goal.y
+      ? static_cast<double>(cruiseY - goal.y) * 0.2
+      : static_cast<double>(std::abs(y - goal.y)) * 0.3;
     return deviation + toGoal;
   }
 
-  return static_cast<double>(std::abs(y - goalFly_.y)) * 0.4;
+  return static_cast<double>(std::abs(y - goal.y)) * 0.4;
 }
 
-inline double Runtime::calculateProgress(const int x, const int z) const {
+inline double Runtime::calculateProgress(const int x, const int z, const Int3& goal) const {
   const long long dxStart = static_cast<long long>(x - startFly_.x);
   const long long dzStart = static_cast<long long>(z - startFly_.z);
-  const long long dxGoal = static_cast<long long>(x - goalFly_.x);
-  const long long dzGoal = static_cast<long long>(z - goalFly_.z);
+  const long long dxGoal = static_cast<long long>(x - goal.x);
+  const long long dzGoal = static_cast<long long>(z - goal.z);
 
   const long long distFromStartSq = dxStart * dxStart + dzStart * dzStart;
   const long long distToGoalSq = dxGoal * dxGoal + dzGoal * dzGoal;
@@ -52,6 +73,8 @@ inline double Runtime::calculateProgress(const int x, const int z) const {
 }
 
 inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, const int dz, const double progress, MoveOut& out) {
+  const auto& goal = closestFlyGoal(current.x, current.y, current.z);
+  const int cruiseY = std::max(startFly_.y, goal.y) + 6;
   const int destX = current.x + dx;
   const int destY = current.y + dy;
   const int destZ = current.z + dz;
@@ -87,8 +110,8 @@ inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, co
     cost += (diagonalHorizontal || dx != 0 || dz != 0) ? 0.2 : 1.2;
 
     if (dy > 0) {
-      if (destY > cruiseY_ + 2) {
-        cost += 7.0 + static_cast<double>(destY - cruiseY_ - 2) * 1.5;
+      if (destY > cruiseY + 2) {
+        cost += 7.0 + static_cast<double>(destY - cruiseY - 2) * 1.5;
       } else if (progress < 0.25) {
         cost += 0.0;
       } else if (progress < 0.40) {
@@ -99,8 +122,8 @@ inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, co
         cost += 7.0;
       }
     } else {
-      if (progress > 0.7 && destY < goalFly_.y - 1) {
-        cost += 2.0 + static_cast<double>(goalFly_.y - 1 - destY);
+      if (progress > 0.7 && destY < goal.y - 1) {
+        cost += 2.0 + static_cast<double>(goal.y - 1 - destY);
       } else if (progress < 0.25) {
         cost += 7.0;
       } else if (progress < 0.45) {
@@ -116,17 +139,17 @@ inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, co
   }
 
   if (progress < 0.3) {
-    if (destY < cruiseY_) {
-      cost += static_cast<double>(cruiseY_ - destY) * 0.5;
+    if (destY < cruiseY) {
+      cost += static_cast<double>(cruiseY - destY) * 0.5;
     }
   } else if (progress < 0.7) {
-    const int deviation = destY > cruiseY_ ? destY - cruiseY_ : cruiseY_ - destY;
+    const int deviation = destY > cruiseY ? destY - cruiseY : cruiseY - destY;
     cost += static_cast<double>(deviation) * 0.15;
   } else {
-    if (destY > cruiseY_ + 2) {
-      cost += static_cast<double>(destY - cruiseY_ - 2) * 0.2;
-    } else if (destY < goalFly_.y - 2) {
-      cost += static_cast<double>(goalFly_.y - 2 - destY) * 0.3;
+    if (destY > cruiseY + 2) {
+      cost += static_cast<double>(destY - cruiseY - 2) * 0.2;
+    } else if (destY < goal.y - 2) {
+      cost += static_cast<double>(goal.y - 2 - destY) * 0.3;
     }
   }
 

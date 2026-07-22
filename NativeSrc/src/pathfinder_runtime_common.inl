@@ -32,10 +32,6 @@ inline Runtime::Runtime(const WorldSnapshot& world, const SearchParams& params)
 
   if (params_.isFly && !params_.starts.empty() && !params_.goals.empty()) {
     startFly_ = params_.starts.front();
-    goalFly_ = params_.goals.front();
-    cruiseY_ = std::max(startFly_.y, goalFly_.y) + 6;
-    startToGoalDx_ = startFly_.x - goalFly_.x;
-    startToGoalDz_ = startFly_.z - goalFly_.z;
   }
 }
 
@@ -95,8 +91,8 @@ inline double Runtime::transientAvoidPenalty(const int x, const int y, const int
   return penalty;
 }
 
-inline double Runtime::flyHorizontalProgress(const int x, const int z) const {
-  return calculateProgress(x, z);
+inline double Runtime::flyHorizontalProgress(const int x, const int y, const int z) const {
+  return calculateProgress(x, z, closestFlyGoal(x, y, z));
 }
 
 inline bool Runtime::walkMove(const Int3& current, const Int3& delta, MoveOut& out) {
@@ -115,7 +111,8 @@ inline bool Runtime::walkMove(const Int3& current, const Int3& delta, MoveOut& o
 }
 
 inline bool Runtime::flyMove(const Int3& current, const Int3& delta, MoveOut& out) {
-  return moveFly(current, delta.x, delta.y, delta.z, calculateProgress(current.x, current.z), out);
+  const auto& goal = closestFlyGoal(current.x, current.y, current.z);
+  return moveFly(current, delta.x, delta.y, delta.z, calculateProgress(current.x, current.z, goal), out);
 }
 
 inline bool Runtime::flyMove(const Int3& current, const Int3& delta, const double progress, MoveOut& out) {

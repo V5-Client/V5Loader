@@ -213,8 +213,8 @@ object PathManager {
       return fail(endValidation)
     }
 
-    if (isFly && (startPoints.size != 1 || endPoints.size != 1)) {
-      return fail("Fly pathfinder only supports one start point and one end point")
+    if (isFly && startPoints.size != 1) {
+      return fail("Fly pathfinder only supports one start point")
     }
 
     val nativeValidation = validateNativeAvailability()

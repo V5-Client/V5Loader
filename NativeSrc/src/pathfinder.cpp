@@ -182,7 +182,7 @@ std::optional<SearchResult> findPathSingle(
     const int currStartIdx = nodeStartIndex[static_cast<size_t>(currIdx)];
 
     if (isFly) {
-      const double currFlyProgress = runtime.flyHorizontalProgress(curr.x, curr.z);
+      const double currFlyProgress = runtime.flyHorizontalProgress(curr.x, curr.y, curr.z);
       for (const auto& move : detail::FLY_MOVES) {
         detail::MoveOut out;
         if (!runtime.flyMove(curr, move, currFlyProgress, out)) continue;

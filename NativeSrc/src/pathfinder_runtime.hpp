@@ -68,7 +68,7 @@ class Runtime {
   [[nodiscard]] bool isAtGoal(int x, int y, int z) const;
   [[nodiscard]] double heuristic(int x, int y, int z) const;
   [[nodiscard]] double transientAvoidPenalty(int x, int y, int z) const;
-  [[nodiscard]] double flyHorizontalProgress(int x, int z) const;
+  [[nodiscard]] double flyHorizontalProgress(int x, int y, int z) const;
 
   [[nodiscard]] bool walkMove(const Int3& current, const Int3& delta, MoveOut& out);
   [[nodiscard]] bool flyMove(const Int3& current, const Int3& delta, MoveOut& out);
@@ -94,12 +94,8 @@ class Runtime {
   int walkStartZ_ = 0;
 
   Int3 startFly_{0, 0, 0};
-  Int3 goalFly_{0, 0, 0};
-  int cruiseY_ = 0;
   int flyMinY_ = 0;
   int flyMaxY_ = 0;
-  int startToGoalDx_ = 0;
-  int startToGoalDz_ = 0;
 
   [[nodiscard]] uint16_t flagsAt(int x, int y, int z) const;
   [[nodiscard]] bool isSolid(int x, int y, int z) const;
@@ -118,8 +114,9 @@ class Runtime {
 
   [[nodiscard]] double walkHeuristic(int x, int y, int z) const;
   [[nodiscard]] double flyHeuristic(int x, int y, int z) const;
-  [[nodiscard]] double estimateVerticalCost(int x, int z, int y) const;
-  [[nodiscard]] double calculateProgress(int x, int z) const;
+  [[nodiscard]] const Int3& closestFlyGoal(int x, int y, int z) const;
+  [[nodiscard]] double estimateVerticalCost(int x, int y, int z, const Int3& goal) const;
+  [[nodiscard]] double calculateProgress(int x, int z, const Int3& goal) const;
 
   [[nodiscard]] int directionMask(int x, int y, int z);
   [[nodiscard]] bool isStepDirection(int x, int y, int z, int dx, int dz);
