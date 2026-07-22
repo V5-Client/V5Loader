@@ -641,6 +641,18 @@ object PathManager {
       (flags and NativeVoxelFlags.ETHER_FEET_BLOCKER) == 0
   }
 
+  private fun isFlyPassable(flags: Int): Boolean {
+    return (flags and (NativeVoxelFlags.PASSABLE or NativeVoxelFlags.PASSABLE_FLY or NativeVoxelFlags.CARPET_LIKE)) != 0
+  }
+
+  @JvmStatic
+  fun isFlyPositionClear(x: Int, y: Int, z: Int): Boolean {
+    val world = Minecraft.getInstance().level ?: return false
+    val feetFlags = resolveEtherwarpValidationFlags(world, x, y, z) ?: return false
+    val headFlags = resolveEtherwarpValidationFlags(world, x, y + 1, z) ?: return false
+    return isFlyPassable(feetFlags) && isFlyPassable(headFlags)
+  }
+
   private fun isValidEtherwarpLanding(world: net.minecraft.client.multiplayer.ClientLevel, x: Int, y: Int, z: Int): Boolean {
     val supportFlags = resolveEtherwarpValidationFlags(world, x, y, z) ?: return false
     if (!isEtherwarpStandable(supportFlags)) {
