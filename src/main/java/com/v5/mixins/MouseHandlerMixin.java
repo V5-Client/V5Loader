@@ -32,7 +32,7 @@ public class MouseHandlerMixin {
         } else if (action == GLFW.GLFW_RELEASE) {
             if (button.button() == v5$guiMouseButton) {
                 v5$guiMouseButton = -1;
-            } else {
+            } else if (!v5$cameraLookEnabled() || (button.button() != 0 && button.button() != 1)) {
                 Client.releaseHeldKey(InputConstants.Type.MOUSE.getOrCreate(button.button()));
             }
         }
