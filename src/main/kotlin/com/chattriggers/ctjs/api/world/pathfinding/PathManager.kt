@@ -14,6 +14,7 @@ import net.minecraft.world.level.chunk.status.ChunkStatus
 object PathManager {
   private const val NON_PRIMARY_START_PENALTY = 250.0
   private const val HEURISTIC_WEIGHT = 1.05
+  private const val FLY_HEURISTIC_WEIGHT = 1.75
   private const val ETHERWARP_DEFAULT_MAX_ITERATIONS = 100_000
   private const val ETHERWARP_AUTO_THREAD_COUNT = 0
   private const val ETHERWARP_STANDING_EYE_HEIGHT = 1.62
@@ -256,7 +257,7 @@ object PathManager {
               endFlat,
               isFly,
               maxIterations,
-              HEURISTIC_WEIGHT,
+              if (isFly) FLY_HEURISTIC_WEIGHT else HEURISTIC_WEIGHT,
               if (isFly) 0.0 else NON_PRIMARY_START_PENALTY,
               if (isFly) 0 else searchVariantSeed,
               avoidMeta,
