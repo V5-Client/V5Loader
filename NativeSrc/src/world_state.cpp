@@ -13,15 +13,10 @@ constexpr int kMaxAllowedWorldY = 2048;
 constexpr int64_t kMaxAllowedWorldSpan = 4096;
 
 [[nodiscard]] bool isValidWorldBounds(const int minY, const int maxY) {
-  if (minY >= maxY) {
-    return false;
-  }
-  if (minY < kMinAllowedWorldY || maxY > kMaxAllowedWorldY) {
-    return false;
-  }
-
-  const int64_t span = static_cast<int64_t>(maxY) - static_cast<int64_t>(minY);
-  return span > 0 && span <= kMaxAllowedWorldSpan;
+  return minY < maxY &&
+    minY >= kMinAllowedWorldY &&
+    maxY <= kMaxAllowedWorldY &&
+    static_cast<int64_t>(maxY) - static_cast<int64_t>(minY) <= kMaxAllowedWorldSpan;
 }
 
 } // namespace

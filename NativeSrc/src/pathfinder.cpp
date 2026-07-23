@@ -11,24 +11,17 @@
 #include <chrono>
 #include <cmath>
 #include <limits>
-#include <mutex>
-#include <thread>
 #include <unordered_map>
 
 namespace v5pf {
 
-namespace {
-
-bool isCancelled(const std::atomic_bool& cancelFlag, const std::atomic_bool* localCancelFlag) {
-  return cancelFlag.load() || (localCancelFlag != nullptr && localCancelFlag->load());
-}
-
-std::optional<SearchResult> findPathSingle(
+std::optional<SearchResult> findPath(
   const WorldSnapshot& world,
   const SearchParams& params,
-  std::atomic_bool& cancelFlag,
-  const std::atomic_bool* localCancelFlag
+  std::atomic_bool& cancelFlag
 ) {
+  cancelFlag.store(false);
+
   if (params.starts.empty() || params.goals.empty()) {
     return std::nullopt;
   }
@@ -91,7 +84,6 @@ std::optional<SearchResult> findPathSingle(
   const double weight = (std::isfinite(params.heuristicWeight) && params.heuristicWeight > 0.0)
     ? params.heuristicWeight
     : 1.0;
-  const double initialStartPenalty = std::max(0.0, params.initialStartPenalty);
   const bool isFly = params.isFly;
 
   std::array<Int3, 16> walkMovesOrdered = detail::WALK_MOVES;
@@ -105,7 +97,7 @@ std::optional<SearchResult> findPathSingle(
 
   for (size_t i = 0; i < params.starts.size(); i++) {
     const auto& start = params.starts[i];
-    const double startPenalty = initialStartPenalty + (i == 0 ? 0.0 : std::max(0.0, params.nonPrimaryStartPenalty));
+    const double startPenalty = i == 0 ? 0.0 : std::max(0.0, params.nonPrimaryStartPenalty);
 
     const uint64_t key = coordKey(start.x, start.y, start.z);
     int nodeIdx = -1;
@@ -132,7 +124,7 @@ std::optional<SearchResult> findPathSingle(
 
   int iterations = 0;
   while (!heap.empty() && iterations < params.maxIterations) {
-    if (isCancelled(cancelFlag, localCancelFlag)) {
+    if (cancelFlag.load()) {
       return std::nullopt;
     }
 
@@ -255,78 +247,6 @@ std::optional<SearchResult> findPathSingle(
   }
 
   return std::nullopt;
-}
-
-} // namespace
-
-std::optional<SearchResult> findPath(
-  const WorldSnapshot& world,
-  const SearchParams& params,
-  std::atomic_bool& cancelFlag
-) {
-  cancelFlag.store(false);
-
-  if (!params.isFly && params.starts.size() > 1) {
-    const size_t startCount = params.starts.size();
-    const unsigned int hwThreads = std::max(1u, std::thread::hardware_concurrency());
-    const size_t workerCount = std::min(startCount, static_cast<size_t>(hwThreads));
-
-    std::atomic_size_t nextStartIndex{0};
-    std::atomic_bool localCancelFlag{false};
-    std::mutex resultMutex;
-    std::optional<SearchResult> winner;
-
-    auto worker = [&]() {
-      while (!isCancelled(cancelFlag, &localCancelFlag)) {
-        const size_t startIdx = nextStartIndex.fetch_add(1);
-        if (startIdx >= startCount) {
-          return;
-        }
-
-        SearchParams workerParams = params;
-        workerParams.starts = {params.starts[startIdx]};
-        workerParams.initialStartPenalty = startIdx == 0 ? 0.0 : std::max(0.0, params.nonPrimaryStartPenalty);
-
-        auto result = findPathSingle(world, workerParams, cancelFlag, &localCancelFlag);
-        if (!result.has_value()) {
-          continue;
-        }
-
-        result->selectedStartIndex = static_cast<int>(startIdx);
-
-        bool expected = false;
-        if (!localCancelFlag.compare_exchange_strong(expected, true)) {
-          return;
-        }
-
-        std::lock_guard lock(resultMutex);
-        winner = std::move(result);
-        return;
-      }
-    };
-
-    std::vector<std::thread> workers;
-    workers.reserve(workerCount > 0 ? workerCount - 1 : 0);
-    for (size_t i = 1; i < workerCount; i++) {
-      workers.emplace_back(worker);
-    }
-
-    worker();
-
-    for (auto& thread : workers) {
-      if (thread.joinable()) {
-        thread.join();
-      }
-    }
-
-    if (winner.has_value()) {
-      return winner;
-    }
-
-    return std::nullopt;
-  }
-
-  return findPathSingle(world, params, cancelFlag, nullptr);
 }
 
 } // namespace v5pf

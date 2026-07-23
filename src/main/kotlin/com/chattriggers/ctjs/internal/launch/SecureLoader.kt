@@ -18,6 +18,9 @@ import java.io.IOException
 import java.io.FileOutputStream
 import java.net.URI
 import java.nio.charset.StandardCharsets
+import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.util.Arrays
 import java.util.Base64
 import java.util.Locale
@@ -374,26 +377,64 @@ internal object SecureLoader {
 
     private fun processZip(zipData: ByteArray) {
         val moduleDir = getV5ModuleDir()
-        if (moduleDir.exists()) {
-            moduleDir.deleteRecursively()
-        }
-        moduleDir.mkdirs()
+        val parentDir = moduleDir.parentFile
+        val transactionDir = parentDir.parentFile ?: throw IOException("Unable to resolve module transaction directory")
+        Files.createDirectories(parentDir.toPath())
+        val stagingDir = Files.createTempDirectory(transactionDir.toPath(), ".$DISK_MODULE_NAME-stage-").toFile()
+        var backupDir: File? = null
 
-        ZipInputStream(ByteArrayInputStream(zipData)).use { zipStream ->
-            var entry: ZipEntry? = zipStream.nextEntry
-            while (entry != null) {
-                try {
-                    if (!entry.isDirectory) {
-                        processZipEntry(zipStream, entry, moduleDir)
+        try {
+            ZipInputStream(ByteArrayInputStream(zipData)).use { zipStream ->
+                var entry: ZipEntry? = zipStream.nextEntry
+                while (entry != null) {
+                    try {
+                        if (!entry.isDirectory) {
+                            processZipEntry(zipStream, entry, stagingDir)
+                        }
+                    } finally {
+                        zipStream.closeEntry()
                     }
-                } catch (e: Exception) {
-                    println("Error processing zip entry: ${e.message}")
-                    shutDownHard()
-                } finally {
-                    zipStream.closeEntry()
+                    entry = zipStream.nextEntry
                 }
-                entry = zipStream.nextEntry
             }
+
+            val metadataFile = File(stagingDir, "metadata.json")
+            if (!metadataFile.isFile) throw IOException("Downloaded module is missing metadata.json")
+            jsonParser.parseToJsonElement(metadataFile.readText(Charsets.UTF_8)).jsonObject
+
+            try {
+                if (moduleDir.exists()) {
+                    val backupPath = Files.createTempDirectory(transactionDir.toPath(), ".$DISK_MODULE_NAME-backup-")
+                    Files.delete(backupPath)
+                    backupDir = backupPath.toFile()
+                    moveDirectory(moduleDir, backupDir)
+                }
+
+                moveDirectory(stagingDir, moduleDir)
+            } catch (swapError: Exception) {
+                val backup = backupDir
+                if (backup != null && backup.exists() && !moduleDir.exists()) {
+                    try {
+                        moveDirectory(backup, moduleDir)
+                        backupDir = null
+                    } catch (rollbackError: Exception) {
+                        swapError.addSuppressed(rollbackError)
+                    }
+                }
+                throw swapError
+            }
+
+            backupDir?.deleteRecursively()
+        } finally {
+            stagingDir.deleteRecursively()
+        }
+    }
+
+    private fun moveDirectory(source: File, target: File) {
+        try {
+            Files.move(source.toPath(), target.toPath(), StandardCopyOption.ATOMIC_MOVE)
+        } catch (_: AtomicMoveNotSupportedException) {
+            Files.move(source.toPath(), target.toPath())
         }
     }
 

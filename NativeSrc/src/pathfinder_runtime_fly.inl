@@ -11,14 +11,14 @@ static_assert(groundClearanceCost(1) == 10.0 && groundClearanceCost(5) == 2.0);
 
 inline double Runtime::flyHeuristic(const int x, const int y, const int z) const {
   const auto& goal = closestFlyGoal(x, y, z);
-  const double dx = static_cast<double>(x - goal.x);
-  const double dy = static_cast<double>(y - goal.y);
-  const double dz = static_cast<double>(z - goal.z);
+  const double dx = static_cast<double>(x) - static_cast<double>(goal.x);
+  const double dy = static_cast<double>(y) - static_cast<double>(goal.y);
+  const double dz = static_cast<double>(z) - static_cast<double>(goal.z);
 
   double h = std::sqrt(dx * dx + dy * dy + dz * dz) * ActionCosts::FLY_ONE_BLOCK_TIME;
   const double crossProduct = std::abs(
-    dx * static_cast<double>(startFly_.z - goal.z) -
-    dz * static_cast<double>(startFly_.x - goal.x)
+    dx * (static_cast<double>(startFly_.z) - static_cast<double>(goal.z)) -
+    dz * (static_cast<double>(startFly_.x) - static_cast<double>(goal.x))
   );
   h += crossProduct * 0.001;
 
@@ -42,10 +42,10 @@ inline const Int3& Runtime::closestFlyGoal(const int x, const int y, const int z
 }
 
 inline double Runtime::calculateProgress(const int x, const int z, const Int3& goal) const {
-  const long long dxStart = static_cast<long long>(x - startFly_.x);
-  const long long dzStart = static_cast<long long>(z - startFly_.z);
-  const long long dxGoal = static_cast<long long>(x - goal.x);
-  const long long dzGoal = static_cast<long long>(z - goal.z);
+  const long long dxStart = static_cast<long long>(x) - startFly_.x;
+  const long long dzStart = static_cast<long long>(z) - startFly_.z;
+  const long long dxGoal = static_cast<long long>(x) - goal.x;
+  const long long dzGoal = static_cast<long long>(z) - goal.z;
 
   const long long distFromStartSq = dxStart * dxStart + dzStart * dzStart;
   const long long distToGoalSq = dxGoal * dxGoal + dzGoal * dzGoal;

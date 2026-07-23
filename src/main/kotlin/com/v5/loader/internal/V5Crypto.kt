@@ -1,8 +1,9 @@
 package com.v5.loader.internal
 
+import java.nio.file.Path
 import java.security.MessageDigest
 import java.security.SecureRandom
-import java.nio.file.Path
+import java.util.Base64
 import kotlin.io.path.inputStream
 
 internal object V5Crypto {
@@ -32,8 +33,6 @@ internal object V5Crypto {
         if (byteLen <= 0) return ""
         val nonceBytes = ByteArray(byteLen)
         secureRandom.nextBytes(nonceBytes)
-        var nonce = java.util.Base64.getEncoder().encodeToString(nonceBytes)
-        nonce = nonce.replace('+', '-').replace('/', '_')
-        return nonce.trimEnd('=')
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(nonceBytes)
     }
 }

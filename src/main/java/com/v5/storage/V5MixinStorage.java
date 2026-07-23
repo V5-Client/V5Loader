@@ -60,6 +60,18 @@ public final class V5MixinStorage {
         STORAGE.put(key, value);
     }
 
+    public static void clear() {
+        Object savedDistance = STORAGE.get("savedDistance");
+        Object savedPerspective = STORAGE.get("savedPerspective");
+        Object savedFps = STORAGE.get("savedFps");
+        Object savedMasterVolume = STORAGE.get("savedMasterVolume");
+        STORAGE.clear();
+        if (savedDistance != null) STORAGE.put("savedDistance", savedDistance);
+        if (savedPerspective != null) STORAGE.put("savedPerspective", savedPerspective);
+        if (savedFps != null) STORAGE.put("savedFps", savedFps);
+        if (savedMasterVolume != null) STORAGE.put("savedMasterVolume", savedMasterVolume);
+    }
+
     public static <T> T applyMethod(String methodName, T original, Class<T> expectedType) {
         Object value = STORAGE.get(METHOD_PREFIX + methodName);
         if (!(value instanceof Callable callable)) {

@@ -101,12 +101,10 @@ constexpr int kMaxAllowedWorldY = 2048;
 constexpr int64_t kMaxWorldSpanBlocks = 4096;
 
 bool isValidHeightRange(const jint minY, const jint maxY) {
-  const int64_t span = static_cast<int64_t>(maxY) - static_cast<int64_t>(minY);
   return minY < maxY &&
     minY >= kMinAllowedWorldY &&
     maxY <= kMaxAllowedWorldY &&
-    span > 0 &&
-    span <= kMaxWorldSpanBlocks;
+    static_cast<int64_t>(maxY) - static_cast<int64_t>(minY) <= kMaxWorldSpanBlocks;
 }
 
 std::string buildInvalidHeightMessage(const jint minY, const jint maxY) {

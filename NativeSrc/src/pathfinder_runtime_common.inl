@@ -167,14 +167,9 @@ inline bool Runtime::isSafe(const int x, const int y, const int z) {
     return it->second == 1;
   }
 
-  bool safe = true;
-  if (!isSolid(x, y - 1, z)) {
-    safe = false;
-  } else if (!isPassable(x, y, z)) {
-    safe = false;
-  } else if (!isPassable(x, y + 1, z)) {
-    safe = false;
-  }
+  const bool safe = isSolid(x, y - 1, z) &&
+    isPassable(x, y, z) &&
+    isPassable(x, y + 1, z);
 
   safeCache_[key] = safe ? 1 : 0;
   return safe;
@@ -187,14 +182,9 @@ inline bool Runtime::isFlyColumnClear(const int x, const int y, const int z) {
     return it->second == 1;
   }
 
-  bool clear = true;
-  if (!isPassableForFlying(x, y, z)) {
-    clear = false;
-  } else if (isTopSlab(x, y + 1, z)) {
-    clear = false;
-  } else if (!isPassableForFlying(x, y + 1, z)) {
-    clear = false;
-  }
+  const bool clear = isPassableForFlying(x, y, z) &&
+    !isTopSlab(x, y + 1, z) &&
+    isPassableForFlying(x, y + 1, z);
 
   flyClearCache_[key] = clear ? 1 : 0;
   return clear;

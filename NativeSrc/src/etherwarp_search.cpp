@@ -504,7 +504,7 @@ inline std::vector<AngularRow> buildAngularRows(
 ) {
   std::vector<AngularRow> rows;
 
-  for (double pitch = -90.0; pitch <= 90.0001; pitch += pitchStep) {
+  for (double pitch = -90.0; pitch <= 90.0001;) {
     const float clampedPitch = static_cast<float>(std::clamp(pitch, -90.0, 90.0));
     const double cosPitch = std::cos(static_cast<double>(clampedPitch) * DEG_TO_RAD);
 
@@ -518,21 +518,27 @@ inline std::vector<AngularRow> buildAngularRows(
         sample.id = (*nextId)++;
       }
       row.samples.push_back(sample);
-      rows.push_back(std::move(row));
-      continue;
-    }
+    } else {
+      const double effectiveYawStep = yawStep / std::abs(cosPitch);
+      for (double yaw = 0.0; yaw < 360.0;) {
+        AngularSample sample;
+        sample.direction = makeRayDirectionFromAngles(static_cast<float>(yaw), clampedPitch);
+        if (nextId != nullptr) {
+          sample.id = (*nextId)++;
+        }
+        row.samples.push_back(sample);
 
-    const double effectiveYawStep = yawStep / std::abs(cosPitch);
-    for (double yaw = 0.0; yaw < 360.0; yaw += effectiveYawStep) {
-      AngularSample sample;
-      sample.direction = makeRayDirectionFromAngles(static_cast<float>(yaw), clampedPitch);
-      if (nextId != nullptr) {
-        sample.id = (*nextId)++;
+        const double nextYaw = yaw + effectiveYawStep;
+        if (nextYaw == yaw) break;
+        yaw = nextYaw;
       }
-      row.samples.push_back(sample);
     }
 
     rows.push_back(std::move(row));
+
+    const double nextPitch = pitch + pitchStep;
+    if (nextPitch == pitch) break;
+    pitch = nextPitch;
   }
 
   return rows;

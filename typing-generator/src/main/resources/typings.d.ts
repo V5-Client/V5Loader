@@ -4232,6 +4232,19 @@ declare global {
         interface Delayed extends kotlin.Comparable<java.util.concurrent.Delayed> { 
           getDelay(p0: java.util.concurrent.TimeUnit): number;
         }
+        const CopyOnWriteArrayList: {
+          new<E>(): java.util.concurrent.CopyOnWriteArrayList<any>;
+          new<E>(p0: Array<E>): java.util.concurrent.CopyOnWriteArrayList<any>;
+          new<E>(p0: Array<E>): java.util.concurrent.CopyOnWriteArrayList<any>;
+        }
+        interface CopyOnWriteArrayList<E> extends Array<E>, java.util.RandomAccess, kotlin.Cloneable, java.io.Serializable { 
+          indexOf(p0: E, p1: number): number;
+          lastIndexOf(p0: E, p1: number): number;
+          toArray(): Array<any>;
+          toArray<T>(p0: Array<T>): Array<T>;
+          addIfAbsent(p0: E): boolean;
+          addAllAbsent(p0: Array<E>): number;
+        }
         const ConcurrentHashMap: {
           KeySetView: typeof java.util.concurrent.ConcurrentHashMap$KeySetView;
           new<K, V>(): java.util.concurrent.ConcurrentHashMap<any, any>;
@@ -4284,19 +4297,6 @@ declare global {
         }
         interface ConcurrentHashMap$KeySetView<K, V> extends Set<K>, java.io.Serializable { 
           getMappedValue(): V;
-        }
-        const CopyOnWriteArrayList: {
-          new<E>(): java.util.concurrent.CopyOnWriteArrayList<any>;
-          new<E>(p0: Array<E>): java.util.concurrent.CopyOnWriteArrayList<any>;
-          new<E>(p0: Array<E>): java.util.concurrent.CopyOnWriteArrayList<any>;
-        }
-        interface CopyOnWriteArrayList<E> extends Array<E>, java.util.RandomAccess, kotlin.Cloneable, java.io.Serializable { 
-          indexOf(p0: E, p1: number): number;
-          lastIndexOf(p0: E, p1: number): number;
-          toArray(): Array<any>;
-          toArray<T>(p0: Array<T>): Array<T>;
-          addIfAbsent(p0: E): boolean;
-          addAllAbsent(p0: Array<E>): number;
         }
       }
       namespace random {
@@ -9110,6 +9110,56 @@ declare global {
       }
     }
     namespace reflect {
+      interface KProperty<V> extends kotlin.reflect.KCallable<V> { 
+        isLateinit(): boolean;
+        isConst(): boolean;
+        getGetter(): kotlin.reflect.KProperty$Getter<V>;
+      }
+      interface KCallable<R> extends kotlin.reflect.KAnnotatedElement { 
+        getName(): string;
+        getParameters(): Array<unknown>;
+        getReturnType(): kotlin.reflect.KType;
+        getTypeParameters(): Array<unknown>;
+        getVisibility(): kotlin.reflect.KVisibility | null | undefined;
+        isFinal(): boolean;
+        isOpen(): boolean;
+        isAbstract(): boolean;
+        isSuspend(): boolean;
+        call(args: any | null | undefined): R;
+        callBy(args: Map<unknown, any | null | undefined>): R;
+      }
+      interface KAnnotatedElement { 
+        getAnnotations(): Array<kotlin.Annotation>;
+      }
+      interface KType extends kotlin.reflect.KAnnotatedElement { 
+        getClassifier(): kotlin.reflect.KClassifier | null | undefined;
+        getArguments(): Array<unknown>;
+        isMarkedNullable(): boolean;
+      }
+      interface KClassifier { 
+      }
+      const KVisibility: {
+        PUBLIC: kotlin.reflect.KVisibility;
+        PROTECTED: kotlin.reflect.KVisibility;
+        INTERNAL: kotlin.reflect.KVisibility;
+        PRIVATE: kotlin.reflect.KVisibility;
+        getEntries(): kotlin.enums.EnumEntries<kotlin.reflect.KVisibility>;
+        values(): Array<kotlin.reflect.KVisibility>;
+        valueOf(value: string): kotlin.reflect.KVisibility;
+      }
+      interface KVisibility extends kotlin.Enum<kotlin.reflect.KVisibility> { 
+      }
+      interface KProperty$Getter<V> extends kotlin.reflect.KProperty$Accessor<V>, kotlin.reflect.KFunction<V> { 
+      }
+      interface KProperty$Accessor<V> { 
+        getProperty(): kotlin.reflect.KProperty<V>;
+      }
+      interface KFunction<R> extends kotlin.reflect.KCallable<R>, kotlin.Function<R> { 
+        isInline(): boolean;
+        isExternal(): boolean;
+        isOperator(): boolean;
+        isInfix(): boolean;
+      }
       interface KClass<T> extends kotlin.reflect.KDeclarationContainer, kotlin.reflect.KAnnotatedElement, kotlin.reflect.KClassifier { 
         getSimpleName(): string | null | undefined;
         getQualifiedName(): string | null | undefined;
@@ -9133,56 +9183,6 @@ declare global {
       }
       interface KDeclarationContainer { 
         getMembers(): Array<kotlin.reflect.KCallable<any>>;
-      }
-      interface KAnnotatedElement { 
-        getAnnotations(): Array<kotlin.Annotation>;
-      }
-      interface KClassifier { 
-      }
-      const KVisibility: {
-        PUBLIC: kotlin.reflect.KVisibility;
-        PROTECTED: kotlin.reflect.KVisibility;
-        INTERNAL: kotlin.reflect.KVisibility;
-        PRIVATE: kotlin.reflect.KVisibility;
-        getEntries(): kotlin.enums.EnumEntries<kotlin.reflect.KVisibility>;
-        values(): Array<kotlin.reflect.KVisibility>;
-        valueOf(value: string): kotlin.reflect.KVisibility;
-      }
-      interface KVisibility extends kotlin.Enum<kotlin.reflect.KVisibility> { 
-      }
-      interface KProperty<V> extends kotlin.reflect.KCallable<V> { 
-        isLateinit(): boolean;
-        isConst(): boolean;
-        getGetter(): kotlin.reflect.KProperty$Getter<V>;
-      }
-      interface KCallable<R> extends kotlin.reflect.KAnnotatedElement { 
-        getName(): string;
-        getParameters(): Array<unknown>;
-        getReturnType(): kotlin.reflect.KType;
-        getTypeParameters(): Array<unknown>;
-        getVisibility(): kotlin.reflect.KVisibility | null | undefined;
-        isFinal(): boolean;
-        isOpen(): boolean;
-        isAbstract(): boolean;
-        isSuspend(): boolean;
-        call(args: any | null | undefined): R;
-        callBy(args: Map<unknown, any | null | undefined>): R;
-      }
-      interface KType extends kotlin.reflect.KAnnotatedElement { 
-        getClassifier(): kotlin.reflect.KClassifier | null | undefined;
-        getArguments(): Array<unknown>;
-        isMarkedNullable(): boolean;
-      }
-      interface KProperty$Getter<V> extends kotlin.reflect.KProperty$Accessor<V>, kotlin.reflect.KFunction<V> { 
-      }
-      interface KProperty$Accessor<V> { 
-        getProperty(): kotlin.reflect.KProperty<V>;
-      }
-      interface KFunction<R> extends kotlin.reflect.KCallable<R>, kotlin.Function<R> { 
-        isInline(): boolean;
-        isExternal(): boolean;
-        isOperator(): boolean;
-        isInfix(): boolean;
       }
       interface KMutableProperty0<V> extends kotlin.reflect.KProperty0<V>, kotlin.reflect.KMutableProperty<V> { 
         set(value: V): void;
@@ -38676,6 +38676,12 @@ declare global {
           }
         }
       }
+      namespace api {
+        interface ClientModInitializer { 
+          onInitializeClient(): void;
+          (): void;
+        }
+      }
       namespace loader {
         namespace api {
           namespace entrypoint {
@@ -38684,12 +38690,6 @@ declare global {
               (): void;
             }
           }
-        }
-      }
-      namespace api {
-        interface ClientModInitializer { 
-          onInitializeClient(): void;
-          (): void;
         }
       }
     }
@@ -43495,118 +43495,8299 @@ declare global {
         }
       }
     }
-    namespace v5 {
-      namespace loader {
-        const V5PreLaunch: {
-          new(): com.v5.loader.V5PreLaunch;
-        }
-        interface V5PreLaunch extends net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint { 
-        }
-      }
-      namespace mixins {
-        const FramerateLimitTrackerMixin: {
-          new(): com.v5.mixins.FramerateLimitTrackerMixin;
-        }
-        interface FramerateLimitTrackerMixin { 
-        }
-        const CrossCollisionBlockMixin: {
-          new(): com.v5.mixins.CrossCollisionBlockMixin;
-        }
-        interface CrossCollisionBlockMixin { 
-        }
-        const MinecraftMixin: {
-          new(): com.v5.mixins.MinecraftMixin;
-        }
-        interface MinecraftMixin { 
-          options: net.minecraft.client.Options;
-        }
-        const BlockMixin: {
-          new(): com.v5.mixins.BlockMixin;
-        }
-        interface BlockMixin { 
-        }
-        const KeyboardHandlerMixin: {
-          new(): com.v5.mixins.KeyboardHandlerMixin;
-        }
-        interface KeyboardHandlerMixin { 
-        }
-        const PlayerTabOverlayMixin: {
-          new(): com.v5.mixins.PlayerTabOverlayMixin;
-        }
-        interface PlayerTabOverlayMixin { 
-        }
-        const MouseHandlerMixin: {
-          new(): com.v5.mixins.MouseHandlerMixin;
-        }
-        interface MouseHandlerMixin { 
-        }
-        const ConnectionProxyMixin: {
-          new(): com.v5.mixins.ConnectionProxyMixin;
-        }
-        interface ConnectionProxyMixin { 
-        }
-        const EntityRendererMixin: {
-          new(): com.v5.mixins.EntityRendererMixin;
-        }
-        interface EntityRendererMixin { 
-        }
-        const DrawContextCapture: {
-          new(): com.v5.mixins.DrawContextCapture;
-        }
-        interface DrawContextCapture { 
-        }
-        const GameRendererMixin: {
-          new(): com.v5.mixins.GameRendererMixin;
-        }
-        interface GameRendererMixin { 
-        }
-        const FirmamentModAnnouncerMixin: {
-          new(): com.v5.mixins.FirmamentModAnnouncerMixin;
-        }
-        interface FirmamentModAnnouncerMixin { 
-        }
-        interface JoinMultiplayerScreenMixin extends net.minecraft.client.gui.screens.Screen { 
-        }
-        const CameraMixin: {
-          new(): com.v5.mixins.CameraMixin;
-        }
-        interface CameraMixin { 
-        }
-        const YggdrasilServicesKeyInfoMixin: {
-          new(): com.v5.mixins.YggdrasilServicesKeyInfoMixin;
-        }
-        interface YggdrasilServicesKeyInfoMixin { 
-        }
-        const ConnectionMixin: {
-          new(): com.v5.mixins.ConnectionMixin;
-        }
-        interface ConnectionMixin { 
-        }
-        const LevelRendererMixin: {
-          new(): com.v5.mixins.LevelRendererMixin;
-        }
-        interface LevelRendererMixin { 
-        }
-        const ChatComponentMixin: {
-          new(): com.v5.mixins.ChatComponentMixin;
-        }
-        interface ChatComponentMixin { 
-        }
-      }
-      namespace storage {
-        const V5MixinStorage: {
-          get(key: string, defaultValue: any): any;
-          getBoolean(key: string, defaultValue: boolean): boolean;
-          getString(key: string, defaultValue: string): string;
-          set(key: string, value: any): void;
-          applyMethod<T>(methodName: string, original: T, expectedType: java.lang.Class<T>): T;
-        }
-        interface V5MixinStorage { 
-        }
-      }
-    }
     namespace chattriggers {
       namespace ctjs {
+        namespace api {
+          namespace vec {
+            const Vec3i: {
+              new(): com.chattriggers.ctjs.api.vec.Vec3i;
+              new(x: number): com.chattriggers.ctjs.api.vec.Vec3i;
+              new(x: number, y: number): com.chattriggers.ctjs.api.vec.Vec3i;
+              new(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3i;
+            }
+            interface Vec3i { 
+              getX(): number;
+              getY(): number;
+              getZ(): number;
+              magnitudeSquared(): number;
+              magnitude(): number;
+              translated(dx: number, dy: number, dz: number): com.chattriggers.ctjs.api.vec.Vec3i;
+              scaled(scale: number): com.chattriggers.ctjs.api.vec.Vec3i;
+              scaled(xScale: number, yScale: number, zScale: number): com.chattriggers.ctjs.api.vec.Vec3i;
+              crossProduct(other: com.chattriggers.ctjs.api.vec.Vec3i): com.chattriggers.ctjs.api.vec.Vec3i;
+              dotProduct(other: com.chattriggers.ctjs.api.vec.Vec3i): number;
+              angleTo(other: com.chattriggers.ctjs.api.vec.Vec3i): number;
+              normalized(): com.chattriggers.ctjs.api.vec.Vec3f;
+              unaryMinus(): com.chattriggers.ctjs.api.vec.Vec3i;
+              plus(other: com.chattriggers.ctjs.api.vec.Vec3i): com.chattriggers.ctjs.api.vec.Vec3i;
+              minus(other: com.chattriggers.ctjs.api.vec.Vec3i): com.chattriggers.ctjs.api.vec.Vec3i;
+            }
+            const Vec3f: {
+              new(): com.chattriggers.ctjs.api.vec.Vec3f;
+              new(x: number): com.chattriggers.ctjs.api.vec.Vec3f;
+              new(x: number, y: number): com.chattriggers.ctjs.api.vec.Vec3f;
+              new(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3f;
+            }
+            interface Vec3f { 
+              getX(): number;
+              getY(): number;
+              getZ(): number;
+              magnitudeSquared(): number;
+              magnitude(): number;
+              translated(dx: number, dy: number, dz: number): com.chattriggers.ctjs.api.vec.Vec3f;
+              scaled(scale: number): com.chattriggers.ctjs.api.vec.Vec3f;
+              scaled(xScale: number, yScale: number, zScale: number): com.chattriggers.ctjs.api.vec.Vec3f;
+              crossProduct(other: com.chattriggers.ctjs.api.vec.Vec3f): com.chattriggers.ctjs.api.vec.Vec3f;
+              dotProduct(other: com.chattriggers.ctjs.api.vec.Vec3f): number;
+              angleTo(other: com.chattriggers.ctjs.api.vec.Vec3f): number;
+              normalized(): com.chattriggers.ctjs.api.vec.Vec3f;
+              unaryMinus(): com.chattriggers.ctjs.api.vec.Vec3f;
+              plus(other: com.chattriggers.ctjs.api.vec.Vec3f): com.chattriggers.ctjs.api.vec.Vec3f;
+              minus(other: com.chattriggers.ctjs.api.vec.Vec3f): com.chattriggers.ctjs.api.vec.Vec3f;
+              component1(): number;
+              component2(): number;
+              component3(): number;
+              copy(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3f;
+            }
+            const Vec2f: {
+              new(): com.chattriggers.ctjs.api.vec.Vec2f;
+              new(x: number): com.chattriggers.ctjs.api.vec.Vec2f;
+              new(x: number, y: number): com.chattriggers.ctjs.api.vec.Vec2f;
+            }
+            interface Vec2f { 
+              getX(): number;
+              getY(): number;
+              magnitudeSquared(): number;
+              magnitude(): number;
+              translated(dx: number, dy: number): com.chattriggers.ctjs.api.vec.Vec2f;
+              scaled(scale: number): com.chattriggers.ctjs.api.vec.Vec2f;
+              scaled(xScale: number, yScale: number): com.chattriggers.ctjs.api.vec.Vec2f;
+              dotProduct(other: com.chattriggers.ctjs.api.vec.Vec2f): number;
+              angleTo(other: com.chattriggers.ctjs.api.vec.Vec2f): number;
+              normalized(): com.chattriggers.ctjs.api.vec.Vec2f;
+              unaryMinus(): com.chattriggers.ctjs.api.vec.Vec2f;
+              plus(other: com.chattriggers.ctjs.api.vec.Vec2f): com.chattriggers.ctjs.api.vec.Vec2f;
+              minus(other: com.chattriggers.ctjs.api.vec.Vec2f): com.chattriggers.ctjs.api.vec.Vec2f;
+              component1(): number;
+              component2(): number;
+              copy(x: number, y: number): com.chattriggers.ctjs.api.vec.Vec2f;
+            }
+          }
+          namespace inventory {
+            namespace nbt {
+              const NBTBase: {
+                new(mcValue: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
+              }
+              interface NBTBase extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.nbt.Tag> { 
+								/**
+								 * Gets the type byte for the tag.
+								 */
+                getId(): number;
+								/**
+								 * Creates a clone of the tag.
+								 */
+                copy(): net.minecraft.nbt.Tag;
+								/**
+								 * Return whether this compound has no tags.
+								 */
+                hasNoTags(): boolean;
+                hasTags(): boolean;
+              }
+              const NBTBase$Companion: {
+                fromMC(nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
+                new(): com.chattriggers.ctjs.api.inventory.nbt.NBTBase$Companion;
+              }
+              interface NBTBase$Companion { 
+                fromMC(nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
+                new(): com.chattriggers.ctjs.api.inventory.nbt.NBTBase$Companion;
+                toObject(): any | null | undefined;
+                toObject(): org.mozilla.javascript.NativeObject;
+                toObject(): org.mozilla.javascript.NativeArray;
+              }
+              const NBTTagList: {
+                new(mcValue: net.minecraft.nbt.ListTag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
+              }
+              interface NBTTagList extends com.chattriggers.ctjs.api.inventory.nbt.NBTBase { 
+                getTagCount(): number;
+                appendTag(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
+                appendTag(nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
+                set(id: number, nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
+                set(id: number, nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
+                insertTag(index: number, nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
+                insertTag(index: number, nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
+                removeTag(index: number): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
+                getShortAt(index: number): java.util.Optional<number>;
+                getIntAt(index: number): java.util.Optional<number>;
+                getFloatAt(index: number): java.util.Optional<number>;
+                getDoubleAt(index: number): java.util.Optional<number>;
+                getStringTagAt(index: number): string;
+                getListAt(index: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
+                getCompoundTagAt(index: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                getIntArrayAt(index: number): Array<number>;
+                getLongArrayAt(index: number): Array<number>;
+                get(index: number): net.minecraft.nbt.Tag;
+                get(index: number, type: number): any;
+                toArray(): org.mozilla.javascript.NativeArray;
+              }
+              const NBTTagCompound: {
+                NBTDataType: typeof com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                new(mcValue: net.minecraft.nbt.CompoundTag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+              }
+              interface NBTTagCompound extends com.chattriggers.ctjs.api.inventory.nbt.NBTBase { 
+                getTagMap(): Map<string, net.minecraft.nbt.Tag>;
+                getKeySet(): Set<string>;
+                getTag(key: string): com.chattriggers.ctjs.api.inventory.nbt.NBTBase | null | undefined;
+                getTagId(key: string): number | null | undefined;
+                getByte(key: string): java.util.Optional<number>;
+                getShort(key: string): java.util.Optional<number>;
+                getInteger(key: string): java.util.Optional<number>;
+                getLong(key: string): java.util.Optional<number>;
+                getFloat(key: string): java.util.Optional<number>;
+                getDouble(key: string): java.util.Optional<number>;
+                getString(key: string): java.util.Optional<string>;
+                getByteArray(key: string): java.util.Optional<Array<number>>;
+                getIntArray(key: string): java.util.Optional<Array<number>>;
+                getBoolean(key: string): java.util.Optional<boolean>;
+                getCompoundTag(key: string): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                getTagList(key: string): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
+                get(key: string, type: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType, tagType: number | null | undefined): any | null | undefined;
+                get(key: string): com.chattriggers.ctjs.api.inventory.nbt.NBTBase | null | undefined;
+                setNBTBase(key: string, value: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                setNBTBase(key: string, value: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                setBoolean(key: string, value: boolean): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                setByte(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                setShort(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                setInteger(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                setLong(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                setFloat(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                setDouble(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                setString(key: string, value: string): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                setByteArray(key: string, value: Array<number>): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                setIntArray(key: string, value: Array<number>): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                putLongArray(key: string, value: Array<number>): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                set(key: string, value: any): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                removeTag(key: string): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
+                toObject(): org.mozilla.javascript.NativeObject;
+              }
+              const NBTTagCompound$NBTDataType: {
+                BYTE: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                SHORT: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                INTEGER: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                LONG: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                FLOAT: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                DOUBLE: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                STRING: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                BYTE_ARRAY: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                INT_ARRAY: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                LONG_ARRAY: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                BOOLEAN: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                COMPOUND_TAG: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                TAG_LIST: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType>;
+                values(): Array<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType>;
+                valueOf(value: string): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
+              }
+              interface NBTTagCompound$NBTDataType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType> { 
+              }
+              const NBT: {
+								/**
+								 * Creates a new [NBTBase] from the given [nbt]
+								 * 
+								 *  @param nbt the value to convert to NBT
+								 *  @param options optional argument to allow refinement of the NBT data.
+								 *  Possible options include:
+								 *  - coerceNumericStrings: Boolean, default false.
+								 *  E.g. "10b" as a byte, "20s" as a short, "30f" as a float, "40d" as a double,
+								 *  "50l" as a long
+								 *  - preferArraysOverLists: Boolean, default false
+								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
+								 *  NBTTagIntArray accordingly
+								 * 
+								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
+								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
+								 */
+                parse(nbt: any): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
+								/**
+								 * Creates a new [NBTBase] from the given [nbt]
+								 * 
+								 *  @param nbt the value to convert to NBT
+								 *  @param options optional argument to allow refinement of the NBT data.
+								 *  Possible options include:
+								 *  - coerceNumericStrings: Boolean, default false.
+								 *  E.g. "10b" as a byte, "20s" as a short, "30f" as a float, "40d" as a double,
+								 *  "50l" as a long
+								 *  - preferArraysOverLists: Boolean, default false
+								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
+								 *  NBTTagIntArray accordingly
+								 * 
+								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
+								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
+								 */
+                parse(nbt: any, options: org.mozilla.javascript.NativeObject | null | undefined): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
+                toObject(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound): org.mozilla.javascript.NativeObject;
+                toArray(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTTagList): org.mozilla.javascript.NativeArray;
+                new(): com.chattriggers.ctjs.api.inventory.nbt.NBT;
+              }
+              interface NBT { 
+								/**
+								 * Creates a new [NBTBase] from the given [nbt]
+								 * 
+								 *  @param nbt the value to convert to NBT
+								 *  @param options optional argument to allow refinement of the NBT data.
+								 *  Possible options include:
+								 *  - coerceNumericStrings: Boolean, default false.
+								 *  E.g. "10b" as a byte, "20s" as a short, "30f" as a float, "40d" as a double,
+								 *  "50l" as a long
+								 *  - preferArraysOverLists: Boolean, default false
+								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
+								 *  NBTTagIntArray accordingly
+								 * 
+								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
+								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
+								 */
+                parse(nbt: any): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
+								/**
+								 * Creates a new [NBTBase] from the given [nbt]
+								 * 
+								 *  @param nbt the value to convert to NBT
+								 *  @param options optional argument to allow refinement of the NBT data.
+								 *  Possible options include:
+								 *  - coerceNumericStrings: Boolean, default false.
+								 *  E.g. "10b" as a byte, "20s" as a short, "30f" as a float, "40d" as a double,
+								 *  "50l" as a long
+								 *  - preferArraysOverLists: Boolean, default false
+								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
+								 *  NBTTagIntArray accordingly
+								 * 
+								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
+								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
+								 */
+                parse(nbt: any, options: org.mozilla.javascript.NativeObject | null | undefined): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
+                toObject(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound): org.mozilla.javascript.NativeObject;
+                toArray(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTTagList): org.mozilla.javascript.NativeArray;
+                new(): com.chattriggers.ctjs.api.inventory.nbt.NBT;
+              }
+            }
+            namespace action {
+              const DropAction: {
+                new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.DropAction;
+              }
+              interface DropAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
+                getHoldingCtrl(): boolean;
+								/**
+								 * Whether the click should act as if control is being held (defaults to false)
+								 * 
+								 *  @param holdingCtrl to hold ctrl or not
+								 */
+                setHoldingCtrl(holdingCtrl: boolean): com.chattriggers.ctjs.api.inventory.action.DropAction;
+              }
+              const Action: {
+                Type: typeof com.chattriggers.ctjs.api.inventory.action.Action$Type;
+                new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.Action;
+              }
+              interface Action { 
+                getSlot(): number;
+                setSlot(value: number): void;
+                getWindowId(): number;
+                setWindowId(value: number): void;
+                setSlot(slot: number): com.chattriggers.ctjs.api.inventory.action.Action;
+                setWindowId(windowId: number): com.chattriggers.ctjs.api.inventory.action.Action;
+              }
+              const Action$Companion: {
+								/**
+								 * Creates a new action.
+								 *  The Inventory must be a container, see [Inventory.isContainer].
+								 *  The slot can be -999 for outside of the gui
+								 * 
+								 *  @param inventory the inventory to complete the action on
+								 *  @param slot the slot to complete the action on
+								 *  @param typeString the type of action to do (CLICK, DRAG, DROP, KEY)
+								 *  @return the new action
+								 */
+                of(inventory: com.chattriggers.ctjs.api.inventory.Inventory, slot: number, typeString: string): com.chattriggers.ctjs.api.inventory.action.Action;
+                new(): com.chattriggers.ctjs.api.inventory.action.Action$Companion;
+              }
+              interface Action$Companion { 
+								/**
+								 * Creates a new action.
+								 *  The Inventory must be a container, see [Inventory.isContainer].
+								 *  The slot can be -999 for outside of the gui
+								 * 
+								 *  @param inventory the inventory to complete the action on
+								 *  @param slot the slot to complete the action on
+								 *  @param typeString the type of action to do (CLICK, DRAG, DROP, KEY)
+								 *  @return the new action
+								 */
+                of(inventory: com.chattriggers.ctjs.api.inventory.Inventory, slot: number, typeString: string): com.chattriggers.ctjs.api.inventory.action.Action;
+                new(): com.chattriggers.ctjs.api.inventory.action.Action$Companion;
+              }
+              const Action$Type: {
+                CLICK: com.chattriggers.ctjs.api.inventory.action.Action$Type;
+                DRAG: com.chattriggers.ctjs.api.inventory.action.Action$Type;
+                KEY: com.chattriggers.ctjs.api.inventory.action.Action$Type;
+                DROP: com.chattriggers.ctjs.api.inventory.action.Action$Type;
+                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.inventory.action.Action$Type>;
+                values(): Array<com.chattriggers.ctjs.api.inventory.action.Action$Type>;
+                valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.Action$Type;
+              }
+              interface Action$Type extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.Action$Type> { 
+              }
+              const KeyAction: {
+                new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.KeyAction;
+              }
+              interface KeyAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
+                getKey(): number;
+								/**
+								 * Which key to act as if has been clicked (REQUIRED).
+								 *  Options currently are 0-8, representing the hotbar keys
+								 * 
+								 *  @param key which key to "click"
+								 */
+                setKey(key: number): com.chattriggers.ctjs.api.inventory.action.KeyAction;
+              }
+              const ClickAction: {
+                ClickType: typeof com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
+                new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.ClickAction;
+              }
+              interface ClickAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
+                getClickType(): com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
+								/**
+								 * The type of click (REQUIRED)
+								 * 
+								 *  @param clickType the new click type
+								 */
+                setClickType(clickType: com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType): com.chattriggers.ctjs.api.inventory.action.ClickAction;
+                getHoldingShift(): boolean;
+								/**
+								 * Whether the click should act as if shift is being held (defaults to false)
+								 * 
+								 *  @param holdingShift to hold shift or not
+								 */
+                setHoldingShift(holdingShift: boolean): com.chattriggers.ctjs.api.inventory.action.ClickAction;
+                getItemInHand(): boolean;
+								/**
+								 * Whether the click should act as if an item is being held
+								 *  (defaults to whether there actually is an item in the hand)
+								 * 
+								 *  @param itemInHand to be holding an item or not
+								 */
+                setItemInHand(itemInHand: boolean): com.chattriggers.ctjs.api.inventory.action.ClickAction;
+                getPickupAll(): boolean;
+								/**
+								 * Whether the click should try to pick up all items of said type in the inventory (essentially double clicking)
+								 *  (defaults to whether there actually is an item in the hand)
+								 * 
+								 *  @param pickupAll to pick up all items of the same type
+								 */
+                setPickupAll(pickupAll: boolean): com.chattriggers.ctjs.api.inventory.action.ClickAction;
+								/**
+								 * Sets the type of click.
+								 *  Possible values are: LEFT, RIGHT, MIDDLE
+								 * 
+								 *  @param clickType the click type
+								 *  @return the current Action for method chaining
+								 */
+                setClickString(clickType: string): com.chattriggers.ctjs.api.inventory.action.ClickAction;
+              }
+              const ClickAction$ClickType: {
+                LEFT: com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
+                RIGHT: com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
+                MIDDLE: com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
+                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType>;
+                values(): Array<com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType>;
+                valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
+              }
+              interface ClickAction$ClickType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType> { 
+                getButton(): number;
+              }
+              const DragAction: {
+                ClickType: typeof com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
+                Stage: typeof com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
+                new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.DragAction;
+              }
+              interface DragAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
+                getClickType(): com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
+								/**
+								 * The type of click (REQUIRED)
+								 * 
+								 *  @param clickType the new click type
+								 */
+                setClickType(clickType: com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType): com.chattriggers.ctjs.api.inventory.action.DragAction;
+                getStage(): com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
+								/**
+								 * The stage of this drag (REQUIRED)
+								 *  BEGIN is when beginning the drag
+								 *  SLOT is for each slot being dragged into
+								 *  END is for ending the drag
+								 * 
+								 *  @param stage the stage
+								 */
+                setStage(stage: com.chattriggers.ctjs.api.inventory.action.DragAction$Stage): com.chattriggers.ctjs.api.inventory.action.DragAction;
+								/**
+								 * Sets the type of click.
+								 *  Possible values are: LEFT, RIGHT, MIDDLE
+								 * 
+								 *  @param clickType the click type
+								 *  @return the current Action for method chaining
+								 */
+                setClickString(clickType: string): com.chattriggers.ctjs.api.inventory.action.DragAction;
+								/**
+								 * Sets the stage of this drag.
+								 *  Possible values are: BEGIN, SLOT, END [stage]
+								 * 
+								 *  @param stage the stage
+								 *  @return the current Action for method chaining
+								 */
+                setStageString(stage: string): com.chattriggers.ctjs.api.inventory.action.DragAction;
+              }
+              const DragAction$ClickType: {
+                LEFT: com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
+                RIGHT: com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
+                MIDDLE: com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
+                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType>;
+                values(): Array<com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType>;
+                valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
+              }
+              interface DragAction$ClickType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType> { 
+                getButton(): number;
+              }
+              const DragAction$Stage: {
+                BEGIN: com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
+                SLOT: com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
+                END: com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
+                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.inventory.action.DragAction$Stage>;
+                values(): Array<com.chattriggers.ctjs.api.inventory.action.DragAction$Stage>;
+                valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
+              }
+              interface DragAction$Stage extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.DragAction$Stage> { 
+                getStage(): number;
+              }
+            }
+            const Inventory: {
+              new(inventory: net.minecraft.world.Container): com.chattriggers.ctjs.api.inventory.Inventory;
+              new(container: net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<any>): com.chattriggers.ctjs.api.inventory.Inventory;
+            }
+            interface Inventory { 
+              getInventory(): net.minecraft.world.Container;
+              getScreen(): net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<any> | null | undefined;
+							/**
+							 * Gets the total size of the Inventory.
+							 *  The player's inventory size is 36, 27 for the main inventory, plus 9 for the hotbar.
+							 *  A single chest's size would be 63, because it also counts the player's inventory.
+							 * 
+							 *  @return the size of the Inventory
+							 */
+              getSize(): number;
+							/**
+							 * Gets the item in any slot, starting from 0.
+							 * 
+							 *  @param slot the slot index
+							 *  @return the [Item] in that slot, or null if there is no item
+							 */
+              getStackInSlot(slot: number): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+							/**
+							 * Returns the window identifier number of this Inventory.
+							 *  This Inventory must be backed by a HandledScreen [isScreen]
+							 * 
+							 *  @return the window id
+							 */
+              getWindowId(): number;
+							/**
+							 * Checks if an item can be shift clicked into a certain slot, i.e. coal into the bottom of a furnace.
+							 * 
+							 *  @param slot the slot index
+							 *  @param item the item for checking
+							 *  @return whether it can be shift clicked in
+							 */
+              isItemValidForSlot(slot: number, item: com.chattriggers.ctjs.api.inventory.Item): boolean;
+							/**
+							 * @return a list of the [Item]s in an inventory
+							 */
+              getItems(): Array<com.chattriggers.ctjs.api.inventory.Item | null | undefined>;
+							/**
+							 * Checks whether the inventory contains the given item.
+							 * 
+							 *  @param item the item to check for
+							 *  @return whether the inventory contains the item
+							 */
+              contains(item: com.chattriggers.ctjs.api.inventory.Item): boolean;
+							/**
+							 * Checks whether the inventory contains an item with ID.
+							 * 
+							 *  @param id the ID of the item to match
+							 *  @return whether the inventory contains an item with ID
+							 */
+              contains(id: number): boolean;
+							/**
+							 * Gets the index of any item in the inventory, and returns the slot number.
+							 *  Returns -1 if the inventory does not contain the item.
+							 * 
+							 *  @param item the item to check for
+							 *  @return the index of the given item
+							 */
+              indexOf(item: com.chattriggers.ctjs.api.inventory.Item): number;
+							/**
+							 * Gets the index of any item in the inventory with matching ID, and returns the slot number.
+							 *  Returns -1 if the inventory does not contain the item.
+							 * 
+							 *  @param id the item ID to check for
+							 *  @return the index of the given item with ID
+							 */
+              indexOf(id: number): number;
+							/**
+							 * Returns true if this Inventory wraps a [HandledScreen] object
+							 *  rather than an [MCInventory] object
+							 * 
+							 *  @return if this is a container
+							 */
+              isScreen(): boolean;
+							/**
+							 * Shorthand for [ClickAction]
+							 * 
+							 *  @param slot the slot to click on
+							 *  @param button the mouse button to use. "LEFT" by default.
+							 *  @param shift whether shift is being held. False by default
+							 *  @return this inventory for method chaining
+							 */
+              click(slot: number): com.chattriggers.ctjs.api.inventory.Inventory;
+							/**
+							 * Shorthand for [ClickAction]
+							 * 
+							 *  @param slot the slot to click on
+							 *  @param button the mouse button to use. "LEFT" by default.
+							 *  @param shift whether shift is being held. False by default
+							 *  @return this inventory for method chaining
+							 */
+              click(slot: number, shift: boolean): com.chattriggers.ctjs.api.inventory.Inventory;
+							/**
+							 * Shorthand for [ClickAction]
+							 * 
+							 *  @param slot the slot to click on
+							 *  @param button the mouse button to use. "LEFT" by default.
+							 *  @param shift whether shift is being held. False by default
+							 *  @return this inventory for method chaining
+							 */
+              click(slot: number, shift: boolean, button: string): com.chattriggers.ctjs.api.inventory.Inventory;
+							/**
+							 * Shorthand for [DropAction]
+							 * 
+							 *  @param slot the slot to drop
+							 *  @param ctrl whether control should be held (drops whole stack)
+							 *  @return this inventory for method chaining
+							 */
+              drop(slot: number, ctrl: boolean): com.chattriggers.ctjs.api.inventory.Inventory;
+							/**
+							 * Shorthand for [DragAction]
+							 * 
+							 *  @param type what click type this should be: LEFT, MIDDLE, RIGHT
+							 *  @param slots all of the slots to drag onto
+							 *  @return this inventory for method chaining
+							 */
+              drag(type: string, slots: number): com.chattriggers.ctjs.api.inventory.Inventory;
+							/**
+							 * Gets the name of the inventory, simply "container" for most chest-like blocks.
+							 * 
+							 *  @return the name of the inventory
+							 */
+              getName(): com.chattriggers.ctjs.api.message.TextComponent;
+              getClassName(): string;
+            }
+            const Item: {
+              new(mcValue: net.minecraft.world.item.ItemStack): com.chattriggers.ctjs.api.inventory.Item;
+              new(type: com.chattriggers.ctjs.api.inventory.ItemType): com.chattriggers.ctjs.api.inventory.Item;
+            }
+            interface Item extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.item.ItemStack> { 
+              getType(): com.chattriggers.ctjs.api.inventory.ItemType;
+              getStackSize(): number;
+              setStackSize(size: number): com.chattriggers.ctjs.api.inventory.Item;
+              getEnchantments(): Map<net.minecraft.resources.ResourceKey<unknown> | null | undefined, number>;
+              isEnchantable(): boolean;
+              isEnchanted(): boolean;
+              canPlaceOn(pos: com.chattriggers.ctjs.api.world.block.BlockPos): boolean;
+              canPlaceOn(block: com.chattriggers.ctjs.api.world.block.Block): boolean;
+              canHarvest(pos: com.chattriggers.ctjs.api.world.block.BlockPos): boolean;
+              canHarvest(block: com.chattriggers.ctjs.api.world.block.Block): boolean;
+              getDurability(): number;
+              getMaxDamage(): number;
+              getDamage(): number;
+              isDamageable(): boolean;
+              getName(): string;
+              setName(name: com.chattriggers.ctjs.api.message.TextComponent | null | undefined): com.chattriggers.ctjs.api.inventory.Item;
+              resetName(): void;
+              getLore(): Array<com.chattriggers.ctjs.api.message.TextComponent>;
+              getLore(advanced: boolean): Array<com.chattriggers.ctjs.api.message.TextComponent>;
+              setLore(lore: Array<com.chattriggers.ctjs.api.message.TextComponent>): void;
+              resetLore(): void;
+              getNBT(): net.minecraft.core.component.DataComponentMap;
+              draw(): void;
+              draw(x: number): void;
+              draw(x: number, y: number): void;
+              draw(x: number, y: number, scale: number): void;
+            }
+            const ItemType: {
+              new(mcValue: net.minecraft.world.item.Item): com.chattriggers.ctjs.api.inventory.ItemType;
+              new(itemName: string): com.chattriggers.ctjs.api.inventory.ItemType;
+              new(id: number): com.chattriggers.ctjs.api.inventory.ItemType;
+              new(blockType: com.chattriggers.ctjs.api.world.block.BlockType): com.chattriggers.ctjs.api.inventory.ItemType;
+            }
+            interface ItemType extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.item.Item> { 
+              getName(): string;
+              getNameComponent(): com.chattriggers.ctjs.api.message.TextComponent;
+              getId(): number;
+              getTranslationKey(): string;
+              getRegistryName(): string;
+              asItem(): com.chattriggers.ctjs.api.inventory.Item;
+            }
+            const ItemType$Companion: {
+              fromMC(mcValue: net.minecraft.world.item.Item): com.chattriggers.ctjs.api.inventory.ItemType | null | undefined;
+              new(): com.chattriggers.ctjs.api.inventory.ItemType$Companion;
+            }
+            interface ItemType$Companion { 
+              fromMC(mcValue: net.minecraft.world.item.Item): com.chattriggers.ctjs.api.inventory.ItemType | null | undefined;
+              new(): com.chattriggers.ctjs.api.inventory.ItemType$Companion;
+            }
+            const Item$Companion: {
+              fromMC(mcValue: net.minecraft.world.item.ItemStack): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+              new(): com.chattriggers.ctjs.api.inventory.Item$Companion;
+            }
+            interface Item$Companion { 
+              fromMC(mcValue: net.minecraft.world.item.ItemStack): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+              new(): com.chattriggers.ctjs.api.inventory.Item$Companion;
+            }
+            const Slot: {
+              new(mcValue: net.minecraft.world.inventory.Slot): com.chattriggers.ctjs.api.inventory.Slot;
+            }
+            interface Slot extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.inventory.Slot> { 
+              getIndex(): number;
+              getDisplayX(): number;
+              getDisplayY(): number;
+              getInventory(): com.chattriggers.ctjs.api.inventory.Inventory;
+              getItem(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+              isEnabled(): boolean;
+            }
+          }
+          namespace message {
+            const TextComponent: {
+							/**
+							 * Creates an empty [TextComponent] with a single, unstyled, empty part.
+							 */
+              new(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Creates a [TextComponent] from a variable number of objects. These
+							 *  objects can be:
+							 *  - A plain string possibly containing formatting codes. If the string has
+							 *    formatting codes, it will be split into different parts accordingly
+							 *  - A [TextComponent], whose parts will be appended in sequence to this
+							 *    [TextComponent]'s list of parts
+							 *  - A [Text] object, which acts as a single part
+							 *  - A JS object, which must contain a "text" key, and can optionally contain
+							 *    any of the [Style] keys:
+							 *    - color: a [TextColor] or string format of a [TextColor], [Formatting], or a hex value
+							 *    - bold: boolean
+							 *    - italic: boolean
+							 *    - underline: boolean
+							 *    - strikethrough: boolean
+							 *    - obfuscated: boolean
+							 *    - clickEvent: object with { action: [ClickEvent.Action] or string format of a [ClickEvent.Action], value: string or null }
+							 *    - hoverEvent: object with { action: [HoverEvent.Action], string format of a [HoverEvent.Action], or null, value: string or null }
+							 *    - insertion: string or null
+							 *    - font: string format of an [net.minecraft.util.Identifier]
+							 * 
+							 *  @see Style
+							 */
+              new(parts: any): com.chattriggers.ctjs.api.message.TextComponent;
+            }
+            interface TextComponent extends net.minecraft.network.chat.Component, kotlin.collections.Iterable<org.mozilla.javascript.NativeObject> { 
+							/**
+							 * Returns the text of all parts concatenated without formatting codes.
+							 */
+              getUnformattedText(): string;
+							/**
+							 * Returns the text of all parts concatenated with formatting codes.
+							 */
+              getFormattedText(): string;
+              getSize(): number;
+							/**
+							 * If this [TextComponent] is recursive, sending this instance (via [chat] or
+							 *  [actionBar]) may trigger other `chat` triggers as if it had been received by
+							 *  the server. [TextComponent]s are non-recursive by default.
+							 * 
+							 *  @return true if the message can trigger other triggers.
+							 */
+              isRecursive(): boolean;
+							/**
+							 * Get the chat line ID of this message, if it exists. The chat line can be used
+							 *  to easily edit or delete a message later via [ChatLib.editChat] and
+							 *  [ChatLib.deleteChat].
+							 * 
+							 *  @return the chat line ID of the message, or -1 if this [TextComponent] does
+							 *          not have an associated chat line ID.
+							 */
+              getChatLineId(): number;
+							/**
+							 * @return a new [TextComponent] with the given chat line id
+							 */
+              withChatLineId(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * @return a new [TextComponent] with the given chat line id
+							 */
+              withChatLineId(id: number): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Sets whether the message can trigger other triggers.
+							 * 
+							 *  @param recursive true if message can trigger other triggers.
+							 */
+              withRecursive(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Sets whether the message can trigger other triggers.
+							 * 
+							 *  @param recursive true if message can trigger other triggers.
+							 */
+              withRecursive(recursive: boolean): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * @return a new [TextComponent] with the specified [value] appended to the end.
+							 *          This accepts all types of objects that the vararg constructor does.
+							 */
+              withText(value: any): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * @return a new [TextComponent] with the specified [value] inserted at [index].
+							 *          This accepts all types of objects that the vararg constructor does.
+							 */
+              withTextAt(index: number, value: any): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * @return a new [TextComponent] without the part at [index]
+							 */
+              withoutTextAt(index: number): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Edits this text component, replacing it with the given [newText]. Note that
+							 *  this compares [TextComponent]s based on [formattedText]; if an exact match
+							 *  is needed, use [ChatLib.editChat] in conjunction with a chat line ID.
+							 */
+              edit(newText: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Edits this text component, replacing it with a new [TextComponent] from the
+							 *  given [parts]. Note that this compares [TextComponent]s based on
+							 *  [formattedText]; if an exact match is needed, use [ChatLib.editChat] in
+							 *  conjunction with a chat line ID.
+							 */
+              edit(parts: any): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Sends this [TextComponent] to the players chat.
+							 * 
+							 *  Note that this is purely client-side, and will not be sent to the server. If [isRecursive],
+							 *  will trigger any matching `chat` triggers
+							 * 
+							 *  @see ChatLib.chat
+							 *  @see ChatLib.say
+							 */
+              chat(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Sends this [TextComponent] to the players action bar.
+							 * 
+							 *  If [isRecursive], will trigger any matching `actionBar` triggers
+							 * 
+							 *  @see ChatLib.actionBar
+							 */
+              actionBar(): com.chattriggers.ctjs.api.message.TextComponent;
+              contains(element: org.mozilla.javascript.NativeObject): boolean;
+              containsAll(elements: Array<org.mozilla.javascript.NativeObject>): boolean;
+              get(index: number): org.mozilla.javascript.NativeObject;
+              indexOf(element: org.mozilla.javascript.NativeObject): number;
+              isEmpty(): boolean;
+            }
+            const Chat: {
+              sendGradientMsg(prefix: string, startRgb: number, endRgb: number, messages: any): void;
+              new(): com.chattriggers.ctjs.api.message.Chat;
+            }
+            interface Chat { 
+              sendGradientMsg(prefix: string, startRgb: number, endRgb: number, messages: any): void;
+              new(): com.chattriggers.ctjs.api.message.Chat;
+            }
+            const ChatLib: {
+							/**
+							 * Prints text in the chat.
+							 *  The text can be a String or a [TextComponent]
+							 * 
+							 *  @param text the text to be printed
+							 */
+              chat(text: any | null | undefined): void;
+							/**
+							 * Shows text in the action bar.
+							 *  The text can be a String or a [TextComponent]
+							 * 
+							 *  @param text the text to show
+							 */
+              actionBar(text: any | null | undefined): void;
+							/**
+							 * Simulates a chat message to be caught by other triggers for testing.
+							 *  The text can be a String or a [TextComponent]
+							 * 
+							 *  @param text The message to simulate
+							 */
+              simulateChat(text: any | null | undefined): void;
+							/**
+							 * Replaces the easier to type '&' color codes with proper color codes in a string.
+							 * 
+							 *  @param message The string to add color codes to
+							 *  @return the formatted message
+							 */
+              addColor(message: string | null | undefined): string;
+							/**
+							 * Says chat message.
+							 *  This message is actually sent to the server.
+							 * 
+							 *  @param text the message to be sent
+							 */
+              say(text: string): void;
+							/**
+							 * Runs a command.
+							 * 
+							 *  @param text the command to run, without the leading slash (Ex. "help")
+							 *  @param clientSide should the command be run as a client side command
+							 */
+              command(text: string): void;
+							/**
+							 * Runs a command.
+							 * 
+							 *  @param text the command to run, without the leading slash (Ex. "help")
+							 *  @param clientSide should the command be run as a client side command
+							 */
+              command(text: string, clientSide: boolean): void;
+							/**
+							 * Clear all chat messages
+							 */
+              clearChat(): void;
+							/**
+							 * Get a message that will be perfectly one line of chat,
+							 *  the separator repeated as many times as necessary.
+							 *  The separator defaults to "-"
+							 * 
+							 *  @param separator the message to split chat with
+							 *  @return the message that would split chat
+							 */
+              getChatBreak(): string;
+							/**
+							 * Get a message that will be perfectly one line of chat,
+							 *  the separator repeated as many times as necessary.
+							 *  The separator defaults to "-"
+							 * 
+							 *  @param separator the message to split chat with
+							 *  @return the message that would split chat
+							 */
+              getChatBreak(separator: string): string;
+							/**
+							 * Gets the width of Minecraft's chat
+							 * 
+							 *  @return the width of chat
+							 */
+              getChatWidth(): number;
+							/**
+							 * Remove all formatting
+							 * 
+							 *  @param text the string to un-format
+							 *  @return the unformatted string
+							 */
+              removeFormatting(text: string): string;
+							/**
+							 * Replaces Minecraft formatted text with normal formatted text
+							 * 
+							 *  @param text the formatted string
+							 *  @return the unformatted string
+							 */
+              replaceFormatting(text: string): string;
+							/**
+							 * Get a message that will be perfectly centered in chat.
+							 * 
+							 *  @param text the text to be centered
+							 *  @return the centered message
+							 */
+              getCenteredText(text: string): string;
+							/**
+							 * Copies the given String to the user's clipboard
+							 * 
+							 *  @param text the text to copy
+							 */
+              copyToClipboard(text: string): void;
+							/**
+							 * Edits an already sent chat message matched by [regexp].
+							 * 
+							 *  @param regexp the regex object to match to the message
+							 *  @param replacements the new message(s) to be put in replace of the old one
+							 */
+              editChat(regexp: org.mozilla.javascript.regexp.NativeRegExp, replacements: any): void;
+							/**
+							 * Edits an already sent chat message by the text of the chat
+							 * 
+							 *  @param toReplace the unformatted text of the message to be replaced
+							 *  @param replacements the new message(s) to be put in place of the old one
+							 */
+              editChat(toReplace: string, replacements: any): void;
+							/**
+							 * Edits an already sent chat message by the [TextComponent]
+							 * 
+							 *  @param toReplace the message to be replaced
+							 *  @param replacements the new message(s) to be put in place of the old one
+							 */
+              editChat(toReplace: com.chattriggers.ctjs.api.message.TextComponent, replacements: any): void;
+							/**
+							 * Edits an already sent chat message by its chat line id
+							 * 
+							 *  @param chatLineId the chat line id of the message to be replaced
+							 *  @param replacements the new message(s) to be put in place of the old one
+							 */
+              editChat(chatLineId: number, replacements: any): void;
+							/**
+							 * Edits an already sent chat message by given a callback that receives
+							 *  [TextComponent] instances
+							 * 
+							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
+							 *  @param replacements the new message(s) to be put in place of the old one
+							 */
+              editChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>, replacements: any): void;
+							/**
+							 * Deletes an already sent chat message matching [regexp].
+							 * 
+							 *  @param regexp the regex object to match to the message
+							 */
+              deleteChat(regexp: org.mozilla.javascript.regexp.NativeRegExp): void;
+							/**
+							 * Deletes an already sent chat message by the text of the chat
+							 * 
+							 *  @param toDelete the unformatted text of the message to be deleted
+							 */
+              deleteChat(toDelete: string): void;
+							/**
+							 * Deletes an already sent chat message by the [TextComponent]
+							 * 
+							 *  @param toDelete the message to be deleted
+							 */
+              deleteChat(toDelete: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Deletes an already sent chat message by its chat line id
+							 * 
+							 *  @param chatLineId the chat line id of the message to be deleted
+							 */
+              deleteChat(chatLineId: number): void;
+							/**
+							 * Deletes an already sent chat message given a callback that receives
+							 *  [TextComponent] instances
+							 * 
+							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
+							 */
+              deleteChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>): void;
+							/**
+							 * Gets the previous 1000 lines of chat
+							 * 
+							 *  @return A list of the last 1000 chat lines
+							 */
+              getChatLines(): Array<string>;
+							/**
+							 * Adds a message to the player's chat history. This allows the message to
+							 *  show up for the player when pressing the up/down keys while in the chat gui
+							 * 
+							 *  @param index the index to insert the message
+							 *  @param message the message to add to chat history
+							 */
+              addToSentMessageHistory(message: string): void;
+							/**
+							 * Adds a message to the player's chat history. This allows the message to
+							 *  show up for the player when pressing the up/down keys while in the chat gui
+							 * 
+							 *  @param index the index to insert the message
+							 *  @param message the message to add to chat history
+							 */
+              addToSentMessageHistory(index: number, message: string): void;
+              new(): com.chattriggers.ctjs.api.message.ChatLib;
+            }
+            interface ChatLib { 
+							/**
+							 * Prints text in the chat.
+							 *  The text can be a String or a [TextComponent]
+							 * 
+							 *  @param text the text to be printed
+							 */
+              chat(text: any | null | undefined): void;
+							/**
+							 * Shows text in the action bar.
+							 *  The text can be a String or a [TextComponent]
+							 * 
+							 *  @param text the text to show
+							 */
+              actionBar(text: any | null | undefined): void;
+							/**
+							 * Simulates a chat message to be caught by other triggers for testing.
+							 *  The text can be a String or a [TextComponent]
+							 * 
+							 *  @param text The message to simulate
+							 */
+              simulateChat(text: any | null | undefined): void;
+							/**
+							 * Replaces the easier to type '&' color codes with proper color codes in a string.
+							 * 
+							 *  @param message The string to add color codes to
+							 *  @return the formatted message
+							 */
+              addColor(message: string | null | undefined): string;
+							/**
+							 * Says chat message.
+							 *  This message is actually sent to the server.
+							 * 
+							 *  @param text the message to be sent
+							 */
+              say(text: string): void;
+							/**
+							 * Runs a command.
+							 * 
+							 *  @param text the command to run, without the leading slash (Ex. "help")
+							 *  @param clientSide should the command be run as a client side command
+							 */
+              command(text: string): void;
+							/**
+							 * Runs a command.
+							 * 
+							 *  @param text the command to run, without the leading slash (Ex. "help")
+							 *  @param clientSide should the command be run as a client side command
+							 */
+              command(text: string, clientSide: boolean): void;
+							/**
+							 * Clear all chat messages
+							 */
+              clearChat(): void;
+							/**
+							 * Get a message that will be perfectly one line of chat,
+							 *  the separator repeated as many times as necessary.
+							 *  The separator defaults to "-"
+							 * 
+							 *  @param separator the message to split chat with
+							 *  @return the message that would split chat
+							 */
+              getChatBreak(): string;
+							/**
+							 * Get a message that will be perfectly one line of chat,
+							 *  the separator repeated as many times as necessary.
+							 *  The separator defaults to "-"
+							 * 
+							 *  @param separator the message to split chat with
+							 *  @return the message that would split chat
+							 */
+              getChatBreak(separator: string): string;
+							/**
+							 * Gets the width of Minecraft's chat
+							 * 
+							 *  @return the width of chat
+							 */
+              getChatWidth(): number;
+							/**
+							 * Remove all formatting
+							 * 
+							 *  @param text the string to un-format
+							 *  @return the unformatted string
+							 */
+              removeFormatting(text: string): string;
+							/**
+							 * Replaces Minecraft formatted text with normal formatted text
+							 * 
+							 *  @param text the formatted string
+							 *  @return the unformatted string
+							 */
+              replaceFormatting(text: string): string;
+							/**
+							 * Get a message that will be perfectly centered in chat.
+							 * 
+							 *  @param text the text to be centered
+							 *  @return the centered message
+							 */
+              getCenteredText(text: string): string;
+							/**
+							 * Copies the given String to the user's clipboard
+							 * 
+							 *  @param text the text to copy
+							 */
+              copyToClipboard(text: string): void;
+							/**
+							 * Edits an already sent chat message matched by [regexp].
+							 * 
+							 *  @param regexp the regex object to match to the message
+							 *  @param replacements the new message(s) to be put in replace of the old one
+							 */
+              editChat(regexp: org.mozilla.javascript.regexp.NativeRegExp, replacements: any): void;
+							/**
+							 * Edits an already sent chat message by the text of the chat
+							 * 
+							 *  @param toReplace the unformatted text of the message to be replaced
+							 *  @param replacements the new message(s) to be put in place of the old one
+							 */
+              editChat(toReplace: string, replacements: any): void;
+							/**
+							 * Edits an already sent chat message by the [TextComponent]
+							 * 
+							 *  @param toReplace the message to be replaced
+							 *  @param replacements the new message(s) to be put in place of the old one
+							 */
+              editChat(toReplace: com.chattriggers.ctjs.api.message.TextComponent, replacements: any): void;
+							/**
+							 * Edits an already sent chat message by its chat line id
+							 * 
+							 *  @param chatLineId the chat line id of the message to be replaced
+							 *  @param replacements the new message(s) to be put in place of the old one
+							 */
+              editChat(chatLineId: number, replacements: any): void;
+							/**
+							 * Edits an already sent chat message by given a callback that receives
+							 *  [TextComponent] instances
+							 * 
+							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
+							 *  @param replacements the new message(s) to be put in place of the old one
+							 */
+              editChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>, replacements: any): void;
+							/**
+							 * Deletes an already sent chat message matching [regexp].
+							 * 
+							 *  @param regexp the regex object to match to the message
+							 */
+              deleteChat(regexp: org.mozilla.javascript.regexp.NativeRegExp): void;
+							/**
+							 * Deletes an already sent chat message by the text of the chat
+							 * 
+							 *  @param toDelete the unformatted text of the message to be deleted
+							 */
+              deleteChat(toDelete: string): void;
+							/**
+							 * Deletes an already sent chat message by the [TextComponent]
+							 * 
+							 *  @param toDelete the message to be deleted
+							 */
+              deleteChat(toDelete: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Deletes an already sent chat message by its chat line id
+							 * 
+							 *  @param chatLineId the chat line id of the message to be deleted
+							 */
+              deleteChat(chatLineId: number): void;
+							/**
+							 * Deletes an already sent chat message given a callback that receives
+							 *  [TextComponent] instances
+							 * 
+							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
+							 */
+              deleteChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>): void;
+							/**
+							 * Gets the previous 1000 lines of chat
+							 * 
+							 *  @return A list of the last 1000 chat lines
+							 */
+              getChatLines(): Array<string>;
+							/**
+							 * Adds a message to the player's chat history. This allows the message to
+							 *  show up for the player when pressing the up/down keys while in the chat gui
+							 * 
+							 *  @param index the index to insert the message
+							 *  @param message the message to add to chat history
+							 */
+              addToSentMessageHistory(message: string): void;
+							/**
+							 * Adds a message to the player's chat history. This allows the message to
+							 *  show up for the player when pressing the up/down keys while in the chat gui
+							 * 
+							 *  @param index the index to insert the message
+							 *  @param message the message to add to chat history
+							 */
+              addToSentMessageHistory(index: number, message: string): void;
+              new(): com.chattriggers.ctjs.api.message.ChatLib;
+            }
+          }
+          namespace world {
+            namespace block {
+              const BlockType: {
+                new(mcValue: net.minecraft.world.level.block.Block): com.chattriggers.ctjs.api.world.block.BlockType;
+                new(block: com.chattriggers.ctjs.api.world.block.BlockType): com.chattriggers.ctjs.api.world.block.BlockType;
+                new(blockName: string): com.chattriggers.ctjs.api.world.block.BlockType;
+                new(blockID: number): com.chattriggers.ctjs.api.world.block.BlockType;
+                new(item: com.chattriggers.ctjs.api.inventory.Item): com.chattriggers.ctjs.api.world.block.BlockType;
+              }
+              interface BlockType extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.block.Block> { 
+								/**
+								 * Returns a [Block] based on this block and the
+								 *  provided BlockPos
+								 * 
+								 *  @param blockPos the block position
+								 *  @return a [Block] object
+								 */
+                withBlockPos(blockPos: com.chattriggers.ctjs.api.world.block.BlockPos): com.chattriggers.ctjs.api.world.block.Block;
+                getID(): number;
+								/**
+								 * Gets the block's registry name.
+								 *  Example: minecraft:oak_planks
+								 * 
+								 *  @return the block's registry name
+								 */
+                getRegistryName(): string;
+								/**
+								 * Gets the block's translation key.
+								 *  Example: block.minecraft.oak_planks
+								 * 
+								 *  @return the block's translation key
+								 */
+                getTranslationKey(): string;
+								/**
+								 * Gets the block's localized name.
+								 *  Example: Wooden Planks
+								 * 
+								 *  @return the block's localized name
+								 */
+                getName(): string;
+                getLightValue(): number;
+                getDefaultState(): net.minecraft.world.level.block.state.BlockState;
+                canProvidePower(): boolean;
+                isTranslucent(): boolean;
+              }
+              const BlockPos: {
+                new(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.block.BlockPos;
+                new(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.block.BlockPos;
+                new(pos: com.chattriggers.ctjs.api.vec.Vec3i): com.chattriggers.ctjs.api.world.block.BlockPos;
+                new(pos: net.minecraft.core.BlockPos): com.chattriggers.ctjs.api.world.block.BlockPos;
+                new(source: com.chattriggers.ctjs.api.entity.Entity): com.chattriggers.ctjs.api.world.block.BlockPos;
+              }
+              interface BlockPos extends com.chattriggers.ctjs.api.vec.Vec3i, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.BlockPos> { 
+                up(): com.chattriggers.ctjs.api.world.block.BlockPos;
+                up(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
+                down(): com.chattriggers.ctjs.api.world.block.BlockPos;
+                down(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
+                north(): com.chattriggers.ctjs.api.world.block.BlockPos;
+                north(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
+                south(): com.chattriggers.ctjs.api.world.block.BlockPos;
+                south(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
+                east(): com.chattriggers.ctjs.api.world.block.BlockPos;
+                east(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
+                west(): com.chattriggers.ctjs.api.world.block.BlockPos;
+                west(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
+                offset(facing: com.chattriggers.ctjs.api.world.block.BlockFace): com.chattriggers.ctjs.api.world.block.BlockPos;
+                offset(facing: com.chattriggers.ctjs.api.world.block.BlockFace, n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
+                distanceTo(other: com.chattriggers.ctjs.api.world.block.BlockPos): number;
+                toVec3d(): net.minecraft.world.phys.Vec3;
+              }
+              const BlockFace: {
+                DOWN: com.chattriggers.ctjs.api.world.block.BlockFace;
+                UP: com.chattriggers.ctjs.api.world.block.BlockFace;
+                NORTH: com.chattriggers.ctjs.api.world.block.BlockFace;
+                SOUTH: com.chattriggers.ctjs.api.world.block.BlockFace;
+                WEST: com.chattriggers.ctjs.api.world.block.BlockFace;
+                EAST: com.chattriggers.ctjs.api.world.block.BlockFace;
+                Plane: typeof com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
+                AxisDirection: typeof com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
+                Axis: typeof com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
+                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.block.BlockFace>;
+                values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace>;
+                valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace;
+              }
+              interface BlockFace extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace>, net.minecraft.util.StringRepresentable, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction> { 
+                getAxisDirection(): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
+                getAxis(): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
+                getDirectionVec(): com.chattriggers.ctjs.api.vec.Vec3i;
+                getOpposite(): com.chattriggers.ctjs.api.world.block.BlockFace;
+                getOffsetX(): number;
+                getOffsetY(): number;
+                getOffsetZ(): number;
+                rotateAround(axis: com.chattriggers.ctjs.api.world.block.BlockFace$Axis): com.chattriggers.ctjs.api.world.block.BlockFace;
+                rotateX(): com.chattriggers.ctjs.api.world.block.BlockFace;
+                rotateY(): com.chattriggers.ctjs.api.world.block.BlockFace;
+                rotateZ(): com.chattriggers.ctjs.api.world.block.BlockFace;
+              }
+              const BlockFace$AxisDirection: {
+                POSITIVE: com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
+                NEGATIVE: com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
+                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection>;
+                values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection>;
+                valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
+              }
+              interface BlockFace$AxisDirection extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction$AxisDirection> { 
+                getOffset(): number;
+              }
+              const BlockFace$AxisDirection$Companion: {
+                fromMC(axisDirection: net.minecraft.core.Direction$AxisDirection): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
+                new(): unknown;
+              }
+              interface BlockFace$AxisDirection$Companion { 
+                fromMC(axisDirection: net.minecraft.core.Direction$AxisDirection): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
+                new(): unknown;
+              }
+              const BlockFace$Axis: {
+                X: com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
+                Y: com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
+                Z: com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
+                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>;
+                values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>;
+                valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
+              }
+              interface BlockFace$Axis extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>, net.minecraft.util.StringRepresentable, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction$Axis> { 
+                getPlane(): com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
+                isHorizontal(): boolean;
+                isVertical(): boolean;
+              }
+              const BlockFace$Plane: {
+                HORIZONTAL: com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
+                VERTICAL: com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
+                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.block.BlockFace$Plane>;
+                values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace$Plane>;
+                valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
+              }
+              interface BlockFace$Plane extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$Plane>, kotlin.collections.Iterable<com.chattriggers.ctjs.api.world.block.BlockFace> { 
+                facings(): Array<com.chattriggers.ctjs.api.world.block.BlockFace>;
+              }
+              const BlockFace$Axis$Companion: {
+                fromMC(axis: net.minecraft.core.Direction$Axis): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
+                new(): unknown;
+              }
+              interface BlockFace$Axis$Companion { 
+                fromMC(axis: net.minecraft.core.Direction$Axis): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
+                new(): unknown;
+              }
+              const BlockFace$Companion: {
+                fromMC(facing: net.minecraft.core.Direction): com.chattriggers.ctjs.api.world.block.BlockFace;
+                new(): com.chattriggers.ctjs.api.world.block.BlockFace$Companion;
+              }
+              interface BlockFace$Companion { 
+                fromMC(facing: net.minecraft.core.Direction): com.chattriggers.ctjs.api.world.block.BlockFace;
+                new(): com.chattriggers.ctjs.api.world.block.BlockFace$Companion;
+              }
+              const Block: {
+                new(type: com.chattriggers.ctjs.api.world.block.BlockType, pos: com.chattriggers.ctjs.api.world.block.BlockPos, face: com.chattriggers.ctjs.api.world.block.BlockFace | null | undefined): com.chattriggers.ctjs.api.world.block.Block;
+              }
+              interface Block { 
+                getType(): com.chattriggers.ctjs.api.world.block.BlockType;
+                getPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
+                getFace(): com.chattriggers.ctjs.api.world.block.BlockFace | null | undefined;
+                getX(): number;
+                getY(): number;
+                getZ(): number;
+                withType(type: com.chattriggers.ctjs.api.world.block.BlockType): com.chattriggers.ctjs.api.world.block.Block;
+                withPos(pos: com.chattriggers.ctjs.api.world.block.BlockPos): com.chattriggers.ctjs.api.world.block.Block;
+								/**
+								 * Narrows this block to reference a certain face. Used by
+								 *  [Player.lookingAt] to specify the block face
+								 *  being looked at.
+								 */
+                withFace(face: com.chattriggers.ctjs.api.world.block.BlockFace): com.chattriggers.ctjs.api.world.block.Block;
+                getState(): net.minecraft.world.level.block.state.BlockState | null | undefined;
+                isEmittingPower(): boolean;
+                isEmittingPower(face: com.chattriggers.ctjs.api.world.block.BlockFace | null | undefined): boolean;
+                getEmittingPower(): number;
+                getEmittingPower(face: com.chattriggers.ctjs.api.world.block.BlockFace | null | undefined): number;
+                isReceivingPower(): boolean;
+                getReceivingPower(): number;
+								/**
+								 * Checks whether the block can be mined with the tool in the player's hand
+								 * 
+								 *  @return whether the block can be mined
+								 */
+                canBeHarvested(): boolean;
+                canBeHarvestedWith(item: com.chattriggers.ctjs.api.inventory.Item): boolean;
+              }
+            }
+            namespace pathfinding {
+              const Swift: {
+                new(): com.chattriggers.ctjs.api.world.pathfinding.Swift;
+              }
+              interface Swift extends net.fabricmc.api.ClientModInitializer { 
+              }
+              const Swift$Companion: {
+                executor: java.util.concurrent.ExecutorService;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.Swift$Companion;
+              }
+              interface Swift$Companion { 
+                executor: java.util.concurrent.ExecutorService;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.Swift$Companion;
+                getCHUNKS_PER_TICK(): number;
+                getMAXIMUM_CACHED_CHUNKS(): number;
+              }
+              const NativeVoxelFlags: {
+                new(): com.chattriggers.ctjs.api.world.pathfinding.NativeVoxelFlags;
+              }
+              interface NativeVoxelFlags { 
+                new(): com.chattriggers.ctjs.api.world.pathfinding.NativeVoxelFlags;
+                getPASSABLE(): number;
+                getSOLID(): number;
+                getPASSABLE_FLY(): number;
+                getBLOCKING_WALL(): number;
+                getFLUID(): number;
+                getSLAB_BOTTOM(): number;
+                getSLAB_TOP(): number;
+                getFENCE_LIKE(): number;
+                getSTAIRS_BOTTOM(): number;
+                getCARPET_LIKE(): number;
+                getETHER_PASSABLE(): number;
+                getETHER_TELEPORT_CLEAR(): number;
+                getETHER_FEET_BLOCKER(): number;
+              }
+              const NativeStateEncoder: {
+                flagsForStateId(stateId: number): number;
+                flagsForState(state: net.minecraft.world.level.block.state.BlockState): number;
+                flagsShortForState(state: net.minecraft.world.level.block.state.BlockState): number;
+                flagsShortForStateId(stateId: number): number;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.NativeStateEncoder;
+              }
+              interface NativeStateEncoder { 
+                flagsForStateId(stateId: number): number;
+                flagsForState(state: net.minecraft.world.level.block.state.BlockState): number;
+                flagsShortForState(state: net.minecraft.world.level.block.state.BlockState): number;
+                flagsShortForStateId(stateId: number): number;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.NativeStateEncoder;
+              }
+              const NativeEtherwarpResult: {
+                path: Array<number>;
+                angles: kotlin.FloatArray;
+                timeMs: number;
+                nodesExplored: number;
+                nanosecondsPerNode: number;
+                new(path: Array<number>, angles: kotlin.FloatArray, timeMs: number, nodesExplored: number, nanosecondsPerNode: number): com.chattriggers.ctjs.api.world.pathfinding.NativeEtherwarpResult;
+              }
+              interface NativeEtherwarpResult { 
+              }
+              const NativePathfinderBridge: {
+                NativePathSearchRequest: typeof com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest;
+                NativeEtherwarpSearchRequest: typeof com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativeEtherwarpSearchRequest;
+                isAvailable(): boolean;
+                getLastError(): string | null | undefined;
+                setWorld(worldKey: string, minY: number, maxY: number): void;
+                clearWorld(): void;
+                upsertChunk(chunkX: number, chunkZ: number, minY: number, maxY: number, sectionMask: number, sectionFlags: Array<number>): void;
+                applyBlockUpdates(updates: Array<number>): void;
+                findPath(request: com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest): com.chattriggers.ctjs.api.world.pathfinding.NativePathResult | null | undefined;
+                findEtherwarpPath(request: com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativeEtherwarpSearchRequest): com.chattriggers.ctjs.api.world.pathfinding.NativeEtherwarpResult | null | undefined;
+                cancelSearch(): void;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge;
+              }
+              interface NativePathfinderBridge { 
+                isAvailable(): boolean;
+                getLastError(): string | null | undefined;
+                setWorld(worldKey: string, minY: number, maxY: number): void;
+                clearWorld(): void;
+                upsertChunk(chunkX: number, chunkZ: number, minY: number, maxY: number, sectionMask: number, sectionFlags: Array<number>): void;
+                applyBlockUpdates(updates: Array<number>): void;
+                findPath(request: com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest): com.chattriggers.ctjs.api.world.pathfinding.NativePathResult | null | undefined;
+                findEtherwarpPath(request: com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativeEtherwarpSearchRequest): com.chattriggers.ctjs.api.world.pathfinding.NativeEtherwarpResult | null | undefined;
+                cancelSearch(): void;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge;
+              }
+              const NativePathfinderBridge$NativePathSearchRequest: {
+                new(startPoints: Array<number>, endPoints: Array<number>, isFly: boolean, maxIterations: number, heuristicWeight: number, nonPrimaryStartPenalty: number, moveOrderOffset: number, avoidMeta: Array<number>, avoidPenalty: kotlin.DoubleArray): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest;
+              }
+              interface NativePathfinderBridge$NativePathSearchRequest { 
+                getStartPoints(): Array<number>;
+                getEndPoints(): Array<number>;
+                isFly(): boolean;
+                getMaxIterations(): number;
+                getHeuristicWeight(): number;
+                getNonPrimaryStartPenalty(): number;
+                getMoveOrderOffset(): number;
+                getAvoidMeta(): Array<number>;
+                getAvoidPenalty(): kotlin.DoubleArray;
+                component1(): Array<number>;
+                component2(): Array<number>;
+                component3(): boolean;
+                component4(): number;
+                component5(): number;
+                component6(): number;
+                component7(): number;
+                component8(): Array<number>;
+                component9(): kotlin.DoubleArray;
+                copy(startPoints: Array<number>, endPoints: Array<number>, isFly: boolean, maxIterations: number, heuristicWeight: number, nonPrimaryStartPenalty: number, moveOrderOffset: number, avoidMeta: Array<number>, avoidPenalty: kotlin.DoubleArray): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest;
+              }
+              const NativePathResult: {
+                path: Array<number>;
+                keyPath: Array<number>;
+                timeMs: number;
+                nodesExplored: number;
+                nanosecondsPerNode: number;
+                selectedStartIndex: number;
+                pathFlags: Array<number>;
+                keyNodeFlags: Array<number>;
+                keyNodeMetrics: Array<number>;
+                pathSignature: string;
+                new(path: Array<number>, keyPath: Array<number>, timeMs: number, nodesExplored: number, nanosecondsPerNode: number, selectedStartIndex: number, pathFlags: Array<number>, keyNodeFlags: Array<number>, keyNodeMetrics: Array<number>, pathSignature: string): com.chattriggers.ctjs.api.world.pathfinding.NativePathResult;
+              }
+              interface NativePathResult { 
+              }
+              const NativePathfinderBridge$NativeEtherwarpSearchRequest: {
+                new(goalX: number, goalY: number, goalZ: number, startEyeX: number, startEyeY: number, startEyeZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number, eyeHeight: number): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativeEtherwarpSearchRequest;
+              }
+              interface NativePathfinderBridge$NativeEtherwarpSearchRequest { 
+                getGoalX(): number;
+                getGoalY(): number;
+                getGoalZ(): number;
+                getStartEyeX(): number;
+                getStartEyeY(): number;
+                getStartEyeZ(): number;
+                getMaxIterations(): number;
+                getThreadCount(): number;
+                getYawStep(): number;
+                getPitchStep(): number;
+                getNewNodeCost(): number;
+                getHeuristicWeight(): number;
+                getRayLength(): number;
+                getRewireEpsilon(): number;
+                getEyeHeight(): number;
+                component1(): number;
+                component2(): number;
+                component3(): number;
+                component4(): number;
+                component5(): number;
+                component6(): number;
+                component7(): number;
+                component8(): number;
+                component9(): number;
+                component10(): number;
+                component11(): number;
+                component12(): number;
+                component13(): number;
+                component14(): number;
+                component15(): number;
+                copy(goalX: number, goalY: number, goalZ: number, startEyeX: number, startEyeY: number, startEyeZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number, eyeHeight: number): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativeEtherwarpSearchRequest;
+              }
+              const CachedWorld: {
+                getBlockFlags(x: number, y: number, z: number): number | null | undefined;
+                getChunk(x: number, z: number): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk | null | undefined;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.CachedWorld;
+              }
+              interface CachedWorld { 
+                getBlockFlags(x: number, y: number, z: number): number | null | undefined;
+                getChunk(x: number, z: number): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk | null | undefined;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.CachedWorld;
+                onPacketReceive(packet: net.minecraft.network.protocol.Packet<any>): void;
+                processPendingChunks(): void;
+                saveAndClear(lobbyName: string): void;
+                load(lobbyName: string): void;
+                waitForLoad(): void;
+                clear(): void;
+                getCacheStats(): string;
+                setUnlimitedChunkCache(enabled: boolean): void;
+                setWorldKey(newWorldKey: string | null | undefined): void;
+              }
+              const CachedChunk: {
+                minY: number;
+                maxY: number;
+                ready: boolean;
+                new(minY: number, maxY: number): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk;
+              }
+              interface CachedChunk { 
+                getFlags(localX: number, y: number, localZ: number): number;
+                setFlags(localX: number, y: number, localZ: number, flags: number): void;
+                hasSection(index: number): boolean;
+                copySectionFlags(index: number, dest: Array<number>, destOffset: number): void;
+                setSection(sectionIndex: number, data: Array<number>): void;
+              }
+              const CachedChunk$Companion: {
+                AIR_FLAGS: number;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk$Companion;
+              }
+              interface CachedChunk$Companion { 
+                AIR_FLAGS: number;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk$Companion;
+              }
+              const PathManager: {
+                isSearching(): boolean;
+                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number): boolean;
+                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number, maxIterations: number): boolean;
+                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number, maxIterations: number, isFly: boolean): boolean;
+                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>): boolean;
+                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number): boolean;
+                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number, isFly: boolean): boolean;
+                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>): boolean;
+                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>, maxIterations: number): boolean;
+                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>, maxIterations: number, isFly: boolean): boolean;
+                findFlyPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>): boolean;
+                findFlyPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number, eyeHeight: number): boolean;
+                isFlyPositionClear(x: number, y: number, z: number): boolean;
+                isValidEtherwarpLanding(x: number, y: number, z: number): boolean;
+                getEtherwarpLandingCenter(x: number, y: number, z: number): kotlin.DoubleArray | null | undefined;
+                getEtherwarpLandingCandidates(anchorX: number, anchorY: number, anchorZ: number, radius: number, maxDistance: number, sortOriginX: number, sortOriginY: number, sortOriginZ: number): com.chattriggers.ctjs.api.world.pathfinding.EtherwarpLandingCandidatesResult | null | undefined;
+                getCurrentEtherwarpEyeHeight(): number;
+                getCurrentEtherwarpSneakOffset(): number;
+                cancelSearch(): void;
+                getPathArray(): Array<number>;
+                getKeyNodesArray(): Array<number>;
+                getEtherwarpPathArray(): Array<number>;
+                getEtherwarpAnglesArray(): kotlin.FloatArray;
+                getPathFlagsArray(): Array<number>;
+                getKeyNodeFlagsArray(): Array<number>;
+                getKeyNodeMetricsArray(): Array<number>;
+                getPathSignature(): string;
+                getPathFlagBits(): Array<number>;
+                getEtherwarpVoxelFlagsAt(x: number, y: number, z: number): number;
+                isEtherwarpSupportSolid(flags: number): boolean;
+                getEtherwarpStandOffsetForFlags(flags: number): number;
+                isEtherwarpTeleportSpaceClearFlags(flags: number): boolean;
+                addTransientAvoidPoint(x: number, y: number, z: number): void;
+                addTransientAvoidPoint(x: number, y: number, z: number, radius: number): void;
+                addTransientAvoidPoint(x: number, y: number, z: number, radius: number, penalty: number): void;
+                addTransientAvoidPoint(x: number, y: number, z: number, radius: number, penalty: number, ttlSearches: number): void;
+                addTransientAvoidPoints(points: Array<number>): void;
+                addTransientAvoidPoints(points: Array<number>, radius: number): void;
+                addTransientAvoidPoints(points: Array<number>, radius: number, penalty: number): void;
+                addTransientAvoidPoints(points: Array<number>, radius: number, penalty: number, ttlSearches: number): void;
+                clearTransientAvoidPoints(): void;
+                getPathSize(): number;
+                getEtherwarpPathSize(): number;
+                getKeyNodeCount(): number;
+                getLastTimeMs(): number;
+                getEtherwarpLastTimeMs(): number;
+                getNodesExplored(): number;
+                getEtherwarpNodesExplored(): number;
+                getNanosecondsPerNode(): number;
+                getEtherwarpNanosecondsPerNode(): number;
+                getSelectedStartIndex(): number;
+                setSearchVariantSeed(seed: number): void;
+                getLastError(): string | null | undefined;
+                hasPath(): boolean;
+                hasEtherwarpPath(): boolean;
+                clear(): void;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.PathManager;
+              }
+              interface PathManager { 
+                isSearching(): boolean;
+                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number): boolean;
+                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number, maxIterations: number): boolean;
+                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number, maxIterations: number, isFly: boolean): boolean;
+                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>): boolean;
+                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number): boolean;
+                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number, isFly: boolean): boolean;
+                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>): boolean;
+                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>, maxIterations: number): boolean;
+                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>, maxIterations: number, isFly: boolean): boolean;
+                findFlyPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>): boolean;
+                findFlyPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number): boolean;
+                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number, eyeHeight: number): boolean;
+                isFlyPositionClear(x: number, y: number, z: number): boolean;
+                isValidEtherwarpLanding(x: number, y: number, z: number): boolean;
+                getEtherwarpLandingCenter(x: number, y: number, z: number): kotlin.DoubleArray | null | undefined;
+                getEtherwarpLandingCandidates(anchorX: number, anchorY: number, anchorZ: number, radius: number, maxDistance: number, sortOriginX: number, sortOriginY: number, sortOriginZ: number): com.chattriggers.ctjs.api.world.pathfinding.EtherwarpLandingCandidatesResult | null | undefined;
+                getCurrentEtherwarpEyeHeight(): number;
+                getCurrentEtherwarpSneakOffset(): number;
+                cancelSearch(): void;
+                getPathArray(): Array<number>;
+                getKeyNodesArray(): Array<number>;
+                getEtherwarpPathArray(): Array<number>;
+                getEtherwarpAnglesArray(): kotlin.FloatArray;
+                getPathFlagsArray(): Array<number>;
+                getKeyNodeFlagsArray(): Array<number>;
+                getKeyNodeMetricsArray(): Array<number>;
+                getPathSignature(): string;
+                getPathFlagBits(): Array<number>;
+                getEtherwarpVoxelFlagsAt(x: number, y: number, z: number): number;
+                isEtherwarpSupportSolid(flags: number): boolean;
+                getEtherwarpStandOffsetForFlags(flags: number): number;
+                isEtherwarpTeleportSpaceClearFlags(flags: number): boolean;
+                addTransientAvoidPoint(x: number, y: number, z: number): void;
+                addTransientAvoidPoint(x: number, y: number, z: number, radius: number): void;
+                addTransientAvoidPoint(x: number, y: number, z: number, radius: number, penalty: number): void;
+                addTransientAvoidPoint(x: number, y: number, z: number, radius: number, penalty: number, ttlSearches: number): void;
+                addTransientAvoidPoints(points: Array<number>): void;
+                addTransientAvoidPoints(points: Array<number>, radius: number): void;
+                addTransientAvoidPoints(points: Array<number>, radius: number, penalty: number): void;
+                addTransientAvoidPoints(points: Array<number>, radius: number, penalty: number, ttlSearches: number): void;
+                clearTransientAvoidPoints(): void;
+                getPathSize(): number;
+                getEtherwarpPathSize(): number;
+                getKeyNodeCount(): number;
+                getLastTimeMs(): number;
+                getEtherwarpLastTimeMs(): number;
+                getNodesExplored(): number;
+                getEtherwarpNodesExplored(): number;
+                getNanosecondsPerNode(): number;
+                getEtherwarpNanosecondsPerNode(): number;
+                getSelectedStartIndex(): number;
+                setSearchVariantSeed(seed: number): void;
+                getLastError(): string | null | undefined;
+                hasPath(): boolean;
+                hasEtherwarpPath(): boolean;
+                clear(): void;
+                new(): com.chattriggers.ctjs.api.world.pathfinding.PathManager;
+                getFLAG_FLUID_FEET(): number;
+                getFLAG_FLUID_HEAD(): number;
+                getFLAG_LOW_HEADROOM(): number;
+                getFLAG_NEAR_EDGE(): number;
+                getFLAG_NEAR_WALL(): number;
+                getFLAG_STEP_UP_NEXT(): number;
+                getFLAG_DROP_NEXT(): number;
+                getFLAG_TIGHT_CORRIDOR(): number;
+                getETHERWARP_VOXEL_SOLID(): number;
+                getETHERWARP_VOXEL_FENCE_LIKE(): number;
+                getETHERWARP_VOXEL_TELEPORT_CLEAR(): number;
+                getETHERWARP_VOXEL_FEET_BLOCKER(): number;
+              }
+              const EtherwarpLandingCandidatesResult: {
+                goals: Array<number>;
+                centers: kotlin.DoubleArray;
+                new(goals: Array<number>, centers: kotlin.DoubleArray): com.chattriggers.ctjs.api.world.pathfinding.EtherwarpLandingCandidatesResult;
+              }
+              interface EtherwarpLandingCandidatesResult { 
+              }
+              const HypixelManager: {
+                new(): com.chattriggers.ctjs.api.world.pathfinding.HypixelManager;
+              }
+              interface HypixelManager { 
+                new(): com.chattriggers.ctjs.api.world.pathfinding.HypixelManager;
+                init(): void;
+                onDisconnect(): void;
+              }
+              const WynncraftManager: {
+                new(): com.chattriggers.ctjs.api.world.pathfinding.WynncraftManager;
+              }
+              interface WynncraftManager { 
+                new(): com.chattriggers.ctjs.api.world.pathfinding.WynncraftManager;
+                init(): void;
+                onDisconnect(): void;
+              }
+              const WorldSerializer: {
+                new(): com.chattriggers.ctjs.api.world.pathfinding.WorldSerializer;
+              }
+              interface WorldSerializer { 
+                new(): com.chattriggers.ctjs.api.world.pathfinding.WorldSerializer;
+                save(name: string, chunks: Map<number, com.chattriggers.ctjs.api.world.pathfinding.CachedChunk>): void;
+                load(name: string): java.util.concurrent.ConcurrentHashMap<number, com.chattriggers.ctjs.api.world.pathfinding.CachedChunk> | null | undefined;
+              }
+            }
+            const Chunk: {
+              new(mcValue: net.minecraft.world.level.chunk.ChunkAccess): com.chattriggers.ctjs.api.world.Chunk;
+            }
+            interface Chunk extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.chunk.ChunkAccess> { 
+							/**
+							 * Gets the x position of the chunk
+							 */
+              getX(): number;
+							/**
+							 * Gets the z position of the chunk
+							 */
+              getZ(): number;
+							/**
+							 * Gets the minimum x coordinate of a block in the chunk
+							 * 
+							 *  @return the minimum x coordinate
+							 */
+              getMinBlockX(): number;
+							/**
+							 * Gets the minimum z coordinate of a block in the chunk
+							 * 
+							 *  @return the minimum z coordinate
+							 */
+              getMinBlockZ(): number;
+							/**
+							 * Gets every entity in this chunk
+							 * 
+							 *  @return the entity list
+							 */
+              getAllEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
+							/**
+							 * Gets every entity in this chunk of a certain class
+							 * 
+							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
+							 *  @return the entity list
+							 */
+              getAllEntitiesOfType(clazz: java.lang.Class<net.minecraft.world.entity.Entity>): Array<com.chattriggers.ctjs.api.entity.Entity>;
+							/**
+							 * Gets every block entity in this chunk
+							 * 
+							 *  @return the block entity list
+							 */
+              getAllBlockEntities(): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
+							/**
+							 * Gets every block entity in this chunk of a certain class
+							 * 
+							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
+							 *  @return the block entity list
+							 */
+              getAllBlockEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
+            }
+            const PotionEffectType: {
+              new(type: net.minecraft.world.effect.MobEffect): com.chattriggers.ctjs.api.world.PotionEffectType;
+            }
+            interface PotionEffectType { 
+              getType(): net.minecraft.world.effect.MobEffect;
+							/**
+							 * The Int associated with this type
+							 */
+              getRawId(): number;
+							/**
+							 * Whether this effect is instant (e.g. instant health)
+							 */
+              isInstant(): boolean;
+							/**
+							 * The raw key used for this effect type
+							 */
+              getTranslationKey(): string;
+							/**
+							 * The user-friendly name of this type as a [TextComponent]
+							 */
+              getName(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * The [net.minecraft.entity.effect.StatusEffectCategory] of this type
+							 */
+              getCategory(): net.minecraft.world.effect.MobEffectCategory;
+							/**
+							 * The color of this type
+							 */
+              getColor(): java.awt.Color;
+            }
+            const PotionEffect: {
+              new(effect: net.minecraft.world.effect.MobEffectInstance): com.chattriggers.ctjs.api.world.PotionEffect;
+            }
+            interface PotionEffect { 
+              getEffect(): net.minecraft.world.effect.MobEffectInstance;
+							/**
+							 * The type of this potion
+							 */
+              getType(): com.chattriggers.ctjs.api.world.PotionEffectType;
+							/**
+							 * Returns the translation key of the potion.
+							 *  Ex: "potion.poison"
+							 */
+              getName(): string;
+							/**
+							 * Returns the localized name of the potion that
+							 *  is displayed in the player's inventory.
+							 *  Ex: "Poison"
+							 */
+              getLocalizedName(): string;
+              getAmplifier(): number;
+              getDuration(): number;
+              getId(): number;
+              getAmbient(): boolean;
+              isInfinite(): boolean;
+              getShowsParticles(): boolean;
+            }
+            const World: {
+              BorderWrapper: typeof com.chattriggers.ctjs.api.world.World$BorderWrapper;
+              SpawnWrapper: typeof com.chattriggers.ctjs.api.world.World$SpawnWrapper;
+              ParticleWrapper: typeof com.chattriggers.ctjs.api.world.World$ParticleWrapper;
+              spawn: com.chattriggers.ctjs.api.world.World$SpawnWrapper;
+              particle: com.chattriggers.ctjs.api.world.World$ParticleWrapper;
+              border: com.chattriggers.ctjs.api.world.World$BorderWrapper;
+              toMC(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
+              getWorld(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
+              isLoaded(): boolean;
+              isRaining(): boolean;
+              getTime(): number;
+							/**
+							 * Gets the [Block] at a location in the world.
+							 * 
+							 *  @param x the x position
+							 *  @param y the y position
+							 *  @param z the z position
+							 *  @return the [Block] at the location
+							 */
+              getBlockAt(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.block.Block;
+							/**
+							 * Gets the [Block] at a location in the world.
+							 * 
+							 *  @param pos The block position
+							 *  @return the [Block] at the location
+							 */
+              getBlockAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): com.chattriggers.ctjs.api.world.block.Block;
+              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number): Array<com.chattriggers.ctjs.api.world.block.Block>;
+              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number, types: Array<com.chattriggers.ctjs.api.world.block.BlockType>): Array<com.chattriggers.ctjs.api.world.block.Block>;
+							/**
+							 * Gets the [BlockState] at a location in the world.
+							 * 
+							 *  @param pos The block position
+							 *  @return the [BlockState] at the location
+							 */
+              getBlockStateAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): net.minecraft.world.level.block.state.BlockState;
+							/**
+							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
+							 * 
+							 *  @param x the x coordinate
+							 *  @param y the y coordinate
+							 *  @param z the z coordinate
+							 *  @return the skylight level at the location
+							 */
+              getSkyLightLevel(x: number, y: number, z: number): number;
+							/**
+							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
+							 * 
+							 *  @param pos The block position
+							 *  @return the skylight level at the location
+							 */
+              getSkyLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
+							/**
+							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
+							 * 
+							 *  @param x the x coordinate
+							 *  @param y the y coordinate
+							 *  @param z the z coordinate
+							 *  @return the block light level at the location
+							 */
+              getBlockLightLevel(x: number, y: number, z: number): number;
+							/**
+							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
+							 * 
+							 *  @param pos The block position
+							 *  @return the block light level at the location
+							 */
+              getBlockLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
+							/**
+							 * Gets all of the players in the world, and returns their wrapped versions.
+							 * 
+							 *  @return the players
+							 */
+              getAllPlayers(): Array<com.chattriggers.ctjs.api.entity.PlayerMP>;
+							/**
+							 * Gets a player by their username, must be in the currently loaded chunks!
+							 * 
+							 *  @param name the username
+							 *  @return the player with said username, or null if they don't exist.
+							 */
+              getPlayerByName(name: string): com.chattriggers.ctjs.api.entity.PlayerMP | null | undefined;
+              getChunk(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.Chunk;
+              getAllEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
+							/**
+							 * Gets every entity loaded in the world of a certain class
+							 * 
+							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
+							 *  @return the entity list
+							 */
+              getAllEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.Entity>;
+              getAllBlockEntities(): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
+              getAllBlockEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
+							/**
+							 * Returns the TPS of the current world.
+							 * 
+							 *  On modern version (1.20.3+), this is variable. On earlier versions,
+							 *  it is always 20.
+							 */
+              getTicksPerSecond(): number;
+              new(): com.chattriggers.ctjs.api.world.World;
+            }
+            interface World { 
+              spawn: com.chattriggers.ctjs.api.world.World$SpawnWrapper;
+              particle: com.chattriggers.ctjs.api.world.World$ParticleWrapper;
+              border: com.chattriggers.ctjs.api.world.World$BorderWrapper;
+              toMC(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
+              getWorld(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
+              isLoaded(): boolean;
+              isRaining(): boolean;
+              getTime(): number;
+							/**
+							 * Gets the [Block] at a location in the world.
+							 * 
+							 *  @param x the x position
+							 *  @param y the y position
+							 *  @param z the z position
+							 *  @return the [Block] at the location
+							 */
+              getBlockAt(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.block.Block;
+							/**
+							 * Gets the [Block] at a location in the world.
+							 * 
+							 *  @param pos The block position
+							 *  @return the [Block] at the location
+							 */
+              getBlockAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): com.chattriggers.ctjs.api.world.block.Block;
+              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number): Array<com.chattriggers.ctjs.api.world.block.Block>;
+              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number, types: Array<com.chattriggers.ctjs.api.world.block.BlockType>): Array<com.chattriggers.ctjs.api.world.block.Block>;
+							/**
+							 * Gets the [BlockState] at a location in the world.
+							 * 
+							 *  @param pos The block position
+							 *  @return the [BlockState] at the location
+							 */
+              getBlockStateAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): net.minecraft.world.level.block.state.BlockState;
+							/**
+							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
+							 * 
+							 *  @param x the x coordinate
+							 *  @param y the y coordinate
+							 *  @param z the z coordinate
+							 *  @return the skylight level at the location
+							 */
+              getSkyLightLevel(x: number, y: number, z: number): number;
+							/**
+							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
+							 * 
+							 *  @param pos The block position
+							 *  @return the skylight level at the location
+							 */
+              getSkyLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
+							/**
+							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
+							 * 
+							 *  @param x the x coordinate
+							 *  @param y the y coordinate
+							 *  @param z the z coordinate
+							 *  @return the block light level at the location
+							 */
+              getBlockLightLevel(x: number, y: number, z: number): number;
+							/**
+							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
+							 * 
+							 *  @param pos The block position
+							 *  @return the block light level at the location
+							 */
+              getBlockLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
+							/**
+							 * Gets all of the players in the world, and returns their wrapped versions.
+							 * 
+							 *  @return the players
+							 */
+              getAllPlayers(): Array<com.chattriggers.ctjs.api.entity.PlayerMP>;
+							/**
+							 * Gets a player by their username, must be in the currently loaded chunks!
+							 * 
+							 *  @param name the username
+							 *  @return the player with said username, or null if they don't exist.
+							 */
+              getPlayerByName(name: string): com.chattriggers.ctjs.api.entity.PlayerMP | null | undefined;
+              getChunk(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.Chunk;
+              getAllEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
+							/**
+							 * Gets every entity loaded in the world of a certain class
+							 * 
+							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
+							 *  @return the entity list
+							 */
+              getAllEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.Entity>;
+              getAllBlockEntities(): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
+              getAllBlockEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
+							/**
+							 * Returns the TPS of the current world.
+							 * 
+							 *  On modern version (1.20.3+), this is variable. On earlier versions,
+							 *  it is always 20.
+							 */
+              getTicksPerSecond(): number;
+              new(): com.chattriggers.ctjs.api.world.World;
+            }
+            const World$SpawnWrapper: {
+							/**
+							 * World spawn object for getting spawn location.
+							 */
+              new(): com.chattriggers.ctjs.api.world.World$SpawnWrapper;
+            }
+            interface World$SpawnWrapper { 
+							/**
+							 * Gets the spawn x location.
+							 * 
+							 *  @return the spawn x location.
+							 */
+              getX(): number;
+							/**
+							 * Gets the spawn y location.
+							 * 
+							 *  @return the spawn y location.
+							 */
+              getY(): number;
+							/**
+							 * Gets the spawn z location.
+							 * 
+							 *  @return the spawn z location.
+							 */
+              getZ(): number;
+            }
+            const World$ParticleWrapper: {
+              new(): com.chattriggers.ctjs.api.world.World$ParticleWrapper;
+            }
+            interface World$ParticleWrapper { 
+							/**
+							 * Gets an array of all the different particle names you can pass
+							 *  to [spawnParticle]
+							 * 
+							 *  @return the array of name strings
+							 */
+              getParticleNames(): Array<string>;
+							/**
+							 * Spawns a particle into the world with the given attributes,
+							 *  which can be configured further with the returned [com.chattriggers.ctjs.api.entity.Particle]
+							 * 
+							 *  @param particle the name of the particle to spawn, see [getParticleNames]
+							 *  @param x the x coordinate to spawn the particle at
+							 *  @param y the y coordinate to spawn the particle at
+							 *  @param z the z coordinate to spawn the particle at
+							 *  @param xSpeed the motion the particle should have in the x direction
+							 *  @param ySpeed the motion the particle should have in the y direction
+							 *  @param zSpeed the motion the particle should have in the z direction
+							 *  @return the newly spawned particle for further configuration
+							 */
+              spawnParticle(particle: string, x: number, y: number, z: number, xSpeed: number, ySpeed: number, zSpeed: number): com.chattriggers.ctjs.api.entity.Particle | null | undefined;
+              spawnParticle(particle: net.minecraft.client.particle.Particle): com.chattriggers.ctjs.api.entity.Particle;
+            }
+            const World$BorderWrapper: {
+							/**
+							 * World border object to get border parameters
+							 */
+              new(): com.chattriggers.ctjs.api.world.World$BorderWrapper;
+            }
+            interface World$BorderWrapper { 
+							/**
+							 * Gets the border center x location.
+							 * 
+							 *  @return the border center x location
+							 */
+              getCenterX(): number;
+							/**
+							 * Gets the border center z location.
+							 * 
+							 *  @return the border center z location
+							 */
+              getCenterZ(): number;
+							/**
+							 * Gets the border size.
+							 * 
+							 *  @return the border size
+							 */
+              getSize(): number;
+            }
+            const TabList: {
+              Name: typeof com.chattriggers.ctjs.api.world.TabList$Name;
+              toMC(): net.minecraft.client.gui.components.PlayerTabOverlay | null | undefined;
+							/**
+							 * Gets the scoreboard objective corresponding to the tab list, or null if it doesn't exist
+							 */
+              getObjective(): net.minecraft.world.scores.Objective | null | undefined;
+							/**
+							 * Gets the tab list header as a [TextComponent]
+							 * 
+							 *  @return the header
+							 */
+              getHeaderComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
+							/**
+							 * Gets the tab list header as a formatted string.
+							 * 
+							 *  @return the header
+							 */
+              getHeader(): string | null | undefined;
+							/**
+							 * Sets the header text for the TabList.
+							 *  If [header] is null, it will remove the header entirely
+							 * 
+							 *  @param header the header to set, or null to clear
+							 */
+              setHeader(header: any | null | undefined): void;
+              clearHeader(): void;
+							/**
+							 * Gets the tab list footer as a [TextComponent]
+							 * 
+							 *  @return the footer
+							 */
+              getFooterComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
+							/**
+							 * Gets the tab list footer as a string.
+							 *  Be aware that this can contain color codes.
+							 * 
+							 *  @return the footer
+							 */
+              getFooter(): string | null | undefined;
+							/**
+							 * Sets the footer text for the TabList.
+							 *  If [footer] is null, it will remove the footer entirely
+							 * 
+							 *  @param footer the footer to set, or null to clear
+							 */
+              setFooter(footer: any | null | undefined): void;
+              clearFooter(): void;
+							/**
+							 * Gets names set in scoreboard objectives
+							 * 
+							 *  @return The formatted names
+							 */
+              getNamesByObjectives(): Array<string>;
+							/**
+							 * Get all names on the tab list
+							 * 
+							 *  @return the list of names
+							 */
+              getNames(): Array<com.chattriggers.ctjs.api.world.TabList$Name>;
+							/**
+							 * Gets all names in tabs without formatting
+							 * 
+							 *  @return the unformatted names
+							 */
+              getUnformattedNames(): Array<string>;
+							/**
+							 * Adds a new name to the tab list
+							 * 
+							 *  @param name the formatted name to add
+							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
+							 *  If false, will use a random default skin (Steve, Alex, etc)
+							 */
+              addName(name: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Adds a new name to the tab list
+							 * 
+							 *  @param name the formatted name to add
+							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
+							 *  If false, will use a random default skin (Steve, Alex, etc)
+							 */
+              addName(name: com.chattriggers.ctjs.api.message.TextComponent, useExistingSkin: boolean): void;
+              addName(name: string): void;
+              addName(name: string, useExistingSkin: boolean): void;
+							/**
+							 * Removes all names from the tab list with a certain name
+							 * 
+							 *  @param name the name of the entry to remove
+							 */
+              removeNames(name: com.chattriggers.ctjs.api.message.TextComponent): void;
+              removeNames(name: string): void;
+              new(): com.chattriggers.ctjs.api.world.TabList;
+            }
+            interface TabList { 
+              toMC(): net.minecraft.client.gui.components.PlayerTabOverlay | null | undefined;
+							/**
+							 * Gets the scoreboard objective corresponding to the tab list, or null if it doesn't exist
+							 */
+              getObjective(): net.minecraft.world.scores.Objective | null | undefined;
+							/**
+							 * Gets the tab list header as a [TextComponent]
+							 * 
+							 *  @return the header
+							 */
+              getHeaderComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
+							/**
+							 * Gets the tab list header as a formatted string.
+							 * 
+							 *  @return the header
+							 */
+              getHeader(): string | null | undefined;
+							/**
+							 * Sets the header text for the TabList.
+							 *  If [header] is null, it will remove the header entirely
+							 * 
+							 *  @param header the header to set, or null to clear
+							 */
+              setHeader(header: any | null | undefined): void;
+              clearHeader(): void;
+							/**
+							 * Gets the tab list footer as a [TextComponent]
+							 * 
+							 *  @return the footer
+							 */
+              getFooterComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
+							/**
+							 * Gets the tab list footer as a string.
+							 *  Be aware that this can contain color codes.
+							 * 
+							 *  @return the footer
+							 */
+              getFooter(): string | null | undefined;
+							/**
+							 * Sets the footer text for the TabList.
+							 *  If [footer] is null, it will remove the footer entirely
+							 * 
+							 *  @param footer the footer to set, or null to clear
+							 */
+              setFooter(footer: any | null | undefined): void;
+              clearFooter(): void;
+							/**
+							 * Gets names set in scoreboard objectives
+							 * 
+							 *  @return The formatted names
+							 */
+              getNamesByObjectives(): Array<string>;
+							/**
+							 * Get all names on the tab list
+							 * 
+							 *  @return the list of names
+							 */
+              getNames(): Array<com.chattriggers.ctjs.api.world.TabList$Name>;
+							/**
+							 * Gets all names in tabs without formatting
+							 * 
+							 *  @return the unformatted names
+							 */
+              getUnformattedNames(): Array<string>;
+							/**
+							 * Adds a new name to the tab list
+							 * 
+							 *  @param name the formatted name to add
+							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
+							 *  If false, will use a random default skin (Steve, Alex, etc)
+							 */
+              addName(name: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Adds a new name to the tab list
+							 * 
+							 *  @param name the formatted name to add
+							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
+							 *  If false, will use a random default skin (Steve, Alex, etc)
+							 */
+              addName(name: com.chattriggers.ctjs.api.message.TextComponent, useExistingSkin: boolean): void;
+              addName(name: string): void;
+              addName(name: string, useExistingSkin: boolean): void;
+							/**
+							 * Removes all names from the tab list with a certain name
+							 * 
+							 *  @param name the name of the entry to remove
+							 */
+              removeNames(name: com.chattriggers.ctjs.api.message.TextComponent): void;
+              removeNames(name: string): void;
+              new(): com.chattriggers.ctjs.api.world.TabList;
+            }
+            const TabList$Name: {
+              new(mcValue: net.minecraft.client.multiplayer.PlayerInfo): com.chattriggers.ctjs.api.world.TabList$Name;
+            }
+            interface TabList$Name extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.multiplayer.PlayerInfo> { 
+							/**
+							 * Gets the latency associated with this name
+							 * 
+							 *  @return the latency
+							 */
+              getLatency(): number;
+							/**
+							 * Sets the latency associated with this name.
+							 *  - latency between 0 and 149 represents all 5 bars
+							 *  - latency between 150 and 299 represents 4 bars
+							 *  - latency between 300 and 599 represents 3 bars
+							 *  - latency between 600 and 999 represents 2 bars
+							 *  - latency between 1000 and more represents 1 bar
+							 * 
+							 *  @param latency the latency to set
+							 *  @return the name to allow for method chaining
+							 */
+              setLatency(latency: number): com.chattriggers.ctjs.api.world.TabList$Name;
+							/**
+							 * Gets the team associated with this name, if it exists
+							 * 
+							 *  @return the team, or null if it does not exist
+							 */
+              getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
+							/**
+							 * Sets the team associated with this name
+							 * 
+							 *  @param team the new team to set for this name. Custom teams can be created
+							 *  using [Scoreboard.createTeam]
+							 *  @return the score to allow for method chaining
+							 */
+              setTeam(team: com.chattriggers.ctjs.api.entity.Team | null | undefined): com.chattriggers.ctjs.api.world.TabList$Name;
+							/**
+							 * Gets the display text of this name
+							 * 
+							 *  @return the display name
+							 */
+              getName(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Sets the display name of this name
+							 * 
+							 *  @param name the new name
+							 *  @return the name to allow for method chaining
+							 */
+              setName(name: com.chattriggers.ctjs.api.message.TextComponent | null | undefined): com.chattriggers.ctjs.api.world.TabList$Name;
+							/**
+							 * Removes this name from the tab list
+							 */
+              remove(): void;
+            }
+            const StructureFinder: {
+              submitChunkScan(chunkX: number, chunkZ: number): void;
+              submitBlockUpdate(blockX: number, blockY: number, blockZ: number): void;
+              getRenderBlocksArray(): Array<number>;
+              getRenderLabelsArray(): Array<string>;
+              clear(): void;
+              shutdown(): void;
+              new(): com.chattriggers.ctjs.api.world.StructureFinder;
+            }
+            interface StructureFinder { 
+              submitChunkScan(chunkX: number, chunkZ: number): void;
+              submitBlockUpdate(blockX: number, blockY: number, blockZ: number): void;
+              getRenderBlocksArray(): Array<number>;
+              getRenderLabelsArray(): Array<string>;
+              clear(): void;
+              shutdown(): void;
+              new(): com.chattriggers.ctjs.api.world.StructureFinder;
+            }
+            const BossBars: {
+              BossBar: typeof com.chattriggers.ctjs.api.world.BossBars$BossBar;
+              Color: typeof com.chattriggers.ctjs.api.world.BossBars$Color;
+              Style: typeof com.chattriggers.ctjs.api.world.BossBars$Style;
+              toMC(): net.minecraft.client.gui.components.BossHealthOverlay;
+							/**
+							 * Gets the list of currently shown [BossBar]s
+							 * 
+							 *  @return the currently displayed [BossBar]s
+							 */
+              getBossBars(): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
+							/**
+							 * Gets all [BossBar]s with a given name
+							 * 
+							 *  @param name the name to match
+							 *  @return the [BossBar]s
+							 */
+              getBossBarsByName(name: string): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
+							/**
+							 * Adds a new [BossBar] to be displayed
+							 * 
+							 *  Takes a parameter with the following options:
+							 *  - name: The name to appear above the BossBar. Defaults to an empty string
+							 *  - percent: The percent full the BossBar is. Defaults to 1 (full health)
+							 *  - color: The color of the BossBar. Can be any [Color], but defaults to white
+							 *  - sections: The number of notches/sections to appear on the BossBar. Can be any [Style], but
+							 *              defaults to 1 entire section
+							 *  - darkenSky: Whether the BossBar should darken the screen of the player. Defaults to false
+							 *  - dragonMusic: Whether the BossBar should play dragon music while in the End. Defaults to false
+							 *  - thickenFog: Whether the BossBar should thicken the fog around the player. Defaults to false
+							 * 
+							 *  @param obj An options bag
+							 * 
+							 *  @return the [BossBar] for further modification
+							 */
+              addBossBar(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.world.BossBars$BossBar;
+							/**
+							 * Clears all [BossBar]s on screen
+							 */
+              clearBossBars(): void;
+							/**
+							 * Removes all [BossBar]s with the given name
+							 * 
+							 *  @param name the name to match
+							 */
+              removeBossBarsByName(name: string): void;
+							/**
+							 * Removes the given [BossBar]
+							 * 
+							 *  @param bossBar the BossBar to remove
+							 */
+              removeBossBar(bossBar: com.chattriggers.ctjs.api.world.BossBars$BossBar): void;
+              new(): com.chattriggers.ctjs.api.world.BossBars;
+            }
+            interface BossBars { 
+              toMC(): net.minecraft.client.gui.components.BossHealthOverlay;
+							/**
+							 * Gets the list of currently shown [BossBar]s
+							 * 
+							 *  @return the currently displayed [BossBar]s
+							 */
+              getBossBars(): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
+							/**
+							 * Gets all [BossBar]s with a given name
+							 * 
+							 *  @param name the name to match
+							 *  @return the [BossBar]s
+							 */
+              getBossBarsByName(name: string): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
+							/**
+							 * Adds a new [BossBar] to be displayed
+							 * 
+							 *  Takes a parameter with the following options:
+							 *  - name: The name to appear above the BossBar. Defaults to an empty string
+							 *  - percent: The percent full the BossBar is. Defaults to 1 (full health)
+							 *  - color: The color of the BossBar. Can be any [Color], but defaults to white
+							 *  - sections: The number of notches/sections to appear on the BossBar. Can be any [Style], but
+							 *              defaults to 1 entire section
+							 *  - darkenSky: Whether the BossBar should darken the screen of the player. Defaults to false
+							 *  - dragonMusic: Whether the BossBar should play dragon music while in the End. Defaults to false
+							 *  - thickenFog: Whether the BossBar should thicken the fog around the player. Defaults to false
+							 * 
+							 *  @param obj An options bag
+							 * 
+							 *  @return the [BossBar] for further modification
+							 */
+              addBossBar(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.world.BossBars$BossBar;
+							/**
+							 * Clears all [BossBar]s on screen
+							 */
+              clearBossBars(): void;
+							/**
+							 * Removes all [BossBar]s with the given name
+							 * 
+							 *  @param name the name to match
+							 */
+              removeBossBarsByName(name: string): void;
+							/**
+							 * Removes the given [BossBar]
+							 * 
+							 *  @param bossBar the BossBar to remove
+							 */
+              removeBossBar(bossBar: com.chattriggers.ctjs.api.world.BossBars$BossBar): void;
+              new(): com.chattriggers.ctjs.api.world.BossBars;
+            }
+            const BossBars$BossBar: {
+              new(mcValue: net.minecraft.client.gui.components.LerpingBossEvent): com.chattriggers.ctjs.api.world.BossBars$BossBar;
+            }
+            interface BossBars$BossBar extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.gui.components.LerpingBossEvent> { 
+							/**
+							 * Gets the UUID of this BossBar
+							 * 
+							 *  @return the uuid
+							 */
+              getUUID(): java.util.UUID;
+							/**
+							 * Gets the name of this BossBar
+							 * 
+							 *  @return the name
+							 */
+              getName(): string;
+							/**
+							 * Sets the name of this BossBar
+							 * 
+							 *  @param name the name to set
+							 */
+              setName(name: string): com.chattriggers.ctjs.api.world.BossBars$BossBar;
+							/**
+							 * Gets how full this BossBar is
+							 * 
+							 *  @return how full the BossBar is
+							 */
+              getPercent(): number;
+							/**
+							 * Sets how full this BossBar is
+							 * 
+							 *  @param percent how full to set this BossBar. Must be between 0 and 1
+							 */
+              setPercent(percent: number): com.chattriggers.ctjs.api.world.BossBars$BossBar;
+							/**
+							 * Gets the [Color] of this BossBar
+							 */
+              getColor(): com.chattriggers.ctjs.api.world.BossBars$Color;
+							/**
+							 * Sets the [Color] of this BossBar
+							 * 
+							 *  @param color the color to set. Can be [Color], [MCBossBarColor], or a string
+							 */
+              setColor(color: any): com.chattriggers.ctjs.api.world.BossBars$BossBar;
+							/**
+							 * Gets the style of this BossBar. e.g. how many notches are displayed
+							 */
+              getStyle(): com.chattriggers.ctjs.api.world.BossBars$Style;
+							/**
+							 * Sets the style of this BossBar
+							 * 
+							 *  @param style the style to set. Can be [Style], [MCBossBarStyle], a string,
+							 *  or a number of how many notches to put
+							 */
+              setStyle(style: any): com.chattriggers.ctjs.api.world.BossBars$BossBar;
+							/**
+							 * Gets whether this BossBar darkens the sky
+							 */
+              shouldDarkenSky(): boolean;
+							/**
+							 * Sets whether this BossBar should darken the sky
+							 * 
+							 *  @param darken whether to darken the sky
+							 */
+              setShouldDarkenSky(darken: boolean): com.chattriggers.ctjs.api.world.BossBars$BossBar;
+							/**
+							 * Gets whether this BossBar will play dragon music.
+							 *  This will do nothing when the player is not in the end dimension
+							 */
+              hasDragonMusic(): boolean;
+							/**
+							 * Sets whether this BossBar will play dragon music
+							 * 
+							 *  @param music whether to play dragon music
+							 */
+              setHasDragonMusic(music: boolean): com.chattriggers.ctjs.api.world.BossBars$BossBar;
+							/**
+							 * Gets whether this BossBar should thicken the fog around the player
+							 */
+              shouldThickenFog(): boolean;
+							/**
+							 * Sets whether this BossBar should thicken the fog around the player
+							 * 
+							 *  @param fog whether to thicken the fog
+							 */
+              setShouldThickenFog(fog: boolean): com.chattriggers.ctjs.api.world.BossBars$BossBar;
+            }
+            const BossBars$Color: {
+              PINK: com.chattriggers.ctjs.api.world.BossBars$Color;
+              BLUE: com.chattriggers.ctjs.api.world.BossBars$Color;
+              RED: com.chattriggers.ctjs.api.world.BossBars$Color;
+              GREEN: com.chattriggers.ctjs.api.world.BossBars$Color;
+              YELLOW: com.chattriggers.ctjs.api.world.BossBars$Color;
+              PURPLE: com.chattriggers.ctjs.api.world.BossBars$Color;
+              WHITE: com.chattriggers.ctjs.api.world.BossBars$Color;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.BossBars$Color>;
+              values(): Array<com.chattriggers.ctjs.api.world.BossBars$Color>;
+              valueOf(value: string): com.chattriggers.ctjs.api.world.BossBars$Color;
+            }
+            interface BossBars$Color extends kotlin.Enum<com.chattriggers.ctjs.api.world.BossBars$Color>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.BossEvent$BossBarColor> { 
+            }
+            const BossBars$Color$Companion: {
+              fromMC(mcValue: net.minecraft.world.BossEvent$BossBarColor): com.chattriggers.ctjs.api.world.BossBars$Color;
+              from(value: any): com.chattriggers.ctjs.api.world.BossBars$Color;
+              new(): unknown;
+            }
+            interface BossBars$Color$Companion { 
+              fromMC(mcValue: net.minecraft.world.BossEvent$BossBarColor): com.chattriggers.ctjs.api.world.BossBars$Color;
+              from(value: any): com.chattriggers.ctjs.api.world.BossBars$Color;
+              new(): unknown;
+            }
+            const BossBars$Style: {
+              ONE: com.chattriggers.ctjs.api.world.BossBars$Style;
+              SIX: com.chattriggers.ctjs.api.world.BossBars$Style;
+              TEN: com.chattriggers.ctjs.api.world.BossBars$Style;
+              TWELVE: com.chattriggers.ctjs.api.world.BossBars$Style;
+              TWENTY: com.chattriggers.ctjs.api.world.BossBars$Style;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.BossBars$Style>;
+              values(): Array<com.chattriggers.ctjs.api.world.BossBars$Style>;
+              valueOf(value: string): com.chattriggers.ctjs.api.world.BossBars$Style;
+            }
+            interface BossBars$Style extends kotlin.Enum<com.chattriggers.ctjs.api.world.BossBars$Style>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.BossEvent$BossBarOverlay> { 
+              getSections(): number;
+            }
+            const BossBars$Style$Companion: {
+              fromMC(mcValue: net.minecraft.world.BossEvent$BossBarOverlay): com.chattriggers.ctjs.api.world.BossBars$Style;
+              from(value: any): com.chattriggers.ctjs.api.world.BossBars$Style;
+              new(): unknown;
+            }
+            interface BossBars$Style$Companion { 
+              fromMC(mcValue: net.minecraft.world.BossEvent$BossBarOverlay): com.chattriggers.ctjs.api.world.BossBars$Style;
+              from(value: any): com.chattriggers.ctjs.api.world.BossBars$Style;
+              new(): unknown;
+            }
+            const Scoreboard: {
+              Score: typeof com.chattriggers.ctjs.api.world.Scoreboard$Score;
+              toMC(): net.minecraft.world.scores.Scoreboard | null | undefined;
+              getSidebar(): net.minecraft.world.scores.Objective | null | undefined;
+							/**
+							 * Gets the top-most string which is displayed on the scoreboard. (doesn't have a score on the side).
+							 *  Be aware that this can contain color codes.
+							 * 
+							 *  @return the scoreboard title
+							 */
+              getTitle(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Sets the scoreboard title.
+							 * 
+							 *  @param title the new title
+							 *  @return the scoreboard title
+							 */
+              setTitle(title: com.chattriggers.ctjs.api.message.TextComponent): void;
+              setTitle(title: string): void;
+							/**
+							 * Get all currently visible strings on the scoreboard. (excluding title)
+							 *  Be aware that this can contain color codes.
+							 * 
+							 *  @return the list of lines
+							 */
+              getLines(): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
+							/**
+							 * Get all currently visible strings on the scoreboard. (excluding title)
+							 *  Be aware that this can contain color codes.
+							 * 
+							 *  @return the list of lines
+							 */
+              getLines(descending: boolean): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
+							/**
+							 * Gets the line at the specified index (0 based)
+							 *  Equivalent to Scoreboard.getLines().get(index)
+							 * 
+							 *  @param index the line index
+							 *  @return the score object at the index
+							 */
+              getLineByIndex(index: number): com.chattriggers.ctjs.api.world.Scoreboard$Score;
+							/**
+							 * Gets a list of lines that have a certain score,
+							 *  i.e. the numbers shown on the right
+							 * 
+							 *  @param score the score to look for
+							 *  @return a list of actual score objects
+							 */
+              getLinesByScore(score: number): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
+							/**
+							 * Sets a line in the scoreboard to the specified name and score.
+							 * 
+							 *  @param score the score value for this item
+							 *  @param line the [TextComponent] to display on said line
+							 *  @param override whether to remove old lines with the same score
+							 */
+              setLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Sets a line in the scoreboard to the specified name and score.
+							 * 
+							 *  @param score the score value for this item
+							 *  @param line the [TextComponent] to display on said line
+							 *  @param override whether to remove old lines with the same score
+							 */
+              setLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent, override: boolean): void;
+              setLine(score: number, line: string): void;
+              setLine(score: number, line: string, override: boolean): void;
+							/**
+							 * Adds a line to the scoreboard
+							 * 
+							 *  @param score the score value for this item
+							 *  @param line the [TextComponent] to display on said line
+							 */
+              addLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent): void;
+              addLine(score: number, line: string): void;
+							/**
+							 * Removes all lines from the scoreboard matching with a certain score
+							 * 
+							 *  @param score the score of the lines to remove
+							 */
+              removeScores(score: number): void;
+							/**
+							 * Removes the line at a certain index
+							 * 
+							 *  @param index the index of the line to remove
+							 */
+              removeIndex(index: number): void;
+							/**
+							 * Removes the line at a certain index
+							 * 
+							 *  @param index the index of the line to remove
+							 */
+              removeIndex(index: number, descending: boolean): void;
+              setShouldRender(shouldRender: boolean): void;
+              getShouldRender(): boolean;
+							/**
+							 * Creates or gets a [Team] with a given name
+							 * 
+							 *  @param name the name of the team
+							 */
+              createTeam(name: string): com.chattriggers.ctjs.api.entity.Team;
+              new(): com.chattriggers.ctjs.api.world.Scoreboard;
+            }
+            interface Scoreboard { 
+              toMC(): net.minecraft.world.scores.Scoreboard | null | undefined;
+              getSidebar(): net.minecraft.world.scores.Objective | null | undefined;
+							/**
+							 * Gets the top-most string which is displayed on the scoreboard. (doesn't have a score on the side).
+							 *  Be aware that this can contain color codes.
+							 * 
+							 *  @return the scoreboard title
+							 */
+              getTitle(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Sets the scoreboard title.
+							 * 
+							 *  @param title the new title
+							 *  @return the scoreboard title
+							 */
+              setTitle(title: com.chattriggers.ctjs.api.message.TextComponent): void;
+              setTitle(title: string): void;
+							/**
+							 * Get all currently visible strings on the scoreboard. (excluding title)
+							 *  Be aware that this can contain color codes.
+							 * 
+							 *  @return the list of lines
+							 */
+              getLines(): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
+							/**
+							 * Get all currently visible strings on the scoreboard. (excluding title)
+							 *  Be aware that this can contain color codes.
+							 * 
+							 *  @return the list of lines
+							 */
+              getLines(descending: boolean): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
+							/**
+							 * Gets the line at the specified index (0 based)
+							 *  Equivalent to Scoreboard.getLines().get(index)
+							 * 
+							 *  @param index the line index
+							 *  @return the score object at the index
+							 */
+              getLineByIndex(index: number): com.chattriggers.ctjs.api.world.Scoreboard$Score;
+							/**
+							 * Gets a list of lines that have a certain score,
+							 *  i.e. the numbers shown on the right
+							 * 
+							 *  @param score the score to look for
+							 *  @return a list of actual score objects
+							 */
+              getLinesByScore(score: number): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
+							/**
+							 * Sets a line in the scoreboard to the specified name and score.
+							 * 
+							 *  @param score the score value for this item
+							 *  @param line the [TextComponent] to display on said line
+							 *  @param override whether to remove old lines with the same score
+							 */
+              setLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Sets a line in the scoreboard to the specified name and score.
+							 * 
+							 *  @param score the score value for this item
+							 *  @param line the [TextComponent] to display on said line
+							 *  @param override whether to remove old lines with the same score
+							 */
+              setLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent, override: boolean): void;
+              setLine(score: number, line: string): void;
+              setLine(score: number, line: string, override: boolean): void;
+							/**
+							 * Adds a line to the scoreboard
+							 * 
+							 *  @param score the score value for this item
+							 *  @param line the [TextComponent] to display on said line
+							 */
+              addLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent): void;
+              addLine(score: number, line: string): void;
+							/**
+							 * Removes all lines from the scoreboard matching with a certain score
+							 * 
+							 *  @param score the score of the lines to remove
+							 */
+              removeScores(score: number): void;
+							/**
+							 * Removes the line at a certain index
+							 * 
+							 *  @param index the index of the line to remove
+							 */
+              removeIndex(index: number): void;
+							/**
+							 * Removes the line at a certain index
+							 * 
+							 *  @param index the index of the line to remove
+							 */
+              removeIndex(index: number, descending: boolean): void;
+              setShouldRender(shouldRender: boolean): void;
+              getShouldRender(): boolean;
+							/**
+							 * Creates or gets a [Team] with a given name
+							 * 
+							 *  @param name the name of the team
+							 */
+              createTeam(name: string): com.chattriggers.ctjs.api.entity.Team;
+              new(): com.chattriggers.ctjs.api.world.Scoreboard;
+            }
+            const Scoreboard$Score: {
+              new(mcValue: net.minecraft.world.scores.ScoreAccess): com.chattriggers.ctjs.api.world.Scoreboard$Score;
+            }
+            interface Scoreboard$Score extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.ScoreAccess> { 
+							/**
+							 * Gets the team associated with this score, if it exists
+							 * 
+							 *  @return the team, or null if it does not exist
+							 */
+              getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
+							/**
+							 * Sets the team associated with this score
+							 * 
+							 *  @param team the new team to set for this line. Custom teams can be created using [createTeam]
+							 *  @return the score to allow for method chaining
+							 */
+              setTeam(team: com.chattriggers.ctjs.api.entity.Team | null | undefined): com.chattriggers.ctjs.api.world.Scoreboard$Score;
+							/**
+							 * Gets the score value for this score,
+							 *  i.e. the number on the right of the board
+							 * 
+							 *  @return the actual point value
+							 */
+              getScore(): number;
+							/**
+							 * Sets the score value for this score
+							 * 
+							 *  @param score the new point value
+							 *  @return the score to allow for method chaining
+							 */
+              setScore(score: number): com.chattriggers.ctjs.api.world.Scoreboard$Score;
+							/**
+							 * Gets the display text of this score
+							 * 
+							 *  @return the display name
+							 */
+              getName(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Sets the name of this score
+							 * 
+							 *  @param name the new name
+							 *  @return the score to allow for method chaining
+							 */
+              setName(name: com.chattriggers.ctjs.api.message.TextComponent | null | undefined): com.chattriggers.ctjs.api.world.Scoreboard$Score;
+							/**
+							 * Gets the number format of this score
+							 * 
+							 *  @return the number format
+							 */
+              getNumberFormat(): net.minecraft.network.chat.numbers.NumberFormat | null | undefined;
+							/**
+							 * Sets the number format of this score
+							 * 
+							 *  @param format either a formatting string, i.e. "&6", style in the form of an object, see [TextComponent], a
+							 *  [NumberFormat], or hex value
+							 *  @return the score to allow for method chaining
+							 * 
+							 *  @see [TextComponent]
+							 */
+              setNumberFormat(format: any | null | undefined): com.chattriggers.ctjs.api.world.Scoreboard$Score;
+							/**
+							 * Removes this score from the scoreboard
+							 */
+              remove(): void;
+            }
+            const Server: {
+              toMC(): net.minecraft.client.multiplayer.ServerData | null | undefined;
+              isSingleplayer(): boolean;
+							/**
+							 * Gets the current server's IP, or "localhost" if the player
+							 *  is in a single-player world.
+							 * 
+							 *  @return The IP of the current server
+							 */
+              getIP(): string;
+							/**
+							 * Gets the current server's name, or "SinglePlayer" if the player
+							 *  is in a single-player world.
+							 * 
+							 *  @return The name of the current server
+							 */
+              getName(): string;
+							/**
+							 * Gets the current server's MOTD, or "SinglePlayer" if the player
+							 *  is in a single-player world.
+							 * 
+							 *  @return The MOTD of the current server
+							 */
+              getMOTD(): string;
+							/**
+							 * Gets the ping to the current server, or 5 if the player
+							 *  is in a single-player world. Returns -1 if not in a world
+							 * 
+							 *  @return The ping to the current server
+							 */
+              getPing(): number;
+              new(): com.chattriggers.ctjs.api.world.Server;
+            }
+            interface Server { 
+              toMC(): net.minecraft.client.multiplayer.ServerData | null | undefined;
+              isSingleplayer(): boolean;
+							/**
+							 * Gets the current server's IP, or "localhost" if the player
+							 *  is in a single-player world.
+							 * 
+							 *  @return The IP of the current server
+							 */
+              getIP(): string;
+							/**
+							 * Gets the current server's name, or "SinglePlayer" if the player
+							 *  is in a single-player world.
+							 * 
+							 *  @return The name of the current server
+							 */
+              getName(): string;
+							/**
+							 * Gets the current server's MOTD, or "SinglePlayer" if the player
+							 *  is in a single-player world.
+							 * 
+							 *  @return The MOTD of the current server
+							 */
+              getMOTD(): string;
+							/**
+							 * Gets the ping to the current server, or 5 if the player
+							 *  is in a single-player world. Returns -1 if not in a world
+							 * 
+							 *  @return The ping to the current server
+							 */
+              getPing(): number;
+              new(): com.chattriggers.ctjs.api.world.Server;
+            }
+          }
+          namespace entity {
+            const Entity: {
+              DimensionType: typeof com.chattriggers.ctjs.api.entity.Entity$DimensionType;
+              new(mcValue: net.minecraft.world.entity.Entity): com.chattriggers.ctjs.api.entity.Entity;
+            }
+            interface Entity extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.entity.Entity> { 
+              getX(): number;
+              getY(): number;
+              getZ(): number;
+              getPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
+              getRotation(): net.minecraft.world.phys.Vec2;
+              getLastX(): number;
+              getLastY(): number;
+              getLastZ(): number;
+              getRenderX(): number;
+              getRenderY(): number;
+              getRenderZ(): number;
+							/**
+							 * Gets the pitch, the horizontal direction the entity is facing towards.
+							 *  This has a range of -180 to 180.
+							 * 
+							 *  @return the entity's pitch
+							 */
+              getPitch(): number;
+							/**
+							 * Gets the yaw, the vertical direction the entity is facing towards.
+							 *  This has a range of -180 to 180.
+							 * 
+							 *  @return the entity's yaw
+							 */
+              getYaw(): number;
+							/**
+							 * Gets the entity's x motion.
+							 *  This is the amount the entity will move in the x direction next tick.
+							 * 
+							 *  @return the entity's x motion
+							 */
+              getMotionX(): number;
+							/**
+							 * Gets the entity's y motion.
+							 *  This is the amount the entity will move in the y direction next tick.
+							 * 
+							 *  @return the entity's y motion
+							 */
+              getMotionY(): number;
+							/**
+							 * Gets the entity's z motion.
+							 *  This is the amount the entity will move in the z direction next tick.
+							 * 
+							 *  @return the entity's z motion
+							 */
+              getMotionZ(): number;
+							/**
+							 * Returns the entity this entity is riding, if one exists
+							 * 
+							 *  @return an Entity or null
+							 */
+              getRiding(): com.chattriggers.ctjs.api.entity.Entity | null | undefined;
+							/**
+							 * Returns a list of all entity riding this entity
+							 * 
+							 *  @return List of entities, empty if there are no riders
+							 */
+              getRiders(): Array<com.chattriggers.ctjs.api.entity.Entity>;
+							/**
+							 * Checks whether the entity is dead.
+							 *  This is a fairly loose term, dead for a particle could mean it has faded,
+							 *  while dead for an entity means it has no health.
+							 * 
+							 *  @return whether an entity is dead
+							 */
+              isDead(): boolean;
+							/**
+							 * Gets the entire width of the entity's hitbox
+							 * 
+							 *  @return the entity's width
+							 */
+              getWidth(): number;
+							/**
+							 * Gets the entire height of the entity's hitbox
+							 * 
+							 *  @return the entity's height
+							 */
+              getHeight(): number;
+							/**
+							 * Gets the height of the eyes on the entity,
+							 *  can be added to its Y coordinate to get the actual Y location of the eyes.
+							 *  This value defaults to 85% of an entity's height, however is different for some entities.
+							 * 
+							 *  @return the height of the entity's eyes
+							 */
+              getEyeHeight(): number;
+							/**
+							 * Gets the name of the entity, could be "Villager",
+							 *  or, if the entity has a custom name, it returns that.
+							 * 
+							 *  @return the (custom) name of the entity as a String
+							 */
+              getName(): string;
+							/**
+							 * Gets the name of the entity, could be "Villager",
+							 *  or, if the entity has a custom name, it returns that.
+							 * 
+							 *  @return the (custom) name of the entity as a [TextComponent]
+							 */
+              getNameComponent(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Gets the Java class name of the entity, for example "EntityVillager"
+							 * 
+							 *  @return the entity's class name
+							 */
+              getClassName(): string;
+							/**
+							 * Gets the Java UUID object of this entity.
+							 *  Use of [UUID.toString] in conjunction is recommended.
+							 * 
+							 *  @return the entity's uuid
+							 */
+              getUUID(): java.util.UUID;
+							/**
+							 * Gets the entity's air level.
+							 * 
+							 *  The returned value will be an integer. If the player is not taking damage, it
+							 *  will be between 300 (not in water) and 0. If the player is taking damage, it
+							 *  will be between -20 and 0, getting reset to 0 every time the player takes damage.
+							 * 
+							 *  @return the entity's air level
+							 */
+              getAir(): number;
+              distanceTo(other: com.chattriggers.ctjs.api.entity.Entity): number;
+              distanceTo(other: net.minecraft.world.entity.Entity): number;
+              distanceTo(blockPos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
+              distanceTo(x: number, y: number, z: number): number;
+              isOnGround(): boolean;
+              isCollided(): boolean;
+              getDistanceWalked(): number;
+              getStepHeight(): number;
+              hasNoClip(): boolean;
+              getTicksExisted(): number;
+              getFireResistance(): number;
+              isImmuneToFire(): boolean;
+              isInWater(): boolean;
+              isWet(): boolean;
+              getDimension(): com.chattriggers.ctjs.api.entity.Entity$DimensionType;
+              getMaxInPortalTime(): number;
+              isSilent(): boolean;
+              isInLava(): boolean;
+              getLookVector(): net.minecraft.world.phys.Vec3;
+              getLookVector(partialTicks: number): net.minecraft.world.phys.Vec3;
+              getEyePosition(): net.minecraft.world.phys.Vec3;
+              getEyePosition(partialTicks: number): net.minecraft.world.phys.Vec3;
+              canBeCollidedWith(): boolean;
+              canBePushed(): boolean;
+              isSneaking(): boolean;
+              isSprinting(): boolean;
+              isInvisible(): boolean;
+              isOutsideBorder(): boolean;
+              isBurning(): boolean;
+              getWorld(): net.minecraft.world.level.Level;
+              getChunk(): com.chattriggers.ctjs.api.world.Chunk;
+            }
+            const Entity$DimensionType: {
+              OVERWORLD: com.chattriggers.ctjs.api.entity.Entity$DimensionType;
+              NETHER: com.chattriggers.ctjs.api.entity.Entity$DimensionType;
+              END: com.chattriggers.ctjs.api.entity.Entity$DimensionType;
+              OVERWORLD_CAVES: com.chattriggers.ctjs.api.entity.Entity$DimensionType;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.entity.Entity$DimensionType>;
+              values(): Array<com.chattriggers.ctjs.api.entity.Entity$DimensionType>;
+              valueOf(value: string): com.chattriggers.ctjs.api.entity.Entity$DimensionType;
+            }
+            interface Entity$DimensionType extends kotlin.Enum<com.chattriggers.ctjs.api.entity.Entity$DimensionType>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.resources.ResourceKey<net.minecraft.world.level.dimension.DimensionType>> { 
+            }
+            const Entity$Companion: {
+              fromMC(entity: net.minecraft.world.entity.Entity): com.chattriggers.ctjs.api.entity.Entity;
+              new(): com.chattriggers.ctjs.api.entity.Entity$Companion;
+            }
+            interface Entity$Companion { 
+              fromMC(entity: net.minecraft.world.entity.Entity): com.chattriggers.ctjs.api.entity.Entity;
+              new(): com.chattriggers.ctjs.api.entity.Entity$Companion;
+            }
+            const Team: {
+              Visibility: typeof com.chattriggers.ctjs.api.entity.Team$Visibility;
+              new(mcValue: net.minecraft.world.scores.PlayerTeam): com.chattriggers.ctjs.api.entity.Team;
+            }
+            interface Team extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.PlayerTeam> { 
+							/**
+							 * Gets the registered name of the team
+							 */
+              getRegisteredName(): string;
+							/**
+							 * Gets the display name of the team
+							 */
+              getName(): string;
+							/**
+							 * Sets the display name of the team
+							 *  @param name the new display name
+							 *  @return the team for method chaining
+							 */
+              setName(name: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.entity.Team;
+							/**
+							 * Sets the display name of the team
+							 *  @param name the new display name
+							 *  @return the team for method chaining
+							 */
+              setName(name: string): com.chattriggers.ctjs.api.entity.Team;
+							/**
+							 * Gets the list of names on the team
+							 */
+              getMembers(): Array<string>;
+							/**
+							 * Gets the team prefix
+							 */
+              getPrefix(): string;
+							/**
+							 * Sets the team prefix
+							 *  @param prefix the prefix to set
+							 *  @return the team for method chaining
+							 */
+              setPrefix(prefix: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.entity.Team;
+							/**
+							 * Sets the team prefix
+							 *  @param prefix the prefix to set
+							 *  @return the team for method chaining
+							 */
+              setPrefix(prefix: string): com.chattriggers.ctjs.api.entity.Team;
+							/**
+							 * Gets the team suffix
+							 */
+              getSuffix(): string;
+							/**
+							 * Sets the team suffix
+							 *  @param suffix the suffix to set
+							 *  @return the team for method chaining
+							 */
+              setSuffix(suffix: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.entity.Team;
+							/**
+							 * Sets the team suffix
+							 *  @param suffix the suffix to set
+							 *  @return the team for method chaining
+							 */
+              setSuffix(suffix: string): com.chattriggers.ctjs.api.entity.Team;
+              getColor(): string;
+							/**
+							 * Sets the team color
+							 *  @param color a string format of a [Formatting], or a hex value
+							 *  @return the team for method chaining
+							 */
+              setColor(color: any | null | undefined): com.chattriggers.ctjs.api.entity.Team;
+							/**
+							 * Gets the team's friendly fire setting
+							 */
+              getFriendlyFire(): boolean;
+							/**
+							 * Gets whether the team can see invisible players on the same team
+							 */
+              canSeeInvisibleTeammates(): boolean;
+							/**
+							 * Gets the team's name tag visibility
+							 */
+              getNameTagVisibility(): com.chattriggers.ctjs.api.entity.Team$Visibility;
+							/**
+							 * Gets the team's death message visibility
+							 */
+              getDeathMessageVisibility(): com.chattriggers.ctjs.api.entity.Team$Visibility;
+            }
+            const Team$Visibility: {
+              ALWAYS: com.chattriggers.ctjs.api.entity.Team$Visibility;
+              NEVER: com.chattriggers.ctjs.api.entity.Team$Visibility;
+              HIDE_FOR_OTHERS_TEAMS: com.chattriggers.ctjs.api.entity.Team$Visibility;
+              HIDE_FOR_OWN_TEAM: com.chattriggers.ctjs.api.entity.Team$Visibility;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.entity.Team$Visibility>;
+              values(): Array<com.chattriggers.ctjs.api.entity.Team$Visibility>;
+              valueOf(value: string): com.chattriggers.ctjs.api.entity.Team$Visibility;
+            }
+            interface Team$Visibility extends kotlin.Enum<com.chattriggers.ctjs.api.entity.Team$Visibility>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.Team$Visibility> { 
+            }
+            const Team$Visibility$Companion: {
+              fromMC(mcValue: net.minecraft.world.scores.Team$Visibility): com.chattriggers.ctjs.api.entity.Team$Visibility;
+              new(): unknown;
+            }
+            interface Team$Visibility$Companion { 
+              fromMC(mcValue: net.minecraft.world.scores.Team$Visibility): com.chattriggers.ctjs.api.entity.Team$Visibility;
+              new(): unknown;
+            }
+            const PlayerMP: {
+              new(mcValue: net.minecraft.world.entity.player.Player): com.chattriggers.ctjs.api.entity.PlayerMP;
+            }
+            interface PlayerMP extends com.chattriggers.ctjs.api.entity.LivingEntity { 
+              isSpectator(): boolean;
+              getPing(): number;
+              getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
+							/**
+							 * Gets the display name for this player,
+							 *  i.e. the name shown in tab list and in the player's nametag.
+							 *  @return the display name
+							 */
+              getDisplayName(): com.chattriggers.ctjs.api.message.TextComponent;
+              setTabDisplayName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Sets the name for this player shown above their head,
+							 *  in their name tag
+							 * 
+							 *  @param textComponent the new name to display
+							 */
+              setNametagName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]
+							 *  minus `player`.
+							 * 
+							 *  @see Renderer.drawPlayer
+							 */
+              draw(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.entity.PlayerMP;
+            }
+            const LivingEntity: {
+              new(mcValue: net.minecraft.world.entity.LivingEntity): com.chattriggers.ctjs.api.entity.LivingEntity;
+            }
+            interface LivingEntity extends com.chattriggers.ctjs.api.entity.Entity { 
+              getActivePotionEffects(): Array<com.chattriggers.ctjs.api.world.PotionEffect>;
+              canSeeEntity(other: net.minecraft.world.entity.Entity): boolean;
+              canSeeEntity(other: com.chattriggers.ctjs.api.entity.Entity): boolean;
+							/**
+							 * Gets the item currently in the entity's specified inventory slot.
+							 *  0 for main hand, 1 for offhand, 2-5 for armor
+							 * 
+							 *  @param slot the slot to access
+							 *  @return the item in said slot
+							 */
+              getStackInSlot(slot: number): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+              getHP(): number;
+              getMaxHP(): number;
+              getAbsorption(): number;
+              getAge(): number;
+              getArmorValue(): number;
+              isPotionActive(id: number): boolean;
+              isPotionActive(type: com.chattriggers.ctjs.api.world.PotionEffectType): boolean;
+              isPotionActive(effect: com.chattriggers.ctjs.api.world.PotionEffect): boolean;
+            }
+            const PlayerInteraction: {
+              UseBlock: typeof com.chattriggers.ctjs.api.entity.PlayerInteraction$UseBlock;
+              UseEntity: typeof com.chattriggers.ctjs.api.entity.PlayerInteraction$UseEntity;
+              UseItem: typeof com.chattriggers.ctjs.api.entity.PlayerInteraction$UseItem;
+              new(name: string, mainHand: boolean): com.chattriggers.ctjs.api.entity.PlayerInteraction;
+            }
+            interface PlayerInteraction { 
+              getName(): string;
+              getMainHand(): boolean;
+            }
+            const PlayerInteraction$AttackBlock: {
+              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackBlock;
+            }
+            interface PlayerInteraction$AttackBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
+              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackBlock;
+            }
+            const PlayerInteraction$AttackEntity: {
+              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackEntity;
+            }
+            interface PlayerInteraction$AttackEntity extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
+              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackEntity;
+            }
+            const PlayerInteraction$BreakBlock: {
+              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$BreakBlock;
+            }
+            interface PlayerInteraction$BreakBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
+              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$BreakBlock;
+            }
+            const PlayerInteraction$UseBlock: {
+              new(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.entity.PlayerInteraction$UseBlock;
+            }
+            interface PlayerInteraction$UseBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
+            }
+            const PlayerInteraction$UseEntity: {
+              new(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.entity.PlayerInteraction$UseEntity;
+            }
+            interface PlayerInteraction$UseEntity extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
+            }
+            const PlayerInteraction$UseItem: {
+              new(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.entity.PlayerInteraction$UseItem;
+            }
+            interface PlayerInteraction$UseItem extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
+            }
+            const BlockEntity: {
+              new(mcValue: net.minecraft.world.level.block.entity.BlockEntity): com.chattriggers.ctjs.api.entity.BlockEntity;
+            }
+            interface BlockEntity extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.block.entity.BlockEntity> { 
+              getX(): number;
+              getY(): number;
+              getZ(): number;
+              getBlockType(): com.chattriggers.ctjs.api.world.block.BlockType;
+              getBlockPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
+              getBlock(): com.chattriggers.ctjs.api.world.block.Block;
+            }
+            const Particle: {
+              new(mcValue: net.minecraft.client.particle.Particle): com.chattriggers.ctjs.api.entity.Particle;
+            }
+            interface Particle extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.particle.Particle> { 
+              getX(): number;
+              setX(value: number): void;
+              getY(): number;
+              setY(value: number): void;
+              getZ(): number;
+              setZ(value: number): void;
+              getLastX(): number;
+              setLastX(value: number): void;
+              getLastY(): number;
+              setLastY(value: number): void;
+              getLastZ(): number;
+              setLastZ(value: number): void;
+              getRenderX(): number;
+              getRenderY(): number;
+              getRenderZ(): number;
+              getMotionX(): number;
+              setMotionX(value: number): void;
+              getMotionY(): number;
+              setMotionY(value: number): void;
+              getMotionZ(): number;
+              setMotionZ(value: number): void;
+              getAge(): number;
+              setAge(value: number): void;
+              getDead(): boolean;
+              setDead(value: boolean): void;
+              scale(scale: number): com.chattriggers.ctjs.api.entity.Particle;
+							/**
+							 * Sets the amount of ticks this particle will live for
+							 * 
+							 *  @param maxAge the particle's max age (in ticks)
+							 */
+              setMaxAge(maxAge: number): com.chattriggers.ctjs.api.entity.Particle;
+              remove(): com.chattriggers.ctjs.api.entity.Particle;
+            }
+          }
+          namespace commands {
+            interface RootCommand { 
+              register(): void;
+            }
+            const DynamicCommands: {
+              AngleArgumentWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$AngleArgumentWrapper;
+              PosArgumentWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper;
+              BlockPredicateWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$BlockPredicateWrapper;
+              BlockStateArgumentWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$BlockStateArgumentWrapper;
+              EntitySelectorWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$EntitySelectorWrapper;
+              ItemStackArgumentWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$ItemStackArgumentWrapper;
+              MessageFormatArgumentWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$MessageFormatArgumentWrapper;
+              NbtPathWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$NbtPathWrapper;
+              registerCommand(name: string): com.chattriggers.ctjs.api.commands.RootCommand;
+              registerCommand(name: string, builder: org.mozilla.javascript.Function | null | undefined): com.chattriggers.ctjs.api.commands.RootCommand;
+              buildCommand(name: string): com.chattriggers.ctjs.api.commands.RootCommand;
+              buildCommand(name: string, builder: org.mozilla.javascript.Function | null | undefined): com.chattriggers.ctjs.api.commands.RootCommand;
+              argument(name: string, type: com.mojang.brigadier.arguments.ArgumentType<any>, builder: org.mozilla.javascript.Function): void;
+              literal(name: string, builder: org.mozilla.javascript.Function): void;
+              redirect(node: com.chattriggers.ctjs.api.commands.RootCommand): void;
+              redirect(node: com.mojang.brigadier.tree.CommandNode<net.minecraft.commands.SharedSuggestionProvider>): void;
+              exec(method: org.mozilla.javascript.Function): void;
+							/**
+							 * A helper method for getting Fabric's client CommandDispatcher root node. This allows user
+							 *  commands to be redirected to the root node in the same way that "/execute run ..." does.
+							 * 
+							 *  As the result is a CommandNode, `.getChild(name)` can be used to access sub-command nodes
+							 *  to, for example, redirect to just `/advancement` instead of `/`.
+							 */
+              getDispatcherRoot(): com.mojang.brigadier.tree.RootCommandNode<net.minecraft.client.multiplayer.ClientSuggestionProvider> | null | undefined;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:bool">Argument Types: bool</a>
+							 */
+              bool(): com.mojang.brigadier.arguments.BoolArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
+							 */
+              double(): com.mojang.brigadier.arguments.DoubleArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
+							 */
+              double(min: number): com.mojang.brigadier.arguments.DoubleArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
+							 */
+              double(min: number, max: number): com.mojang.brigadier.arguments.DoubleArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
+							 */
+              float(): com.mojang.brigadier.arguments.FloatArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
+							 */
+              float(min: number): com.mojang.brigadier.arguments.FloatArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
+							 */
+              float(min: number, max: number): com.mojang.brigadier.arguments.FloatArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
+							 */
+              integer(): com.mojang.brigadier.arguments.IntegerArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
+							 */
+              integer(min: number): com.mojang.brigadier.arguments.IntegerArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
+							 */
+              integer(min: number, max: number): com.mojang.brigadier.arguments.IntegerArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
+							 */
+              long(): com.mojang.brigadier.arguments.LongArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
+							 */
+              long(min: number): com.mojang.brigadier.arguments.LongArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
+							 */
+              long(min: number, max: number): com.mojang.brigadier.arguments.LongArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
+							 */
+              string(): com.mojang.brigadier.arguments.StringArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
+							 */
+              greedyString(): com.mojang.brigadier.arguments.StringArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
+							 */
+              word(): com.mojang.brigadier.arguments.StringArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:angle">minecraft:angle</a>
+							 */
+              angle(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$AngleArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_pos">minecraft:block_pos</a>
+							 */
+              blockPos(): com.mojang.brigadier.arguments.ArgumentType<net.minecraft.commands.arguments.coordinates.Coordinates>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_predicate">minecraft:block_predicate</a>
+							 */
+              blockPredicate(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$BlockPredicateWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_state">minecraft:block_state</a>
+							 */
+              blockState(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$BlockStateArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:color">minecraft:color</a>
+							 */
+              color(): net.minecraft.commands.arguments.ColorArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:column_pos">minecraft:column_pos</a>
+							 */
+              columnPos(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:dimension">minecraft:dimension</a>
+							 */
+              dimension(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.Entity$DimensionType>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:entity">minecraft:entity</a>
+							 */
+              entity(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.Entity>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:entity">minecraft:entity</a>
+							 */
+              entities(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.Entity>>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:float_range">minecraft:float_range</a>
+							 */
+              floatRange(): net.minecraft.commands.arguments.RangeArgument$Floats;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
+							 */
+              gameProfile(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.PlayerMP>>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
+							 */
+              player(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.PlayerMP>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
+							 */
+              players(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.PlayerMP>>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:gamemode">minecraft:gamemode</a>
+							 */
+              gameMode(): net.minecraft.commands.arguments.GameModeArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:int_range">minecraft:int_range</a>
+							 */
+              intRange(): net.minecraft.commands.arguments.RangeArgument$Ints;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_predicate">minecraft:item_predicate</a>
+							 */
+              itemPredicate(): com.mojang.brigadier.arguments.ArgumentType<kotlin.Function1<com.chattriggers.ctjs.api.inventory.Item, boolean>>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_slot">minecraft:item_slot</a>
+							 */
+              itemSlot(): net.minecraft.commands.arguments.SlotArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_stack">minecraft:item_stack</a>
+							 */
+              itemStack(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$ItemStackArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:message">minecraft:message</a>
+							 */
+              message(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$MessageFormatArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_compound_tag">minecraft:nbt_compound_tag</a>
+							 */
+              nbtCompoundTag(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_path">minecraft:nbt_path</a>
+							 */
+              nbtPath(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$NbtPathWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_tag">minecraft:nbt_tag</a>
+							 */
+              nbtTag(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.inventory.nbt.NBTBase>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:resource">minecraft:resource</a>
+							 */
+              resource(): net.minecraft.commands.arguments.IdentifierArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:rotation">minecraft:rotation</a>
+							 */
+              rotation(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:swizzle">minecraft:swizzle</a>
+							 */
+              swizzle(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:time">minecraft:time</a>
+							 */
+              time(): net.minecraft.commands.arguments.TimeArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:time">minecraft:time</a>
+							 */
+              time(minimum: number): net.minecraft.commands.arguments.TimeArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:uuid">minecraft:uuid</a>
+							 */
+              uuid(): net.minecraft.commands.arguments.UuidArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec2">minecraft:vec2</a>
+							 */
+              vec2(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec2">minecraft:vec2</a>
+							 */
+              vec2(centerIntegers: boolean): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec3">minecraft:vec3</a>
+							 */
+              vec3(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec3">minecraft:vec3</a>
+							 */
+              vec3(centerIntegers: boolean): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * Allows choosing from a set list of strings. When suggested to the user, this
+							 *  will look as though this argument is multiple "literal()" nodes.
+							 */
+              choices(options: string): com.mojang.brigadier.arguments.ArgumentType<string>;
+							/**
+							 * Allows easy creation of a custom ArgumentType without needing to use
+							 *  JavaAdapter. Example:
+							 * 
+							 *  ```js
+							 *  const HEADS = 0;
+							 *  const TAILS = 1;
+							 * 
+							 *  const coinFlipArgType = Commands.custom({
+							 *      parse(reader) {
+							 *          // `reader` is a com.mojang.brigadier.StringReader
+							 * 
+							 *          const savedCursor = reader.getCursor();
+							 *          const str = reader.readString();
+							 *          if (str === 'heads')
+							 *              return HEADS;
+							 *          if (str === 'tails')
+							 *              return TAILS;
+							 *          Commands.error(reader, `Expected one of: 'heads', 'tails'`);
+							 *      },
+							 *      suggest(ctx, builder) {
+							 *          // ctx is a com.mojang.brigadier.context.CommandContext<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource>
+							 *          // builder is a com.mojang.brigadier.suggestion.SuggestionsBuilder
+							 *          builder.suggest('heads');
+							 *          builder.suggest('tails');
+							 *          return builder.buildFuture();
+							 *      },
+							 *      getExamples() {
+							 *          return ['heads', 'tails'];
+							 *      }
+							 *  });
+							 *  ```
+							 * 
+							 *  @see StringReader
+							 *  @see CommandContext
+							 *  @see SuggestionsBuilder
+							 */
+              custom(obj: org.mozilla.javascript.NativeObject): com.mojang.brigadier.arguments.ArgumentType<any>;
+							/**
+							 * Throw a detailed error given the reader, meant to be used with [custom]
+							 */
+              error(reader: com.mojang.brigadier.ImmutableStringReader, message: string): never;
+							/**
+							 * Throw a detailed error given the reader, meant to be used with [custom]
+							 */
+              error(reader: com.mojang.brigadier.ImmutableStringReader, message: com.chattriggers.ctjs.api.message.TextComponent): never;
+							/**
+							 * An alternative to the command register that allows full use of the
+							 *  functionality provided by Brigadier.
+							 * 
+							 *  For more information about Brigadier, see
+							 *  <a href="https://github.com/Mojang/brigadier">their GitHub page.</a>
+							 *  Also see [CTCommand] for an example Brigadier command.
+							 * 
+							 *  ## General
+							 * 
+							 *  This API works similarly to Brigadier, however much of the annoyance
+							 *  of using the Brigadier API has been eliminated, mainly the excessive
+							 *  use of nested function calls. It works via a global context, so function
+							 *  calls are free. However, this means that multiples commands cannot be
+							 *  built at once. This means that commands should only ever be built on the
+							 *  main thread. If two commands are built at the same time, an error will be
+							 *  thrown.
+							 * 
+							 *  ## Argument Types
+							 * 
+							 *  The [ArgumentType] interface is a fundamental part of Brigadier, and
+							 *  most of the MC argument types have been exposed via helper function
+							 *  in this class. It is also possible to build new instances of
+							 *  [ArgumentType] via [custom].
+							 * 
+							 *  When possible, the argument types returned from the helper function on
+							 *  this class resolve in a way that their Minecraft variants do. For example,
+							 *  the [message] type will replace selectors with their target entity, if
+							 *  possible.
+							 * 
+							 *  ## Basic Example
+							 * 
+							 *  Here is an example command that recreates the `/advancement` command
+							 *  (without any of the actual functionality, of course):
+							 * 
+							 *  ```js
+							 *  // The `Commands` object supports destructuring, which makes assembling long
+							 *  // commands much nicer
+							 *  const { argument, choices, exec, greedyString, literal, registerCommand, resource, players } = Commands;
+							 * 
+							 *  registerCommand('ctadvancement', () => {
+							 *      // Note the use of choices to avoid having to copy-paste two separate literal() trees
+							 *      argument('kind', choices('grant', 'revoke'), () => {
+							 *          argument('targets', players(), () => {
+							 *              literal('everything', () => {
+							 *                  // exec() receives a single object with all of the arguments, which means we can
+							 *                  // destructure it to pull out the ones we want. Only values from argument() calls
+							 *                  // are included here; the literal nodes are ignored and have no impact on this object.
+							 *                  exec(({ kind, targets }) => {
+							 *                      ChatLib.chat(`${kind} everything from ${targets}`);
+							 *                  });
+							 *              });
+							 * 
+							 *              literal('only', () => {
+							 *                  argument('advancement', resource(), () => {
+							 *                      argument('criterion', greedyString(), () => {
+							 *                          exec(({ kind, targets, advancement, criterion }) => {
+							 *                              ChatLib.chat(`${kind} only ${advancement} applied to ${targets} (criterion = ${criterion})`);
+							 *                          });
+							 *                      });
+							 *                  });
+							 *              });
+							 * 
+							 *              argument('subkind', choices('from', 'through', 'until'), () => {
+							 *                  argument('advancement', resource(), () => {
+							 *                      exec(({ kind, subkind, targets, advancement }) => {
+							 *                          ChatLib.chat(`kind = ${kind}, subkind = ${subkind}, advancement = ${advancement}, targets = ${targets}`);
+							 *                      });
+							 *                  });
+							 *              });
+							 *          });
+							 *      });
+							 *  });
+							 *  ```
+							 * 
+							 *  ## Redirect
+							 * 
+							 *  Like Brigadier, this API supports assembling partial command nodes for use
+							 *  in redirection. To do this, use [buildCommand], which returns the command node
+							 *  (well, an internal representation of it). This object can then be passed to
+							 *  further calls to [redirect] inside of a [literal] or [argument] block.
+							 * 
+							 *  Examples:
+							 * 
+							 *  ```js
+							 *  // destructuring omitted
+							 * 
+							 *  const testCmdNode = buildCommand('testcmd', () => {
+							 *      exec(({ arg }) => {
+							 *          if (arg) {
+							 *              ChatLib.chat(`arg supplied, value = ${arg}`);
+							 *          } else {
+							 *              ChatLib.chat('no arg supplied');
+							 *          }
+							 *      });
+							 *  });
+							 * 
+							 *  // Manually register it since we used buildCommand() instead of registerCommand()
+							 *  testCmdNode.register()
+							 * 
+							 *  registerCommand('testcmd', () => {
+							 *      argument('arg', greedyString(), () => {
+							 *          redirect(testCmdNode);
+							 *      });
+							 *  });
+							 *  ```
+							 */
+              new(): com.chattriggers.ctjs.api.commands.DynamicCommands;
+            }
+            interface DynamicCommands extends com.chattriggers.ctjs.internal.commands.CommandCollection { 
+              registerCommand(name: string): com.chattriggers.ctjs.api.commands.RootCommand;
+              registerCommand(name: string, builder: org.mozilla.javascript.Function | null | undefined): com.chattriggers.ctjs.api.commands.RootCommand;
+              buildCommand(name: string): com.chattriggers.ctjs.api.commands.RootCommand;
+              buildCommand(name: string, builder: org.mozilla.javascript.Function | null | undefined): com.chattriggers.ctjs.api.commands.RootCommand;
+              argument(name: string, type: com.mojang.brigadier.arguments.ArgumentType<any>, builder: org.mozilla.javascript.Function): void;
+              literal(name: string, builder: org.mozilla.javascript.Function): void;
+              redirect(node: com.chattriggers.ctjs.api.commands.RootCommand): void;
+              redirect(node: com.mojang.brigadier.tree.CommandNode<net.minecraft.commands.SharedSuggestionProvider>): void;
+              exec(method: org.mozilla.javascript.Function): void;
+							/**
+							 * A helper method for getting Fabric's client CommandDispatcher root node. This allows user
+							 *  commands to be redirected to the root node in the same way that "/execute run ..." does.
+							 * 
+							 *  As the result is a CommandNode, `.getChild(name)` can be used to access sub-command nodes
+							 *  to, for example, redirect to just `/advancement` instead of `/`.
+							 */
+              getDispatcherRoot(): com.mojang.brigadier.tree.RootCommandNode<net.minecraft.client.multiplayer.ClientSuggestionProvider> | null | undefined;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:bool">Argument Types: bool</a>
+							 */
+              bool(): com.mojang.brigadier.arguments.BoolArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
+							 */
+              double(): com.mojang.brigadier.arguments.DoubleArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
+							 */
+              double(min: number): com.mojang.brigadier.arguments.DoubleArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
+							 */
+              double(min: number, max: number): com.mojang.brigadier.arguments.DoubleArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
+							 */
+              float(): com.mojang.brigadier.arguments.FloatArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
+							 */
+              float(min: number): com.mojang.brigadier.arguments.FloatArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
+							 */
+              float(min: number, max: number): com.mojang.brigadier.arguments.FloatArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
+							 */
+              integer(): com.mojang.brigadier.arguments.IntegerArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
+							 */
+              integer(min: number): com.mojang.brigadier.arguments.IntegerArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
+							 */
+              integer(min: number, max: number): com.mojang.brigadier.arguments.IntegerArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
+							 */
+              long(): com.mojang.brigadier.arguments.LongArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
+							 */
+              long(min: number): com.mojang.brigadier.arguments.LongArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
+							 */
+              long(min: number, max: number): com.mojang.brigadier.arguments.LongArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
+							 */
+              string(): com.mojang.brigadier.arguments.StringArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
+							 */
+              greedyString(): com.mojang.brigadier.arguments.StringArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
+							 */
+              word(): com.mojang.brigadier.arguments.StringArgumentType;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:angle">minecraft:angle</a>
+							 */
+              angle(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$AngleArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_pos">minecraft:block_pos</a>
+							 */
+              blockPos(): com.mojang.brigadier.arguments.ArgumentType<net.minecraft.commands.arguments.coordinates.Coordinates>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_predicate">minecraft:block_predicate</a>
+							 */
+              blockPredicate(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$BlockPredicateWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_state">minecraft:block_state</a>
+							 */
+              blockState(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$BlockStateArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:color">minecraft:color</a>
+							 */
+              color(): net.minecraft.commands.arguments.ColorArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:column_pos">minecraft:column_pos</a>
+							 */
+              columnPos(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:dimension">minecraft:dimension</a>
+							 */
+              dimension(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.Entity$DimensionType>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:entity">minecraft:entity</a>
+							 */
+              entity(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.Entity>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:entity">minecraft:entity</a>
+							 */
+              entities(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.Entity>>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:float_range">minecraft:float_range</a>
+							 */
+              floatRange(): net.minecraft.commands.arguments.RangeArgument$Floats;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
+							 */
+              gameProfile(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.PlayerMP>>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
+							 */
+              player(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.PlayerMP>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
+							 */
+              players(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.PlayerMP>>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:gamemode">minecraft:gamemode</a>
+							 */
+              gameMode(): net.minecraft.commands.arguments.GameModeArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:int_range">minecraft:int_range</a>
+							 */
+              intRange(): net.minecraft.commands.arguments.RangeArgument$Ints;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_predicate">minecraft:item_predicate</a>
+							 */
+              itemPredicate(): com.mojang.brigadier.arguments.ArgumentType<kotlin.Function1<com.chattriggers.ctjs.api.inventory.Item, boolean>>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_slot">minecraft:item_slot</a>
+							 */
+              itemSlot(): net.minecraft.commands.arguments.SlotArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_stack">minecraft:item_stack</a>
+							 */
+              itemStack(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$ItemStackArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:message">minecraft:message</a>
+							 */
+              message(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$MessageFormatArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_compound_tag">minecraft:nbt_compound_tag</a>
+							 */
+              nbtCompoundTag(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_path">minecraft:nbt_path</a>
+							 */
+              nbtPath(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$NbtPathWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_tag">minecraft:nbt_tag</a>
+							 */
+              nbtTag(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.inventory.nbt.NBTBase>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:resource">minecraft:resource</a>
+							 */
+              resource(): net.minecraft.commands.arguments.IdentifierArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:rotation">minecraft:rotation</a>
+							 */
+              rotation(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:swizzle">minecraft:swizzle</a>
+							 */
+              swizzle(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:time">minecraft:time</a>
+							 */
+              time(): net.minecraft.commands.arguments.TimeArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:time">minecraft:time</a>
+							 */
+              time(minimum: number): net.minecraft.commands.arguments.TimeArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:uuid">minecraft:uuid</a>
+							 */
+              uuid(): net.minecraft.commands.arguments.UuidArgument;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec2">minecraft:vec2</a>
+							 */
+              vec2(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec2">minecraft:vec2</a>
+							 */
+              vec2(centerIntegers: boolean): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec3">minecraft:vec3</a>
+							 */
+              vec3(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec3">minecraft:vec3</a>
+							 */
+              vec3(centerIntegers: boolean): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
+							/**
+							 * Allows choosing from a set list of strings. When suggested to the user, this
+							 *  will look as though this argument is multiple "literal()" nodes.
+							 */
+              choices(options: string): com.mojang.brigadier.arguments.ArgumentType<string>;
+							/**
+							 * Allows easy creation of a custom ArgumentType without needing to use
+							 *  JavaAdapter. Example:
+							 * 
+							 *  ```js
+							 *  const HEADS = 0;
+							 *  const TAILS = 1;
+							 * 
+							 *  const coinFlipArgType = Commands.custom({
+							 *      parse(reader) {
+							 *          // `reader` is a com.mojang.brigadier.StringReader
+							 * 
+							 *          const savedCursor = reader.getCursor();
+							 *          const str = reader.readString();
+							 *          if (str === 'heads')
+							 *              return HEADS;
+							 *          if (str === 'tails')
+							 *              return TAILS;
+							 *          Commands.error(reader, `Expected one of: 'heads', 'tails'`);
+							 *      },
+							 *      suggest(ctx, builder) {
+							 *          // ctx is a com.mojang.brigadier.context.CommandContext<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource>
+							 *          // builder is a com.mojang.brigadier.suggestion.SuggestionsBuilder
+							 *          builder.suggest('heads');
+							 *          builder.suggest('tails');
+							 *          return builder.buildFuture();
+							 *      },
+							 *      getExamples() {
+							 *          return ['heads', 'tails'];
+							 *      }
+							 *  });
+							 *  ```
+							 * 
+							 *  @see StringReader
+							 *  @see CommandContext
+							 *  @see SuggestionsBuilder
+							 */
+              custom(obj: org.mozilla.javascript.NativeObject): com.mojang.brigadier.arguments.ArgumentType<any>;
+							/**
+							 * Throw a detailed error given the reader, meant to be used with [custom]
+							 */
+              error(reader: com.mojang.brigadier.ImmutableStringReader, message: string): never;
+							/**
+							 * Throw a detailed error given the reader, meant to be used with [custom]
+							 */
+              error(reader: com.mojang.brigadier.ImmutableStringReader, message: com.chattriggers.ctjs.api.message.TextComponent): never;
+							/**
+							 * An alternative to the command register that allows full use of the
+							 *  functionality provided by Brigadier.
+							 * 
+							 *  For more information about Brigadier, see
+							 *  <a href="https://github.com/Mojang/brigadier">their GitHub page.</a>
+							 *  Also see [CTCommand] for an example Brigadier command.
+							 * 
+							 *  ## General
+							 * 
+							 *  This API works similarly to Brigadier, however much of the annoyance
+							 *  of using the Brigadier API has been eliminated, mainly the excessive
+							 *  use of nested function calls. It works via a global context, so function
+							 *  calls are free. However, this means that multiples commands cannot be
+							 *  built at once. This means that commands should only ever be built on the
+							 *  main thread. If two commands are built at the same time, an error will be
+							 *  thrown.
+							 * 
+							 *  ## Argument Types
+							 * 
+							 *  The [ArgumentType] interface is a fundamental part of Brigadier, and
+							 *  most of the MC argument types have been exposed via helper function
+							 *  in this class. It is also possible to build new instances of
+							 *  [ArgumentType] via [custom].
+							 * 
+							 *  When possible, the argument types returned from the helper function on
+							 *  this class resolve in a way that their Minecraft variants do. For example,
+							 *  the [message] type will replace selectors with their target entity, if
+							 *  possible.
+							 * 
+							 *  ## Basic Example
+							 * 
+							 *  Here is an example command that recreates the `/advancement` command
+							 *  (without any of the actual functionality, of course):
+							 * 
+							 *  ```js
+							 *  // The `Commands` object supports destructuring, which makes assembling long
+							 *  // commands much nicer
+							 *  const { argument, choices, exec, greedyString, literal, registerCommand, resource, players } = Commands;
+							 * 
+							 *  registerCommand('ctadvancement', () => {
+							 *      // Note the use of choices to avoid having to copy-paste two separate literal() trees
+							 *      argument('kind', choices('grant', 'revoke'), () => {
+							 *          argument('targets', players(), () => {
+							 *              literal('everything', () => {
+							 *                  // exec() receives a single object with all of the arguments, which means we can
+							 *                  // destructure it to pull out the ones we want. Only values from argument() calls
+							 *                  // are included here; the literal nodes are ignored and have no impact on this object.
+							 *                  exec(({ kind, targets }) => {
+							 *                      ChatLib.chat(`${kind} everything from ${targets}`);
+							 *                  });
+							 *              });
+							 * 
+							 *              literal('only', () => {
+							 *                  argument('advancement', resource(), () => {
+							 *                      argument('criterion', greedyString(), () => {
+							 *                          exec(({ kind, targets, advancement, criterion }) => {
+							 *                              ChatLib.chat(`${kind} only ${advancement} applied to ${targets} (criterion = ${criterion})`);
+							 *                          });
+							 *                      });
+							 *                  });
+							 *              });
+							 * 
+							 *              argument('subkind', choices('from', 'through', 'until'), () => {
+							 *                  argument('advancement', resource(), () => {
+							 *                      exec(({ kind, subkind, targets, advancement }) => {
+							 *                          ChatLib.chat(`kind = ${kind}, subkind = ${subkind}, advancement = ${advancement}, targets = ${targets}`);
+							 *                      });
+							 *                  });
+							 *              });
+							 *          });
+							 *      });
+							 *  });
+							 *  ```
+							 * 
+							 *  ## Redirect
+							 * 
+							 *  Like Brigadier, this API supports assembling partial command nodes for use
+							 *  in redirection. To do this, use [buildCommand], which returns the command node
+							 *  (well, an internal representation of it). This object can then be passed to
+							 *  further calls to [redirect] inside of a [literal] or [argument] block.
+							 * 
+							 *  Examples:
+							 * 
+							 *  ```js
+							 *  // destructuring omitted
+							 * 
+							 *  const testCmdNode = buildCommand('testcmd', () => {
+							 *      exec(({ arg }) => {
+							 *          if (arg) {
+							 *              ChatLib.chat(`arg supplied, value = ${arg}`);
+							 *          } else {
+							 *              ChatLib.chat('no arg supplied');
+							 *          }
+							 *      });
+							 *  });
+							 * 
+							 *  // Manually register it since we used buildCommand() instead of registerCommand()
+							 *  testCmdNode.register()
+							 * 
+							 *  registerCommand('testcmd', () => {
+							 *      argument('arg', greedyString(), () => {
+							 *          redirect(testCmdNode);
+							 *      });
+							 *  });
+							 *  ```
+							 */
+              new(): com.chattriggers.ctjs.api.commands.DynamicCommands;
+            }
+            const DynamicCommands$AngleArgumentWrapper: {
+              new(angle: net.minecraft.commands.arguments.AngleArgument$SingleAngle): com.chattriggers.ctjs.api.commands.DynamicCommands$AngleArgumentWrapper;
+            }
+            interface DynamicCommands$AngleArgumentWrapper { 
+              getAngle(): net.minecraft.commands.arguments.AngleArgument$SingleAngle;
+              getAngle(): number;
+              getAngle(entity: com.chattriggers.ctjs.api.entity.Entity): number;
+              component1(): net.minecraft.commands.arguments.AngleArgument$SingleAngle;
+              copy(angle: net.minecraft.commands.arguments.AngleArgument$SingleAngle): com.chattriggers.ctjs.api.commands.DynamicCommands$AngleArgumentWrapper;
+            }
+            const DynamicCommands$PosArgumentWrapper: {
+              new(impl: net.minecraft.commands.arguments.coordinates.Coordinates): com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper;
+            }
+            interface DynamicCommands$PosArgumentWrapper extends net.minecraft.commands.arguments.coordinates.Coordinates { 
+              getImpl(): net.minecraft.commands.arguments.coordinates.Coordinates;
+              toAbsolutePos(): net.minecraft.world.phys.Vec3;
+              toAbsoluteBlockPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
+              toAbsoluteRotation(): net.minecraft.world.phys.Vec2;
+              component1(): net.minecraft.commands.arguments.coordinates.Coordinates;
+              copy(impl: net.minecraft.commands.arguments.coordinates.Coordinates): com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper;
+            }
+            const DynamicCommands$BlockPredicateWrapper: {
+              new(impl: net.minecraft.commands.arguments.blocks.BlockPredicateArgument$Result): com.chattriggers.ctjs.api.commands.DynamicCommands$BlockPredicateWrapper;
+            }
+            interface DynamicCommands$BlockPredicateWrapper { 
+              getImpl(): net.minecraft.commands.arguments.blocks.BlockPredicateArgument$Result;
+              test(blockPos: com.chattriggers.ctjs.api.world.block.BlockPos): boolean;
+              component1(): net.minecraft.commands.arguments.blocks.BlockPredicateArgument$Result;
+              copy(impl: net.minecraft.commands.arguments.blocks.BlockPredicateArgument$Result): com.chattriggers.ctjs.api.commands.DynamicCommands$BlockPredicateWrapper;
+            }
+            const DynamicCommands$BlockStateArgumentWrapper: {
+              new(impl: net.minecraft.commands.arguments.blocks.BlockInput): com.chattriggers.ctjs.api.commands.DynamicCommands$BlockStateArgumentWrapper;
+            }
+            interface DynamicCommands$BlockStateArgumentWrapper { 
+              getImpl(): net.minecraft.commands.arguments.blocks.BlockInput;
+              test(blockPos: com.chattriggers.ctjs.api.world.block.BlockPos): boolean;
+              component1(): net.minecraft.commands.arguments.blocks.BlockInput;
+              copy(impl: net.minecraft.commands.arguments.blocks.BlockInput): com.chattriggers.ctjs.api.commands.DynamicCommands$BlockStateArgumentWrapper;
+            }
+            const DynamicCommands$EntitySelectorWrapper: {
+              new(impl: net.minecraft.commands.arguments.selector.EntitySelector): com.chattriggers.ctjs.api.commands.DynamicCommands$EntitySelectorWrapper;
+            }
+            interface DynamicCommands$EntitySelectorWrapper { 
+              getEntity(): com.chattriggers.ctjs.api.entity.Entity;
+              getEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
+              getPlayers(): Array<com.chattriggers.ctjs.api.entity.PlayerMP>;
+            }
+            const DynamicCommands$ItemStackArgumentWrapper: {
+              new(impl: net.minecraft.commands.arguments.item.ItemInput): com.chattriggers.ctjs.api.commands.DynamicCommands$ItemStackArgumentWrapper;
+            }
+            interface DynamicCommands$ItemStackArgumentWrapper { 
+              getItemType(): com.chattriggers.ctjs.api.inventory.ItemType;
+              test(type: com.chattriggers.ctjs.api.inventory.ItemType): boolean;
+              component1(): net.minecraft.commands.arguments.item.ItemInput;
+              copy(impl: net.minecraft.commands.arguments.item.ItemInput): com.chattriggers.ctjs.api.commands.DynamicCommands$ItemStackArgumentWrapper;
+            }
+            const DynamicCommands$MessageFormatArgumentWrapper: {
+              new(impl: net.minecraft.commands.arguments.MessageArgument$Message): com.chattriggers.ctjs.api.commands.DynamicCommands$MessageFormatArgumentWrapper;
+            }
+            interface DynamicCommands$MessageFormatArgumentWrapper { 
+              getText(): string;
+              setText(value: string): void;
+              format(): com.chattriggers.ctjs.api.message.TextComponent;
+              component1(): net.minecraft.commands.arguments.MessageArgument$Message;
+              copy(impl: net.minecraft.commands.arguments.MessageArgument$Message): com.chattriggers.ctjs.api.commands.DynamicCommands$MessageFormatArgumentWrapper;
+            }
+            const DynamicCommands$NbtPathWrapper: {
+              new(impl: net.minecraft.commands.arguments.NbtPathArgument$NbtPath): com.chattriggers.ctjs.api.commands.DynamicCommands$NbtPathWrapper;
+            }
+            interface DynamicCommands$NbtPathWrapper { 
+              get(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): Array<net.minecraft.nbt.Tag>;
+              count(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): number;
+              getOrInit(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase, supplier: kotlin.Function0<com.chattriggers.ctjs.api.inventory.nbt.NBTBase>): Array<net.minecraft.nbt.Tag>;
+              put(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase, source: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): number;
+              insert(index: number, compound: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound, elements: Array<com.chattriggers.ctjs.api.inventory.nbt.NBTBase>): number;
+              remove(element: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): number;
+              component1(): net.minecraft.commands.arguments.NbtPathArgument$NbtPath;
+              copy(impl: net.minecraft.commands.arguments.NbtPathArgument$NbtPath): com.chattriggers.ctjs.api.commands.DynamicCommands$NbtPathWrapper;
+            }
+          }
+          namespace client {
+            const Proxy: {
+              new(ip: string, port: number, name: string, username: string, password: string, isEnabled: boolean): com.chattriggers.ctjs.api.client.Proxy;
+            }
+            interface Proxy { 
+              getIp(): string;
+              setIp(value: string): void;
+              getPort(): number;
+              setPort(value: number): void;
+              getName(): string;
+              setName(value: string): void;
+              getUsername(): string;
+              setUsername(value: string): void;
+              getPassword(): string;
+              setPassword(value: string): void;
+              isEnabled(): boolean;
+              setEnabled(value: boolean): void;
+              component1(): string;
+              component2(): number;
+              component3(): string;
+              component4(): string;
+              component5(): string;
+              component6(): boolean;
+              copy(ip: string, port: number, name: string, username: string, password: string, isEnabled: boolean): com.chattriggers.ctjs.api.client.Proxy;
+            }
+            const DiscordRPC: {
+              stayOn(): void;
+              turnOff(): void;
+              updatePresence(details: string, state: string): void;
+              resetTimestamp(): void;
+              revertToIdle(): void;
+              new(): com.chattriggers.ctjs.api.client.DiscordRPC;
+            }
+            interface DiscordRPC { 
+              stayOn(): void;
+              turnOff(): void;
+              updatePresence(details: string, state: string): void;
+              resetTimestamp(): void;
+              revertToIdle(): void;
+              new(): com.chattriggers.ctjs.api.client.DiscordRPC;
+            }
+            const Sound: {
+              Category: typeof com.chattriggers.ctjs.api.client.Sound$Category;
+              AttenuationType: typeof com.chattriggers.ctjs.api.client.Sound$AttenuationType;
+              new(config: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.client.Sound;
+            }
+            interface Sound { 
+              destroy(): void;
+							/**
+							 * Gets the category of this sound, making it respect the Player's sound volume sliders.
+							 * 
+							 *  @return the category
+							 */
+              getCategory(): com.chattriggers.ctjs.api.client.Sound$Category;
+							/**
+							 * Sets the category of this sound, making it respect the Player's sound volume sliders.
+							 * 
+							 *  @param category the category
+							 */
+              setCategory(category: com.chattriggers.ctjs.api.client.Sound$Category): com.chattriggers.ctjs.api.client.Sound;
+							/**
+							 * Gets this sound's volume.
+							 * 
+							 *  @return A float value (0.0f - 1.0f).
+							 */
+              getVolume(): number;
+							/**
+							 * Sets this sound's volume.
+							 * 
+							 *  @param volume A float value (0.0f - 1.0f).
+							 */
+              setVolume(volume: number): com.chattriggers.ctjs.api.client.Sound;
+              getX(): number;
+              getY(): number;
+              getZ(): number;
+              setX(x: number): com.chattriggers.ctjs.api.client.Sound;
+              setY(y: number): com.chattriggers.ctjs.api.client.Sound;
+              setZ(z: number): com.chattriggers.ctjs.api.client.Sound;
+              getPosition(): net.minecraft.world.phys.Vec3;
+              setPosition(x: number, y: number, z: number): com.chattriggers.ctjs.api.client.Sound;
+							/**
+							 * Gets this sound's pitch.
+							 * 
+							 *  @return A float value (0.5f - 2.0f).
+							 */
+              getPitch(): number;
+							/**
+							 * Sets this sound's pitch.
+							 * 
+							 *  @param pitch A float value (0.5f - 2.0f).
+							 */
+              setPitch(pitch: number): com.chattriggers.ctjs.api.client.Sound;
+							/**
+							 * Gets the attenuation type (fade out over space) of the sound
+							 * 
+							 *  @return The type of Attenuation
+							 */
+              getAttenuationType(): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
+							/**
+							 * Sets the attenuation type (fade out over space) of the sound
+							 * 
+							 *  @param attenuationType The type of Attenuation
+							 */
+              setAttenuationType(attenuationType: com.chattriggers.ctjs.api.client.Sound$AttenuationType): com.chattriggers.ctjs.api.client.Sound;
+							/**
+							 * Gets the attenuation distance of the sound
+							 */
+              getAttenuation(): number;
+							/**
+							 * Sets the attenuation distance of the sound
+							 */
+              setAttenuation(attenuation: number): com.chattriggers.ctjs.api.client.Sound;
+							/**
+							 * Gets whether the sound should repeat after finishing
+							 */
+              getLoop(): boolean;
+							/**
+							 * Sets whether the sound should repeat after finishing
+							 */
+              setLoop(loop: boolean): com.chattriggers.ctjs.api.client.Sound;
+							/**
+							 * Gets the tick delay after finishing before looping again (if getLoop() is true)
+							 */
+              getLoopDelay(): number;
+							/**
+							 * Sets the tick delay after finishing before looping again (if getLoop() is true)
+							 */
+              setLoopDelay(loopDelay: number): com.chattriggers.ctjs.api.client.Sound;
+							/**
+							 * Plays/resumes the sound. This requires the world to be loaded
+							 */
+              play(): void;
+							/**
+							 * Plays/resumes the sound. This requires the world to be loaded
+							 */
+              play(delay: number): void;
+							/**
+							 * Pauses the sound, to be resumed later. This requires the world to be loaded
+							 */
+              pause(): void;
+							/**
+							 * Completely stops the sound. This requires the world to be loaded
+							 */
+              stop(): void;
+							/**
+							 * Immediately restarts the sound. This requires the world to be loaded
+							 */
+              rewind(): void;
+            }
+            const Sound$Category: {
+              MASTER: com.chattriggers.ctjs.api.client.Sound$Category;
+              MUSIC: com.chattriggers.ctjs.api.client.Sound$Category;
+              RECORDS: com.chattriggers.ctjs.api.client.Sound$Category;
+              WEATHER: com.chattriggers.ctjs.api.client.Sound$Category;
+              BLOCKS: com.chattriggers.ctjs.api.client.Sound$Category;
+              HOSTILE: com.chattriggers.ctjs.api.client.Sound$Category;
+              NEUTRAL: com.chattriggers.ctjs.api.client.Sound$Category;
+              PLAYERS: com.chattriggers.ctjs.api.client.Sound$Category;
+              AMBIENT: com.chattriggers.ctjs.api.client.Sound$Category;
+              VOICE: com.chattriggers.ctjs.api.client.Sound$Category;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.client.Sound$Category>;
+              values(): Array<com.chattriggers.ctjs.api.client.Sound$Category>;
+              valueOf(value: string): com.chattriggers.ctjs.api.client.Sound$Category;
+            }
+            interface Sound$Category extends kotlin.Enum<com.chattriggers.ctjs.api.client.Sound$Category>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.sounds.SoundSource> { 
+            }
+            const Sound$Category$Companion: {
+              fromMC(mcValue: net.minecraft.sounds.SoundSource): com.chattriggers.ctjs.api.client.Sound$Category;
+              from(value: any): com.chattriggers.ctjs.api.client.Sound$Category;
+              new(): unknown;
+            }
+            interface Sound$Category$Companion { 
+              fromMC(mcValue: net.minecraft.sounds.SoundSource): com.chattriggers.ctjs.api.client.Sound$Category;
+              from(value: any): com.chattriggers.ctjs.api.client.Sound$Category;
+              new(): unknown;
+            }
+            const Sound$AttenuationType: {
+              NONE: com.chattriggers.ctjs.api.client.Sound$AttenuationType;
+              LINEAR: com.chattriggers.ctjs.api.client.Sound$AttenuationType;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.client.Sound$AttenuationType>;
+              values(): Array<com.chattriggers.ctjs.api.client.Sound$AttenuationType>;
+              valueOf(value: string): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
+            }
+            interface Sound$AttenuationType extends kotlin.Enum<com.chattriggers.ctjs.api.client.Sound$AttenuationType>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.resources.sounds.SoundInstance$Attenuation> { 
+            }
+            const Sound$AttenuationType$Companion: {
+              fromMC(mcValue: net.minecraft.client.resources.sounds.SoundInstance$Attenuation): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
+              from(value: any): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
+              new(): unknown;
+            }
+            interface Sound$AttenuationType$Companion { 
+              fromMC(mcValue: net.minecraft.client.resources.sounds.SoundInstance$Attenuation): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
+              from(value: any): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
+              new(): unknown;
+            }
+            const Player: {
+              ArmorWrapper: typeof com.chattriggers.ctjs.api.client.Player$ArmorWrapper;
+              armor: com.chattriggers.ctjs.api.client.Player$ArmorWrapper;
+              toMC(): net.minecraft.client.player.LocalPlayer | null | undefined;
+							/**
+							 * Gets Minecraft's EntityPlayerSP object representing the user
+							 * 
+							 *  @return The Minecraft EntityPlayerSP object representing the user
+							 */
+              getPlayer(): net.minecraft.client.player.LocalPlayer | null | undefined;
+              getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
+              asPlayerMP(): com.chattriggers.ctjs.api.entity.PlayerMP | null | undefined;
+              getX(): number;
+              getY(): number;
+              getZ(): number;
+              getPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
+              getRotation(): net.minecraft.world.phys.Vec2;
+              getLastX(): number;
+              getLastY(): number;
+              getLastZ(): number;
+              getRenderX(): number;
+              getRenderY(): number;
+              getRenderZ(): number;
+							/**
+							 * Gets the player's x motion.
+							 *  This is the amount the player will move in the x direction next tick.
+							 * 
+							 *  @return the player's x motion
+							 */
+              getMotionX(): number;
+							/**
+							 * Gets the player's y motion.
+							 *  This is the amount the player will move in the y direction next tick.
+							 * 
+							 *  @return the player's y motion
+							 */
+              getMotionY(): number;
+							/**
+							 * Gets the player's z motion.
+							 *  This is the amount the player will move in the z direction next tick.
+							 * 
+							 *  @return the player's z motion
+							 */
+              getMotionZ(): number;
+							/**
+							 * Gets the player's camera pitch.
+							 * 
+							 *  @return the player's camera pitch
+							 */
+              getPitch(): number;
+							/**
+							 * Gets the player's camera yaw.
+							 * 
+							 *  @return the player's camera yaw
+							 */
+              getYaw(): number;
+							/**
+							 * Gets the player's username.
+							 * 
+							 *  @return the player's username
+							 */
+              getName(): string;
+							/**
+							 * Gets the Java UUID object of the player.
+							 *  Use of [UUID.toString] in conjunction is recommended.
+							 * 
+							 *  @return the player's uuid
+							 */
+              getUUID(): java.util.UUID;
+              getHP(): number;
+							/**
+							 * Gets the player's air level.
+							 * 
+							 *  The returned value will be an integer. If the player is not taking damage, it
+							 *  will be between 300 (not in water) and 0. If the player is taking damage, it
+							 *  will be between -20 and 0, getting reset to 0 every time the player takes damage.
+							 * 
+							 *  @return the player's air level
+							 */
+              getAirLevel(): number;
+              getXPLevel(): number;
+              isMoving(): boolean;
+              isSneaking(): boolean;
+              isSprinting(): boolean;
+							/**
+							 * Checks if player can be pushed by water.
+							 * 
+							 *  @return true if the player is flying, false otherwise
+							 */
+              isFlying(): boolean;
+              isSleeping(): boolean;
+							/**
+							 * Gets the direction the player is facing.
+							 *  Example: "South West"
+							 * 
+							 *  @return The direction the player is facing, one of the four cardinal directions
+							 */
+              facing(): string;
+							/**
+							 * Gets the current active potion effects. Returns an empty list
+							 *  if the player has no active potion effects.
+							 * 
+							 *  @return a list of the active [PotionEffect]s
+							 */
+              getActivePotionEffects(): Array<com.chattriggers.ctjs.api.world.PotionEffect>;
+							/**
+							 * Gets the current object that the player is looking at,
+							 *  whether that be a block or an entity. Returns null when not looking
+							 *  at anything.
+							 * 
+							 *  @return the [Block] or [Entity] being looked at, or null if air
+							 */
+              lookingAt(): any | null | undefined;
+							/**
+							 * Gets the current item in the player's hand.
+							 * 
+							 *  @param hand the hand of the item
+							 *  @return the current held [Item]
+							 */
+              getHeldItem(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+							/**
+							 * Gets the current item in the player's hand.
+							 * 
+							 *  @param hand the hand of the item
+							 *  @return the current held [Item]
+							 */
+              getHeldItem(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+							/**
+							 * Sets the current held item based on the provided index.
+							 * 
+							 *  @param index the new held item index
+							 */
+              setHeldItemIndex(index: number): void;
+							/**
+							 * Gets the current index of the held item.
+							 * 
+							 *  @return the current index
+							 */
+              getHeldItemIndex(): number;
+							/**
+							 * Gets the inventory of the player, i.e. the inventory accessed by 'e'.
+							 * 
+							 *  @return the player's inventory
+							 */
+              getInventory(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
+							/**
+							 * Gets the display name for the player,
+							 *  i.e. the name shown in tab list and in the player's nametag.
+							 *  @return the display name
+							 */
+              getDisplayName(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Sets the name for this player shown in tab list
+							 * 
+							 *  @param textComponent the new name to display
+							 */
+              setTabDisplayName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Sets the name for this player shown above their head,
+							 *  in their name tag
+							 * 
+							 *  @param textComponent the new name to display
+							 */
+              setNametagName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Gets the container the user currently has open, i.e. a chest.
+							 * 
+							 *  @return the currently opened container
+							 */
+              getContainer(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
+							/**
+							 * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]
+							 *  minus `player`.
+							 * 
+							 *  @see Renderer.drawPlayer
+							 */
+              draw(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.client.Player;
+              new(): com.chattriggers.ctjs.api.client.Player;
+            }
+            interface Player { 
+              armor: com.chattriggers.ctjs.api.client.Player$ArmorWrapper;
+              toMC(): net.minecraft.client.player.LocalPlayer | null | undefined;
+							/**
+							 * Gets Minecraft's EntityPlayerSP object representing the user
+							 * 
+							 *  @return The Minecraft EntityPlayerSP object representing the user
+							 */
+              getPlayer(): net.minecraft.client.player.LocalPlayer | null | undefined;
+              getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
+              asPlayerMP(): com.chattriggers.ctjs.api.entity.PlayerMP | null | undefined;
+              getX(): number;
+              getY(): number;
+              getZ(): number;
+              getPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
+              getRotation(): net.minecraft.world.phys.Vec2;
+              getLastX(): number;
+              getLastY(): number;
+              getLastZ(): number;
+              getRenderX(): number;
+              getRenderY(): number;
+              getRenderZ(): number;
+							/**
+							 * Gets the player's x motion.
+							 *  This is the amount the player will move in the x direction next tick.
+							 * 
+							 *  @return the player's x motion
+							 */
+              getMotionX(): number;
+							/**
+							 * Gets the player's y motion.
+							 *  This is the amount the player will move in the y direction next tick.
+							 * 
+							 *  @return the player's y motion
+							 */
+              getMotionY(): number;
+							/**
+							 * Gets the player's z motion.
+							 *  This is the amount the player will move in the z direction next tick.
+							 * 
+							 *  @return the player's z motion
+							 */
+              getMotionZ(): number;
+							/**
+							 * Gets the player's camera pitch.
+							 * 
+							 *  @return the player's camera pitch
+							 */
+              getPitch(): number;
+							/**
+							 * Gets the player's camera yaw.
+							 * 
+							 *  @return the player's camera yaw
+							 */
+              getYaw(): number;
+							/**
+							 * Gets the player's username.
+							 * 
+							 *  @return the player's username
+							 */
+              getName(): string;
+							/**
+							 * Gets the Java UUID object of the player.
+							 *  Use of [UUID.toString] in conjunction is recommended.
+							 * 
+							 *  @return the player's uuid
+							 */
+              getUUID(): java.util.UUID;
+              getHP(): number;
+							/**
+							 * Gets the player's air level.
+							 * 
+							 *  The returned value will be an integer. If the player is not taking damage, it
+							 *  will be between 300 (not in water) and 0. If the player is taking damage, it
+							 *  will be between -20 and 0, getting reset to 0 every time the player takes damage.
+							 * 
+							 *  @return the player's air level
+							 */
+              getAirLevel(): number;
+              getXPLevel(): number;
+              isMoving(): boolean;
+              isSneaking(): boolean;
+              isSprinting(): boolean;
+							/**
+							 * Checks if player can be pushed by water.
+							 * 
+							 *  @return true if the player is flying, false otherwise
+							 */
+              isFlying(): boolean;
+              isSleeping(): boolean;
+							/**
+							 * Gets the direction the player is facing.
+							 *  Example: "South West"
+							 * 
+							 *  @return The direction the player is facing, one of the four cardinal directions
+							 */
+              facing(): string;
+							/**
+							 * Gets the current active potion effects. Returns an empty list
+							 *  if the player has no active potion effects.
+							 * 
+							 *  @return a list of the active [PotionEffect]s
+							 */
+              getActivePotionEffects(): Array<com.chattriggers.ctjs.api.world.PotionEffect>;
+							/**
+							 * Gets the current object that the player is looking at,
+							 *  whether that be a block or an entity. Returns null when not looking
+							 *  at anything.
+							 * 
+							 *  @return the [Block] or [Entity] being looked at, or null if air
+							 */
+              lookingAt(): any | null | undefined;
+							/**
+							 * Gets the current item in the player's hand.
+							 * 
+							 *  @param hand the hand of the item
+							 *  @return the current held [Item]
+							 */
+              getHeldItem(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+							/**
+							 * Gets the current item in the player's hand.
+							 * 
+							 *  @param hand the hand of the item
+							 *  @return the current held [Item]
+							 */
+              getHeldItem(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+							/**
+							 * Sets the current held item based on the provided index.
+							 * 
+							 *  @param index the new held item index
+							 */
+              setHeldItemIndex(index: number): void;
+							/**
+							 * Gets the current index of the held item.
+							 * 
+							 *  @return the current index
+							 */
+              getHeldItemIndex(): number;
+							/**
+							 * Gets the inventory of the player, i.e. the inventory accessed by 'e'.
+							 * 
+							 *  @return the player's inventory
+							 */
+              getInventory(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
+							/**
+							 * Gets the display name for the player,
+							 *  i.e. the name shown in tab list and in the player's nametag.
+							 *  @return the display name
+							 */
+              getDisplayName(): com.chattriggers.ctjs.api.message.TextComponent;
+							/**
+							 * Sets the name for this player shown in tab list
+							 * 
+							 *  @param textComponent the new name to display
+							 */
+              setTabDisplayName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Sets the name for this player shown above their head,
+							 *  in their name tag
+							 * 
+							 *  @param textComponent the new name to display
+							 */
+              setNametagName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
+							/**
+							 * Gets the container the user currently has open, i.e. a chest.
+							 * 
+							 *  @return the currently opened container
+							 */
+              getContainer(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
+							/**
+							 * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]
+							 *  minus `player`.
+							 * 
+							 *  @see Renderer.drawPlayer
+							 */
+              draw(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.client.Player;
+              new(): com.chattriggers.ctjs.api.client.Player;
+            }
+            const Player$ArmorWrapper: {
+              new(): com.chattriggers.ctjs.api.client.Player$ArmorWrapper;
+            }
+            interface Player$ArmorWrapper { 
+							/**
+							 * @return the [Item] in the player's helmet slot or null if the slot is empty
+							 */
+              getHelmet(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+							/**
+							 * @return the [Item] in the player's chestplate slot or null if the slot is empty
+							 */
+              getChestplate(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+							/**
+							 * @return the [Item] in the player's leggings slot or null if the slot is empty
+							 */
+              getLeggings(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+							/**
+							 * @return the [Item] in the player's boots slot or null if the slot is empty
+							 */
+              getBoots(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
+            }
+            const ScreenHelper: {
+              MenuButton: typeof com.chattriggers.ctjs.api.client.ScreenHelper$MenuButton;
+              titleFont: com.chattriggers.ctjs.api.render.Font;
+              smallerFont: com.chattriggers.ctjs.api.render.Font;
+              drawMenuButton(label: string, x: number, y: number, width: number, height: number, hovered: boolean, textColorOverride: number | null | undefined): void;
+              argb(a: number, r: number, g: number, b: number): number;
+              new(): com.chattriggers.ctjs.api.client.ScreenHelper;
+            }
+            interface ScreenHelper { 
+              titleFont: com.chattriggers.ctjs.api.render.Font;
+              smallerFont: com.chattriggers.ctjs.api.render.Font;
+              drawMenuButton(label: string, x: number, y: number, width: number, height: number, hovered: boolean, textColorOverride: number | null | undefined): void;
+              argb(a: number, r: number, g: number, b: number): number;
+              new(): com.chattriggers.ctjs.api.client.ScreenHelper;
+            }
+            const ScreenHelper$MenuButton: {
+              new(label: string, x: number, y: number, width: number, height: number, onClick: kotlin.Function0<void>): com.chattriggers.ctjs.api.client.ScreenHelper$MenuButton;
+            }
+            interface ScreenHelper$MenuButton { 
+              getLabel(): string;
+              getX(): number;
+              getY(): number;
+              getWidth(): number;
+              getHeight(): number;
+              getOnClick(): kotlin.Function0<void>;
+              isHovered(mouseX: number, mouseY: number): boolean;
+              component1(): string;
+              component2(): number;
+              component3(): number;
+              component4(): number;
+              component5(): number;
+              component6(): kotlin.Function0<void>;
+              copy(label: string, x: number, y: number, width: number, height: number, onClick: kotlin.Function0<void>): com.chattriggers.ctjs.api.client.ScreenHelper$MenuButton;
+            }
+            const KeyBind: {
+							/**
+							 * Creates a new keybind, editable in the user's controls.
+							 * 
+							 *  @param description what the keybind does
+							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
+							 *  @param category the keybind category the keybind will be in
+							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
+							 */
+              new(description: string, keyCode: number): com.chattriggers.ctjs.api.client.KeyBind;
+							/**
+							 * Creates a new keybind, editable in the user's controls.
+							 * 
+							 *  @param description what the keybind does
+							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
+							 *  @param category the keybind category the keybind will be in
+							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
+							 */
+              new(description: string, keyCode: number, category: string): com.chattriggers.ctjs.api.client.KeyBind;
+              new(keyBinding: net.minecraft.client.KeyMapping): com.chattriggers.ctjs.api.client.KeyBind;
+            }
+            interface KeyBind { 
+              registerKeyPress(method: any): com.chattriggers.ctjs.api.client.KeyBind;
+              registerKeyRelease(method: any): com.chattriggers.ctjs.api.client.KeyBind;
+              registerKeyDown(method: any): com.chattriggers.ctjs.api.client.KeyBind;
+              unregisterKeyPress(): com.chattriggers.ctjs.api.client.KeyBind;
+              unregisterKeyRelease(): com.chattriggers.ctjs.api.client.KeyBind;
+              unregisterKeyDown(): com.chattriggers.ctjs.api.client.KeyBind;
+							/**
+							 * Returns true if the key is pressed (used for continuous querying).
+							 * 
+							 *  @return whether the key is pressed
+							 */
+              isKeyDown(): boolean;
+							/**
+							 * Returns true on the initial key press. For continuous querying use [isKeyDown].
+							 * 
+							 *  @return whether the key has just been pressed
+							 */
+              isPressed(): boolean;
+							/**
+							 * Gets the description of the key.
+							 * 
+							 *  @return the description
+							 */
+              getDescription(): string;
+							/**
+							 * Gets the key code of the key.
+							 * 
+							 *  @return the integer key code
+							 */
+              getKeyCode(): number;
+							/**
+							 * Gets the category of the key.
+							 * 
+							 *  @return the category
+							 */
+              getCategory(): string;
+							/**
+							 * Sets the state of the key.
+							 * 
+							 *  @param pressed True to press, False to release
+							 */
+              setState(pressed: boolean): void;
+            }
+            const KeyBind$Companion: {
+              new(): com.chattriggers.ctjs.api.client.KeyBind$Companion;
+            }
+            interface KeyBind$Companion { 
+              new(): com.chattriggers.ctjs.api.client.KeyBind$Companion;
+            }
+            const ProxyInfo: {
+              getProxies(): Array<com.chattriggers.ctjs.api.client.Proxy>;
+              addProxy(proxy: com.chattriggers.ctjs.api.client.Proxy): void;
+              removeProxy(proxy: com.chattriggers.ctjs.api.client.Proxy): void;
+              updateProxy(original: com.chattriggers.ctjs.api.client.Proxy, newProxy: com.chattriggers.ctjs.api.client.Proxy): void;
+              setProxyEnabled(proxy: com.chattriggers.ctjs.api.client.Proxy, enabled: boolean): void;
+              getEnabledProxies(): Array<com.chattriggers.ctjs.api.client.Proxy>;
+              new(): com.chattriggers.ctjs.api.client.ProxyInfo;
+            }
+            interface ProxyInfo { 
+              getProxies(): Array<com.chattriggers.ctjs.api.client.Proxy>;
+              addProxy(proxy: com.chattriggers.ctjs.api.client.Proxy): void;
+              removeProxy(proxy: com.chattriggers.ctjs.api.client.Proxy): void;
+              updateProxy(original: com.chattriggers.ctjs.api.client.Proxy, newProxy: com.chattriggers.ctjs.api.client.Proxy): void;
+              setProxyEnabled(proxy: com.chattriggers.ctjs.api.client.Proxy, enabled: boolean): void;
+              getEnabledProxies(): Array<com.chattriggers.ctjs.api.client.Proxy>;
+              new(): com.chattriggers.ctjs.api.client.ProxyInfo;
+            }
+            const ProxyManagerScreen: {
+              new(parent: net.minecraft.client.gui.screens.Screen): com.chattriggers.ctjs.api.client.ProxyManagerScreen;
+            }
+            interface ProxyManagerScreen extends net.minecraft.client.gui.screens.Screen { 
+              refreshList(): void;
+            }
+            const ProxyEditScreen: {
+              new(parent: com.chattriggers.ctjs.api.client.ProxyManagerScreen, existingProxy: com.chattriggers.ctjs.api.client.Proxy | null | undefined): com.chattriggers.ctjs.api.client.ProxyEditScreen;
+            }
+            interface ProxyEditScreen extends net.minecraft.client.gui.screens.Screen { 
+            }
+            const MathLib: {
+							/**
+							 * Maps a number from one range to another.
+							 * 
+							 *  @param number the number to map
+							 *  @param in_min the original range min
+							 *  @param in_max the original range max
+							 *  @param out_min the final range min
+							 *  @param out_max the final range max
+							 *  @return the re-mapped number
+							 */
+              map(number: number, in_min: number, in_max: number, out_min: number, out_max: number): number;
+							/**
+							 * Clamps a floating number between two values.
+							 * 
+							 *  @param number the number to clamp
+							 *  @param min the minimum
+							 *  @param max the maximum
+							 *  @return the clamped number
+							 */
+              clampFloat(number: number, min: number, max: number): number;
+							/**
+							 * Clamps an integer number between two values.
+							 * 
+							 *  @param number the number to clamp
+							 *  @param min the minimum
+							 *  @param max the maximum
+							 *  @return the clamped number
+							 */
+              clamp(number: number, min: number, max: number): number;
+              new(): com.chattriggers.ctjs.api.client.MathLib;
+            }
+            interface MathLib { 
+							/**
+							 * Maps a number from one range to another.
+							 * 
+							 *  @param number the number to map
+							 *  @param in_min the original range min
+							 *  @param in_max the original range max
+							 *  @param out_min the final range min
+							 *  @param out_max the final range max
+							 *  @return the re-mapped number
+							 */
+              map(number: number, in_min: number, in_max: number, out_min: number, out_max: number): number;
+							/**
+							 * Clamps a floating number between two values.
+							 * 
+							 *  @param number the number to clamp
+							 *  @param min the minimum
+							 *  @param max the maximum
+							 *  @return the clamped number
+							 */
+              clampFloat(number: number, min: number, max: number): number;
+							/**
+							 * Clamps an integer number between two values.
+							 * 
+							 *  @param number the number to clamp
+							 *  @param min the minimum
+							 *  @param max the maximum
+							 *  @return the clamped number
+							 */
+              clamp(number: number, min: number, max: number): number;
+              new(): com.chattriggers.ctjs.api.client.MathLib;
+            }
+            const FileLib: {
+							/**
+							 * Writes a file to folder in modules.
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @param toWrite string to write in file
+							 *  @param recursive whether to create folders to the file location if they don't exist
+							 */
+              write(importName: string, fileName: string, toWrite: string): void;
+							/**
+							 * Writes a file to folder in modules.
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @param toWrite string to write in file
+							 *  @param recursive whether to create folders to the file location if they don't exist
+							 */
+              write(importName: string, fileName: string, toWrite: string, recursive: boolean): void;
+							/**
+							 * Writes a file to anywhere on the system.
+							 *  Use "./" for the ".minecraft" folder.
+							 * 
+							 *  @param fileLocation the location and file name
+							 *  @param toWrite string to write in file
+							 *  @param recursive whether to create folders to the file location if they don't exist
+							 */
+              write(fileLocation: string, toWrite: string): void;
+							/**
+							 * Writes a file to anywhere on the system.
+							 *  Use "./" for the ".minecraft" folder.
+							 * 
+							 *  @param fileLocation the location and file name
+							 *  @param toWrite string to write in file
+							 *  @param recursive whether to create folders to the file location if they don't exist
+							 */
+              write(fileLocation: string, toWrite: string, recursive: boolean): void;
+							/**
+							 * Writes a file to folder in modules.
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @param toAppend string to append in file
+							 */
+              append(importName: string, fileName: string, toAppend: string): void;
+							/**
+							 * Writes a file to anywhere on the system.
+							 *  Use "./" for the ".minecraft" folder.
+							 * 
+							 *  @param fileLocation the location and file name
+							 *  @param toAppend string to append in file
+							 */
+              append(fileLocation: string, toAppend: string): void;
+							/**
+							 * Reads a file from folder in modules.
+							 *  Returns null if file is not found.
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @return the string in the file, or null if not found
+							 */
+              read(importName: string, fileName: string): string | null | undefined;
+							/**
+							 * Reads a file from anywhere on the system.
+							 *  Use "./" for the ".minecraft" folder.
+							 *  Returns null if file is not found.
+							 * 
+							 *  @param fileLocation the location and file name
+							 *  @return the string in the file, or null if not found
+							 */
+              read(fileLocation: string): string | null | undefined;
+							/**
+							 * Reads a file from anywhere on the system using java.io.File.
+							 * 
+							 *  @param file the java.io.File to read
+							 *  @return the string in the file, or null if not found
+							 */
+              read(file: java.io.File): string | null | undefined;
+							/**
+							 * Determines if a file or directory exists at the specified location
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @return if the file exists
+							 */
+              exists(importName: string, fileName: string): boolean;
+							/**
+							 * Determines if a file or directory exists at the specified location
+							 * 
+							 *  @param fileLocation the path of the file
+							 *  @return if the file exists
+							 */
+              exists(fileLocation: string): boolean;
+							/**
+							 * Determines if a file or directory exists at the specified location
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @return if the location is a directory
+							 */
+              isDirectory(importName: string, fileName: string): boolean;
+							/**
+							 * Determines if a file or directory exists at the specified location
+							 * 
+							 *  @param fileLocation the path of the file
+							 *  @return if the location is a directory
+							 */
+              isDirectory(fileLocation: string): boolean;
+							/**
+							 * Gets the contents of a url as a string.
+							 * 
+							 *  @param theUrl the url to get the data from
+							 *  @param userAgent the user agent to use in the connection
+							 *  @return the string stored in the url content
+							 */
+              getUrlContent(theUrl: string): string;
+							/**
+							 * Gets the contents of a url as a string.
+							 * 
+							 *  @param theUrl the url to get the data from
+							 *  @param userAgent the user agent to use in the connection
+							 *  @return the string stored in the url content
+							 */
+              getUrlContent(theUrl: string, userAgent: string | null | undefined): string;
+							/**
+							 * Deletes a directory at the specified location
+							 * 
+							 *  @param dir the directory to delete
+							 *  @return if the directory was deleted
+							 */
+              deleteDirectory(dir: string): boolean;
+							/**
+							 * Deletes a directory at the specified location
+							 * 
+							 *  @param dir the directory to delete
+							 *  @return if the directory was deleted
+							 */
+              deleteDirectory(dir: java.io.File): boolean;
+							/**
+							 * Extracts a zip file specified by the zipFilePath to a directory specified by
+							 *  destDirectory (will be created if does not exist).
+							 *  @param zipFilePath the zip file path
+							 *  @param destDirectory the destination directory
+							 *  @throws IOException IOException
+							 */
+              unzip(zipFilePath: string, destDirectory: string): void;
+							/**
+							 * Encodes a string to a base64 string
+							 * 
+							 *  @param toEncode string to encode
+							 *  @return base64 encoded string
+							 */
+              encodeBase64(toEncode: string): string;
+							/**
+							 * Decodes a base64 string to a string
+							 * 
+							 *  @param toDecode base64 encoded string to decode
+							 *  @return decoded string
+							 */
+              decodeBase64(toDecode: string): string;
+							/**
+							 * Opens a url in the default browser
+							 * 
+							 *  @param url the url to open
+							 */
+              open(url: string): void;
+							/**
+							 * Opens a path in the file explorer
+							 * 
+							 *  @param path the path to open
+							 */
+              open(path: java.io.File): void;
+              new(): com.chattriggers.ctjs.api.client.FileLib;
+            }
+            interface FileLib { 
+							/**
+							 * Writes a file to folder in modules.
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @param toWrite string to write in file
+							 *  @param recursive whether to create folders to the file location if they don't exist
+							 */
+              write(importName: string, fileName: string, toWrite: string): void;
+							/**
+							 * Writes a file to folder in modules.
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @param toWrite string to write in file
+							 *  @param recursive whether to create folders to the file location if they don't exist
+							 */
+              write(importName: string, fileName: string, toWrite: string, recursive: boolean): void;
+							/**
+							 * Writes a file to anywhere on the system.
+							 *  Use "./" for the ".minecraft" folder.
+							 * 
+							 *  @param fileLocation the location and file name
+							 *  @param toWrite string to write in file
+							 *  @param recursive whether to create folders to the file location if they don't exist
+							 */
+              write(fileLocation: string, toWrite: string): void;
+							/**
+							 * Writes a file to anywhere on the system.
+							 *  Use "./" for the ".minecraft" folder.
+							 * 
+							 *  @param fileLocation the location and file name
+							 *  @param toWrite string to write in file
+							 *  @param recursive whether to create folders to the file location if they don't exist
+							 */
+              write(fileLocation: string, toWrite: string, recursive: boolean): void;
+							/**
+							 * Writes a file to folder in modules.
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @param toAppend string to append in file
+							 */
+              append(importName: string, fileName: string, toAppend: string): void;
+							/**
+							 * Writes a file to anywhere on the system.
+							 *  Use "./" for the ".minecraft" folder.
+							 * 
+							 *  @param fileLocation the location and file name
+							 *  @param toAppend string to append in file
+							 */
+              append(fileLocation: string, toAppend: string): void;
+							/**
+							 * Reads a file from folder in modules.
+							 *  Returns null if file is not found.
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @return the string in the file, or null if not found
+							 */
+              read(importName: string, fileName: string): string | null | undefined;
+							/**
+							 * Reads a file from anywhere on the system.
+							 *  Use "./" for the ".minecraft" folder.
+							 *  Returns null if file is not found.
+							 * 
+							 *  @param fileLocation the location and file name
+							 *  @return the string in the file, or null if not found
+							 */
+              read(fileLocation: string): string | null | undefined;
+							/**
+							 * Reads a file from anywhere on the system using java.io.File.
+							 * 
+							 *  @param file the java.io.File to read
+							 *  @return the string in the file, or null if not found
+							 */
+              read(file: java.io.File): string | null | undefined;
+							/**
+							 * Determines if a file or directory exists at the specified location
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @return if the file exists
+							 */
+              exists(importName: string, fileName: string): boolean;
+							/**
+							 * Determines if a file or directory exists at the specified location
+							 * 
+							 *  @param fileLocation the path of the file
+							 *  @return if the file exists
+							 */
+              exists(fileLocation: string): boolean;
+							/**
+							 * Determines if a file or directory exists at the specified location
+							 * 
+							 *  @param importName name of the import
+							 *  @param fileName name of the file
+							 *  @return if the location is a directory
+							 */
+              isDirectory(importName: string, fileName: string): boolean;
+							/**
+							 * Determines if a file or directory exists at the specified location
+							 * 
+							 *  @param fileLocation the path of the file
+							 *  @return if the location is a directory
+							 */
+              isDirectory(fileLocation: string): boolean;
+							/**
+							 * Gets the contents of a url as a string.
+							 * 
+							 *  @param theUrl the url to get the data from
+							 *  @param userAgent the user agent to use in the connection
+							 *  @return the string stored in the url content
+							 */
+              getUrlContent(theUrl: string): string;
+							/**
+							 * Gets the contents of a url as a string.
+							 * 
+							 *  @param theUrl the url to get the data from
+							 *  @param userAgent the user agent to use in the connection
+							 *  @return the string stored in the url content
+							 */
+              getUrlContent(theUrl: string, userAgent: string | null | undefined): string;
+							/**
+							 * Deletes a directory at the specified location
+							 * 
+							 *  @param dir the directory to delete
+							 *  @return if the directory was deleted
+							 */
+              deleteDirectory(dir: string): boolean;
+							/**
+							 * Deletes a directory at the specified location
+							 * 
+							 *  @param dir the directory to delete
+							 *  @return if the directory was deleted
+							 */
+              deleteDirectory(dir: java.io.File): boolean;
+							/**
+							 * Extracts a zip file specified by the zipFilePath to a directory specified by
+							 *  destDirectory (will be created if does not exist).
+							 *  @param zipFilePath the zip file path
+							 *  @param destDirectory the destination directory
+							 *  @throws IOException IOException
+							 */
+              unzip(zipFilePath: string, destDirectory: string): void;
+							/**
+							 * Encodes a string to a base64 string
+							 * 
+							 *  @param toEncode string to encode
+							 *  @return base64 encoded string
+							 */
+              encodeBase64(toEncode: string): string;
+							/**
+							 * Decodes a base64 string to a string
+							 * 
+							 *  @param toDecode base64 encoded string to decode
+							 *  @return decoded string
+							 */
+              decodeBase64(toDecode: string): string;
+							/**
+							 * Opens a url in the default browser
+							 * 
+							 *  @param url the url to open
+							 */
+              open(url: string): void;
+							/**
+							 * Opens a path in the file explorer
+							 * 
+							 *  @param path the path to open
+							 */
+              open(path: java.io.File): void;
+              new(): com.chattriggers.ctjs.api.client.FileLib;
+            }
+            const Client: {
+              CurrentGuiWrapper: typeof com.chattriggers.ctjs.api.client.Client$CurrentGuiWrapper;
+              CameraWrapper: typeof com.chattriggers.ctjs.api.client.Client$CameraWrapper;
+              currentGui: com.chattriggers.ctjs.api.client.Client$CurrentGuiWrapper;
+              camera: com.chattriggers.ctjs.api.client.Client$CameraWrapper;
+							/**
+							 * Gets Minecraft's Minecraft object
+							 * 
+							 *  @return The Minecraft object
+							 */
+              getMinecraft(): net.minecraft.client.Minecraft;
+							/**
+							 * Gets Minecraft's NetHandlerPlayClient object
+							 * 
+							 *  @return The NetHandlerPlayClient object
+							 */
+              getConnection(): net.minecraft.client.multiplayer.ClientPacketListener | null | undefined;
+							/**
+							 * Schedule's a task to run on Minecraft's main thread in [delay] ticks.
+							 *  Defaults to the next tick.
+							 *  @param delay The delay in ticks
+							 *  @param callback The task to run on the main thread
+							 */
+              scheduleTask(callback: kotlin.Function0<void>): void;
+							/**
+							 * Schedule's a task to run on Minecraft's main thread in [delay] ticks.
+							 *  Defaults to the next tick.
+							 *  @param delay The delay in ticks
+							 *  @param callback The task to run on the main thread
+							 */
+              scheduleTask(delay: number, callback: kotlin.Function0<void>): void;
+							/**
+							 * Quits the client back to the main menu.
+							 *  This acts just like clicking the "Disconnect" or "Save and quit to title" button.
+							 */
+              disconnect(): void;
+							/**
+							 * Connects to the server with the given ip.
+							 *  @param ip The ip to connect to
+							 */
+              connect(ip: string): void;
+							/**
+							 * Connects to the server with the given ip.
+							 *  @param ip The ip to connect to
+							 */
+              connect(ip: string, port: number): void;
+							/**
+							 * Gets the Minecraft ChatHud object for the chat gui
+							 * 
+							 *  @return The GuiNewChat object for the chat gui
+							 */
+              getChatGui(): net.minecraft.client.gui.components.ChatComponent | null | undefined;
+              isInChat(): boolean;
+              getTabGui(): net.minecraft.client.gui.components.PlayerTabOverlay | null | undefined;
+              isInTab(): boolean;
+							/**
+							 * Gets whether the Minecraft window is active
+							 *  and in the foreground of the user's screen.
+							 * 
+							 *  @return true if the game is active, false otherwise
+							 */
+              isTabbedIn(): boolean;
+              isControlDown(): boolean;
+              isShiftDown(): boolean;
+              isAltDown(): boolean;
+              getFPS(): number;
+              getVersion(): string;
+              getSystemTime(): number;
+              getMouseX(): number;
+              getMouseY(): number;
+              isInGui(): boolean;
+							/**
+							 * Gets the chat message currently typed into the chat gui.
+							 * 
+							 *  @return A blank string if the gui isn't open, otherwise, the message
+							 */
+              getCurrentChatMessage(): string;
+							/**
+							 * Sets the current chat message, if the chat gui is not open, one will be opened.
+							 * 
+							 *  @param message the message to put in the chat text box.
+							 */
+              setCurrentChatMessage(message: string): void;
+              setSignLine(line: number, text: string): void;
+              resumeHeldKeys(): void;
+              releaseHeldKey(input: com.mojang.blaze3d.platform.InputConstants$Key): void;
+              leftClick(): void;
+              rightClick(): void;
+              setKey(key: string): boolean;
+              setKey(key: string, pressed: boolean): boolean;
+              isKeyDown(key: string): boolean;
+              stopMovement(): void;
+              unpressKeys(): void;
+              sendPacket(packet: net.minecraft.network.protocol.Packet<any>): void;
+              sendSequencedPacket(packetFactory: kotlin.Function1<number, net.minecraft.network.protocol.Packet<any>>): void;
+							/**
+							 * Display a title.
+							 * 
+							 *  @param title title text
+							 *  @param subtitle subtitle text
+							 *  @param fadeIn time to fade in
+							 *  @param time time to stay on screen
+							 *  @param fadeOut time to fade out
+							 */
+              showTitle(title: string | null | undefined, subtitle: string | null | undefined, fadeIn: number, time: number, fadeOut: number): void;
+							/**
+							 * Copies a string to the clipboard
+							 * 
+							 *  @param text The text to copy
+							 */
+              copy(): void;
+							/**
+							 * Copies a string to the clipboard
+							 * 
+							 *  @param text The text to copy
+							 */
+              copy(text: string): void;
+							/**
+							 * Get the string currently on the clipboard
+							 */
+              paste(): string;
+							/**
+							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, otherwise, returns null.
+							 * 
+							 *  @param keyCode the keycode to search for, see Keyboard below. Ex. Keyboard.KEY_A
+							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or null if one doesn't exist
+							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
+							 */
+              getKeyBindFromKey(keyCode: number): com.chattriggers.ctjs.api.client.KeyBind | null | undefined;
+							/**
+							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
+							 * 
+							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
+							 *  @param description the description of the keybind
+							 *  @param category the keybind category the keybind will be in
+							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or a new one if one doesn't exist
+							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
+							 */
+              getKeyBindFromKey(keyCode: number, description: string): com.chattriggers.ctjs.api.client.KeyBind;
+							/**
+							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
+							 * 
+							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
+							 *  @param description the description of the keybind
+							 *  @param category the keybind category the keybind will be in
+							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or a new one if one doesn't exist
+							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
+							 */
+              getKeyBindFromKey(keyCode: number, description: string, category: string): com.chattriggers.ctjs.api.client.KeyBind;
+							/**
+							 * Get the [KeyBinding] from an already existing
+							 *  Minecraft KeyBinding, otherwise, returns null.
+							 * 
+							 *  @param description the description of the keybind
+							 *  @return the [KeyBinding], or null if one doesn't exist
+							 */
+              getKeyBindFromDescription(description: string): com.chattriggers.ctjs.api.client.KeyBind | null | undefined;
+              new(): com.chattriggers.ctjs.api.client.Client;
+            }
+            interface Client { 
+              currentGui: com.chattriggers.ctjs.api.client.Client$CurrentGuiWrapper;
+              camera: com.chattriggers.ctjs.api.client.Client$CameraWrapper;
+							/**
+							 * Gets Minecraft's Minecraft object
+							 * 
+							 *  @return The Minecraft object
+							 */
+              getMinecraft(): net.minecraft.client.Minecraft;
+							/**
+							 * Gets Minecraft's NetHandlerPlayClient object
+							 * 
+							 *  @return The NetHandlerPlayClient object
+							 */
+              getConnection(): net.minecraft.client.multiplayer.ClientPacketListener | null | undefined;
+							/**
+							 * Schedule's a task to run on Minecraft's main thread in [delay] ticks.
+							 *  Defaults to the next tick.
+							 *  @param delay The delay in ticks
+							 *  @param callback The task to run on the main thread
+							 */
+              scheduleTask(callback: kotlin.Function0<void>): void;
+							/**
+							 * Schedule's a task to run on Minecraft's main thread in [delay] ticks.
+							 *  Defaults to the next tick.
+							 *  @param delay The delay in ticks
+							 *  @param callback The task to run on the main thread
+							 */
+              scheduleTask(delay: number, callback: kotlin.Function0<void>): void;
+							/**
+							 * Quits the client back to the main menu.
+							 *  This acts just like clicking the "Disconnect" or "Save and quit to title" button.
+							 */
+              disconnect(): void;
+							/**
+							 * Connects to the server with the given ip.
+							 *  @param ip The ip to connect to
+							 */
+              connect(ip: string): void;
+							/**
+							 * Connects to the server with the given ip.
+							 *  @param ip The ip to connect to
+							 */
+              connect(ip: string, port: number): void;
+							/**
+							 * Gets the Minecraft ChatHud object for the chat gui
+							 * 
+							 *  @return The GuiNewChat object for the chat gui
+							 */
+              getChatGui(): net.minecraft.client.gui.components.ChatComponent | null | undefined;
+              isInChat(): boolean;
+              getTabGui(): net.minecraft.client.gui.components.PlayerTabOverlay | null | undefined;
+              isInTab(): boolean;
+							/**
+							 * Gets whether the Minecraft window is active
+							 *  and in the foreground of the user's screen.
+							 * 
+							 *  @return true if the game is active, false otherwise
+							 */
+              isTabbedIn(): boolean;
+              isControlDown(): boolean;
+              isShiftDown(): boolean;
+              isAltDown(): boolean;
+              getFPS(): number;
+              getVersion(): string;
+              getSystemTime(): number;
+              getMouseX(): number;
+              getMouseY(): number;
+              isInGui(): boolean;
+							/**
+							 * Gets the chat message currently typed into the chat gui.
+							 * 
+							 *  @return A blank string if the gui isn't open, otherwise, the message
+							 */
+              getCurrentChatMessage(): string;
+							/**
+							 * Sets the current chat message, if the chat gui is not open, one will be opened.
+							 * 
+							 *  @param message the message to put in the chat text box.
+							 */
+              setCurrentChatMessage(message: string): void;
+              setSignLine(line: number, text: string): void;
+              resumeHeldKeys(): void;
+              releaseHeldKey(input: com.mojang.blaze3d.platform.InputConstants$Key): void;
+              leftClick(): void;
+              rightClick(): void;
+              setKey(key: string): boolean;
+              setKey(key: string, pressed: boolean): boolean;
+              isKeyDown(key: string): boolean;
+              stopMovement(): void;
+              unpressKeys(): void;
+              sendPacket(packet: net.minecraft.network.protocol.Packet<any>): void;
+              sendSequencedPacket(packetFactory: kotlin.Function1<number, net.minecraft.network.protocol.Packet<any>>): void;
+							/**
+							 * Display a title.
+							 * 
+							 *  @param title title text
+							 *  @param subtitle subtitle text
+							 *  @param fadeIn time to fade in
+							 *  @param time time to stay on screen
+							 *  @param fadeOut time to fade out
+							 */
+              showTitle(title: string | null | undefined, subtitle: string | null | undefined, fadeIn: number, time: number, fadeOut: number): void;
+							/**
+							 * Copies a string to the clipboard
+							 * 
+							 *  @param text The text to copy
+							 */
+              copy(): void;
+							/**
+							 * Copies a string to the clipboard
+							 * 
+							 *  @param text The text to copy
+							 */
+              copy(text: string): void;
+							/**
+							 * Get the string currently on the clipboard
+							 */
+              paste(): string;
+							/**
+							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, otherwise, returns null.
+							 * 
+							 *  @param keyCode the keycode to search for, see Keyboard below. Ex. Keyboard.KEY_A
+							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or null if one doesn't exist
+							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
+							 */
+              getKeyBindFromKey(keyCode: number): com.chattriggers.ctjs.api.client.KeyBind | null | undefined;
+							/**
+							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
+							 * 
+							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
+							 *  @param description the description of the keybind
+							 *  @param category the keybind category the keybind will be in
+							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or a new one if one doesn't exist
+							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
+							 */
+              getKeyBindFromKey(keyCode: number, description: string): com.chattriggers.ctjs.api.client.KeyBind;
+							/**
+							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
+							 * 
+							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
+							 *  @param description the description of the keybind
+							 *  @param category the keybind category the keybind will be in
+							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or a new one if one doesn't exist
+							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
+							 */
+              getKeyBindFromKey(keyCode: number, description: string, category: string): com.chattriggers.ctjs.api.client.KeyBind;
+							/**
+							 * Get the [KeyBinding] from an already existing
+							 *  Minecraft KeyBinding, otherwise, returns null.
+							 * 
+							 *  @param description the description of the keybind
+							 *  @return the [KeyBinding], or null if one doesn't exist
+							 */
+              getKeyBindFromDescription(description: string): com.chattriggers.ctjs.api.client.KeyBind | null | undefined;
+              new(): com.chattriggers.ctjs.api.client.Client;
+            }
+            const Client$CurrentGuiWrapper: {
+              new(): com.chattriggers.ctjs.api.client.Client$CurrentGuiWrapper;
+            }
+            interface Client$CurrentGuiWrapper { 
+							/**
+							 * Gets the Java class name of the currently open gui, for example, "GuiChest"
+							 * 
+							 *  @return the class name of the current gui
+							 */
+              getClassName(): string;
+							/**
+							 * Gets the Minecraft gui class that is currently open
+							 * 
+							 *  @return the Minecraft gui
+							 */
+              get(): net.minecraft.client.gui.screens.Screen | null | undefined;
+              set(screen: net.minecraft.client.gui.screens.Screen | null | undefined): void;
+							/**
+							 * Gets the slot under the mouse in the current gui, if one exists.
+							 * 
+							 *  @return the [Slot] under the mouse
+							 */
+              getSlotUnderMouse(): com.chattriggers.ctjs.api.inventory.Slot | null | undefined;
+							/**
+							 * Closes the currently open gui
+							 */
+              close(): void;
+            }
+            const Client$CameraWrapper: {
+              new(): com.chattriggers.ctjs.api.client.Client$CameraWrapper;
+            }
+            interface Client$CameraWrapper { 
+              getX(): number;
+              getY(): number;
+              getZ(): number;
+            }
+            const WelcomeScreen: {
+              new(): com.chattriggers.ctjs.api.client.WelcomeScreen;
+            }
+            interface WelcomeScreen extends net.minecraft.client.gui.screens.Screen { 
+            }
+            const WelcomeScreen$Companion: {
+              open(): void;
+              new(): com.chattriggers.ctjs.api.client.WelcomeScreen$Companion;
+            }
+            interface WelcomeScreen$Companion { 
+              open(): void;
+              new(): com.chattriggers.ctjs.api.client.WelcomeScreen$Companion;
+            }
+          }
+          namespace render {
+            const Font: {
+              new(name: string, resourcePath: string): com.chattriggers.ctjs.api.render.Font;
+              new(name: string, inputStream: java.io.InputStream): com.chattriggers.ctjs.api.render.Font;
+            }
+            interface Font { 
+              getName(): string;
+              buffer(): java.nio.ByteBuffer;
+            }
+            const LegacyPipelineBuilder: {
+              new(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
+            }
+            interface LegacyPipelineBuilder { 
+              new(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat, snippet: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
+              enableBlend(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
+              disableBlend(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
+              enableCull(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
+              disableCull(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
+              enableDepth(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
+              disableDepth(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
+              build(): com.mojang.blaze3d.pipeline.RenderPipeline;
+              layer(): net.minecraft.client.renderer.rendertype.RenderType;
+              state(): string;
+            }
+            const Renderer$DrawMode: {
+              LINES: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
+              LINE_STRIP: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
+              TRIANGLES: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
+              TRIANGLE_STRIP: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
+              TRIANGLE_FAN: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
+              QUADS: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Renderer$DrawMode>;
+              values(): Array<com.chattriggers.ctjs.api.render.Renderer$DrawMode>;
+              valueOf(value: string): com.chattriggers.ctjs.api.render.Renderer$DrawMode;
+            }
+            interface Renderer$DrawMode extends kotlin.Enum<com.chattriggers.ctjs.api.render.Renderer$DrawMode> { 
+              toUC(): gg.essential.universal.UGraphics$DrawMode;
+            }
+            const Renderer$DrawMode$Companion: {
+              fromUC(ucValue: gg.essential.universal.UGraphics$DrawMode): com.chattriggers.ctjs.api.render.Renderer$DrawMode;
+              new(): unknown;
+            }
+            interface Renderer$DrawMode$Companion { 
+              fromUC(ucValue: gg.essential.universal.UGraphics$DrawMode): com.chattriggers.ctjs.api.render.Renderer$DrawMode;
+              new(): unknown;
+            }
+            const Renderer$VertexFormat: {
+              LINES: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              POSITION: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              POSITION_COLOR: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              POSITION_TEXTURE: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              POSITION_TEXTURE_COLOR: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              POSITION_COLOR_TEXTURE_LIGHT: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              POSITION_TEXTURE_LIGHT_COLOR: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              POSITION_TEXTURE_COLOR_LIGHT: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              POSITION_TEXTURE_COLOR_NORMAL: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Renderer$VertexFormat>;
+              values(): Array<com.chattriggers.ctjs.api.render.Renderer$VertexFormat>;
+              valueOf(value: string): com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+            }
+            interface Renderer$VertexFormat extends kotlin.Enum<com.chattriggers.ctjs.api.render.Renderer$VertexFormat> { 
+              toMC(): com.mojang.blaze3d.vertex.VertexFormat;
+            }
+            const Renderer$VertexFormat$Companion: {
+              fromMC(ucValue: com.mojang.blaze3d.vertex.VertexFormat): com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              new(): unknown;
+            }
+            interface Renderer$VertexFormat$Companion { 
+              fromMC(ucValue: com.mojang.blaze3d.vertex.VertexFormat): com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              new(): unknown;
+            }
+            const Renderer$RenderSnippet: {
+              TERRAIN_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              ENTITY_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              RENDERTYPE_BEACON_BEAM_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              TEXT_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              RENDERTYPE_END_PORTAL_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              RENDERTYPE_CLOUDS_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              RENDERTYPE_LINES_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              POSITION_COLOR_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              PARTICLE_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              WEATHER_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              GUI_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              POSITION_TEX_COLOR_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              RENDERTYPE_OUTLINE_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              POST_EFFECT_PROCESSOR_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Renderer$RenderSnippet>;
+              values(): Array<com.chattriggers.ctjs.api.render.Renderer$RenderSnippet>;
+              valueOf(value: string): com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+            }
+            interface Renderer$RenderSnippet extends kotlin.Enum<com.chattriggers.ctjs.api.render.Renderer$RenderSnippet> { 
+              getMcSnippet(): com.mojang.blaze3d.pipeline.RenderPipeline$Snippet;
+            }
+            const RenderPipelines: {
+              LINE_LIST: com.mojang.blaze3d.pipeline.RenderPipeline;
+              LINE_LIST_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
+              TRIANGLE_STRIP: com.mojang.blaze3d.pipeline.RenderPipeline;
+              TRIANGLE_STRIP_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
+              new(): com.chattriggers.ctjs.api.render.RenderPipelines;
+            }
+            interface RenderPipelines { 
+              LINE_LIST: com.mojang.blaze3d.pipeline.RenderPipeline;
+              LINE_LIST_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
+              TRIANGLE_STRIP: com.mojang.blaze3d.pipeline.RenderPipeline;
+              TRIANGLE_STRIP_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
+              new(): com.chattriggers.ctjs.api.render.RenderPipelines;
+            }
+            const RenderLayers: {
+              LINE_LIST: net.minecraft.client.renderer.rendertype.RenderType;
+              LINE_LIST_ESP: net.minecraft.client.renderer.rendertype.RenderType;
+              TRIANGLE_STRIP: net.minecraft.client.renderer.rendertype.RenderType;
+              TRIANGLE_STRIP_ESP: net.minecraft.client.renderer.rendertype.RenderType;
+              new(): com.chattriggers.ctjs.api.render.RenderLayers;
+            }
+            interface RenderLayers { 
+              LINE_LIST: net.minecraft.client.renderer.rendertype.RenderType;
+              LINE_LIST_ESP: net.minecraft.client.renderer.rendertype.RenderType;
+              TRIANGLE_STRIP: net.minecraft.client.renderer.rendertype.RenderType;
+              TRIANGLE_STRIP_ESP: net.minecraft.client.renderer.rendertype.RenderType;
+              new(): com.chattriggers.ctjs.api.render.RenderLayers;
+            }
+            const Toast: {
+              new(config: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.render.Toast;
+            }
+            interface Toast extends net.minecraft.client.gui.components.toasts.Toast { 
+              getTitle(): any | null | undefined;
+              setTitle(value: any | null | undefined): void;
+              getDescription(): any | null | undefined;
+              setDescription(value: any | null | undefined): void;
+              getBackground(): any | null | undefined;
+              setBackground(value: any | null | undefined): void;
+              getIcon(): any | null | undefined;
+              setIcon(value: any | null | undefined): void;
+              getDisplayTime(): number;
+              setDisplayTime(value: number): void;
+              show(): com.chattriggers.ctjs.api.render.Toast;
+            }
+            const Display: {
+              Background: typeof com.chattriggers.ctjs.api.render.Display$Background;
+              Order: typeof com.chattriggers.ctjs.api.render.Display$Order;
+              new(): com.chattriggers.ctjs.api.render.Display;
+              new(config: org.mozilla.javascript.NativeObject | null | undefined): com.chattriggers.ctjs.api.render.Display;
+            }
+            interface Display { 
+              getTextColor(): number;
+							/**
+							 * Sets the color of the texts
+							 * 
+							 *  Overrides the color of the individual texts
+							 */
+              setTextColor(textColor: number): com.chattriggers.ctjs.api.render.Display;
+              getAlign(): com.chattriggers.ctjs.api.render.Text$Align;
+							/**
+							 * Set the alignment of the texts in the display
+							 * 
+							 *  Overrides alignment of the individual texts
+							 */
+              setAlign(align: any): com.chattriggers.ctjs.api.render.Display;
+              getOrder(): com.chattriggers.ctjs.api.render.Display$Order;
+              setOrder(order: any): com.chattriggers.ctjs.api.render.Display;
+              getBackground(): com.chattriggers.ctjs.api.render.Display$Background;
+              setBackground(background: any): com.chattriggers.ctjs.api.render.Display;
+              getBackgroundColor(): number;
+              setBackgroundColor(backgroundColor: number): com.chattriggers.ctjs.api.render.Display;
+              setLine(index: number, line: any): com.chattriggers.ctjs.api.render.Display;
+              getLine(index: number): com.chattriggers.ctjs.api.render.Text;
+              getLines(): Array<com.chattriggers.ctjs.api.render.Text>;
+              setLines(lines: Array<com.chattriggers.ctjs.api.render.Text>): com.chattriggers.ctjs.api.render.Display;
+              addLine(line: any): com.chattriggers.ctjs.api.render.Display;
+              addLines(lines: any): com.chattriggers.ctjs.api.render.Display;
+              removeLine(index: number): com.chattriggers.ctjs.api.render.Display;
+              clearLines(): com.chattriggers.ctjs.api.render.Display;
+              getX(): number;
+              setX(x: number): com.chattriggers.ctjs.api.render.Display;
+              getY(): number;
+              setY(y: number): com.chattriggers.ctjs.api.render.Display;
+              getWidth(): number;
+              getHeight(): number;
+              getMinWidth(): number;
+              setMinWidth(minWidth: number): com.chattriggers.ctjs.api.render.Display;
+              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor): void;
+            }
+            const Text$Align: {
+              LEFT: com.chattriggers.ctjs.api.render.Text$Align;
+              CENTER: com.chattriggers.ctjs.api.render.Text$Align;
+              RIGHT: com.chattriggers.ctjs.api.render.Text$Align;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Text$Align>;
+              values(): Array<com.chattriggers.ctjs.api.render.Text$Align>;
+              valueOf(value: string): com.chattriggers.ctjs.api.render.Text$Align;
+            }
+            interface Text$Align extends kotlin.Enum<com.chattriggers.ctjs.api.render.Text$Align> { 
+            }
+            const Display$Order: {
+              REVERSED: com.chattriggers.ctjs.api.render.Display$Order;
+              NORMAL: com.chattriggers.ctjs.api.render.Display$Order;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Display$Order>;
+              values(): Array<com.chattriggers.ctjs.api.render.Display$Order>;
+              valueOf(value: string): com.chattriggers.ctjs.api.render.Display$Order;
+            }
+            interface Display$Order extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Order> { 
+            }
+            const Display$Background: {
+              NONE: com.chattriggers.ctjs.api.render.Display$Background;
+              FULL: com.chattriggers.ctjs.api.render.Display$Background;
+              PER_LINE: com.chattriggers.ctjs.api.render.Display$Background;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Display$Background>;
+              values(): Array<com.chattriggers.ctjs.api.render.Display$Background>;
+              valueOf(value: string): com.chattriggers.ctjs.api.render.Display$Background;
+            }
+            interface Display$Background extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Background> { 
+            }
+            const Text: {
+              Align: typeof com.chattriggers.ctjs.api.render.Text$Align;
+              new(string: string): com.chattriggers.ctjs.api.render.Text;
+              new(string: string, x: number): com.chattriggers.ctjs.api.render.Text;
+              new(string: string, x: number, y: number): com.chattriggers.ctjs.api.render.Text;
+              new(string: string, config: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.render.Text;
+            }
+            interface Text { 
+              getString(): string;
+              setString(string: string): com.chattriggers.ctjs.api.render.Text;
+              getColor(): number;
+              setColor(color: number): com.chattriggers.ctjs.api.render.Text;
+              getFormatted(): boolean;
+              setFormatted(formatted: boolean): com.chattriggers.ctjs.api.render.Text;
+              getShadow(): boolean;
+              setShadow(shadow: boolean): com.chattriggers.ctjs.api.render.Text;
+              getAlign(): com.chattriggers.ctjs.api.render.Text$Align;
+              setAlign(align: any): com.chattriggers.ctjs.api.render.Text;
+              getBackground(): boolean;
+							/**
+							 * Set the background
+							 * 
+							 *  true: Background is enabled
+							 *  false: Background is disabled
+							 */
+              setBackground(background: boolean): com.chattriggers.ctjs.api.render.Text;
+              getBackgroundColor(): number;
+              setBackgroundColor(backgroundColor: number): com.chattriggers.ctjs.api.render.Text;
+              getX(): number;
+              setX(x: number): com.chattriggers.ctjs.api.render.Text;
+              getY(): number;
+              setY(y: number): com.chattriggers.ctjs.api.render.Text;
+							/**
+							 * Gets the width of the text
+							 *  This is automatically updated when the text is drawn.
+							 * 
+							 *  @return the width of the text
+							 */
+              getWidth(): number;
+              getLines(): Array<string>;
+              getMaxLines(): number;
+              setMaxLines(maxLines: number): com.chattriggers.ctjs.api.render.Text;
+              getScale(): number;
+              setScale(scale: number): com.chattriggers.ctjs.api.render.Text;
+							/**
+							 * Sets the maximum width of the text, splitting it into multiple lines if necessary.
+							 * 
+							 *  @param maxWidth the maximum width of the text
+							 *  @return the Text object for method chaining
+							 */
+              setMaxWidth(maxWidth: number): com.chattriggers.ctjs.api.render.Text;
+              getMaxWidth(): number;
+              getHeight(): number;
+              exceedsMaxLines(): boolean;
+              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor): com.chattriggers.ctjs.api.render.Text;
+              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor, x: number | null | undefined): com.chattriggers.ctjs.api.render.Text;
+              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor, x: number | null | undefined, y: number | null | undefined): com.chattriggers.ctjs.api.render.Text;
+            }
+            const Renderer: {
+              DrawMode: typeof com.chattriggers.ctjs.api.render.Renderer$DrawMode;
+              VertexFormat: typeof com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
+              RenderSnippet: typeof com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
+              ScreenWrapper: typeof com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
+              screen: com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
+              getPartialTicks(): number;
+              BLACK: number;
+              DARK_BLUE: number;
+              DARK_GREEN: number;
+              DARK_AQUA: number;
+              DARK_RED: number;
+              DARK_PURPLE: number;
+              GOLD: number;
+              GRAY: number;
+              DARK_GRAY: number;
+              BLUE: number;
+              GREEN: number;
+              AQUA: number;
+              RED: number;
+              LIGHT_PURPLE: number;
+              YELLOW: number;
+              WHITE: number;
+              color(color: number): number;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 1
+							 *  @param g the green value of the color, between 0 and 1
+							 *  @param b the blue value of the color, between 0 and 1
+							 *  @param a the alpha value of the color, between 0 and 1
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 1
+							 *  @param g the green value of the color, between 0 and 1
+							 *  @param b the blue value of the color, between 0 and 1
+							 *  @param a the alpha value of the color, between 0 and 1
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 255
+							 *  @param g the green value of the color, between 0 and 255
+							 *  @param b the blue value of the color, between 0 and 255
+							 *  @param a the alpha value of the color, between 0 and 255
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 255
+							 *  @param g the green value of the color, between 0 and 255
+							 *  @param b the blue value of the color, between 0 and 255
+							 *  @param a the alpha value of the color, between 0 and 255
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param color the color value, can use [getColor] to get this
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              color(color: number): com.chattriggers.ctjs.api.render.Renderer;
+              getFontRenderer(): net.minecraft.client.gui.Font;
+              getRenderManager(): net.minecraft.client.renderer.LevelRenderer;
+              getStringWidth(text: string): number;
+              getColor(red: number, green: number, blue: number): number;
+              getColor(red: number, green: number, blue: number, alpha: number): number;
+              getRainbow(step: number): number;
+              getRainbow(step: number, speed: number): number;
+              getRainbowColors(step: number): Array<number>;
+              getRainbowColors(step: number, speed: number): Array<number>;
+              disableCull(): com.chattriggers.ctjs.api.render.Renderer;
+              enableCull(): com.chattriggers.ctjs.api.render.Renderer;
+              disableLighting(): com.chattriggers.ctjs.api.render.Renderer;
+              enableLighting(): com.chattriggers.ctjs.api.render.Renderer;
+              disableDepth(): com.chattriggers.ctjs.api.render.Renderer;
+              enableDepth(): com.chattriggers.ctjs.api.render.Renderer;
+              disableBlend(): com.chattriggers.ctjs.api.render.Renderer;
+              enableBlend(): com.chattriggers.ctjs.api.render.Renderer;
+              bindTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
+              bindTexture(texture: com.chattriggers.ctjs.api.render.Image, textureIndex: number): com.chattriggers.ctjs.api.render.Renderer;
+              deleteTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
+              pushMatrix(): com.chattriggers.ctjs.api.render.Renderer;
+              pushMatrix(stack: gg.essential.universal.UMatrixStack): com.chattriggers.ctjs.api.render.Renderer;
+              popMatrix(): com.chattriggers.ctjs.api.render.Renderer;
+              translate(x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
+              translate(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
+              scale(scaleX: number): com.chattriggers.ctjs.api.render.Renderer;
+              scale(scaleX: number, scaleY: number): com.chattriggers.ctjs.api.render.Renderer;
+              scale(scaleX: number, scaleY: number, scaleZ: number): com.chattriggers.ctjs.api.render.Renderer;
+              rotate(angle: number): com.chattriggers.ctjs.api.render.Renderer;
+              rotate(angle: number, x: number): com.chattriggers.ctjs.api.render.Renderer;
+              rotate(angle: number, x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
+              rotate(angle: number, x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
+              multiply(quaternion: org.joml.Quaternionf): com.chattriggers.ctjs.api.render.Renderer;
+              fixAlpha(color: number): number;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer] to allow for method chaining
+							 *  @see DrawMode
+							 */
+              begin(): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer] to allow for method chaining
+							 *  @see DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer] to allow for method chaining
+							 *  @see DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer] to allow for method chaining
+							 *  @see DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat, snippet: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets a new vertex in the world renderer.
+							 * 
+							 *  @param x the x position
+							 *  @param y the y position
+							 *  @param z the z position
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              pos(x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets a new vertex in the world renderer.
+							 * 
+							 *  @param x the x position
+							 *  @param y the y position
+							 *  @param z the z position
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              pos(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the texture location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the texture
+							 *  @param v the v position in the texture
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              tex(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the normal of the vertex. This is mostly used with [VertexFormat.LINES]
+							 * 
+							 *  @param x the x position of the normal vector
+							 *  @param y the y position of the normal vector
+							 *  @param z the z position of the normal vector
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              normal(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the overlay location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the overlay
+							 *  @param v the v position in the overlay
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              overlay(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the light location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the light
+							 *  @param v the v position in the light
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Finalizes vertices and draws the world renderer.
+							 */
+              draw(): void;
+							/**
+							 * Gets a fixed render position from x, y, and z inputs adjusted with partial ticks
+							 *  @param x the X coordinate
+							 *  @param y the Y coordinate
+							 *  @param z the Z coordinate
+							 *  @return the Vec3f position to render at
+							 */
+              getRenderPos(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3f;
+              drawRect(color: number, x: number, y: number, width: number, height: number): com.chattriggers.ctjs.api.render.Renderer;
+              drawLine(color: number, x1: number, y1: number, x2: number, y2: number, thickness: number): void;
+              drawCircle(color: number, x: number, y: number, radius: number, steps: number): void;
+              drawString(text: string, x: number, y: number): void;
+              drawString(text: string, x: number, y: number, color: number): void;
+              drawString(text: string, x: number, y: number, color: number, shadow: boolean): void;
+              drawStringWithShadow(text: string, x: number, y: number): void;
+              drawStringWithShadow(text: string, x: number, y: number, color: number): void;
+              drawImage(image: com.chattriggers.ctjs.api.render.Image, x: number, y: number, width: number, height: number): void;
+							/**
+							 * Draws a player entity to the screen, similar to the one displayed in the inventory screen.
+							 * 
+							 *  Takes a parameter with the following options:
+							 *  - player: The player entity to draw. Can be a [PlayerMP] or [AbstractClientPlayerEntity].
+							 *            Defaults to Player.toMC()
+							 *  - x: The x position on the screen to render the player
+							 *  - y: The y position on the screen to render the player
+							 *  - size: The size of the rendered player
+							 *  - rotate: Whether the player should look at the mouse cursor, similar to the inventory screen
+							 *  - pitch: THe pitch the rendered player will face, if rotate is false
+							 *  - yaw: The yaw the rendered player will face, if rotate is false
+							 *  - showNametag: Whether the nametag of the player should be rendered
+							 *  - showArmor: Whether the armor of the player should be rendered
+							 *  - showCape: Whether the cape of the player should be rendered
+							 *  - showHeldItem: Whether the held item of the player should be rendered
+							 *  - showArrows: Whether any arrows stuck in the player's model should be rendered
+							 *  - showElytra: Whether the player's Elytra should be rendered
+							 *  - showParrot: Whether a perched parrot should be rendered
+							 *  - showBeeStinger: Whether any stuck bee stingers should be rendered
+							 * 
+							 *  @param obj An options bag
+							 */
+              drawPlayer(obj: org.mozilla.javascript.NativeObject): void;
+              new(): com.chattriggers.ctjs.api.render.Renderer;
+            }
+            interface Renderer { 
+              screen: com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
+              getPartialTicks(): number;
+              BLACK: number;
+              DARK_BLUE: number;
+              DARK_GREEN: number;
+              DARK_AQUA: number;
+              DARK_RED: number;
+              DARK_PURPLE: number;
+              GOLD: number;
+              GRAY: number;
+              DARK_GRAY: number;
+              BLUE: number;
+              GREEN: number;
+              AQUA: number;
+              RED: number;
+              LIGHT_PURPLE: number;
+              YELLOW: number;
+              WHITE: number;
+              color(color: number): number;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 1
+							 *  @param g the green value of the color, between 0 and 1
+							 *  @param b the blue value of the color, between 0 and 1
+							 *  @param a the alpha value of the color, between 0 and 1
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 1
+							 *  @param g the green value of the color, between 0 and 1
+							 *  @param b the blue value of the color, between 0 and 1
+							 *  @param a the alpha value of the color, between 0 and 1
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 255
+							 *  @param g the green value of the color, between 0 and 255
+							 *  @param b the blue value of the color, between 0 and 255
+							 *  @param a the alpha value of the color, between 0 and 255
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 255
+							 *  @param g the green value of the color, between 0 and 255
+							 *  @param b the blue value of the color, between 0 and 255
+							 *  @param a the alpha value of the color, between 0 and 255
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param color the color value, can use [getColor] to get this
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              color(color: number): com.chattriggers.ctjs.api.render.Renderer;
+              getFontRenderer(): net.minecraft.client.gui.Font;
+              getRenderManager(): net.minecraft.client.renderer.LevelRenderer;
+              getStringWidth(text: string): number;
+              getColor(red: number, green: number, blue: number): number;
+              getColor(red: number, green: number, blue: number, alpha: number): number;
+              getRainbow(step: number): number;
+              getRainbow(step: number, speed: number): number;
+              getRainbowColors(step: number): Array<number>;
+              getRainbowColors(step: number, speed: number): Array<number>;
+              disableCull(): com.chattriggers.ctjs.api.render.Renderer;
+              enableCull(): com.chattriggers.ctjs.api.render.Renderer;
+              disableLighting(): com.chattriggers.ctjs.api.render.Renderer;
+              enableLighting(): com.chattriggers.ctjs.api.render.Renderer;
+              disableDepth(): com.chattriggers.ctjs.api.render.Renderer;
+              enableDepth(): com.chattriggers.ctjs.api.render.Renderer;
+              disableBlend(): com.chattriggers.ctjs.api.render.Renderer;
+              enableBlend(): com.chattriggers.ctjs.api.render.Renderer;
+              bindTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
+              bindTexture(texture: com.chattriggers.ctjs.api.render.Image, textureIndex: number): com.chattriggers.ctjs.api.render.Renderer;
+              deleteTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
+              pushMatrix(): com.chattriggers.ctjs.api.render.Renderer;
+              pushMatrix(stack: gg.essential.universal.UMatrixStack): com.chattriggers.ctjs.api.render.Renderer;
+              popMatrix(): com.chattriggers.ctjs.api.render.Renderer;
+              translate(x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
+              translate(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
+              scale(scaleX: number): com.chattriggers.ctjs.api.render.Renderer;
+              scale(scaleX: number, scaleY: number): com.chattriggers.ctjs.api.render.Renderer;
+              scale(scaleX: number, scaleY: number, scaleZ: number): com.chattriggers.ctjs.api.render.Renderer;
+              rotate(angle: number): com.chattriggers.ctjs.api.render.Renderer;
+              rotate(angle: number, x: number): com.chattriggers.ctjs.api.render.Renderer;
+              rotate(angle: number, x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
+              rotate(angle: number, x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
+              multiply(quaternion: org.joml.Quaternionf): com.chattriggers.ctjs.api.render.Renderer;
+              fixAlpha(color: number): number;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer] to allow for method chaining
+							 *  @see DrawMode
+							 */
+              begin(): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer] to allow for method chaining
+							 *  @see DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer] to allow for method chaining
+							 *  @see DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer] to allow for method chaining
+							 *  @see DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat, snippet: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets a new vertex in the world renderer.
+							 * 
+							 *  @param x the x position
+							 *  @param y the y position
+							 *  @param z the z position
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              pos(x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets a new vertex in the world renderer.
+							 * 
+							 *  @param x the x position
+							 *  @param y the y position
+							 *  @param z the z position
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              pos(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the texture location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the texture
+							 *  @param v the v position in the texture
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              tex(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the normal of the vertex. This is mostly used with [VertexFormat.LINES]
+							 * 
+							 *  @param x the x position of the normal vector
+							 *  @param y the y position of the normal vector
+							 *  @param z the z position of the normal vector
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              normal(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the overlay location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the overlay
+							 *  @param v the v position in the overlay
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              overlay(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Sets the light location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the light
+							 *  @param v the v position in the light
+							 *  @return [Renderer] to allow for method chaining
+							 */
+              light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
+							/**
+							 * Finalizes vertices and draws the world renderer.
+							 */
+              draw(): void;
+							/**
+							 * Gets a fixed render position from x, y, and z inputs adjusted with partial ticks
+							 *  @param x the X coordinate
+							 *  @param y the Y coordinate
+							 *  @param z the Z coordinate
+							 *  @return the Vec3f position to render at
+							 */
+              getRenderPos(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3f;
+              drawRect(color: number, x: number, y: number, width: number, height: number): com.chattriggers.ctjs.api.render.Renderer;
+              drawLine(color: number, x1: number, y1: number, x2: number, y2: number, thickness: number): void;
+              drawCircle(color: number, x: number, y: number, radius: number, steps: number): void;
+              drawString(text: string, x: number, y: number): void;
+              drawString(text: string, x: number, y: number, color: number): void;
+              drawString(text: string, x: number, y: number, color: number, shadow: boolean): void;
+              drawStringWithShadow(text: string, x: number, y: number): void;
+              drawStringWithShadow(text: string, x: number, y: number, color: number): void;
+              drawImage(image: com.chattriggers.ctjs.api.render.Image, x: number, y: number, width: number, height: number): void;
+							/**
+							 * Draws a player entity to the screen, similar to the one displayed in the inventory screen.
+							 * 
+							 *  Takes a parameter with the following options:
+							 *  - player: The player entity to draw. Can be a [PlayerMP] or [AbstractClientPlayerEntity].
+							 *            Defaults to Player.toMC()
+							 *  - x: The x position on the screen to render the player
+							 *  - y: The y position on the screen to render the player
+							 *  - size: The size of the rendered player
+							 *  - rotate: Whether the player should look at the mouse cursor, similar to the inventory screen
+							 *  - pitch: THe pitch the rendered player will face, if rotate is false
+							 *  - yaw: The yaw the rendered player will face, if rotate is false
+							 *  - showNametag: Whether the nametag of the player should be rendered
+							 *  - showArmor: Whether the armor of the player should be rendered
+							 *  - showCape: Whether the cape of the player should be rendered
+							 *  - showHeldItem: Whether the held item of the player should be rendered
+							 *  - showArrows: Whether any arrows stuck in the player's model should be rendered
+							 *  - showElytra: Whether the player's Elytra should be rendered
+							 *  - showParrot: Whether a perched parrot should be rendered
+							 *  - showBeeStinger: Whether any stuck bee stingers should be rendered
+							 * 
+							 *  @param obj An options bag
+							 */
+              drawPlayer(obj: org.mozilla.javascript.NativeObject): void;
+              new(): com.chattriggers.ctjs.api.render.Renderer;
+            }
+            const Renderer$ScreenWrapper: {
+              new(): com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
+            }
+            interface Renderer$ScreenWrapper { 
+              getWidth(): number;
+              getHeight(): number;
+              getScale(): number;
+            }
+            const Image: {
+              new(image: java.awt.image.BufferedImage | null | undefined): com.chattriggers.ctjs.api.render.Image;
+            }
+            interface Image { 
+              getImage(): java.awt.image.BufferedImage | null | undefined;
+              setImage(value: java.awt.image.BufferedImage | null | undefined): void;
+              getTextureWidth(): number;
+              getTextureHeight(): number;
+              getTexture(): net.minecraft.client.renderer.texture.DynamicTexture | null | undefined;
+							/**
+							 * Clears the image from GPU memory and removes its references CT side
+							 *  that way it can be garbage collected if not referenced in js code.
+							 */
+              destroy(): void;
+              draw(x: number, y: number): com.chattriggers.ctjs.api.render.Image;
+              draw(x: number, y: number, width: number | null | undefined): com.chattriggers.ctjs.api.render.Image;
+              draw(x: number, y: number, width: number | null | undefined, height: number | null | undefined): com.chattriggers.ctjs.api.render.Image;
+            }
+            const Image$Companion: {
+							/**
+							 * Create an image object from a java.io.File object. Throws an exception
+							 *  if the file cannot be found.
+							 */
+              fromFile(file: java.io.File): com.chattriggers.ctjs.api.render.Image;
+							/**
+							 * Create an image object from a file path. Throws an exception
+							 *  if the file cannot be found.
+							 */
+              fromFile(file: string): com.chattriggers.ctjs.api.render.Image;
+							/**
+							 * Create an image object from a file path, relative to the assets directory.
+							 *  Throws an exception if the file cannot be found.
+							 */
+              fromAsset(name: string): com.chattriggers.ctjs.api.render.Image;
+							/**
+							 * Creates an image object from a URL. Throws an exception if an image
+							 *  cannot be created from the URL. Will cache the image in the assets
+							 */
+              fromUrl(url: string): com.chattriggers.ctjs.api.render.Image;
+							/**
+							 * Creates an image object from a URL. Throws an exception if an image
+							 *  cannot be created from the URL. Will cache the image in the assets
+							 */
+              fromUrl(url: string, cachedImageName: string | null | undefined): com.chattriggers.ctjs.api.render.Image;
+              new(): com.chattriggers.ctjs.api.render.Image$Companion;
+            }
+            interface Image$Companion { 
+							/**
+							 * Create an image object from a java.io.File object. Throws an exception
+							 *  if the file cannot be found.
+							 */
+              fromFile(file: java.io.File): com.chattriggers.ctjs.api.render.Image;
+							/**
+							 * Create an image object from a file path. Throws an exception
+							 *  if the file cannot be found.
+							 */
+              fromFile(file: string): com.chattriggers.ctjs.api.render.Image;
+							/**
+							 * Create an image object from a file path, relative to the assets directory.
+							 *  Throws an exception if the file cannot be found.
+							 */
+              fromAsset(name: string): com.chattriggers.ctjs.api.render.Image;
+							/**
+							 * Creates an image object from a URL. Throws an exception if an image
+							 *  cannot be created from the URL. Will cache the image in the assets
+							 */
+              fromUrl(url: string): com.chattriggers.ctjs.api.render.Image;
+							/**
+							 * Creates an image object from a URL. Throws an exception if an image
+							 *  cannot be created from the URL. Will cache the image in the assets
+							 */
+              fromUrl(url: string, cachedImageName: string | null | undefined): com.chattriggers.ctjs.api.render.Image;
+              new(): com.chattriggers.ctjs.api.render.Image$Companion;
+            }
+            const Rectangle: {
+              new(color: number, x: number, y: number, width: number, height: number): com.chattriggers.ctjs.api.render.Rectangle;
+            }
+            interface Rectangle { 
+              getColor(): number;
+              setColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getX(): number;
+              setX(x: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getY(): number;
+              setY(y: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getWidth(): number;
+              setWidth(width: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getHeight(): number;
+              setHeight(height: number): com.chattriggers.ctjs.api.render.Rectangle;
+              isShadow(): boolean;
+              setShadow(shadow: boolean): com.chattriggers.ctjs.api.render.Rectangle;
+              setShadow(color: number, x: number, y: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getShadowOffset(): com.chattriggers.ctjs.api.vec.Vec2f;
+              getShadowOffsetX(): number;
+              getShadowOffsetY(): number;
+              setShadowOffset(x: number, y: number): com.chattriggers.ctjs.api.render.Rectangle;
+              setShadowOffsetX(x: number): com.chattriggers.ctjs.api.render.Rectangle;
+              setShadowOffsetY(y: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getShadowColor(): number;
+              setShadowColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getOutline(): boolean;
+              setOutline(outline: boolean): com.chattriggers.ctjs.api.render.Rectangle;
+              setOutline(color: number, thickness: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getOutlineColor(): number;
+              setOutlineColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getThickness(): number;
+              setThickness(thickness: number): com.chattriggers.ctjs.api.render.Rectangle;
+              draw(): com.chattriggers.ctjs.api.render.Rectangle;
+            }
+            const Gui: {
+              new(): com.chattriggers.ctjs.api.render.Gui;
+              new(title: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Gui;
+            }
+            interface Gui extends gg.essential.universal.UScreen { 
+              open(): void;
+              isOpen(): boolean;
+							/**
+							 * Registers a method to be run while gui is open.
+							 *  Registered method runs on draw.
+							 *  Arguments passed through to method:
+							 *  - int mouseX
+							 *  - int mouseY
+							 *  - float partialTicks
+							 * 
+							 *  @param method the method to run
+							 *  @return the trigger
+							 */
+              registerDraw(method: any): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Registers a method to be run while gui is open.
+							 *  Registered method runs on mouse click.
+							 *  Arguments passed through to method:
+							 *  - int mouseX
+							 *  - int mouseY
+							 *  - int button
+							 * 
+							 *  @param method the method to run
+							 *  @return the trigger
+							 */
+              registerClicked(method: any): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Registers a method to be run while the gui is open.
+							 *  Registered method runs on mouse scroll.
+							 *  Arguments passed through to method:
+							 *  - int mouseX
+							 *  - int mouseY
+							 *  - int scroll direction
+							 */
+              registerScrolled(method: any): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Registers a method to be run while gui is open.
+							 *  Registered method runs on key input.
+							 *  Arguments passed through to method:
+							 *  - char typed character
+							 *  - int key code
+							 * 
+							 *  @param method the method to run
+							 *  @return the trigger
+							 */
+              registerKeyTyped(method: any): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Registers a method to be run while gui is open.
+							 *  Registered method runs on key input.
+							 *  Arguments passed through to method:
+							 *  - int mouseX
+							 *  - int mouseY
+							 *  - int clickedMouseButton
+							 *  - long timeSinceLastClick
+							 * 
+							 *  @param method the method to run
+							 *  @return the trigger
+							 */
+              registerMouseDragged(method: any): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Registers a method to be run while gui is open.
+							 *  Registered method runs on mouse release.
+							 *  Arguments passed through to method:
+							 *  - int mouseX
+							 *  - int mouseY
+							 *  - int button
+							 * 
+							 *  @param method the method to run
+							 *  @return the trigger
+							 */
+              registerMouseReleased(method: any): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Registers a method to be run while gui is open.
+							 *  Registered method runs when an action is performed (clicking a button)
+							 *  Arguments passed through to method:
+							 *  - the button that is clicked
+							 * 
+							 *  @param method the method to run
+							 *  @return the trigger
+							 */
+              registerActionPerformed(method: any): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Registers a method to be run when the gui is opened.
+							 *  Arguments passed through to method:
+							 *  - the gui that is opened
+							 * 
+							 *  @param method the method to run
+							 *  @return the trigger
+							 */
+              registerOpened(method: any): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Registers a method to be run when the gui is closed.
+							 *  Arguments passed through to method:
+							 *  - the gui that is closed
+							 * 
+							 *  @param method the method to run
+							 *  @return the trigger
+							 */
+              registerClosed(method: any): com.chattriggers.ctjs.api.render.Gui;
+              unregisterDraw(): com.chattriggers.ctjs.api.render.Gui;
+              unregisterClicked(): com.chattriggers.ctjs.api.render.Gui;
+              unregisterScrolled(): com.chattriggers.ctjs.api.render.Gui;
+              unregisterKeyTyped(): com.chattriggers.ctjs.api.render.Gui;
+              unregisterMouseDragged(): com.chattriggers.ctjs.api.render.Gui;
+              unregisterMouseReleased(): com.chattriggers.ctjs.api.render.Gui;
+              unregisterActionPerformed(): com.chattriggers.ctjs.api.render.Gui;
+              unregisterOpened(): com.chattriggers.ctjs.api.render.Gui;
+              unregisterClosed(): com.chattriggers.ctjs.api.render.Gui;
+              setDoesPauseGame(doesPauseGame: boolean): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Add a base Minecraft button to the gui
+							 * 
+							 *  @param button the button to add
+							 *  @return the button ID for use in actionPerformed
+							 */
+              addButton(button: net.minecraft.client.gui.components.Button): number;
+							/**
+							 * Add a base Minecraft button to the gui
+							 * 
+							 *  @param x the x position of the button
+							 *  @param y the y position of the button
+							 *  @param width the width of the button
+							 *  @param height the height of the button
+							 *  @param buttonText the label of the button
+							 *  @return the button ID for use in actionPerformed
+							 */
+              addButton(x: number, y: number, buttonText: com.chattriggers.ctjs.api.message.TextComponent): number;
+							/**
+							 * Add a base Minecraft button to the gui
+							 * 
+							 *  @param x the x position of the button
+							 *  @param y the y position of the button
+							 *  @param width the width of the button
+							 *  @param height the height of the button
+							 *  @param buttonText the label of the button
+							 *  @return the button ID for use in actionPerformed
+							 */
+              addButton(x: number, y: number, width: number, buttonText: com.chattriggers.ctjs.api.message.TextComponent): number;
+							/**
+							 * Add a base Minecraft button to the gui
+							 * 
+							 *  @param x the x position of the button
+							 *  @param y the y position of the button
+							 *  @param width the width of the button
+							 *  @param height the height of the button
+							 *  @param buttonText the label of the button
+							 *  @return the button ID for use in actionPerformed
+							 */
+              addButton(x: number, y: number, width: number, height: number, buttonText: com.chattriggers.ctjs.api.message.TextComponent): number;
+              addButton(x: number, y: number, width: number, height: number, buttonText: string): number;
+							/**
+							 * Removes a button from the gui with the given id
+							 * 
+							 *  @param buttonId the id of the button to remove
+							 *  @return the Gui for method chaining
+							 */
+              removeButton(buttonId: number): com.chattriggers.ctjs.api.render.Gui;
+              clearButtons(): com.chattriggers.ctjs.api.render.Gui;
+              getButtonVisibility(buttonId: number): boolean;
+							/**
+							 * Sets the visibility of a button
+							 * 
+							 *  @param buttonId the id of the button to change
+							 *  @param visible the new visibility of the button
+							 *  @return the Gui for method chaining
+							 */
+              setButtonVisibility(buttonId: number, visible: boolean): com.chattriggers.ctjs.api.render.Gui;
+              getButtonEnabled(buttonId: number): boolean;
+							/**
+							 * Sets the enabled state of a button
+							 * 
+							 *  @param buttonId the id of the button to set
+							 *  @param enabled the enabled state of the button
+							 *  @return the Gui for method chaining
+							 */
+              setButtonEnabled(buttonId: number, enabled: boolean): com.chattriggers.ctjs.api.render.Gui;
+              getButtonWidth(buttonId: number): number;
+							/**
+							 * Sets the button's width. Button textures break if the width is greater than 200
+							 * 
+							 *  @param buttonId id of the button
+							 *  @param width the new width
+							 *  @return the Gui for method chaining
+							 */
+              setButtonWidth(buttonId: number, width: number): com.chattriggers.ctjs.api.render.Gui;
+              getButtonHeight(buttonId: number): number;
+							/**
+							 * Sets the button's height. Button textures break if the height is not 20
+							 * 
+							 *  @param buttonId id of the button
+							 *  @param height the new height
+							 *  @return the Gui for method chaining
+							 */
+              setButtonHeight(buttonId: number, height: number): com.chattriggers.ctjs.api.render.Gui;
+              getButtonX(buttonId: number): number;
+							/**
+							 * Sets the button's x position
+							 * 
+							 *  @param buttonId id of the button
+							 *  @param x the new x position
+							 *  @return the Gui for method chaining
+							 */
+              setButtonX(buttonId: number, x: number): com.chattriggers.ctjs.api.render.Gui;
+              getButtonY(buttonId: number): number;
+							/**
+							 * Sets the button's y position
+							 * 
+							 *  @param buttonId id of the button
+							 *  @param y the new y position
+							 *  @return the Gui for method chaining
+							 */
+              setButtonY(buttonId: number, y: number): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Sets the button's position
+							 * 
+							 *  @param buttonId id of the button
+							 *  @param x the new x position
+							 *  @param y the new y position
+							 *  @return the Gui for method chaining
+							 */
+              setButtonLoc(buttonId: number, x: number, y: number): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Sets the button's text
+							 * 
+							 *  @param buttonId id of the button
+							 *  @param text the new text
+							 */
+              setButtonText(buttonId: number, text: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Sets the button's text
+							 * 
+							 *  @param buttonId id of the button
+							 *  @param text the new text
+							 */
+              setButtonText(buttonId: number, text: string): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Sets the gui's tooltip, this will be visible on top of the cursor
+							 *  when the gui is open.
+							 * 
+							 *  @param text the contents of the tooltip
+							 */
+              setTooltip(text: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Gui;
+							/**
+							 * Sets the gui's tooltip, this will be visible on top of the cursor
+							 *  when the gui is open.
+							 * 
+							 *  @param text the contents of the tooltip
+							 */
+              setTooltip(text: string): com.chattriggers.ctjs.api.render.Gui;
+            }
+            const Renderer3d: {
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer3d] to allow for method chaining
+							 *  @see Renderer.DrawMode
+							 */
+              begin(): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer3d] to allow for method chaining
+							 *  @see Renderer.DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer3d] to allow for method chaining
+							 *  @see Renderer.DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer3d] to allow for method chaining
+							 *  @see Renderer.DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat, snippet: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets a new vertex in the world renderer.
+							 * 
+							 *  @param x the x position
+							 *  @param y the y position
+							 *  @param z the z position
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              pos(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the texture location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the texture
+							 *  @param v the v position in the texture
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              tex(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 1
+							 *  @param g the green value of the color, between 0 and 1
+							 *  @param b the blue value of the color, between 0 and 1
+							 *  @param a the alpha value of the color, between 0 and 1
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 1
+							 *  @param g the green value of the color, between 0 and 1
+							 *  @param b the blue value of the color, between 0 and 1
+							 *  @param a the alpha value of the color, between 0 and 1
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 255
+							 *  @param g the green value of the color, between 0 and 255
+							 *  @param b the blue value of the color, between 0 and 255
+							 *  @param a the alpha value of the color, between 0 and 255
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 255
+							 *  @param g the green value of the color, between 0 and 255
+							 *  @param b the blue value of the color, between 0 and 255
+							 *  @param a the alpha value of the color, between 0 and 255
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param color the color value, can use [Renderer.getColor] to get this
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              color(color: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the normal of the vertex. This is mostly used with [Renderer.VertexFormat.LINES]
+							 * 
+							 *  @param x the x position of the normal vector
+							 *  @param y the y position of the normal vector
+							 *  @param z the z position of the normal vector
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              normal(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the overlay location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the overlay
+							 *  @param v the v position in the overlay
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              overlay(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the light location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the light
+							 *  @param v the v position in the light
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Finalizes vertices and draws the world renderer.
+							 */
+              draw(): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean, centered: boolean): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean, centered: boolean, renderThroughBlocks: boolean): void;
+							/**
+							 * A variant of drawString that takes an object instead of positional parameters
+							 */
+              drawString(obj: org.mozilla.javascript.NativeObject): void;
+							/**
+							 * Draws a line in the world from (x1, y1, z1) to (x2, y2, z2)
+							 * 
+							 *  @param color the color of the line
+							 *  @param x1 the starting x coordinate
+							 *  @param y1 the starting y coordinate
+							 *  @param z1 the starting z coordinate
+							 *  @param x2 the ending x coordinate
+							 *  @param y2 the ending y coordinate
+							 *  @param z2 the ending z coordinate
+							 */
+              drawLine(color: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): void;
+              new(): com.chattriggers.ctjs.api.render.Renderer3d;
+            }
+            interface Renderer3d { 
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer3d] to allow for method chaining
+							 *  @see Renderer.DrawMode
+							 */
+              begin(): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer3d] to allow for method chaining
+							 *  @see Renderer.DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer3d] to allow for method chaining
+							 *  @see Renderer.DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Begin drawing with the world renderer
+							 * 
+							 *  @param drawMode the GL draw mode
+							 *  @param vertexFormat The [VertexFormat] to use for drawing
+							 *  @return [Renderer3d] to allow for method chaining
+							 *  @see Renderer.DrawMode
+							 */
+              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat, snippet: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets a new vertex in the world renderer.
+							 * 
+							 *  @param x the x position
+							 *  @param y the y position
+							 *  @param z the z position
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              pos(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the texture location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the texture
+							 *  @param v the v position in the texture
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              tex(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 1
+							 *  @param g the green value of the color, between 0 and 1
+							 *  @param b the blue value of the color, between 0 and 1
+							 *  @param a the alpha value of the color, between 0 and 1
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 1
+							 *  @param g the green value of the color, between 0 and 1
+							 *  @param b the blue value of the color, between 0 and 1
+							 *  @param a the alpha value of the color, between 0 and 1
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 255
+							 *  @param g the green value of the color, between 0 and 255
+							 *  @param b the blue value of the color, between 0 and 255
+							 *  @param a the alpha value of the color, between 0 and 255
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param r the red value of the color, between 0 and 255
+							 *  @param g the green value of the color, between 0 and 255
+							 *  @param b the blue value of the color, between 0 and 255
+							 *  @param a the alpha value of the color, between 0 and 255
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the color for the last defined vertex.
+							 * 
+							 *  @param color the color value, can use [Renderer.getColor] to get this
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              color(color: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the normal of the vertex. This is mostly used with [Renderer.VertexFormat.LINES]
+							 * 
+							 *  @param x the x position of the normal vector
+							 *  @param y the y position of the normal vector
+							 *  @param z the z position of the normal vector
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              normal(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the overlay location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the overlay
+							 *  @param v the v position in the overlay
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              overlay(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Sets the light location on the last defined vertex.
+							 * 
+							 *  @param u the u position in the light
+							 *  @param v the v position in the light
+							 *  @return [Renderer3d] to allow for method chaining
+							 */
+              light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
+							/**
+							 * Finalizes vertices and draws the world renderer.
+							 */
+              draw(): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean, centered: boolean): void;
+							/**
+							 * Renders floating lines of text in the 3D world at a specific position.
+							 *  This should be placed inside a `preRenderWorld` trigger.
+							 * 
+							 *  @param text The string array of text to render
+							 *  @param x X coordinate in the game world
+							 *  @param y Y coordinate in the game world
+							 *  @param z Z coordinate in the game world
+							 *  @param color the color of the text
+							 *  @param renderBlackBox render a pretty black border behind the text
+							 *  @param scale the scale of the text
+							 *  @param increase whether to scale the text up as the player moves away
+							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
+							 *  @param renderThroughBlocks whether to render the text through blocks
+							 */
+              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean, centered: boolean, renderThroughBlocks: boolean): void;
+							/**
+							 * A variant of drawString that takes an object instead of positional parameters
+							 */
+              drawString(obj: org.mozilla.javascript.NativeObject): void;
+							/**
+							 * Draws a line in the world from (x1, y1, z1) to (x2, y2, z2)
+							 * 
+							 *  @param color the color of the line
+							 *  @param x1 the starting x coordinate
+							 *  @param y1 the starting y coordinate
+							 *  @param z1 the starting z coordinate
+							 *  @param x2 the ending x coordinate
+							 *  @param y2 the ending y coordinate
+							 *  @param z2 the ending z coordinate
+							 */
+              drawLine(color: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): void;
+              new(): com.chattriggers.ctjs.api.render.Renderer3d;
+            }
+            const RenderUtils: {
+              Color: typeof com.chattriggers.ctjs.api.render.RenderUtils$Color;
+              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, depth: boolean): void;
+              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, depth: boolean): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color, wireThickness: number): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color, wireThickness: number, depth: boolean): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean, thickness: number): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean, thickness: number, depth: boolean): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean, translate: boolean): void;
+              new(): com.chattriggers.ctjs.api.render.RenderUtils;
+            }
+            interface RenderUtils { 
+              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, depth: boolean): void;
+              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, depth: boolean): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color, wireThickness: number): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color, wireThickness: number, depth: boolean): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean, thickness: number): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean, thickness: number, depth: boolean): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean, translate: boolean): void;
+              new(): com.chattriggers.ctjs.api.render.RenderUtils;
+            }
+            const RenderUtils$Color: {
+              new(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.RenderUtils$Color;
+            }
+            interface RenderUtils$Color { 
+              getR(): number;
+              getG(): number;
+              getB(): number;
+              getA(): number;
+              getRf(): number;
+              getGf(): number;
+              getBf(): number;
+              getAf(): number;
+              getPacked(): number;
+              component1(): number;
+              component2(): number;
+              component3(): number;
+              component4(): number;
+              copy(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.RenderUtils$Color;
+            }
+            const DrawContextHolder: {
+              getCurrentContext(): net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined;
+              setCurrentContext(value: net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined): void;
+              new(): com.chattriggers.ctjs.api.render.DrawContextHolder;
+            }
+            interface DrawContextHolder { 
+              getCurrentContext(): net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined;
+              setCurrentContext(value: net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined): void;
+              new(): com.chattriggers.ctjs.api.render.DrawContextHolder;
+              withContext<T>(context: net.minecraft.client.gui.GuiGraphicsExtractor, block: kotlin.Function0<T>): T;
+            }
+            const Book: {
+              new(): com.chattriggers.ctjs.api.render.Book;
+            }
+            interface Book { 
+							/**
+							 * Add a page to the book.
+							 * 
+							 *  @param contents the entire message for what the page should be
+							 *  @return the current book to allow method chaining
+							 */
+              addPage(contents: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Book;
+							/**
+							 * Overloaded method for adding a simple page to the book.
+							 * 
+							 *  @param message a simple string to make the page
+							 *  @return the current book to allow method chaining
+							 */
+              addPage(message: string): com.chattriggers.ctjs.api.render.Book;
+							/**
+							 * Inserts a page at the specified index of the book
+							 * 
+							 *  @param pageIndex the index of the page to set
+							 *  @param message the message to set the page to
+							 *  @return the current book to allow method chaining
+							 */
+              insertPage(pageIndex: number, message: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Book;
+              insertPage(pageIndex: number, message: string): com.chattriggers.ctjs.api.render.Book;
+							/**
+							 * Sets a page of the book to the specified message.
+							 * 
+							 *  @param pageIndex the index of the page to set
+							 *  @param message the message to set the page to
+							 *  @return the current book to allow method chaining
+							 */
+              setPage(pageIndex: number, message: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Book;
+              setPage(pageIndex: number, message: string): com.chattriggers.ctjs.api.render.Book;
+              display(): void;
+              display(pageIndex: number): void;
+              isOpen(): boolean;
+              getCurrentPage(): number;
+            }
+            const Shape: {
+              new(color: number): com.chattriggers.ctjs.api.render.Shape;
+            }
+            interface Shape { 
+              copy(): com.chattriggers.ctjs.api.render.Shape;
+              getColor(): number;
+              setColor(color: number): com.chattriggers.ctjs.api.render.Shape;
+              getDrawMode(): com.chattriggers.ctjs.api.render.Renderer$DrawMode;
+							/**
+							 * Sets the GL draw mode of the shape
+							 */
+              setDrawMode(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode): com.chattriggers.ctjs.api.render.Shape;
+              getVertexes(): Array<com.chattriggers.ctjs.api.vec.Vec2f>;
+              addVertex(x: number, y: number): com.chattriggers.ctjs.api.render.Shape;
+              insertVertex(index: number, x: number, y: number): com.chattriggers.ctjs.api.render.Shape;
+              removeVertex(index: number): com.chattriggers.ctjs.api.render.Shape;
+              clearVertices(): com.chattriggers.ctjs.api.render.Shape;
+							/**
+							 * Sets the shape as a line pointing from [x1, y1] to [x2, y2] with a thickness
+							 */
+              setLine(x1: number, y1: number, x2: number, y2: number, thickness: number): com.chattriggers.ctjs.api.render.Shape;
+							/**
+							 * Sets the shape as a circle with a center at [x, y]
+							 *  with radius and number of steps around the circle
+							 */
+              setCircle(x: number, y: number, radius: number, steps: number): com.chattriggers.ctjs.api.render.Shape;
+              draw(): com.chattriggers.ctjs.api.render.Shape;
+            }
+            const NVGRenderer: {
+              GifData: typeof com.chattriggers.ctjs.api.render.NVGRenderer$GifData;
+              vg: number;
+              registerV5Render(runnable: java.lang.Runnable): void;
+              unregisterV5Render(runnable: java.lang.Runnable): void;
+              registerV5PreRender(runnable: java.lang.Runnable): void;
+              unregisterV5PreRender(runnable: java.lang.Runnable): void;
+              runPreDrawables(): void;
+              runDrawables(): void;
+              beginFrame(width: number, height: number): void;
+              endFrame(): void;
+              drawCheckerboard(x: number, y: number, w: number, h: number, radius: number): void;
+              drawCheckerboard(x: number, y: number, w: number, h: number, radius: number, size: number): void;
+              drawHueBar(x: number, y: number, w: number, h: number, radius: number): void;
+              drawGradientRect(x: number, y: number, w: number, h: number, color1: number, color2: number, direction: any): void;
+              drawGradientRect(x: number, y: number, w: number, h: number, color1: number, color2: number, direction: any, radius: number): void;
+              drawHollowGradientRect(x: number, y: number, w: number, h: number, thickness: number, color1: number, color2: number, direction: any): void;
+              drawHollowGradientRect(x: number, y: number, w: number, h: number, thickness: number, color1: number, color2: number, direction: any, radius: number): void;
+              linearGradient(sx: number, sy: number, ex: number, ey: number, color1: number, color2: number): void;
+              setGlobalCompositeOperation(op: number): void;
+              save(): void;
+              restore(): void;
+              translate(x: number, y: number): void;
+              rotate(angle: number): void;
+              scale(x: number, y: number): void;
+              globalAlpha(alpha: number): void;
+              drawRect(x: number, y: number, w: number, h: number, color: number): void;
+              drawRoundedRect(x: number, y: number, w: number, h: number, radius: number, color: number): void;
+              drawRoundedRectVaried(x: number, y: number, w: number, h: number, color: number, tl: number, tr: number, br: number, bl: number): void;
+              drawCircle(x: number, y: number, radius: number, color: number): void;
+              drawDropShadow(x: number, y: number, w: number, h: number, radius: number, blur: number, spread: number, color: number): void;
+              drawHollowRect(x: number, y: number, w: number, h: number, thickness: number, color: number): void;
+              drawHollowRect(x: number, y: number, w: number, h: number, thickness: number, color: number, radius: number): void;
+              drawLine(x1: number, y1: number, x2: number, y2: number, thickness: number, color: number): void;
+              loadImage(path: string): string;
+              unloadImage(path: string): void;
+              isImageLoaded(path: string): boolean;
+              loadGif(path: string): com.chattriggers.ctjs.api.render.NVGRenderer$GifData | null | undefined;
+              unloadGif(path: string): void;
+              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number): void;
+              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number): void;
+              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number, alpha: number): void;
+              drawImage(path: string, x: number, y: number, w: number, h: number): void;
+              drawImage(path: string, x: number, y: number, w: number, h: number, radius: number): void;
+              drawImage(path: string, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
+              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number): void;
+              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number): void;
+              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
+              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number): void;
+              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number, radius: number): void;
+              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
+              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number): void;
+              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number, radius: number): void;
+              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
+              invalidateGLTexture(glTextureId: number): void;
+              clearImageCache(): void;
+              getCacheStats(): string;
+              scissor(x: number, y: number, w: number, h: number): void;
+              pushScissor(x: number, y: number, w: number, h: number): void;
+              popScissor(): void;
+              resetScissor(): void;
+              text(text: string, x: number, y: number, size: number, color: number, align: number): void;
+              text(text: string, x: number, y: number, size: number, color: number, font: com.chattriggers.ctjs.api.render.Font | null | undefined, align: number): void;
+              textWidth(text: string, size: number): number;
+              textWidth(text: string, size: number, font: com.chattriggers.ctjs.api.render.Font | null | undefined): number;
+              destroy(): void;
+              new(): com.chattriggers.ctjs.api.render.NVGRenderer;
+            }
+            interface NVGRenderer { 
+              vg: number;
+              registerV5Render(runnable: java.lang.Runnable): void;
+              unregisterV5Render(runnable: java.lang.Runnable): void;
+              registerV5PreRender(runnable: java.lang.Runnable): void;
+              unregisterV5PreRender(runnable: java.lang.Runnable): void;
+              runPreDrawables(): void;
+              runDrawables(): void;
+              beginFrame(width: number, height: number): void;
+              endFrame(): void;
+              drawCheckerboard(x: number, y: number, w: number, h: number, radius: number): void;
+              drawCheckerboard(x: number, y: number, w: number, h: number, radius: number, size: number): void;
+              drawHueBar(x: number, y: number, w: number, h: number, radius: number): void;
+              drawGradientRect(x: number, y: number, w: number, h: number, color1: number, color2: number, direction: any): void;
+              drawGradientRect(x: number, y: number, w: number, h: number, color1: number, color2: number, direction: any, radius: number): void;
+              drawHollowGradientRect(x: number, y: number, w: number, h: number, thickness: number, color1: number, color2: number, direction: any): void;
+              drawHollowGradientRect(x: number, y: number, w: number, h: number, thickness: number, color1: number, color2: number, direction: any, radius: number): void;
+              linearGradient(sx: number, sy: number, ex: number, ey: number, color1: number, color2: number): void;
+              setGlobalCompositeOperation(op: number): void;
+              save(): void;
+              restore(): void;
+              translate(x: number, y: number): void;
+              rotate(angle: number): void;
+              scale(x: number, y: number): void;
+              globalAlpha(alpha: number): void;
+              drawRect(x: number, y: number, w: number, h: number, color: number): void;
+              drawRoundedRect(x: number, y: number, w: number, h: number, radius: number, color: number): void;
+              drawRoundedRectVaried(x: number, y: number, w: number, h: number, color: number, tl: number, tr: number, br: number, bl: number): void;
+              drawCircle(x: number, y: number, radius: number, color: number): void;
+              drawDropShadow(x: number, y: number, w: number, h: number, radius: number, blur: number, spread: number, color: number): void;
+              drawHollowRect(x: number, y: number, w: number, h: number, thickness: number, color: number): void;
+              drawHollowRect(x: number, y: number, w: number, h: number, thickness: number, color: number, radius: number): void;
+              drawLine(x1: number, y1: number, x2: number, y2: number, thickness: number, color: number): void;
+              loadImage(path: string): string;
+              unloadImage(path: string): void;
+              isImageLoaded(path: string): boolean;
+              loadGif(path: string): com.chattriggers.ctjs.api.render.NVGRenderer$GifData | null | undefined;
+              unloadGif(path: string): void;
+              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number): void;
+              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number): void;
+              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number, alpha: number): void;
+              drawImage(path: string, x: number, y: number, w: number, h: number): void;
+              drawImage(path: string, x: number, y: number, w: number, h: number, radius: number): void;
+              drawImage(path: string, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
+              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number): void;
+              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number): void;
+              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
+              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number): void;
+              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number, radius: number): void;
+              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
+              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number): void;
+              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number, radius: number): void;
+              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
+              invalidateGLTexture(glTextureId: number): void;
+              clearImageCache(): void;
+              getCacheStats(): string;
+              scissor(x: number, y: number, w: number, h: number): void;
+              pushScissor(x: number, y: number, w: number, h: number): void;
+              popScissor(): void;
+              resetScissor(): void;
+              text(text: string, x: number, y: number, size: number, color: number, align: number): void;
+              text(text: string, x: number, y: number, size: number, color: number, font: com.chattriggers.ctjs.api.render.Font | null | undefined, align: number): void;
+              textWidth(text: string, size: number): number;
+              textWidth(text: string, size: number, font: com.chattriggers.ctjs.api.render.Font | null | undefined): number;
+              destroy(): void;
+              new(): com.chattriggers.ctjs.api.render.NVGRenderer;
+              getDefaultFont(): com.chattriggers.ctjs.api.render.Font | null | undefined;
+              clearCallbacks(): void;
+            }
+            const NVGRenderer$GifData: {
+              new(width: number, height: number, frameCount: number, delays: Array<number>): com.chattriggers.ctjs.api.render.NVGRenderer$GifData;
+            }
+            interface NVGRenderer$GifData { 
+              getWidth(): number;
+              getHeight(): number;
+              getFrameCount(): number;
+              getDelays(): Array<number>;
+              component1(): number;
+              component2(): number;
+              component3(): number;
+              component4(): Array<number>;
+              copy(width: number, height: number, frameCount: number, delays: Array<number>): com.chattriggers.ctjs.api.render.NVGRenderer$GifData;
+            }
+          }
+          namespace triggers {
+            interface ITriggerType { 
+              getName(): string;
+              triggerAll(): void;
+              triggerAll(arg0: any | null | undefined): void;
+              triggerAll(arg0: any | null | undefined, arg1: any | null | undefined): void;
+              triggerAll(arg0: any | null | undefined, arg1: any | null | undefined, arg2: any | null | undefined): void;
+              triggerAll(arg0: any | null | undefined, arg1: any | null | undefined, arg2: any | null | undefined, arg3: any | null | undefined): void;
+              triggerAll(arg0: any | null | undefined, arg1: any | null | undefined, arg2: any | null | undefined, arg3: any | null | undefined, arg4: any | null | undefined): void;
+              triggerAll(args: any | null | undefined): void;
+            }
+            const TriggerType: {
+              CHAT: com.chattriggers.ctjs.api.triggers.TriggerType;
+              ACTION_BAR: com.chattriggers.ctjs.api.triggers.TriggerType;
+              TICK: com.chattriggers.ctjs.api.triggers.TriggerType;
+              STEP: com.chattriggers.ctjs.api.triggers.TriggerType;
+              GAME_UNLOAD: com.chattriggers.ctjs.api.triggers.TriggerType;
+              GAME_LOAD: com.chattriggers.ctjs.api.triggers.TriggerType;
+              CLICKED: com.chattriggers.ctjs.api.triggers.TriggerType;
+              SCROLLED: com.chattriggers.ctjs.api.triggers.TriggerType;
+              DRAGGED: com.chattriggers.ctjs.api.triggers.TriggerType;
+              GUI_OPENED: com.chattriggers.ctjs.api.triggers.TriggerType;
+              MESSAGE_SENT: com.chattriggers.ctjs.api.triggers.TriggerType;
+              ITEM_TOOLTIP: com.chattriggers.ctjs.api.triggers.TriggerType;
+              PLAYER_INTERACT: com.chattriggers.ctjs.api.triggers.TriggerType;
+              GUI_KEY: com.chattriggers.ctjs.api.triggers.TriggerType;
+              GUI_MOUSE_CLICK: com.chattriggers.ctjs.api.triggers.TriggerType;
+              GUI_MOUSE_DRAG: com.chattriggers.ctjs.api.triggers.TriggerType;
+              PACKET_SENT: com.chattriggers.ctjs.api.triggers.TriggerType;
+              PACKET_RECEIVED: com.chattriggers.ctjs.api.triggers.TriggerType;
+              SERVER_CONNECT: com.chattriggers.ctjs.api.triggers.TriggerType;
+              SERVER_DISCONNECT: com.chattriggers.ctjs.api.triggers.TriggerType;
+              GUI_CLOSED: com.chattriggers.ctjs.api.triggers.TriggerType;
+              DROP_ITEM: com.chattriggers.ctjs.api.triggers.TriggerType;
+              PRE_RENDER_WORLD: com.chattriggers.ctjs.api.triggers.TriggerType;
+              POST_RENDER_WORLD: com.chattriggers.ctjs.api.triggers.TriggerType;
+              BLOCK_HIGHLIGHT: com.chattriggers.ctjs.api.triggers.TriggerType;
+              RENDER_OVERLAY: com.chattriggers.ctjs.api.triggers.TriggerType;
+              RENDER_PLAYER_LIST: com.chattriggers.ctjs.api.triggers.TriggerType;
+              RENDER_ENTITY: com.chattriggers.ctjs.api.triggers.TriggerType;
+              RENDER_BLOCK_ENTITY: com.chattriggers.ctjs.api.triggers.TriggerType;
+              GUI_RENDER: com.chattriggers.ctjs.api.triggers.TriggerType;
+              POST_GUI_RENDER: com.chattriggers.ctjs.api.triggers.TriggerType;
+              SOUND_PLAY: com.chattriggers.ctjs.api.triggers.TriggerType;
+              WORLD_LOAD: com.chattriggers.ctjs.api.triggers.TriggerType;
+              WORLD_UNLOAD: com.chattriggers.ctjs.api.triggers.TriggerType;
+              SPAWN_PARTICLE: com.chattriggers.ctjs.api.triggers.TriggerType;
+              ENTITY_DEATH: com.chattriggers.ctjs.api.triggers.TriggerType;
+              ENTITY_DAMAGE: com.chattriggers.ctjs.api.triggers.TriggerType;
+              COMMAND: com.chattriggers.ctjs.api.triggers.TriggerType;
+              OTHER: com.chattriggers.ctjs.api.triggers.TriggerType;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.triggers.TriggerType>;
+              values(): Array<com.chattriggers.ctjs.api.triggers.TriggerType>;
+              valueOf(value: string): com.chattriggers.ctjs.api.triggers.TriggerType;
+            }
+            interface TriggerType extends kotlin.Enum<com.chattriggers.ctjs.api.triggers.TriggerType>, com.chattriggers.ctjs.api.triggers.ITriggerType { 
+            }
+            const CustomTriggerType: {
+              new(name: string): com.chattriggers.ctjs.api.triggers.CustomTriggerType;
+            }
+            interface CustomTriggerType extends com.chattriggers.ctjs.api.triggers.ITriggerType { 
+              component1(): string;
+              copy(name: string): com.chattriggers.ctjs.api.triggers.CustomTriggerType;
+            }
+            const RegularTrigger: {
+              new(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.RegularTrigger;
+            }
+            interface RegularTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
+            }
+            const Trigger: {
+              Priority: typeof com.chattriggers.ctjs.api.triggers.Trigger$Priority;
+            }
+            interface Trigger extends kotlin.Comparable<com.chattriggers.ctjs.api.triggers.Trigger> { 
+              getMethod(): any;
+              setMethod(value: any): void;
+              getType(): com.chattriggers.ctjs.api.triggers.ITriggerType;
+              setType(value: com.chattriggers.ctjs.api.triggers.ITriggerType): void;
+              isRegistered(): boolean;
+							/**
+							 * Sets a trigger's priority using [Priority].
+							 *  Highest runs first.
+							 *  @param priority the priority of the trigger
+							 *  @return the trigger for method chaining
+							 */
+              setPriority(priority: com.chattriggers.ctjs.api.triggers.Trigger$Priority): com.chattriggers.ctjs.api.triggers.Trigger;
+							/**
+							 * Registers a trigger based on its type.
+							 *  This is done automatically with TriggerRegister.
+							 *  @return the trigger for method chaining
+							 */
+              register(): com.chattriggers.ctjs.api.triggers.Trigger;
+							/**
+							 * Unregisters a trigger.
+							 *  @return the trigger for method chaining
+							 */
+              unregister(): com.chattriggers.ctjs.api.triggers.Trigger;
+            }
+            const Trigger$Priority: {
+              HIGHEST: com.chattriggers.ctjs.api.triggers.Trigger$Priority;
+              HIGH: com.chattriggers.ctjs.api.triggers.Trigger$Priority;
+              NORMAL: com.chattriggers.ctjs.api.triggers.Trigger$Priority;
+              LOW: com.chattriggers.ctjs.api.triggers.Trigger$Priority;
+              LOWEST: com.chattriggers.ctjs.api.triggers.Trigger$Priority;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.triggers.Trigger$Priority>;
+              values(): Array<com.chattriggers.ctjs.api.triggers.Trigger$Priority>;
+              valueOf(value: string): com.chattriggers.ctjs.api.triggers.Trigger$Priority;
+            }
+            interface Trigger$Priority extends kotlin.Enum<com.chattriggers.ctjs.api.triggers.Trigger$Priority> { 
+            }
+            const ChatTrigger: {
+              Event: typeof com.chattriggers.ctjs.api.triggers.ChatTrigger$Event;
+              new(method: any, type: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+            }
+            interface ChatTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
+							/**
+							 * Sets if the chat trigger should run if the chat event has already been canceled.
+							 *  True by default.
+							 *  @param bool Boolean to set
+							 *  @return the trigger object for method chaining
+							 */
+              triggerIfCanceled(bool: boolean): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+							/**
+							 * Sets the chat criteria for [matchesChatCriteria].
+							 *  Arguments for the trigger's method can be passed in using ${variable}.
+							 *  Example: `setChatCriteria("<${name}> ${message}");`
+							 *  Use ${*} to match a chat message but ignore the pass through.
+							 *  @param chatCriteria the chat criteria to set
+							 *  @return the trigger object for method chaining
+							 */
+              setChatCriteria(chatCriteria: any): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+							/**
+							 * Alias for [setChatCriteria].
+							 *  @param chatCriteria the chat criteria to set
+							 *  @return the trigger object for method chaining
+							 */
+              setCriteria(chatCriteria: any): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+							/**
+							 * Sets the chat parameter for [Parameter].
+							 *  Clears current parameter list.
+							 *  @param parameter the chat parameter to set
+							 *  @return the trigger object for method chaining
+							 */
+              setParameter(parameter: string): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+							/**
+							 * Sets multiple chat parameters for [Parameter].
+							 *  Clears current parameter list.
+							 *  @param parameters the chat parameters to set
+							 *  @return the trigger object for method chaining
+							 */
+              setParameters(parameters: string): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+							/**
+							 * Adds chat parameter for [Parameter].
+							 *  @param parameter the chat parameter to add
+							 *  @return the trigger object for method chaining
+							 */
+              addParameter(parameter: string): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+							/**
+							 * Adds multiple chat parameters for [Parameter].
+							 *  @param parameters the chat parameters to add
+							 *  @return the trigger object for method chaining
+							 */
+              addParameters(parameters: string): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+							/**
+							 * Adds the "start" parameter
+							 *  @return the trigger object for method chaining
+							 */
+              setStart(): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+							/**
+							 * Adds the "contains" parameter
+							 *  @return the trigger object for method chaining
+							 */
+              setContains(): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+							/**
+							 * Adds the "end" parameter
+							 *  @return the trigger object for method chaining
+							 */
+              setEnd(): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+							/**
+							 * Forces this trigger to be formatted or unformatted. If no argument is
+							 *  provided, it will be set to formatted. This method overrides the
+							 *  behavior of inferring the formatted status from the criteria.
+							 */
+              setFormatted(): void;
+							/**
+							 * Forces this trigger to be formatted or unformatted. If no argument is
+							 *  provided, it will be set to formatted. This method overrides the
+							 *  behavior of inferring the formatted status from the criteria.
+							 */
+              setFormatted(formatted: boolean): void;
+							/**
+							 * Makes the trigger match the entire chat message
+							 *  @return the trigger object for method chaining
+							 */
+              setExact(): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+							/**
+							 * Makes the chat criteria case insensitive
+							 *  @return the trigger object for method chaining
+							 */
+              setCaseInsensitive(): com.chattriggers.ctjs.api.triggers.ChatTrigger;
+            }
+            const ChatTrigger$Event: {
+              message: com.chattriggers.ctjs.api.message.TextComponent;
+              new(message: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.triggers.ChatTrigger$Event;
+            }
+            interface ChatTrigger$Event extends com.chattriggers.ctjs.api.triggers.CancellableEvent { 
+            }
+            const CancellableEvent: {
+              new(): com.chattriggers.ctjs.api.triggers.CancellableEvent;
+            }
+            interface CancellableEvent { 
+              setCanceled(): void;
+              setCanceled(newVal: boolean): void;
+              setCancelled(): void;
+              setCancelled(newVal: boolean): void;
+              isCancelable(): boolean;
+              isCancellable(): boolean;
+              isCancelled(): boolean;
+              isCanceled(): boolean;
+            }
+            const StepTrigger: {
+              new(method: any): com.chattriggers.ctjs.api.triggers.StepTrigger;
+            }
+            interface StepTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
+							/**
+							 * Sets the frames per second that the trigger activates.
+							 *  This has a maximum one step per second.
+							 *  @param fps the frames per second to set
+							 *  @return the trigger for method chaining
+							 */
+              setFps(fps: number): com.chattriggers.ctjs.api.triggers.StepTrigger;
+							/**
+							 * Sets the delay in seconds between the trigger activation.
+							 *  This has a minimum of one step every second. This will override [setFps].
+							 *  @param delay The delay in seconds
+							 *  @return the trigger for method chaining
+							 */
+              setDelay(delay: number): com.chattriggers.ctjs.api.triggers.StepTrigger;
+            }
+            const StepTrigger$Companion: {
+              new(): com.chattriggers.ctjs.api.triggers.StepTrigger$Companion;
+            }
+            interface StepTrigger$Companion { 
+              new(): com.chattriggers.ctjs.api.triggers.StepTrigger$Companion;
+            }
+            const CommandTrigger: {
+              new(method: any): com.chattriggers.ctjs.api.triggers.CommandTrigger;
+            }
+            interface CommandTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
+							/**
+							 * Sets the tab completion options for the command.
+							 *  This method must be used before setting the command name, otherwise, the tab completions will not be set.
+							 * 
+							 *  @param args all the tab completion options.
+							 */
+              setTabCompletions(args: string): com.chattriggers.ctjs.api.triggers.CommandTrigger;
+							/**
+							 * This sets the possible tab completions for the command.
+							 *  This method must be used before setting the command name, otherwise, the tab completions will not be set.
+							 * 
+							 *  @param callback the callback that returns the tab completion options.
+							 * 
+							 *  For example:
+							 *  ```js
+							 *  register("command", () => {
+							 * 
+							 *  }).setTabCompletions((args) => {
+							 *       return ["option1", "option2"];
+							 *  }).setName("test");
+							 * ```
+							 *  The `args` parameter of the callback are the arguments currently passed to the command.
+							 *  For instance, if you want to not show the options after the user tabs the first time, just add a check
+							 *  for the length of the arguments and return an empty array.
+							 * 
+							 *  The return value of the callback **must be an array of strings**, and in this case will always return the 2
+							 *  options in the array.
+							 */
+              setTabCompletions(callback: kotlin.Function1<Array<string>, Array<string>>): com.chattriggers.ctjs.api.triggers.CommandTrigger;
+							/**
+							 * Sets the aliases for the command.
+							 * 
+							 *  @param args all the aliases.
+							 */
+              setAliases(args: string): com.chattriggers.ctjs.api.triggers.CommandTrigger;
+							/**
+							 * Sets the command name.
+							 *  Example:
+							 *  setCommandName("test")
+							 *  would result in the command being /test
+							 * 
+							 *  @param commandName The command name
+							 *  @param overrideExisting Whether existing commands with the same name should be overridden
+							 *  @return the trigger for additional modification
+							 */
+              setCommandName(commandName: string): com.chattriggers.ctjs.api.triggers.CommandTrigger;
+							/**
+							 * Sets the command name.
+							 *  Example:
+							 *  setCommandName("test")
+							 *  would result in the command being /test
+							 * 
+							 *  @param commandName The command name
+							 *  @param overrideExisting Whether existing commands with the same name should be overridden
+							 *  @return the trigger for additional modification
+							 */
+              setCommandName(commandName: string, overrideExisting: boolean): com.chattriggers.ctjs.api.triggers.CommandTrigger;
+							/**
+							 * Alias for [setCommandName]
+							 * 
+							 *  @param commandName The command name
+							 *  @param overrideExisting Whether existing commands with the same name should be overridden
+							 *  @return the trigger for additional modification
+							 */
+              setName(commandName: string): com.chattriggers.ctjs.api.triggers.CommandTrigger;
+							/**
+							 * Alias for [setCommandName]
+							 * 
+							 *  @param commandName The command name
+							 *  @param overrideExisting Whether existing commands with the same name should be overridden
+							 *  @return the trigger for additional modification
+							 */
+              setName(commandName: string, overrideExisting: boolean): com.chattriggers.ctjs.api.triggers.CommandTrigger;
+            }
+            const PacketEvent: {
+              RECEIVE: net.fabricmc.fabric.api.event.Event<com.chattriggers.ctjs.api.triggers.PacketEvent$ReceiveEvent>;
+              new(): com.chattriggers.ctjs.api.triggers.PacketEvent;
+            }
+            interface PacketEvent { 
+              RECEIVE: net.fabricmc.fabric.api.event.Event<com.chattriggers.ctjs.api.triggers.PacketEvent$ReceiveEvent>;
+              new(): com.chattriggers.ctjs.api.triggers.PacketEvent;
+            }
+            interface PacketEvent$ReceiveEvent { 
+              trigger(packet: net.minecraft.network.protocol.Packet<any>): void;
+            }
+            const SoundPlayTrigger: {
+              new(method: any): com.chattriggers.ctjs.api.triggers.SoundPlayTrigger;
+            }
+            interface SoundPlayTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
+							/**
+							 * Sets the sound name criteria.
+							 * 
+							 *  @param soundNameCriteria the sound name
+							 *  @return the trigger for method chaining
+							 */
+              setCriteria(soundNameCriteria: string): com.chattriggers.ctjs.api.triggers.SoundPlayTrigger;
+            }
+            const EventTrigger: {
+              new(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.EventTrigger;
+            }
+            interface EventTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
+							/**
+							 * Sets if this trigger should run if the event has already been canceled.
+							 *  True by default.
+							 * 
+							 *  @param bool Boolean to set
+							 *  @return the trigger object for method chaining
+							 */
+              triggerIfCanceled(bool: boolean): com.chattriggers.ctjs.api.triggers.EventTrigger;
+            }
+            const ClassFilterTrigger: {
+              new<Wrapped, Unwrapped>(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType, wrappedClass: java.lang.Class<Wrapped>): com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<any, any>;
+            }
+            interface ClassFilterTrigger<Wrapped, Unwrapped> extends com.chattriggers.ctjs.api.triggers.Trigger { 
+							/**
+							 * Alias for `setFilteredClasses([A.class])`
+							 * 
+							 *  @param clazz The class for which this trigger should run for
+							 */
+              setFilteredClass(clazz: java.lang.Class<Unwrapped>): com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<Wrapped, Unwrapped>;
+							/**
+							 * Sets which classes this trigger should run for. If the list is empty, it runs
+							 *  for every class.
+							 * 
+							 *  @param classes The classes for which this trigger should run for
+							 *  @return This trigger object for chaining
+							 */
+              setFilteredClasses(classes: Array<java.lang.Class<Unwrapped>>): com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<Wrapped, Unwrapped>;
+            }
+            const RenderEntityTrigger: {
+              new(method: any): com.chattriggers.ctjs.api.triggers.RenderEntityTrigger;
+            }
+            interface RenderEntityTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<com.chattriggers.ctjs.api.entity.Entity, net.minecraft.world.entity.Entity> { 
+            }
+            const RenderBlockEntityTrigger: {
+              new(method: any): com.chattriggers.ctjs.api.triggers.RenderBlockEntityTrigger;
+            }
+            interface RenderBlockEntityTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<com.chattriggers.ctjs.api.entity.BlockEntity, net.minecraft.world.level.block.entity.BlockEntity> { 
+            }
+            const PacketTrigger: {
+              new(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.PacketTrigger;
+            }
+            interface PacketTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<net.minecraft.network.protocol.Packet<any>, net.minecraft.network.protocol.Packet<any>> { 
+            }
+          }
+          interface CTWrapper<MCClass> { 
+            getMcValue(): MCClass;
+            toMC(): MCClass;
+          }
+          const V5Auth: {
+            getJwtToken(): string | null | undefined;
+            getFreshJwtToken(): string | null | undefined;
+            setJwtToken(token: string | null | undefined): void;
+            shutDownHard(): java.lang.Void;
+            new(): com.chattriggers.ctjs.api.V5Auth;
+          }
+          interface V5Auth { 
+            getJwtToken(): string | null | undefined;
+            getFreshJwtToken(): string | null | undefined;
+            setJwtToken(token: string | null | undefined): void;
+            shutDownHard(): java.lang.Void;
+            new(): com.chattriggers.ctjs.api.V5Auth;
+          }
+          const Mappings: {
+						/**
+						 * Gets a classes unmapped class name, or throws an error if it is not mapped
+						 */
+            unmapClass(clazz: java.lang.Class<any>): string | null | undefined;
+						/**
+						 * Gets an unmapped class name from a mapped class name, or returns null if
+						 *  it either does not exist or is not mapped.
+						 */
+            unmapClassName(className: string): string | null | undefined;
+						/**
+						 * Gets the mapped class name from an unmapped class name or null if the class
+						 *  name does not exist. Note that this is not required to use mapped classes,
+						 *  as Rhino performs this mapping automatically during runtime.
+						 */
+            mapClassName(className: string): string | null | undefined;
+						/**
+						 * Allows runtime inspection of mappings
+						 */
+            new(): com.chattriggers.ctjs.api.Mappings;
+          }
+          interface Mappings { 
+						/**
+						 * Gets a classes unmapped class name, or throws an error if it is not mapped
+						 */
+            unmapClass(clazz: java.lang.Class<any>): string | null | undefined;
+						/**
+						 * Gets an unmapped class name from a mapped class name, or returns null if
+						 *  it either does not exist or is not mapped.
+						 */
+            unmapClassName(className: string): string | null | undefined;
+						/**
+						 * Gets the mapped class name from an unmapped class name or null if the class
+						 *  name does not exist. Note that this is not required to use mapped classes,
+						 *  as Rhino performs this mapping automatically during runtime.
+						 */
+            mapClassName(className: string): string | null | undefined;
+						/**
+						 * Allows runtime inspection of mappings
+						 */
+            new(): com.chattriggers.ctjs.api.Mappings;
+          }
+          const Config: {
+            ConsoleSettings: typeof com.chattriggers.ctjs.api.Config$ConsoleSettings;
+            getModuleImportHelp(): boolean;
+            setModuleImportHelp(value: boolean): void;
+            getModuleChangelog(): boolean;
+            setModuleChangelog(value: boolean): void;
+            getShowUpdatesInChat(): boolean;
+            setShowUpdatesInChat(value: boolean): void;
+            getAutoUpdateModules(): boolean;
+            setAutoUpdateModules(value: boolean): void;
+            getSendStatistics(): boolean;
+            setSendStatistics(value: boolean): void;
+            getClearConsoleOnLoad(): boolean;
+            setClearConsoleOnLoad(value: boolean): void;
+            getOpenConsoleOnError(): boolean;
+            setOpenConsoleOnError(value: boolean): void;
+            getConsoleFiraCodeFont(): boolean;
+            setConsoleFiraCodeFont(value: boolean): void;
+            getConsoleFontSize(): number;
+            setConsoleFontSize(value: number): void;
+            getCustomTheme(): boolean;
+            setCustomTheme(value: boolean): void;
+            getConsoleTheme(): number;
+            setConsoleTheme(value: number): void;
+            getConsoleTextColor(): java.awt.Color;
+            setConsoleTextColor(value: java.awt.Color): void;
+            getConsoleBackgroundColor(): java.awt.Color;
+            setConsoleBackgroundColor(value: java.awt.Color): void;
+            getConsoleErrorColor(): java.awt.Color;
+            setConsoleErrorColor(value: java.awt.Color): void;
+            getConsoleWarningColor(): java.awt.Color;
+            setConsoleWarningColor(value: java.awt.Color): void;
+            wasWelcomeShown(): boolean;
+            markWelcomeShown(): void;
+            new(): com.chattriggers.ctjs.api.Config;
+          }
+          interface Config extends gg.essential.vigilance.Vigilant { 
+            getModuleImportHelp(): boolean;
+            setModuleImportHelp(value: boolean): void;
+            getModuleChangelog(): boolean;
+            setModuleChangelog(value: boolean): void;
+            getShowUpdatesInChat(): boolean;
+            setShowUpdatesInChat(value: boolean): void;
+            getAutoUpdateModules(): boolean;
+            setAutoUpdateModules(value: boolean): void;
+            getSendStatistics(): boolean;
+            setSendStatistics(value: boolean): void;
+            getClearConsoleOnLoad(): boolean;
+            setClearConsoleOnLoad(value: boolean): void;
+            getOpenConsoleOnError(): boolean;
+            setOpenConsoleOnError(value: boolean): void;
+            getConsoleFiraCodeFont(): boolean;
+            setConsoleFiraCodeFont(value: boolean): void;
+            getConsoleFontSize(): number;
+            setConsoleFontSize(value: number): void;
+            getCustomTheme(): boolean;
+            setCustomTheme(value: boolean): void;
+            getConsoleTheme(): number;
+            setConsoleTheme(value: number): void;
+            getConsoleTextColor(): java.awt.Color;
+            setConsoleTextColor(value: java.awt.Color): void;
+            getConsoleBackgroundColor(): java.awt.Color;
+            setConsoleBackgroundColor(value: java.awt.Color): void;
+            getConsoleErrorColor(): java.awt.Color;
+            setConsoleErrorColor(value: java.awt.Color): void;
+            getConsoleWarningColor(): java.awt.Color;
+            setConsoleWarningColor(value: java.awt.Color): void;
+            wasWelcomeShown(): boolean;
+            markWelcomeShown(): void;
+            new(): com.chattriggers.ctjs.api.Config;
+          }
+          const Config$ConsoleSettings: {
+            new(clearConsoleOnLoad: boolean, openConsoleOnError: boolean, consoleFiraCodeFont: boolean, consoleFontSize: number, customTheme: boolean, consoleTheme: number, consoleTextColor: java.awt.Color, consoleBackgroundColor: java.awt.Color, consoleErrorColor: java.awt.Color, consoleWarningColor: java.awt.Color): com.chattriggers.ctjs.api.Config$ConsoleSettings;
+          }
+          interface Config$ConsoleSettings { 
+            getClearConsoleOnLoad(): boolean;
+            setClearConsoleOnLoad(value: boolean): void;
+            getOpenConsoleOnError(): boolean;
+            setOpenConsoleOnError(value: boolean): void;
+            getConsoleFiraCodeFont(): boolean;
+            setConsoleFiraCodeFont(value: boolean): void;
+            getConsoleFontSize(): number;
+            setConsoleFontSize(value: number): void;
+            getCustomTheme(): boolean;
+            setCustomTheme(value: boolean): void;
+            getConsoleTheme(): number;
+            setConsoleTheme(value: number): void;
+            getConsoleTextColor(): java.awt.Color;
+            setConsoleTextColor(value: java.awt.Color): void;
+            getConsoleBackgroundColor(): java.awt.Color;
+            setConsoleBackgroundColor(value: java.awt.Color): void;
+            getConsoleErrorColor(): java.awt.Color;
+            setConsoleErrorColor(value: java.awt.Color): void;
+            getConsoleWarningColor(): java.awt.Color;
+            setConsoleWarningColor(value: java.awt.Color): void;
+            component1(): boolean;
+            component2(): boolean;
+            component3(): boolean;
+            component4(): number;
+            component5(): boolean;
+            component6(): number;
+            component7(): java.awt.Color;
+            component8(): java.awt.Color;
+            component9(): java.awt.Color;
+            component10(): java.awt.Color;
+            copy(clearConsoleOnLoad: boolean, openConsoleOnError: boolean, consoleFiraCodeFont: boolean, consoleFontSize: number, customTheme: boolean, consoleTheme: number, consoleTextColor: java.awt.Color, consoleBackgroundColor: java.awt.Color, consoleErrorColor: java.awt.Color, consoleWarningColor: java.awt.Color): com.chattriggers.ctjs.api.Config$ConsoleSettings;
+          }
+          const Config$ConsoleSettings$Companion: {
+            new(): unknown;
+          }
+          interface Config$ConsoleSettings$Companion { 
+            new(): unknown;
+            make(): com.chattriggers.ctjs.api.Config$ConsoleSettings;
+          }
+        }
+        namespace internal {
+          namespace commands {
+            const CommandCollection: {
+              new(): com.chattriggers.ctjs.internal.commands.CommandCollection;
+            }
+            interface CommandCollection { 
+              register(command: com.chattriggers.ctjs.internal.commands.Command): void;
+              unregister(command: com.chattriggers.ctjs.internal.commands.Command): void;
+              unregisterAll(): void;
+              onExecute<S, T>(block: kotlin.Function1<com.mojang.brigadier.context.CommandContext<S>, void>): T;
+            }
+            interface Command { 
+              getOverrideExisting(): boolean;
+              getName(): string;
+              registerImpl(dispatcher: com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.SharedSuggestionProvider>): void;
+              unregisterImpl(dispatcher: com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.SharedSuggestionProvider>): void;
+            }
+          }
+          namespace launch {
+            interface IInjector { 
+            }
+          }
+        }
         namespace engine {
           const WrappedThread: {
             new(task: java.lang.Runnable): com.chattriggers.ctjs.engine.WrappedThread;
@@ -43635,6 +51816,40 @@ declare global {
             sleep(millis: number, nanos: number): void;
             currentThread(): java.lang.Thread;
             new(): com.chattriggers.ctjs.engine.WrappedThread$Companion;
+          }
+          const MixinCallback: {
+            new(id: number, injector: com.chattriggers.ctjs.internal.launch.IInjector): com.chattriggers.ctjs.engine.MixinCallback;
+          }
+          interface MixinCallback { 
+            attach(method: any): void;
+            component1(): number;
+            component2(): com.chattriggers.ctjs.internal.launch.IInjector;
+            copy(id: number, injector: com.chattriggers.ctjs.internal.launch.IInjector): com.chattriggers.ctjs.engine.MixinCallback;
+          }
+          const Console: {
+            new(): com.chattriggers.ctjs.engine.Console;
+          }
+          interface Console { 
+            new(): com.chattriggers.ctjs.engine.Console;
+            clear(): void;
+            println(obj: any, logType: com.chattriggers.ctjs.engine.LogType, end: string, customColor: java.awt.Color | null | undefined): void;
+            println(obj: any, logType: com.chattriggers.ctjs.engine.LogType, end: string): void;
+            println(obj: any, logType: com.chattriggers.ctjs.engine.LogType): void;
+            println(obj: any): void;
+            printStackTrace(error: kotlin.Throwable): void;
+            show(): void;
+            close(): void;
+            onConsoleSettingsChanged(settings: com.chattriggers.ctjs.api.Config$ConsoleSettings): void;
+          }
+          const LogType: {
+            INFO: com.chattriggers.ctjs.engine.LogType;
+            WARN: com.chattriggers.ctjs.engine.LogType;
+            ERROR: com.chattriggers.ctjs.engine.LogType;
+            getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.engine.LogType>;
+            values(): Array<com.chattriggers.ctjs.engine.LogType>;
+            valueOf(value: string): com.chattriggers.ctjs.engine.LogType;
+          }
+          interface LogType extends kotlin.Enum<com.chattriggers.ctjs.engine.LogType> { 
           }
           const Register: {
 						/**
@@ -44774,8325 +52989,6 @@ declare global {
             registerSpawnParticle(method: any): com.chattriggers.ctjs.api.triggers.Trigger;
             new(): com.chattriggers.ctjs.engine.Register;
           }
-          const MixinCallback: {
-            new(id: number, injector: com.chattriggers.ctjs.internal.launch.IInjector): com.chattriggers.ctjs.engine.MixinCallback;
-          }
-          interface MixinCallback { 
-            attach(method: any): void;
-            component1(): number;
-            component2(): com.chattriggers.ctjs.internal.launch.IInjector;
-            copy(id: number, injector: com.chattriggers.ctjs.internal.launch.IInjector): com.chattriggers.ctjs.engine.MixinCallback;
-          }
-          const Console: {
-            new(): com.chattriggers.ctjs.engine.Console;
-          }
-          interface Console { 
-            new(): com.chattriggers.ctjs.engine.Console;
-            clear(): void;
-            println(obj: any, logType: com.chattriggers.ctjs.engine.LogType, end: string, customColor: java.awt.Color | null | undefined): void;
-            println(obj: any, logType: com.chattriggers.ctjs.engine.LogType, end: string): void;
-            println(obj: any, logType: com.chattriggers.ctjs.engine.LogType): void;
-            println(obj: any): void;
-            printStackTrace(error: kotlin.Throwable): void;
-            show(): void;
-            close(): void;
-            onConsoleSettingsChanged(settings: com.chattriggers.ctjs.api.Config$ConsoleSettings): void;
-          }
-          const LogType: {
-            INFO: com.chattriggers.ctjs.engine.LogType;
-            WARN: com.chattriggers.ctjs.engine.LogType;
-            ERROR: com.chattriggers.ctjs.engine.LogType;
-            getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.engine.LogType>;
-            values(): Array<com.chattriggers.ctjs.engine.LogType>;
-            valueOf(value: string): com.chattriggers.ctjs.engine.LogType;
-          }
-          interface LogType extends kotlin.Enum<com.chattriggers.ctjs.engine.LogType> { 
-          }
-        }
-        namespace api {
-          namespace triggers {
-            const Trigger: {
-              Priority: typeof com.chattriggers.ctjs.api.triggers.Trigger$Priority;
-            }
-            interface Trigger extends kotlin.Comparable<com.chattriggers.ctjs.api.triggers.Trigger> { 
-              getMethod(): any;
-              setMethod(value: any): void;
-              getType(): com.chattriggers.ctjs.api.triggers.ITriggerType;
-              setType(value: com.chattriggers.ctjs.api.triggers.ITriggerType): void;
-              isRegistered(): boolean;
-							/**
-							 * Sets a trigger's priority using [Priority].
-							 *  Highest runs first.
-							 *  @param priority the priority of the trigger
-							 *  @return the trigger for method chaining
-							 */
-              setPriority(priority: com.chattriggers.ctjs.api.triggers.Trigger$Priority): com.chattriggers.ctjs.api.triggers.Trigger;
-							/**
-							 * Registers a trigger based on its type.
-							 *  This is done automatically with TriggerRegister.
-							 *  @return the trigger for method chaining
-							 */
-              register(): com.chattriggers.ctjs.api.triggers.Trigger;
-							/**
-							 * Unregisters a trigger.
-							 *  @return the trigger for method chaining
-							 */
-              unregister(): com.chattriggers.ctjs.api.triggers.Trigger;
-            }
-            interface ITriggerType { 
-              getName(): string;
-              triggerAll(): void;
-              triggerAll(arg0: any | null | undefined): void;
-              triggerAll(arg0: any | null | undefined, arg1: any | null | undefined): void;
-              triggerAll(arg0: any | null | undefined, arg1: any | null | undefined, arg2: any | null | undefined): void;
-              triggerAll(arg0: any | null | undefined, arg1: any | null | undefined, arg2: any | null | undefined, arg3: any | null | undefined): void;
-              triggerAll(arg0: any | null | undefined, arg1: any | null | undefined, arg2: any | null | undefined, arg3: any | null | undefined, arg4: any | null | undefined): void;
-              triggerAll(args: any | null | undefined): void;
-            }
-            const Trigger$Priority: {
-              HIGHEST: com.chattriggers.ctjs.api.triggers.Trigger$Priority;
-              HIGH: com.chattriggers.ctjs.api.triggers.Trigger$Priority;
-              NORMAL: com.chattriggers.ctjs.api.triggers.Trigger$Priority;
-              LOW: com.chattriggers.ctjs.api.triggers.Trigger$Priority;
-              LOWEST: com.chattriggers.ctjs.api.triggers.Trigger$Priority;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.triggers.Trigger$Priority>;
-              values(): Array<com.chattriggers.ctjs.api.triggers.Trigger$Priority>;
-              valueOf(value: string): com.chattriggers.ctjs.api.triggers.Trigger$Priority;
-            }
-            interface Trigger$Priority extends kotlin.Enum<com.chattriggers.ctjs.api.triggers.Trigger$Priority> { 
-            }
-            const ChatTrigger: {
-              Event: typeof com.chattriggers.ctjs.api.triggers.ChatTrigger$Event;
-              new(method: any, type: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-            }
-            interface ChatTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
-							/**
-							 * Sets if the chat trigger should run if the chat event has already been canceled.
-							 *  True by default.
-							 *  @param bool Boolean to set
-							 *  @return the trigger object for method chaining
-							 */
-              triggerIfCanceled(bool: boolean): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-							/**
-							 * Sets the chat criteria for [matchesChatCriteria].
-							 *  Arguments for the trigger's method can be passed in using ${variable}.
-							 *  Example: `setChatCriteria("<${name}> ${message}");`
-							 *  Use ${*} to match a chat message but ignore the pass through.
-							 *  @param chatCriteria the chat criteria to set
-							 *  @return the trigger object for method chaining
-							 */
-              setChatCriteria(chatCriteria: any): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-							/**
-							 * Alias for [setChatCriteria].
-							 *  @param chatCriteria the chat criteria to set
-							 *  @return the trigger object for method chaining
-							 */
-              setCriteria(chatCriteria: any): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-							/**
-							 * Sets the chat parameter for [Parameter].
-							 *  Clears current parameter list.
-							 *  @param parameter the chat parameter to set
-							 *  @return the trigger object for method chaining
-							 */
-              setParameter(parameter: string): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-							/**
-							 * Sets multiple chat parameters for [Parameter].
-							 *  Clears current parameter list.
-							 *  @param parameters the chat parameters to set
-							 *  @return the trigger object for method chaining
-							 */
-              setParameters(parameters: string): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-							/**
-							 * Adds chat parameter for [Parameter].
-							 *  @param parameter the chat parameter to add
-							 *  @return the trigger object for method chaining
-							 */
-              addParameter(parameter: string): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-							/**
-							 * Adds multiple chat parameters for [Parameter].
-							 *  @param parameters the chat parameters to add
-							 *  @return the trigger object for method chaining
-							 */
-              addParameters(parameters: string): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-							/**
-							 * Adds the "start" parameter
-							 *  @return the trigger object for method chaining
-							 */
-              setStart(): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-							/**
-							 * Adds the "contains" parameter
-							 *  @return the trigger object for method chaining
-							 */
-              setContains(): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-							/**
-							 * Adds the "end" parameter
-							 *  @return the trigger object for method chaining
-							 */
-              setEnd(): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-							/**
-							 * Forces this trigger to be formatted or unformatted. If no argument is
-							 *  provided, it will be set to formatted. This method overrides the
-							 *  behavior of inferring the formatted status from the criteria.
-							 */
-              setFormatted(): void;
-							/**
-							 * Forces this trigger to be formatted or unformatted. If no argument is
-							 *  provided, it will be set to formatted. This method overrides the
-							 *  behavior of inferring the formatted status from the criteria.
-							 */
-              setFormatted(formatted: boolean): void;
-							/**
-							 * Makes the trigger match the entire chat message
-							 *  @return the trigger object for method chaining
-							 */
-              setExact(): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-							/**
-							 * Makes the chat criteria case insensitive
-							 *  @return the trigger object for method chaining
-							 */
-              setCaseInsensitive(): com.chattriggers.ctjs.api.triggers.ChatTrigger;
-            }
-            const ChatTrigger$Event: {
-              message: com.chattriggers.ctjs.api.message.TextComponent;
-              new(message: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.triggers.ChatTrigger$Event;
-            }
-            interface ChatTrigger$Event extends com.chattriggers.ctjs.api.triggers.CancellableEvent { 
-            }
-            const CancellableEvent: {
-              new(): com.chattriggers.ctjs.api.triggers.CancellableEvent;
-            }
-            interface CancellableEvent { 
-              setCanceled(): void;
-              setCanceled(newVal: boolean): void;
-              setCancelled(): void;
-              setCancelled(newVal: boolean): void;
-              isCancelable(): boolean;
-              isCancellable(): boolean;
-              isCancelled(): boolean;
-              isCanceled(): boolean;
-            }
-            const ClassFilterTrigger: {
-              new<Wrapped, Unwrapped>(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType, wrappedClass: java.lang.Class<Wrapped>): com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<any, any>;
-            }
-            interface ClassFilterTrigger<Wrapped, Unwrapped> extends com.chattriggers.ctjs.api.triggers.Trigger { 
-							/**
-							 * Alias for `setFilteredClasses([A.class])`
-							 * 
-							 *  @param clazz The class for which this trigger should run for
-							 */
-              setFilteredClass(clazz: java.lang.Class<Unwrapped>): com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<Wrapped, Unwrapped>;
-							/**
-							 * Sets which classes this trigger should run for. If the list is empty, it runs
-							 *  for every class.
-							 * 
-							 *  @param classes The classes for which this trigger should run for
-							 *  @return This trigger object for chaining
-							 */
-              setFilteredClasses(classes: Array<java.lang.Class<Unwrapped>>): com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<Wrapped, Unwrapped>;
-            }
-            const RenderEntityTrigger: {
-              new(method: any): com.chattriggers.ctjs.api.triggers.RenderEntityTrigger;
-            }
-            interface RenderEntityTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<com.chattriggers.ctjs.api.entity.Entity, net.minecraft.world.entity.Entity> { 
-            }
-            const RenderBlockEntityTrigger: {
-              new(method: any): com.chattriggers.ctjs.api.triggers.RenderBlockEntityTrigger;
-            }
-            interface RenderBlockEntityTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<com.chattriggers.ctjs.api.entity.BlockEntity, net.minecraft.world.level.block.entity.BlockEntity> { 
-            }
-            const PacketTrigger: {
-              new(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.PacketTrigger;
-            }
-            interface PacketTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<net.minecraft.network.protocol.Packet<any>, net.minecraft.network.protocol.Packet<any>> { 
-            }
-            const SoundPlayTrigger: {
-              new(method: any): com.chattriggers.ctjs.api.triggers.SoundPlayTrigger;
-            }
-            interface SoundPlayTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
-							/**
-							 * Sets the sound name criteria.
-							 * 
-							 *  @param soundNameCriteria the sound name
-							 *  @return the trigger for method chaining
-							 */
-              setCriteria(soundNameCriteria: string): com.chattriggers.ctjs.api.triggers.SoundPlayTrigger;
-            }
-            const TriggerType: {
-              CHAT: com.chattriggers.ctjs.api.triggers.TriggerType;
-              ACTION_BAR: com.chattriggers.ctjs.api.triggers.TriggerType;
-              TICK: com.chattriggers.ctjs.api.triggers.TriggerType;
-              STEP: com.chattriggers.ctjs.api.triggers.TriggerType;
-              GAME_UNLOAD: com.chattriggers.ctjs.api.triggers.TriggerType;
-              GAME_LOAD: com.chattriggers.ctjs.api.triggers.TriggerType;
-              CLICKED: com.chattriggers.ctjs.api.triggers.TriggerType;
-              SCROLLED: com.chattriggers.ctjs.api.triggers.TriggerType;
-              DRAGGED: com.chattriggers.ctjs.api.triggers.TriggerType;
-              GUI_OPENED: com.chattriggers.ctjs.api.triggers.TriggerType;
-              MESSAGE_SENT: com.chattriggers.ctjs.api.triggers.TriggerType;
-              ITEM_TOOLTIP: com.chattriggers.ctjs.api.triggers.TriggerType;
-              PLAYER_INTERACT: com.chattriggers.ctjs.api.triggers.TriggerType;
-              GUI_KEY: com.chattriggers.ctjs.api.triggers.TriggerType;
-              GUI_MOUSE_CLICK: com.chattriggers.ctjs.api.triggers.TriggerType;
-              GUI_MOUSE_DRAG: com.chattriggers.ctjs.api.triggers.TriggerType;
-              PACKET_SENT: com.chattriggers.ctjs.api.triggers.TriggerType;
-              PACKET_RECEIVED: com.chattriggers.ctjs.api.triggers.TriggerType;
-              SERVER_CONNECT: com.chattriggers.ctjs.api.triggers.TriggerType;
-              SERVER_DISCONNECT: com.chattriggers.ctjs.api.triggers.TriggerType;
-              GUI_CLOSED: com.chattriggers.ctjs.api.triggers.TriggerType;
-              DROP_ITEM: com.chattriggers.ctjs.api.triggers.TriggerType;
-              PRE_RENDER_WORLD: com.chattriggers.ctjs.api.triggers.TriggerType;
-              POST_RENDER_WORLD: com.chattriggers.ctjs.api.triggers.TriggerType;
-              BLOCK_HIGHLIGHT: com.chattriggers.ctjs.api.triggers.TriggerType;
-              RENDER_OVERLAY: com.chattriggers.ctjs.api.triggers.TriggerType;
-              RENDER_PLAYER_LIST: com.chattriggers.ctjs.api.triggers.TriggerType;
-              RENDER_ENTITY: com.chattriggers.ctjs.api.triggers.TriggerType;
-              RENDER_BLOCK_ENTITY: com.chattriggers.ctjs.api.triggers.TriggerType;
-              GUI_RENDER: com.chattriggers.ctjs.api.triggers.TriggerType;
-              POST_GUI_RENDER: com.chattriggers.ctjs.api.triggers.TriggerType;
-              SOUND_PLAY: com.chattriggers.ctjs.api.triggers.TriggerType;
-              WORLD_LOAD: com.chattriggers.ctjs.api.triggers.TriggerType;
-              WORLD_UNLOAD: com.chattriggers.ctjs.api.triggers.TriggerType;
-              SPAWN_PARTICLE: com.chattriggers.ctjs.api.triggers.TriggerType;
-              ENTITY_DEATH: com.chattriggers.ctjs.api.triggers.TriggerType;
-              ENTITY_DAMAGE: com.chattriggers.ctjs.api.triggers.TriggerType;
-              COMMAND: com.chattriggers.ctjs.api.triggers.TriggerType;
-              OTHER: com.chattriggers.ctjs.api.triggers.TriggerType;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.triggers.TriggerType>;
-              values(): Array<com.chattriggers.ctjs.api.triggers.TriggerType>;
-              valueOf(value: string): com.chattriggers.ctjs.api.triggers.TriggerType;
-            }
-            interface TriggerType extends kotlin.Enum<com.chattriggers.ctjs.api.triggers.TriggerType>, com.chattriggers.ctjs.api.triggers.ITriggerType { 
-            }
-            const CustomTriggerType: {
-              new(name: string): com.chattriggers.ctjs.api.triggers.CustomTriggerType;
-            }
-            interface CustomTriggerType extends com.chattriggers.ctjs.api.triggers.ITriggerType { 
-              component1(): string;
-              copy(name: string): com.chattriggers.ctjs.api.triggers.CustomTriggerType;
-            }
-            const EventTrigger: {
-              new(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.EventTrigger;
-            }
-            interface EventTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
-							/**
-							 * Sets if this trigger should run if the event has already been canceled.
-							 *  True by default.
-							 * 
-							 *  @param bool Boolean to set
-							 *  @return the trigger object for method chaining
-							 */
-              triggerIfCanceled(bool: boolean): com.chattriggers.ctjs.api.triggers.EventTrigger;
-            }
-            const CommandTrigger: {
-              new(method: any): com.chattriggers.ctjs.api.triggers.CommandTrigger;
-            }
-            interface CommandTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
-							/**
-							 * Sets the tab completion options for the command.
-							 *  This method must be used before setting the command name, otherwise, the tab completions will not be set.
-							 * 
-							 *  @param args all the tab completion options.
-							 */
-              setTabCompletions(args: string): com.chattriggers.ctjs.api.triggers.CommandTrigger;
-							/**
-							 * This sets the possible tab completions for the command.
-							 *  This method must be used before setting the command name, otherwise, the tab completions will not be set.
-							 * 
-							 *  @param callback the callback that returns the tab completion options.
-							 * 
-							 *  For example:
-							 *  ```js
-							 *  register("command", () => {
-							 * 
-							 *  }).setTabCompletions((args) => {
-							 *       return ["option1", "option2"];
-							 *  }).setName("test");
-							 * ```
-							 *  The `args` parameter of the callback are the arguments currently passed to the command.
-							 *  For instance, if you want to not show the options after the user tabs the first time, just add a check
-							 *  for the length of the arguments and return an empty array.
-							 * 
-							 *  The return value of the callback **must be an array of strings**, and in this case will always return the 2
-							 *  options in the array.
-							 */
-              setTabCompletions(callback: kotlin.Function1<Array<string>, Array<string>>): com.chattriggers.ctjs.api.triggers.CommandTrigger;
-							/**
-							 * Sets the aliases for the command.
-							 * 
-							 *  @param args all the aliases.
-							 */
-              setAliases(args: string): com.chattriggers.ctjs.api.triggers.CommandTrigger;
-							/**
-							 * Sets the command name.
-							 *  Example:
-							 *  setCommandName("test")
-							 *  would result in the command being /test
-							 * 
-							 *  @param commandName The command name
-							 *  @param overrideExisting Whether existing commands with the same name should be overridden
-							 *  @return the trigger for additional modification
-							 */
-              setCommandName(commandName: string): com.chattriggers.ctjs.api.triggers.CommandTrigger;
-							/**
-							 * Sets the command name.
-							 *  Example:
-							 *  setCommandName("test")
-							 *  would result in the command being /test
-							 * 
-							 *  @param commandName The command name
-							 *  @param overrideExisting Whether existing commands with the same name should be overridden
-							 *  @return the trigger for additional modification
-							 */
-              setCommandName(commandName: string, overrideExisting: boolean): com.chattriggers.ctjs.api.triggers.CommandTrigger;
-							/**
-							 * Alias for [setCommandName]
-							 * 
-							 *  @param commandName The command name
-							 *  @param overrideExisting Whether existing commands with the same name should be overridden
-							 *  @return the trigger for additional modification
-							 */
-              setName(commandName: string): com.chattriggers.ctjs.api.triggers.CommandTrigger;
-							/**
-							 * Alias for [setCommandName]
-							 * 
-							 *  @param commandName The command name
-							 *  @param overrideExisting Whether existing commands with the same name should be overridden
-							 *  @return the trigger for additional modification
-							 */
-              setName(commandName: string, overrideExisting: boolean): com.chattriggers.ctjs.api.triggers.CommandTrigger;
-            }
-            const RegularTrigger: {
-              new(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.RegularTrigger;
-            }
-            interface RegularTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
-            }
-            const StepTrigger: {
-              new(method: any): com.chattriggers.ctjs.api.triggers.StepTrigger;
-            }
-            interface StepTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
-							/**
-							 * Sets the frames per second that the trigger activates.
-							 *  This has a maximum one step per second.
-							 *  @param fps the frames per second to set
-							 *  @return the trigger for method chaining
-							 */
-              setFps(fps: number): com.chattriggers.ctjs.api.triggers.StepTrigger;
-							/**
-							 * Sets the delay in seconds between the trigger activation.
-							 *  This has a minimum of one step every second. This will override [setFps].
-							 *  @param delay The delay in seconds
-							 *  @return the trigger for method chaining
-							 */
-              setDelay(delay: number): com.chattriggers.ctjs.api.triggers.StepTrigger;
-            }
-            const StepTrigger$Companion: {
-              new(): com.chattriggers.ctjs.api.triggers.StepTrigger$Companion;
-            }
-            interface StepTrigger$Companion { 
-              new(): com.chattriggers.ctjs.api.triggers.StepTrigger$Companion;
-            }
-            const PacketEvent: {
-              RECEIVE: net.fabricmc.fabric.api.event.Event<com.chattriggers.ctjs.api.triggers.PacketEvent$ReceiveEvent>;
-              new(): com.chattriggers.ctjs.api.triggers.PacketEvent;
-            }
-            interface PacketEvent { 
-              RECEIVE: net.fabricmc.fabric.api.event.Event<com.chattriggers.ctjs.api.triggers.PacketEvent$ReceiveEvent>;
-              new(): com.chattriggers.ctjs.api.triggers.PacketEvent;
-            }
-            interface PacketEvent$ReceiveEvent { 
-              trigger(packet: net.minecraft.network.protocol.Packet<any>): void;
-            }
-          }
-          namespace inventory {
-            namespace action {
-              const ClickAction: {
-                ClickType: typeof com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
-                new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.ClickAction;
-              }
-              interface ClickAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
-                getClickType(): com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
-								/**
-								 * The type of click (REQUIRED)
-								 * 
-								 *  @param clickType the new click type
-								 */
-                setClickType(clickType: com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType): com.chattriggers.ctjs.api.inventory.action.ClickAction;
-                getHoldingShift(): boolean;
-								/**
-								 * Whether the click should act as if shift is being held (defaults to false)
-								 * 
-								 *  @param holdingShift to hold shift or not
-								 */
-                setHoldingShift(holdingShift: boolean): com.chattriggers.ctjs.api.inventory.action.ClickAction;
-                getItemInHand(): boolean;
-								/**
-								 * Whether the click should act as if an item is being held
-								 *  (defaults to whether there actually is an item in the hand)
-								 * 
-								 *  @param itemInHand to be holding an item or not
-								 */
-                setItemInHand(itemInHand: boolean): com.chattriggers.ctjs.api.inventory.action.ClickAction;
-                getPickupAll(): boolean;
-								/**
-								 * Whether the click should try to pick up all items of said type in the inventory (essentially double clicking)
-								 *  (defaults to whether there actually is an item in the hand)
-								 * 
-								 *  @param pickupAll to pick up all items of the same type
-								 */
-                setPickupAll(pickupAll: boolean): com.chattriggers.ctjs.api.inventory.action.ClickAction;
-								/**
-								 * Sets the type of click.
-								 *  Possible values are: LEFT, RIGHT, MIDDLE
-								 * 
-								 *  @param clickType the click type
-								 *  @return the current Action for method chaining
-								 */
-                setClickString(clickType: string): com.chattriggers.ctjs.api.inventory.action.ClickAction;
-              }
-              const Action: {
-                Type: typeof com.chattriggers.ctjs.api.inventory.action.Action$Type;
-                new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.Action;
-              }
-              interface Action { 
-                getSlot(): number;
-                setSlot(value: number): void;
-                getWindowId(): number;
-                setWindowId(value: number): void;
-                setSlot(slot: number): com.chattriggers.ctjs.api.inventory.action.Action;
-                setWindowId(windowId: number): com.chattriggers.ctjs.api.inventory.action.Action;
-              }
-              const Action$Companion: {
-								/**
-								 * Creates a new action.
-								 *  The Inventory must be a container, see [Inventory.isContainer].
-								 *  The slot can be -999 for outside of the gui
-								 * 
-								 *  @param inventory the inventory to complete the action on
-								 *  @param slot the slot to complete the action on
-								 *  @param typeString the type of action to do (CLICK, DRAG, DROP, KEY)
-								 *  @return the new action
-								 */
-                of(inventory: com.chattriggers.ctjs.api.inventory.Inventory, slot: number, typeString: string): com.chattriggers.ctjs.api.inventory.action.Action;
-                new(): com.chattriggers.ctjs.api.inventory.action.Action$Companion;
-              }
-              interface Action$Companion { 
-								/**
-								 * Creates a new action.
-								 *  The Inventory must be a container, see [Inventory.isContainer].
-								 *  The slot can be -999 for outside of the gui
-								 * 
-								 *  @param inventory the inventory to complete the action on
-								 *  @param slot the slot to complete the action on
-								 *  @param typeString the type of action to do (CLICK, DRAG, DROP, KEY)
-								 *  @return the new action
-								 */
-                of(inventory: com.chattriggers.ctjs.api.inventory.Inventory, slot: number, typeString: string): com.chattriggers.ctjs.api.inventory.action.Action;
-                new(): com.chattriggers.ctjs.api.inventory.action.Action$Companion;
-              }
-              const Action$Type: {
-                CLICK: com.chattriggers.ctjs.api.inventory.action.Action$Type;
-                DRAG: com.chattriggers.ctjs.api.inventory.action.Action$Type;
-                KEY: com.chattriggers.ctjs.api.inventory.action.Action$Type;
-                DROP: com.chattriggers.ctjs.api.inventory.action.Action$Type;
-                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.inventory.action.Action$Type>;
-                values(): Array<com.chattriggers.ctjs.api.inventory.action.Action$Type>;
-                valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.Action$Type;
-              }
-              interface Action$Type extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.Action$Type> { 
-              }
-              const ClickAction$ClickType: {
-                LEFT: com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
-                RIGHT: com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
-                MIDDLE: com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
-                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType>;
-                values(): Array<com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType>;
-                valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
-              }
-              interface ClickAction$ClickType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType> { 
-                getButton(): number;
-              }
-              const DragAction: {
-                ClickType: typeof com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
-                Stage: typeof com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
-                new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.DragAction;
-              }
-              interface DragAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
-                getClickType(): com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
-								/**
-								 * The type of click (REQUIRED)
-								 * 
-								 *  @param clickType the new click type
-								 */
-                setClickType(clickType: com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType): com.chattriggers.ctjs.api.inventory.action.DragAction;
-                getStage(): com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
-								/**
-								 * The stage of this drag (REQUIRED)
-								 *  BEGIN is when beginning the drag
-								 *  SLOT is for each slot being dragged into
-								 *  END is for ending the drag
-								 * 
-								 *  @param stage the stage
-								 */
-                setStage(stage: com.chattriggers.ctjs.api.inventory.action.DragAction$Stage): com.chattriggers.ctjs.api.inventory.action.DragAction;
-								/**
-								 * Sets the type of click.
-								 *  Possible values are: LEFT, RIGHT, MIDDLE
-								 * 
-								 *  @param clickType the click type
-								 *  @return the current Action for method chaining
-								 */
-                setClickString(clickType: string): com.chattriggers.ctjs.api.inventory.action.DragAction;
-								/**
-								 * Sets the stage of this drag.
-								 *  Possible values are: BEGIN, SLOT, END [stage]
-								 * 
-								 *  @param stage the stage
-								 *  @return the current Action for method chaining
-								 */
-                setStageString(stage: string): com.chattriggers.ctjs.api.inventory.action.DragAction;
-              }
-              const DragAction$ClickType: {
-                LEFT: com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
-                RIGHT: com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
-                MIDDLE: com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
-                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType>;
-                values(): Array<com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType>;
-                valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
-              }
-              interface DragAction$ClickType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType> { 
-                getButton(): number;
-              }
-              const DragAction$Stage: {
-                BEGIN: com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
-                SLOT: com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
-                END: com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
-                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.inventory.action.DragAction$Stage>;
-                values(): Array<com.chattriggers.ctjs.api.inventory.action.DragAction$Stage>;
-                valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
-              }
-              interface DragAction$Stage extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.DragAction$Stage> { 
-                getStage(): number;
-              }
-              const DropAction: {
-                new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.DropAction;
-              }
-              interface DropAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
-                getHoldingCtrl(): boolean;
-								/**
-								 * Whether the click should act as if control is being held (defaults to false)
-								 * 
-								 *  @param holdingCtrl to hold ctrl or not
-								 */
-                setHoldingCtrl(holdingCtrl: boolean): com.chattriggers.ctjs.api.inventory.action.DropAction;
-              }
-              const KeyAction: {
-                new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.KeyAction;
-              }
-              interface KeyAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
-                getKey(): number;
-								/**
-								 * Which key to act as if has been clicked (REQUIRED).
-								 *  Options currently are 0-8, representing the hotbar keys
-								 * 
-								 *  @param key which key to "click"
-								 */
-                setKey(key: number): com.chattriggers.ctjs.api.inventory.action.KeyAction;
-              }
-            }
-            namespace nbt {
-              const NBTBase: {
-                new(mcValue: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
-              }
-              interface NBTBase extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.nbt.Tag> { 
-								/**
-								 * Gets the type byte for the tag.
-								 */
-                getId(): number;
-								/**
-								 * Creates a clone of the tag.
-								 */
-                copy(): net.minecraft.nbt.Tag;
-								/**
-								 * Return whether this compound has no tags.
-								 */
-                hasNoTags(): boolean;
-                hasTags(): boolean;
-              }
-              const NBTBase$Companion: {
-                fromMC(nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
-                new(): com.chattriggers.ctjs.api.inventory.nbt.NBTBase$Companion;
-              }
-              interface NBTBase$Companion { 
-                fromMC(nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
-                new(): com.chattriggers.ctjs.api.inventory.nbt.NBTBase$Companion;
-                toObject(): any | null | undefined;
-                toObject(): org.mozilla.javascript.NativeObject;
-                toObject(): org.mozilla.javascript.NativeArray;
-              }
-              const NBTTagCompound: {
-                NBTDataType: typeof com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                new(mcValue: net.minecraft.nbt.CompoundTag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-              }
-              interface NBTTagCompound extends com.chattriggers.ctjs.api.inventory.nbt.NBTBase { 
-                getTagMap(): Map<string, net.minecraft.nbt.Tag>;
-                getKeySet(): Set<string>;
-                getTag(key: string): com.chattriggers.ctjs.api.inventory.nbt.NBTBase | null | undefined;
-                getTagId(key: string): number | null | undefined;
-                getByte(key: string): java.util.Optional<number>;
-                getShort(key: string): java.util.Optional<number>;
-                getInteger(key: string): java.util.Optional<number>;
-                getLong(key: string): java.util.Optional<number>;
-                getFloat(key: string): java.util.Optional<number>;
-                getDouble(key: string): java.util.Optional<number>;
-                getString(key: string): java.util.Optional<string>;
-                getByteArray(key: string): java.util.Optional<Array<number>>;
-                getIntArray(key: string): java.util.Optional<Array<number>>;
-                getBoolean(key: string): java.util.Optional<boolean>;
-                getCompoundTag(key: string): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                getTagList(key: string): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
-                get(key: string, type: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType, tagType: number | null | undefined): any | null | undefined;
-                get(key: string): com.chattriggers.ctjs.api.inventory.nbt.NBTBase | null | undefined;
-                setNBTBase(key: string, value: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                setNBTBase(key: string, value: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                setBoolean(key: string, value: boolean): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                setByte(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                setShort(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                setInteger(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                setLong(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                setFloat(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                setDouble(key: string, value: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                setString(key: string, value: string): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                setByteArray(key: string, value: Array<number>): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                setIntArray(key: string, value: Array<number>): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                putLongArray(key: string, value: Array<number>): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                set(key: string, value: any): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                removeTag(key: string): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                toObject(): org.mozilla.javascript.NativeObject;
-              }
-              const NBTTagList: {
-                new(mcValue: net.minecraft.nbt.ListTag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
-              }
-              interface NBTTagList extends com.chattriggers.ctjs.api.inventory.nbt.NBTBase { 
-                getTagCount(): number;
-                appendTag(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
-                appendTag(nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
-                set(id: number, nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
-                set(id: number, nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
-                insertTag(index: number, nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
-                insertTag(index: number, nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
-                removeTag(index: number): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
-                getShortAt(index: number): java.util.Optional<number>;
-                getIntAt(index: number): java.util.Optional<number>;
-                getFloatAt(index: number): java.util.Optional<number>;
-                getDoubleAt(index: number): java.util.Optional<number>;
-                getStringTagAt(index: number): string;
-                getListAt(index: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
-                getCompoundTagAt(index: number): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
-                getIntArrayAt(index: number): Array<number>;
-                getLongArrayAt(index: number): Array<number>;
-                get(index: number): net.minecraft.nbt.Tag;
-                get(index: number, type: number): any;
-                toArray(): org.mozilla.javascript.NativeArray;
-              }
-              const NBTTagCompound$NBTDataType: {
-                BYTE: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                SHORT: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                INTEGER: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                LONG: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                FLOAT: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                DOUBLE: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                STRING: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                BYTE_ARRAY: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                INT_ARRAY: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                LONG_ARRAY: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                BOOLEAN: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                COMPOUND_TAG: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                TAG_LIST: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType>;
-                values(): Array<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType>;
-                valueOf(value: string): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
-              }
-              interface NBTTagCompound$NBTDataType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType> { 
-              }
-              const NBT: {
-								/**
-								 * Creates a new [NBTBase] from the given [nbt]
-								 * 
-								 *  @param nbt the value to convert to NBT
-								 *  @param options optional argument to allow refinement of the NBT data.
-								 *  Possible options include:
-								 *  - coerceNumericStrings: Boolean, default false.
-								 *  E.g. "10b" as a byte, "20s" as a short, "30f" as a float, "40d" as a double,
-								 *  "50l" as a long
-								 *  - preferArraysOverLists: Boolean, default false
-								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
-								 *  NBTTagIntArray accordingly
-								 * 
-								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
-								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
-								 */
-                parse(nbt: any): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
-								/**
-								 * Creates a new [NBTBase] from the given [nbt]
-								 * 
-								 *  @param nbt the value to convert to NBT
-								 *  @param options optional argument to allow refinement of the NBT data.
-								 *  Possible options include:
-								 *  - coerceNumericStrings: Boolean, default false.
-								 *  E.g. "10b" as a byte, "20s" as a short, "30f" as a float, "40d" as a double,
-								 *  "50l" as a long
-								 *  - preferArraysOverLists: Boolean, default false
-								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
-								 *  NBTTagIntArray accordingly
-								 * 
-								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
-								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
-								 */
-                parse(nbt: any, options: org.mozilla.javascript.NativeObject | null | undefined): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
-                toObject(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound): org.mozilla.javascript.NativeObject;
-                toArray(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTTagList): org.mozilla.javascript.NativeArray;
-                new(): com.chattriggers.ctjs.api.inventory.nbt.NBT;
-              }
-              interface NBT { 
-								/**
-								 * Creates a new [NBTBase] from the given [nbt]
-								 * 
-								 *  @param nbt the value to convert to NBT
-								 *  @param options optional argument to allow refinement of the NBT data.
-								 *  Possible options include:
-								 *  - coerceNumericStrings: Boolean, default false.
-								 *  E.g. "10b" as a byte, "20s" as a short, "30f" as a float, "40d" as a double,
-								 *  "50l" as a long
-								 *  - preferArraysOverLists: Boolean, default false
-								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
-								 *  NBTTagIntArray accordingly
-								 * 
-								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
-								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
-								 */
-                parse(nbt: any): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
-								/**
-								 * Creates a new [NBTBase] from the given [nbt]
-								 * 
-								 *  @param nbt the value to convert to NBT
-								 *  @param options optional argument to allow refinement of the NBT data.
-								 *  Possible options include:
-								 *  - coerceNumericStrings: Boolean, default false.
-								 *  E.g. "10b" as a byte, "20s" as a short, "30f" as a float, "40d" as a double,
-								 *  "50l" as a long
-								 *  - preferArraysOverLists: Boolean, default false
-								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
-								 *  NBTTagIntArray accordingly
-								 * 
-								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
-								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
-								 */
-                parse(nbt: any, options: org.mozilla.javascript.NativeObject | null | undefined): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
-                toObject(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound): org.mozilla.javascript.NativeObject;
-                toArray(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTTagList): org.mozilla.javascript.NativeArray;
-                new(): com.chattriggers.ctjs.api.inventory.nbt.NBT;
-              }
-            }
-            const Slot: {
-              new(mcValue: net.minecraft.world.inventory.Slot): com.chattriggers.ctjs.api.inventory.Slot;
-            }
-            interface Slot extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.inventory.Slot> { 
-              getIndex(): number;
-              getDisplayX(): number;
-              getDisplayY(): number;
-              getInventory(): com.chattriggers.ctjs.api.inventory.Inventory;
-              getItem(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-              isEnabled(): boolean;
-            }
-            const Inventory: {
-              new(inventory: net.minecraft.world.Container): com.chattriggers.ctjs.api.inventory.Inventory;
-              new(container: net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<any>): com.chattriggers.ctjs.api.inventory.Inventory;
-            }
-            interface Inventory { 
-              getInventory(): net.minecraft.world.Container;
-              getScreen(): net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<any> | null | undefined;
-							/**
-							 * Gets the total size of the Inventory.
-							 *  The player's inventory size is 36, 27 for the main inventory, plus 9 for the hotbar.
-							 *  A single chest's size would be 63, because it also counts the player's inventory.
-							 * 
-							 *  @return the size of the Inventory
-							 */
-              getSize(): number;
-							/**
-							 * Gets the item in any slot, starting from 0.
-							 * 
-							 *  @param slot the slot index
-							 *  @return the [Item] in that slot, or null if there is no item
-							 */
-              getStackInSlot(slot: number): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-							/**
-							 * Returns the window identifier number of this Inventory.
-							 *  This Inventory must be backed by a HandledScreen [isScreen]
-							 * 
-							 *  @return the window id
-							 */
-              getWindowId(): number;
-							/**
-							 * Checks if an item can be shift clicked into a certain slot, i.e. coal into the bottom of a furnace.
-							 * 
-							 *  @param slot the slot index
-							 *  @param item the item for checking
-							 *  @return whether it can be shift clicked in
-							 */
-              isItemValidForSlot(slot: number, item: com.chattriggers.ctjs.api.inventory.Item): boolean;
-							/**
-							 * @return a list of the [Item]s in an inventory
-							 */
-              getItems(): Array<com.chattriggers.ctjs.api.inventory.Item | null | undefined>;
-							/**
-							 * Checks whether the inventory contains the given item.
-							 * 
-							 *  @param item the item to check for
-							 *  @return whether the inventory contains the item
-							 */
-              contains(item: com.chattriggers.ctjs.api.inventory.Item): boolean;
-							/**
-							 * Checks whether the inventory contains an item with ID.
-							 * 
-							 *  @param id the ID of the item to match
-							 *  @return whether the inventory contains an item with ID
-							 */
-              contains(id: number): boolean;
-							/**
-							 * Gets the index of any item in the inventory, and returns the slot number.
-							 *  Returns -1 if the inventory does not contain the item.
-							 * 
-							 *  @param item the item to check for
-							 *  @return the index of the given item
-							 */
-              indexOf(item: com.chattriggers.ctjs.api.inventory.Item): number;
-							/**
-							 * Gets the index of any item in the inventory with matching ID, and returns the slot number.
-							 *  Returns -1 if the inventory does not contain the item.
-							 * 
-							 *  @param id the item ID to check for
-							 *  @return the index of the given item with ID
-							 */
-              indexOf(id: number): number;
-							/**
-							 * Returns true if this Inventory wraps a [HandledScreen] object
-							 *  rather than an [MCInventory] object
-							 * 
-							 *  @return if this is a container
-							 */
-              isScreen(): boolean;
-							/**
-							 * Shorthand for [ClickAction]
-							 * 
-							 *  @param slot the slot to click on
-							 *  @param button the mouse button to use. "LEFT" by default.
-							 *  @param shift whether shift is being held. False by default
-							 *  @return this inventory for method chaining
-							 */
-              click(slot: number): com.chattriggers.ctjs.api.inventory.Inventory;
-							/**
-							 * Shorthand for [ClickAction]
-							 * 
-							 *  @param slot the slot to click on
-							 *  @param button the mouse button to use. "LEFT" by default.
-							 *  @param shift whether shift is being held. False by default
-							 *  @return this inventory for method chaining
-							 */
-              click(slot: number, shift: boolean): com.chattriggers.ctjs.api.inventory.Inventory;
-							/**
-							 * Shorthand for [ClickAction]
-							 * 
-							 *  @param slot the slot to click on
-							 *  @param button the mouse button to use. "LEFT" by default.
-							 *  @param shift whether shift is being held. False by default
-							 *  @return this inventory for method chaining
-							 */
-              click(slot: number, shift: boolean, button: string): com.chattriggers.ctjs.api.inventory.Inventory;
-							/**
-							 * Shorthand for [DropAction]
-							 * 
-							 *  @param slot the slot to drop
-							 *  @param ctrl whether control should be held (drops whole stack)
-							 *  @return this inventory for method chaining
-							 */
-              drop(slot: number, ctrl: boolean): com.chattriggers.ctjs.api.inventory.Inventory;
-							/**
-							 * Shorthand for [DragAction]
-							 * 
-							 *  @param type what click type this should be: LEFT, MIDDLE, RIGHT
-							 *  @param slots all of the slots to drag onto
-							 *  @return this inventory for method chaining
-							 */
-              drag(type: string, slots: number): com.chattriggers.ctjs.api.inventory.Inventory;
-							/**
-							 * Gets the name of the inventory, simply "container" for most chest-like blocks.
-							 * 
-							 *  @return the name of the inventory
-							 */
-              getName(): com.chattriggers.ctjs.api.message.TextComponent;
-              getClassName(): string;
-            }
-            const Item: {
-              new(mcValue: net.minecraft.world.item.ItemStack): com.chattriggers.ctjs.api.inventory.Item;
-              new(type: com.chattriggers.ctjs.api.inventory.ItemType): com.chattriggers.ctjs.api.inventory.Item;
-            }
-            interface Item extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.item.ItemStack> { 
-              getType(): com.chattriggers.ctjs.api.inventory.ItemType;
-              getStackSize(): number;
-              setStackSize(size: number): com.chattriggers.ctjs.api.inventory.Item;
-              getEnchantments(): Map<net.minecraft.resources.ResourceKey<unknown> | null | undefined, number>;
-              isEnchantable(): boolean;
-              isEnchanted(): boolean;
-              canPlaceOn(pos: com.chattriggers.ctjs.api.world.block.BlockPos): boolean;
-              canPlaceOn(block: com.chattriggers.ctjs.api.world.block.Block): boolean;
-              canHarvest(pos: com.chattriggers.ctjs.api.world.block.BlockPos): boolean;
-              canHarvest(block: com.chattriggers.ctjs.api.world.block.Block): boolean;
-              getDurability(): number;
-              getMaxDamage(): number;
-              getDamage(): number;
-              isDamageable(): boolean;
-              getName(): string;
-              setName(name: com.chattriggers.ctjs.api.message.TextComponent | null | undefined): com.chattriggers.ctjs.api.inventory.Item;
-              resetName(): void;
-              getLore(): Array<com.chattriggers.ctjs.api.message.TextComponent>;
-              getLore(advanced: boolean): Array<com.chattriggers.ctjs.api.message.TextComponent>;
-              setLore(lore: Array<com.chattriggers.ctjs.api.message.TextComponent>): void;
-              resetLore(): void;
-              getNBT(): net.minecraft.core.component.DataComponentMap;
-              draw(): void;
-              draw(x: number): void;
-              draw(x: number, y: number): void;
-              draw(x: number, y: number, scale: number): void;
-            }
-            const ItemType: {
-              new(mcValue: net.minecraft.world.item.Item): com.chattriggers.ctjs.api.inventory.ItemType;
-              new(itemName: string): com.chattriggers.ctjs.api.inventory.ItemType;
-              new(id: number): com.chattriggers.ctjs.api.inventory.ItemType;
-              new(blockType: com.chattriggers.ctjs.api.world.block.BlockType): com.chattriggers.ctjs.api.inventory.ItemType;
-            }
-            interface ItemType extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.item.Item> { 
-              getName(): string;
-              getNameComponent(): com.chattriggers.ctjs.api.message.TextComponent;
-              getId(): number;
-              getTranslationKey(): string;
-              getRegistryName(): string;
-              asItem(): com.chattriggers.ctjs.api.inventory.Item;
-            }
-            const ItemType$Companion: {
-              fromMC(mcValue: net.minecraft.world.item.Item): com.chattriggers.ctjs.api.inventory.ItemType | null | undefined;
-              new(): com.chattriggers.ctjs.api.inventory.ItemType$Companion;
-            }
-            interface ItemType$Companion { 
-              fromMC(mcValue: net.minecraft.world.item.Item): com.chattriggers.ctjs.api.inventory.ItemType | null | undefined;
-              new(): com.chattriggers.ctjs.api.inventory.ItemType$Companion;
-            }
-            const Item$Companion: {
-              fromMC(mcValue: net.minecraft.world.item.ItemStack): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-              new(): com.chattriggers.ctjs.api.inventory.Item$Companion;
-            }
-            interface Item$Companion { 
-              fromMC(mcValue: net.minecraft.world.item.ItemStack): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-              new(): com.chattriggers.ctjs.api.inventory.Item$Companion;
-            }
-          }
-          namespace message {
-            const TextComponent: {
-							/**
-							 * Creates an empty [TextComponent] with a single, unstyled, empty part.
-							 */
-              new(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Creates a [TextComponent] from a variable number of objects. These
-							 *  objects can be:
-							 *  - A plain string possibly containing formatting codes. If the string has
-							 *    formatting codes, it will be split into different parts accordingly
-							 *  - A [TextComponent], whose parts will be appended in sequence to this
-							 *    [TextComponent]'s list of parts
-							 *  - A [Text] object, which acts as a single part
-							 *  - A JS object, which must contain a "text" key, and can optionally contain
-							 *    any of the [Style] keys:
-							 *    - color: a [TextColor] or string format of a [TextColor], [Formatting], or a hex value
-							 *    - bold: boolean
-							 *    - italic: boolean
-							 *    - underline: boolean
-							 *    - strikethrough: boolean
-							 *    - obfuscated: boolean
-							 *    - clickEvent: object with { action: [ClickEvent.Action] or string format of a [ClickEvent.Action], value: string or null }
-							 *    - hoverEvent: object with { action: [HoverEvent.Action], string format of a [HoverEvent.Action], or null, value: string or null }
-							 *    - insertion: string or null
-							 *    - font: string format of an [net.minecraft.util.Identifier]
-							 * 
-							 *  @see Style
-							 */
-              new(parts: any): com.chattriggers.ctjs.api.message.TextComponent;
-            }
-            interface TextComponent extends net.minecraft.network.chat.Component, kotlin.collections.Iterable<org.mozilla.javascript.NativeObject> { 
-							/**
-							 * Returns the text of all parts concatenated without formatting codes.
-							 */
-              getUnformattedText(): string;
-							/**
-							 * Returns the text of all parts concatenated with formatting codes.
-							 */
-              getFormattedText(): string;
-              getSize(): number;
-							/**
-							 * If this [TextComponent] is recursive, sending this instance (via [chat] or
-							 *  [actionBar]) may trigger other `chat` triggers as if it had been received by
-							 *  the server. [TextComponent]s are non-recursive by default.
-							 * 
-							 *  @return true if the message can trigger other triggers.
-							 */
-              isRecursive(): boolean;
-							/**
-							 * Get the chat line ID of this message, if it exists. The chat line can be used
-							 *  to easily edit or delete a message later via [ChatLib.editChat] and
-							 *  [ChatLib.deleteChat].
-							 * 
-							 *  @return the chat line ID of the message, or -1 if this [TextComponent] does
-							 *          not have an associated chat line ID.
-							 */
-              getChatLineId(): number;
-							/**
-							 * @return a new [TextComponent] with the given chat line id
-							 */
-              withChatLineId(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * @return a new [TextComponent] with the given chat line id
-							 */
-              withChatLineId(id: number): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Sets whether the message can trigger other triggers.
-							 * 
-							 *  @param recursive true if message can trigger other triggers.
-							 */
-              withRecursive(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Sets whether the message can trigger other triggers.
-							 * 
-							 *  @param recursive true if message can trigger other triggers.
-							 */
-              withRecursive(recursive: boolean): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * @return a new [TextComponent] with the specified [value] appended to the end.
-							 *          This accepts all types of objects that the vararg constructor does.
-							 */
-              withText(value: any): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * @return a new [TextComponent] with the specified [value] inserted at [index].
-							 *          This accepts all types of objects that the vararg constructor does.
-							 */
-              withTextAt(index: number, value: any): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * @return a new [TextComponent] without the part at [index]
-							 */
-              withoutTextAt(index: number): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Edits this text component, replacing it with the given [newText]. Note that
-							 *  this compares [TextComponent]s based on [formattedText]; if an exact match
-							 *  is needed, use [ChatLib.editChat] in conjunction with a chat line ID.
-							 */
-              edit(newText: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Edits this text component, replacing it with a new [TextComponent] from the
-							 *  given [parts]. Note that this compares [TextComponent]s based on
-							 *  [formattedText]; if an exact match is needed, use [ChatLib.editChat] in
-							 *  conjunction with a chat line ID.
-							 */
-              edit(parts: any): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Sends this [TextComponent] to the players chat.
-							 * 
-							 *  Note that this is purely client-side, and will not be sent to the server. If [isRecursive],
-							 *  will trigger any matching `chat` triggers
-							 * 
-							 *  @see ChatLib.chat
-							 *  @see ChatLib.say
-							 */
-              chat(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Sends this [TextComponent] to the players action bar.
-							 * 
-							 *  If [isRecursive], will trigger any matching `actionBar` triggers
-							 * 
-							 *  @see ChatLib.actionBar
-							 */
-              actionBar(): com.chattriggers.ctjs.api.message.TextComponent;
-              contains(element: org.mozilla.javascript.NativeObject): boolean;
-              containsAll(elements: Array<org.mozilla.javascript.NativeObject>): boolean;
-              get(index: number): org.mozilla.javascript.NativeObject;
-              indexOf(element: org.mozilla.javascript.NativeObject): number;
-              isEmpty(): boolean;
-            }
-            const ChatLib: {
-							/**
-							 * Prints text in the chat.
-							 *  The text can be a String or a [TextComponent]
-							 * 
-							 *  @param text the text to be printed
-							 */
-              chat(text: any | null | undefined): void;
-							/**
-							 * Shows text in the action bar.
-							 *  The text can be a String or a [TextComponent]
-							 * 
-							 *  @param text the text to show
-							 */
-              actionBar(text: any | null | undefined): void;
-							/**
-							 * Simulates a chat message to be caught by other triggers for testing.
-							 *  The text can be a String or a [TextComponent]
-							 * 
-							 *  @param text The message to simulate
-							 */
-              simulateChat(text: any | null | undefined): void;
-							/**
-							 * Replaces the easier to type '&' color codes with proper color codes in a string.
-							 * 
-							 *  @param message The string to add color codes to
-							 *  @return the formatted message
-							 */
-              addColor(message: string | null | undefined): string;
-							/**
-							 * Says chat message.
-							 *  This message is actually sent to the server.
-							 * 
-							 *  @param text the message to be sent
-							 */
-              say(text: string): void | null | undefined;
-							/**
-							 * Runs a command.
-							 * 
-							 *  @param text the command to run, without the leading slash (Ex. "help")
-							 *  @param clientSide should the command be run as a client side command
-							 */
-              command(text: string): void;
-							/**
-							 * Runs a command.
-							 * 
-							 *  @param text the command to run, without the leading slash (Ex. "help")
-							 *  @param clientSide should the command be run as a client side command
-							 */
-              command(text: string, clientSide: boolean): void;
-							/**
-							 * Clear all chat messages
-							 */
-              clearChat(): void;
-							/**
-							 * Get a message that will be perfectly one line of chat,
-							 *  the separator repeated as many times as necessary.
-							 *  The separator defaults to "-"
-							 * 
-							 *  @param separator the message to split chat with
-							 *  @return the message that would split chat
-							 */
-              getChatBreak(): string;
-							/**
-							 * Get a message that will be perfectly one line of chat,
-							 *  the separator repeated as many times as necessary.
-							 *  The separator defaults to "-"
-							 * 
-							 *  @param separator the message to split chat with
-							 *  @return the message that would split chat
-							 */
-              getChatBreak(separator: string): string;
-							/**
-							 * Gets the width of Minecraft's chat
-							 * 
-							 *  @return the width of chat
-							 */
-              getChatWidth(): number;
-							/**
-							 * Remove all formatting
-							 * 
-							 *  @param text the string to un-format
-							 *  @return the unformatted string
-							 */
-              removeFormatting(text: string): string;
-							/**
-							 * Replaces Minecraft formatted text with normal formatted text
-							 * 
-							 *  @param text the formatted string
-							 *  @return the unformatted string
-							 */
-              replaceFormatting(text: string): string;
-							/**
-							 * Get a message that will be perfectly centered in chat.
-							 * 
-							 *  @param text the text to be centered
-							 *  @return the centered message
-							 */
-              getCenteredText(text: string): string;
-							/**
-							 * Copies the given String to the user's clipboard
-							 * 
-							 *  @param text the text to copy
-							 */
-              copyToClipboard(text: string): void;
-							/**
-							 * Edits an already sent chat message matched by [regexp].
-							 * 
-							 *  @param regexp the regex object to match to the message
-							 *  @param replacements the new message(s) to be put in replace of the old one
-							 */
-              editChat(regexp: org.mozilla.javascript.regexp.NativeRegExp, replacements: any): void;
-							/**
-							 * Edits an already sent chat message by the text of the chat
-							 * 
-							 *  @param toReplace the unformatted text of the message to be replaced
-							 *  @param replacements the new message(s) to be put in place of the old one
-							 */
-              editChat(toReplace: string, replacements: any): void;
-							/**
-							 * Edits an already sent chat message by the [TextComponent]
-							 * 
-							 *  @param toReplace the message to be replaced
-							 *  @param replacements the new message(s) to be put in place of the old one
-							 */
-              editChat(toReplace: com.chattriggers.ctjs.api.message.TextComponent, replacements: any): void;
-							/**
-							 * Edits an already sent chat message by its chat line id
-							 * 
-							 *  @param chatLineId the chat line id of the message to be replaced
-							 *  @param replacements the new message(s) to be put in place of the old one
-							 */
-              editChat(chatLineId: number, replacements: any): void;
-							/**
-							 * Edits an already sent chat message by given a callback that receives
-							 *  [TextComponent] instances
-							 * 
-							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
-							 *  @param replacements the new message(s) to be put in place of the old one
-							 */
-              editChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>, replacements: any): void;
-							/**
-							 * Deletes an already sent chat message matching [regexp].
-							 * 
-							 *  @param regexp the regex object to match to the message
-							 */
-              deleteChat(regexp: org.mozilla.javascript.regexp.NativeRegExp): void;
-							/**
-							 * Deletes an already sent chat message by the text of the chat
-							 * 
-							 *  @param toDelete the unformatted text of the message to be deleted
-							 */
-              deleteChat(toDelete: string): void;
-							/**
-							 * Deletes an already sent chat message by the [TextComponent]
-							 * 
-							 *  @param toDelete the message to be deleted
-							 */
-              deleteChat(toDelete: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Deletes an already sent chat message by its chat line id
-							 * 
-							 *  @param chatLineId the chat line id of the message to be deleted
-							 */
-              deleteChat(chatLineId: number): void;
-							/**
-							 * Deletes an already sent chat message given a callback that receives
-							 *  [TextComponent] instances
-							 * 
-							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
-							 */
-              deleteChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>): void;
-							/**
-							 * Gets the previous 1000 lines of chat
-							 * 
-							 *  @return A list of the last 1000 chat lines
-							 */
-              getChatLines(): Array<string>;
-							/**
-							 * Adds a message to the player's chat history. This allows the message to
-							 *  show up for the player when pressing the up/down keys while in the chat gui
-							 * 
-							 *  @param index the index to insert the message
-							 *  @param message the message to add to chat history
-							 */
-              addToSentMessageHistory(message: string): void;
-							/**
-							 * Adds a message to the player's chat history. This allows the message to
-							 *  show up for the player when pressing the up/down keys while in the chat gui
-							 * 
-							 *  @param index the index to insert the message
-							 *  @param message the message to add to chat history
-							 */
-              addToSentMessageHistory(index: number, message: string): void;
-              new(): com.chattriggers.ctjs.api.message.ChatLib;
-            }
-            interface ChatLib { 
-							/**
-							 * Prints text in the chat.
-							 *  The text can be a String or a [TextComponent]
-							 * 
-							 *  @param text the text to be printed
-							 */
-              chat(text: any | null | undefined): void;
-							/**
-							 * Shows text in the action bar.
-							 *  The text can be a String or a [TextComponent]
-							 * 
-							 *  @param text the text to show
-							 */
-              actionBar(text: any | null | undefined): void;
-							/**
-							 * Simulates a chat message to be caught by other triggers for testing.
-							 *  The text can be a String or a [TextComponent]
-							 * 
-							 *  @param text The message to simulate
-							 */
-              simulateChat(text: any | null | undefined): void;
-							/**
-							 * Replaces the easier to type '&' color codes with proper color codes in a string.
-							 * 
-							 *  @param message The string to add color codes to
-							 *  @return the formatted message
-							 */
-              addColor(message: string | null | undefined): string;
-							/**
-							 * Says chat message.
-							 *  This message is actually sent to the server.
-							 * 
-							 *  @param text the message to be sent
-							 */
-              say(text: string): void | null | undefined;
-							/**
-							 * Runs a command.
-							 * 
-							 *  @param text the command to run, without the leading slash (Ex. "help")
-							 *  @param clientSide should the command be run as a client side command
-							 */
-              command(text: string): void;
-							/**
-							 * Runs a command.
-							 * 
-							 *  @param text the command to run, without the leading slash (Ex. "help")
-							 *  @param clientSide should the command be run as a client side command
-							 */
-              command(text: string, clientSide: boolean): void;
-							/**
-							 * Clear all chat messages
-							 */
-              clearChat(): void;
-							/**
-							 * Get a message that will be perfectly one line of chat,
-							 *  the separator repeated as many times as necessary.
-							 *  The separator defaults to "-"
-							 * 
-							 *  @param separator the message to split chat with
-							 *  @return the message that would split chat
-							 */
-              getChatBreak(): string;
-							/**
-							 * Get a message that will be perfectly one line of chat,
-							 *  the separator repeated as many times as necessary.
-							 *  The separator defaults to "-"
-							 * 
-							 *  @param separator the message to split chat with
-							 *  @return the message that would split chat
-							 */
-              getChatBreak(separator: string): string;
-							/**
-							 * Gets the width of Minecraft's chat
-							 * 
-							 *  @return the width of chat
-							 */
-              getChatWidth(): number;
-							/**
-							 * Remove all formatting
-							 * 
-							 *  @param text the string to un-format
-							 *  @return the unformatted string
-							 */
-              removeFormatting(text: string): string;
-							/**
-							 * Replaces Minecraft formatted text with normal formatted text
-							 * 
-							 *  @param text the formatted string
-							 *  @return the unformatted string
-							 */
-              replaceFormatting(text: string): string;
-							/**
-							 * Get a message that will be perfectly centered in chat.
-							 * 
-							 *  @param text the text to be centered
-							 *  @return the centered message
-							 */
-              getCenteredText(text: string): string;
-							/**
-							 * Copies the given String to the user's clipboard
-							 * 
-							 *  @param text the text to copy
-							 */
-              copyToClipboard(text: string): void;
-							/**
-							 * Edits an already sent chat message matched by [regexp].
-							 * 
-							 *  @param regexp the regex object to match to the message
-							 *  @param replacements the new message(s) to be put in replace of the old one
-							 */
-              editChat(regexp: org.mozilla.javascript.regexp.NativeRegExp, replacements: any): void;
-							/**
-							 * Edits an already sent chat message by the text of the chat
-							 * 
-							 *  @param toReplace the unformatted text of the message to be replaced
-							 *  @param replacements the new message(s) to be put in place of the old one
-							 */
-              editChat(toReplace: string, replacements: any): void;
-							/**
-							 * Edits an already sent chat message by the [TextComponent]
-							 * 
-							 *  @param toReplace the message to be replaced
-							 *  @param replacements the new message(s) to be put in place of the old one
-							 */
-              editChat(toReplace: com.chattriggers.ctjs.api.message.TextComponent, replacements: any): void;
-							/**
-							 * Edits an already sent chat message by its chat line id
-							 * 
-							 *  @param chatLineId the chat line id of the message to be replaced
-							 *  @param replacements the new message(s) to be put in place of the old one
-							 */
-              editChat(chatLineId: number, replacements: any): void;
-							/**
-							 * Edits an already sent chat message by given a callback that receives
-							 *  [TextComponent] instances
-							 * 
-							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
-							 *  @param replacements the new message(s) to be put in place of the old one
-							 */
-              editChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>, replacements: any): void;
-							/**
-							 * Deletes an already sent chat message matching [regexp].
-							 * 
-							 *  @param regexp the regex object to match to the message
-							 */
-              deleteChat(regexp: org.mozilla.javascript.regexp.NativeRegExp): void;
-							/**
-							 * Deletes an already sent chat message by the text of the chat
-							 * 
-							 *  @param toDelete the unformatted text of the message to be deleted
-							 */
-              deleteChat(toDelete: string): void;
-							/**
-							 * Deletes an already sent chat message by the [TextComponent]
-							 * 
-							 *  @param toDelete the message to be deleted
-							 */
-              deleteChat(toDelete: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Deletes an already sent chat message by its chat line id
-							 * 
-							 *  @param chatLineId the chat line id of the message to be deleted
-							 */
-              deleteChat(chatLineId: number): void;
-							/**
-							 * Deletes an already sent chat message given a callback that receives
-							 *  [TextComponent] instances
-							 * 
-							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
-							 */
-              deleteChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>): void;
-							/**
-							 * Gets the previous 1000 lines of chat
-							 * 
-							 *  @return A list of the last 1000 chat lines
-							 */
-              getChatLines(): Array<string>;
-							/**
-							 * Adds a message to the player's chat history. This allows the message to
-							 *  show up for the player when pressing the up/down keys while in the chat gui
-							 * 
-							 *  @param index the index to insert the message
-							 *  @param message the message to add to chat history
-							 */
-              addToSentMessageHistory(message: string): void;
-							/**
-							 * Adds a message to the player's chat history. This allows the message to
-							 *  show up for the player when pressing the up/down keys while in the chat gui
-							 * 
-							 *  @param index the index to insert the message
-							 *  @param message the message to add to chat history
-							 */
-              addToSentMessageHistory(index: number, message: string): void;
-              new(): com.chattriggers.ctjs.api.message.ChatLib;
-            }
-            const Chat: {
-              sendGradientMsg(prefix: string, startRgb: number, endRgb: number, messages: any): void;
-              new(): com.chattriggers.ctjs.api.message.Chat;
-            }
-            interface Chat { 
-              sendGradientMsg(prefix: string, startRgb: number, endRgb: number, messages: any): void;
-              new(): com.chattriggers.ctjs.api.message.Chat;
-            }
-          }
-          namespace world {
-            namespace block {
-              const BlockType: {
-                new(mcValue: net.minecraft.world.level.block.Block): com.chattriggers.ctjs.api.world.block.BlockType;
-                new(block: com.chattriggers.ctjs.api.world.block.BlockType): com.chattriggers.ctjs.api.world.block.BlockType;
-                new(blockName: string): com.chattriggers.ctjs.api.world.block.BlockType;
-                new(blockID: number): com.chattriggers.ctjs.api.world.block.BlockType;
-                new(item: com.chattriggers.ctjs.api.inventory.Item): com.chattriggers.ctjs.api.world.block.BlockType;
-              }
-              interface BlockType extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.block.Block> { 
-								/**
-								 * Returns a [Block] based on this block and the
-								 *  provided BlockPos
-								 * 
-								 *  @param blockPos the block position
-								 *  @return a [Block] object
-								 */
-                withBlockPos(blockPos: com.chattriggers.ctjs.api.world.block.BlockPos): com.chattriggers.ctjs.api.world.block.Block;
-                getID(): number;
-								/**
-								 * Gets the block's registry name.
-								 *  Example: minecraft:oak_planks
-								 * 
-								 *  @return the block's registry name
-								 */
-                getRegistryName(): string;
-								/**
-								 * Gets the block's translation key.
-								 *  Example: block.minecraft.oak_planks
-								 * 
-								 *  @return the block's translation key
-								 */
-                getTranslationKey(): string;
-								/**
-								 * Gets the block's localized name.
-								 *  Example: Wooden Planks
-								 * 
-								 *  @return the block's localized name
-								 */
-                getName(): string;
-                getLightValue(): number;
-                getDefaultState(): net.minecraft.world.level.block.state.BlockState;
-                canProvidePower(): boolean;
-                isTranslucent(): boolean;
-              }
-              const BlockPos: {
-                new(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.block.BlockPos;
-                new(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.block.BlockPos;
-                new(pos: com.chattriggers.ctjs.api.vec.Vec3i): com.chattriggers.ctjs.api.world.block.BlockPos;
-                new(pos: net.minecraft.core.BlockPos): com.chattriggers.ctjs.api.world.block.BlockPos;
-                new(source: com.chattriggers.ctjs.api.entity.Entity): com.chattriggers.ctjs.api.world.block.BlockPos;
-              }
-              interface BlockPos extends com.chattriggers.ctjs.api.vec.Vec3i, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.BlockPos> { 
-                up(): com.chattriggers.ctjs.api.world.block.BlockPos;
-                up(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
-                down(): com.chattriggers.ctjs.api.world.block.BlockPos;
-                down(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
-                north(): com.chattriggers.ctjs.api.world.block.BlockPos;
-                north(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
-                south(): com.chattriggers.ctjs.api.world.block.BlockPos;
-                south(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
-                east(): com.chattriggers.ctjs.api.world.block.BlockPos;
-                east(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
-                west(): com.chattriggers.ctjs.api.world.block.BlockPos;
-                west(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
-                offset(facing: com.chattriggers.ctjs.api.world.block.BlockFace): com.chattriggers.ctjs.api.world.block.BlockPos;
-                offset(facing: com.chattriggers.ctjs.api.world.block.BlockFace, n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
-                distanceTo(other: com.chattriggers.ctjs.api.world.block.BlockPos): number;
-                toVec3d(): net.minecraft.world.phys.Vec3;
-              }
-              const BlockFace: {
-                DOWN: com.chattriggers.ctjs.api.world.block.BlockFace;
-                UP: com.chattriggers.ctjs.api.world.block.BlockFace;
-                NORTH: com.chattriggers.ctjs.api.world.block.BlockFace;
-                SOUTH: com.chattriggers.ctjs.api.world.block.BlockFace;
-                WEST: com.chattriggers.ctjs.api.world.block.BlockFace;
-                EAST: com.chattriggers.ctjs.api.world.block.BlockFace;
-                Plane: typeof com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
-                AxisDirection: typeof com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
-                Axis: typeof com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
-                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.block.BlockFace>;
-                values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace>;
-                valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace;
-              }
-              interface BlockFace extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace>, net.minecraft.util.StringRepresentable, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction> { 
-                getAxisDirection(): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
-                getAxis(): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
-                getDirectionVec(): com.chattriggers.ctjs.api.vec.Vec3i;
-                getOpposite(): com.chattriggers.ctjs.api.world.block.BlockFace;
-                getOffsetX(): number;
-                getOffsetY(): number;
-                getOffsetZ(): number;
-                rotateAround(axis: com.chattriggers.ctjs.api.world.block.BlockFace$Axis): com.chattriggers.ctjs.api.world.block.BlockFace;
-                rotateX(): com.chattriggers.ctjs.api.world.block.BlockFace;
-                rotateY(): com.chattriggers.ctjs.api.world.block.BlockFace;
-                rotateZ(): com.chattriggers.ctjs.api.world.block.BlockFace;
-              }
-              const BlockFace$AxisDirection: {
-                POSITIVE: com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
-                NEGATIVE: com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
-                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection>;
-                values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection>;
-                valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
-              }
-              interface BlockFace$AxisDirection extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction$AxisDirection> { 
-                getOffset(): number;
-              }
-              const BlockFace$AxisDirection$Companion: {
-                fromMC(axisDirection: net.minecraft.core.Direction$AxisDirection): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
-                new(): unknown;
-              }
-              interface BlockFace$AxisDirection$Companion { 
-                fromMC(axisDirection: net.minecraft.core.Direction$AxisDirection): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
-                new(): unknown;
-              }
-              const BlockFace$Axis: {
-                X: com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
-                Y: com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
-                Z: com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
-                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>;
-                values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>;
-                valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
-              }
-              interface BlockFace$Axis extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>, net.minecraft.util.StringRepresentable, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction$Axis> { 
-                getPlane(): com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
-                isHorizontal(): boolean;
-                isVertical(): boolean;
-              }
-              const BlockFace$Plane: {
-                HORIZONTAL: com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
-                VERTICAL: com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
-                getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.block.BlockFace$Plane>;
-                values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace$Plane>;
-                valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
-              }
-              interface BlockFace$Plane extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$Plane>, kotlin.collections.Iterable<com.chattriggers.ctjs.api.world.block.BlockFace> { 
-                facings(): Array<com.chattriggers.ctjs.api.world.block.BlockFace>;
-              }
-              const BlockFace$Axis$Companion: {
-                fromMC(axis: net.minecraft.core.Direction$Axis): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
-                new(): unknown;
-              }
-              interface BlockFace$Axis$Companion { 
-                fromMC(axis: net.minecraft.core.Direction$Axis): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
-                new(): unknown;
-              }
-              const BlockFace$Companion: {
-                fromMC(facing: net.minecraft.core.Direction): com.chattriggers.ctjs.api.world.block.BlockFace;
-                new(): com.chattriggers.ctjs.api.world.block.BlockFace$Companion;
-              }
-              interface BlockFace$Companion { 
-                fromMC(facing: net.minecraft.core.Direction): com.chattriggers.ctjs.api.world.block.BlockFace;
-                new(): com.chattriggers.ctjs.api.world.block.BlockFace$Companion;
-              }
-              const Block: {
-                new(type: com.chattriggers.ctjs.api.world.block.BlockType, pos: com.chattriggers.ctjs.api.world.block.BlockPos, face: com.chattriggers.ctjs.api.world.block.BlockFace | null | undefined): com.chattriggers.ctjs.api.world.block.Block;
-              }
-              interface Block { 
-                getType(): com.chattriggers.ctjs.api.world.block.BlockType;
-                getPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
-                getFace(): com.chattriggers.ctjs.api.world.block.BlockFace | null | undefined;
-                getX(): number;
-                getY(): number;
-                getZ(): number;
-                withType(type: com.chattriggers.ctjs.api.world.block.BlockType): com.chattriggers.ctjs.api.world.block.Block;
-                withPos(pos: com.chattriggers.ctjs.api.world.block.BlockPos): com.chattriggers.ctjs.api.world.block.Block;
-								/**
-								 * Narrows this block to reference a certain face. Used by
-								 *  [Player.lookingAt] to specify the block face
-								 *  being looked at.
-								 */
-                withFace(face: com.chattriggers.ctjs.api.world.block.BlockFace): com.chattriggers.ctjs.api.world.block.Block;
-                getState(): net.minecraft.world.level.block.state.BlockState | null | undefined;
-                isEmittingPower(): boolean;
-                isEmittingPower(face: com.chattriggers.ctjs.api.world.block.BlockFace | null | undefined): boolean;
-                getEmittingPower(): number;
-                getEmittingPower(face: com.chattriggers.ctjs.api.world.block.BlockFace | null | undefined): number;
-                isReceivingPower(): boolean;
-                getReceivingPower(): number;
-								/**
-								 * Checks whether the block can be mined with the tool in the player's hand
-								 * 
-								 *  @return whether the block can be mined
-								 */
-                canBeHarvested(): boolean;
-                canBeHarvestedWith(item: com.chattriggers.ctjs.api.inventory.Item): boolean;
-              }
-            }
-            namespace pathfinding {
-              const HypixelManager: {
-                new(): com.chattriggers.ctjs.api.world.pathfinding.HypixelManager;
-              }
-              interface HypixelManager { 
-                new(): com.chattriggers.ctjs.api.world.pathfinding.HypixelManager;
-                init(): void;
-                onDisconnect(): void;
-              }
-              const NativeStateEncoder: {
-                flagsForStateId(stateId: number): number;
-                flagsForState(state: net.minecraft.world.level.block.state.BlockState): number;
-                flagsShortForState(state: net.minecraft.world.level.block.state.BlockState): number;
-                flagsShortForStateId(stateId: number): number;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.NativeStateEncoder;
-              }
-              interface NativeStateEncoder { 
-                flagsForStateId(stateId: number): number;
-                flagsForState(state: net.minecraft.world.level.block.state.BlockState): number;
-                flagsShortForState(state: net.minecraft.world.level.block.state.BlockState): number;
-                flagsShortForStateId(stateId: number): number;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.NativeStateEncoder;
-              }
-              const NativeVoxelFlags: {
-                new(): com.chattriggers.ctjs.api.world.pathfinding.NativeVoxelFlags;
-              }
-              interface NativeVoxelFlags { 
-                new(): com.chattriggers.ctjs.api.world.pathfinding.NativeVoxelFlags;
-                getPASSABLE(): number;
-                getSOLID(): number;
-                getPASSABLE_FLY(): number;
-                getBLOCKING_WALL(): number;
-                getFLUID(): number;
-                getSLAB_BOTTOM(): number;
-                getSLAB_TOP(): number;
-                getFENCE_LIKE(): number;
-                getSTAIRS_BOTTOM(): number;
-                getCARPET_LIKE(): number;
-                getETHER_PASSABLE(): number;
-                getETHER_TELEPORT_CLEAR(): number;
-                getETHER_FEET_BLOCKER(): number;
-              }
-              const WorldSerializer: {
-                new(): com.chattriggers.ctjs.api.world.pathfinding.WorldSerializer;
-              }
-              interface WorldSerializer { 
-                new(): com.chattriggers.ctjs.api.world.pathfinding.WorldSerializer;
-                save(name: string, chunks: Map<number, com.chattriggers.ctjs.api.world.pathfinding.CachedChunk>): void;
-                load(name: string): java.util.concurrent.ConcurrentHashMap<number, com.chattriggers.ctjs.api.world.pathfinding.CachedChunk> | null | undefined;
-              }
-              const CachedChunk: {
-                minY: number;
-                maxY: number;
-                ready: boolean;
-                new(minY: number, maxY: number): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk;
-              }
-              interface CachedChunk { 
-                getFlags(localX: number, y: number, localZ: number): number;
-                setFlags(localX: number, y: number, localZ: number, flags: number): void;
-                hasSection(index: number): boolean;
-                copySectionFlags(index: number, dest: Array<number>, destOffset: number): void;
-                setSection(sectionIndex: number, data: Array<number>): void;
-              }
-              const CachedChunk$Companion: {
-                AIR_FLAGS: number;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk$Companion;
-              }
-              interface CachedChunk$Companion { 
-                AIR_FLAGS: number;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk$Companion;
-              }
-              const EtherwarpLandingCandidatesResult: {
-                goals: Array<number>;
-                centers: kotlin.DoubleArray;
-                new(goals: Array<number>, centers: kotlin.DoubleArray): com.chattriggers.ctjs.api.world.pathfinding.EtherwarpLandingCandidatesResult;
-              }
-              interface EtherwarpLandingCandidatesResult { 
-              }
-              const NativeEtherwarpResult: {
-                path: Array<number>;
-                angles: kotlin.FloatArray;
-                timeMs: number;
-                nodesExplored: number;
-                nanosecondsPerNode: number;
-                new(path: Array<number>, angles: kotlin.FloatArray, timeMs: number, nodesExplored: number, nanosecondsPerNode: number): com.chattriggers.ctjs.api.world.pathfinding.NativeEtherwarpResult;
-              }
-              interface NativeEtherwarpResult { 
-              }
-              const NativePathfinderBridge: {
-                NativePathSearchRequest: typeof com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest;
-                NativeEtherwarpSearchRequest: typeof com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativeEtherwarpSearchRequest;
-                isAvailable(): boolean;
-                getLastError(): string | null | undefined;
-                setWorld(worldKey: string, minY: number, maxY: number): void;
-                clearWorld(): void;
-                upsertChunk(chunkX: number, chunkZ: number, minY: number, maxY: number, sectionMask: number, sectionFlags: Array<number>): void;
-                applyBlockUpdates(updates: Array<number>): void;
-                findPath(request: com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest): com.chattriggers.ctjs.api.world.pathfinding.NativePathResult | null | undefined;
-                findEtherwarpPath(request: com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativeEtherwarpSearchRequest): com.chattriggers.ctjs.api.world.pathfinding.NativeEtherwarpResult | null | undefined;
-                cancelSearch(): void;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge;
-              }
-              interface NativePathfinderBridge { 
-                isAvailable(): boolean;
-                getLastError(): string | null | undefined;
-                setWorld(worldKey: string, minY: number, maxY: number): void;
-                clearWorld(): void;
-                upsertChunk(chunkX: number, chunkZ: number, minY: number, maxY: number, sectionMask: number, sectionFlags: Array<number>): void;
-                applyBlockUpdates(updates: Array<number>): void;
-                findPath(request: com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest): com.chattriggers.ctjs.api.world.pathfinding.NativePathResult | null | undefined;
-                findEtherwarpPath(request: com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativeEtherwarpSearchRequest): com.chattriggers.ctjs.api.world.pathfinding.NativeEtherwarpResult | null | undefined;
-                cancelSearch(): void;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge;
-              }
-              const NativePathfinderBridge$NativePathSearchRequest: {
-                new(startPoints: Array<number>, endPoints: Array<number>, isFly: boolean, maxIterations: number, heuristicWeight: number, nonPrimaryStartPenalty: number, moveOrderOffset: number, avoidMeta: Array<number>, avoidPenalty: kotlin.DoubleArray): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest;
-              }
-              interface NativePathfinderBridge$NativePathSearchRequest { 
-                getStartPoints(): Array<number>;
-                getEndPoints(): Array<number>;
-                isFly(): boolean;
-                getMaxIterations(): number;
-                getHeuristicWeight(): number;
-                getNonPrimaryStartPenalty(): number;
-                getMoveOrderOffset(): number;
-                getAvoidMeta(): Array<number>;
-                getAvoidPenalty(): kotlin.DoubleArray;
-                component1(): Array<number>;
-                component2(): Array<number>;
-                component3(): boolean;
-                component4(): number;
-                component5(): number;
-                component6(): number;
-                component7(): number;
-                component8(): Array<number>;
-                component9(): kotlin.DoubleArray;
-                copy(startPoints: Array<number>, endPoints: Array<number>, isFly: boolean, maxIterations: number, heuristicWeight: number, nonPrimaryStartPenalty: number, moveOrderOffset: number, avoidMeta: Array<number>, avoidPenalty: kotlin.DoubleArray): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest;
-              }
-              const NativePathResult: {
-                path: Array<number>;
-                keyPath: Array<number>;
-                timeMs: number;
-                nodesExplored: number;
-                nanosecondsPerNode: number;
-                selectedStartIndex: number;
-                pathFlags: Array<number>;
-                keyNodeFlags: Array<number>;
-                keyNodeMetrics: Array<number>;
-                pathSignature: string;
-                new(path: Array<number>, keyPath: Array<number>, timeMs: number, nodesExplored: number, nanosecondsPerNode: number, selectedStartIndex: number, pathFlags: Array<number>, keyNodeFlags: Array<number>, keyNodeMetrics: Array<number>, pathSignature: string): com.chattriggers.ctjs.api.world.pathfinding.NativePathResult;
-              }
-              interface NativePathResult { 
-              }
-              const NativePathfinderBridge$NativeEtherwarpSearchRequest: {
-                new(goalX: number, goalY: number, goalZ: number, startEyeX: number, startEyeY: number, startEyeZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number, eyeHeight: number): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativeEtherwarpSearchRequest;
-              }
-              interface NativePathfinderBridge$NativeEtherwarpSearchRequest { 
-                getGoalX(): number;
-                getGoalY(): number;
-                getGoalZ(): number;
-                getStartEyeX(): number;
-                getStartEyeY(): number;
-                getStartEyeZ(): number;
-                getMaxIterations(): number;
-                getThreadCount(): number;
-                getYawStep(): number;
-                getPitchStep(): number;
-                getNewNodeCost(): number;
-                getHeuristicWeight(): number;
-                getRayLength(): number;
-                getRewireEpsilon(): number;
-                getEyeHeight(): number;
-                component1(): number;
-                component2(): number;
-                component3(): number;
-                component4(): number;
-                component5(): number;
-                component6(): number;
-                component7(): number;
-                component8(): number;
-                component9(): number;
-                component10(): number;
-                component11(): number;
-                component12(): number;
-                component13(): number;
-                component14(): number;
-                component15(): number;
-                copy(goalX: number, goalY: number, goalZ: number, startEyeX: number, startEyeY: number, startEyeZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number, eyeHeight: number): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativeEtherwarpSearchRequest;
-              }
-              const PathManager: {
-                isSearching(): boolean;
-                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number): boolean;
-                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number, maxIterations: number): boolean;
-                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number, maxIterations: number, isFly: boolean): boolean;
-                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>): boolean;
-                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number): boolean;
-                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number, isFly: boolean): boolean;
-                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>): boolean;
-                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>, maxIterations: number): boolean;
-                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>, maxIterations: number, isFly: boolean): boolean;
-                findFlyPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>): boolean;
-                findFlyPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number, eyeHeight: number): boolean;
-                isValidEtherwarpLanding(x: number, y: number, z: number): boolean;
-                getEtherwarpLandingCenter(x: number, y: number, z: number): kotlin.DoubleArray | null | undefined;
-                getEtherwarpLandingCandidates(anchorX: number, anchorY: number, anchorZ: number, radius: number, maxDistance: number, sortOriginX: number, sortOriginY: number, sortOriginZ: number): com.chattriggers.ctjs.api.world.pathfinding.EtherwarpLandingCandidatesResult | null | undefined;
-                getCurrentEtherwarpEyeHeight(): number;
-                getCurrentEtherwarpSneakOffset(): number;
-                cancelSearch(): void;
-                getPathArray(): Array<number>;
-                getKeyNodesArray(): Array<number>;
-                getEtherwarpPathArray(): Array<number>;
-                getEtherwarpAnglesArray(): kotlin.FloatArray;
-                getPathFlagsArray(): Array<number>;
-                getKeyNodeFlagsArray(): Array<number>;
-                getKeyNodeMetricsArray(): Array<number>;
-                getPathSignature(): string;
-                getPathFlagBits(): Array<number>;
-                getEtherwarpVoxelFlagsAt(x: number, y: number, z: number): number;
-                isEtherwarpSupportSolid(flags: number): boolean;
-                getEtherwarpStandOffsetForFlags(flags: number): number;
-                isEtherwarpTeleportSpaceClearFlags(flags: number): boolean;
-                addTransientAvoidPoint(x: number, y: number, z: number): void;
-                addTransientAvoidPoint(x: number, y: number, z: number, radius: number): void;
-                addTransientAvoidPoint(x: number, y: number, z: number, radius: number, penalty: number): void;
-                addTransientAvoidPoint(x: number, y: number, z: number, radius: number, penalty: number, ttlSearches: number): void;
-                addTransientAvoidPoints(points: Array<number>): void;
-                addTransientAvoidPoints(points: Array<number>, radius: number): void;
-                addTransientAvoidPoints(points: Array<number>, radius: number, penalty: number): void;
-                addTransientAvoidPoints(points: Array<number>, radius: number, penalty: number, ttlSearches: number): void;
-                clearTransientAvoidPoints(): void;
-                getPathSize(): number;
-                getEtherwarpPathSize(): number;
-                getKeyNodeCount(): number;
-                getLastTimeMs(): number;
-                getEtherwarpLastTimeMs(): number;
-                getNodesExplored(): number;
-                getEtherwarpNodesExplored(): number;
-                getNanosecondsPerNode(): number;
-                getEtherwarpNanosecondsPerNode(): number;
-                getSelectedStartIndex(): number;
-                setSearchVariantSeed(seed: number): void;
-                getLastError(): string | null | undefined;
-                hasPath(): boolean;
-                hasEtherwarpPath(): boolean;
-                clear(): void;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.PathManager;
-              }
-              interface PathManager { 
-                isSearching(): boolean;
-                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number): boolean;
-                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number, maxIterations: number): boolean;
-                findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number, maxIterations: number, isFly: boolean): boolean;
-                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>): boolean;
-                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number): boolean;
-                findPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number, isFly: boolean): boolean;
-                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>): boolean;
-                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>, maxIterations: number): boolean;
-                findPathMultipleGoals(startX: number, startY: number, startZ: number, endGoals: Array<number>, maxIterations: number, isFly: boolean): boolean;
-                findFlyPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>): boolean;
-                findFlyPath(startPoints: Array<Array<number>>, endPoints: Array<Array<number>>, maxIterations: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number): boolean;
-                findEtherwarpPath(goalX: number, goalY: number, goalZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number, eyeHeight: number): boolean;
-                isValidEtherwarpLanding(x: number, y: number, z: number): boolean;
-                getEtherwarpLandingCenter(x: number, y: number, z: number): kotlin.DoubleArray | null | undefined;
-                getEtherwarpLandingCandidates(anchorX: number, anchorY: number, anchorZ: number, radius: number, maxDistance: number, sortOriginX: number, sortOriginY: number, sortOriginZ: number): com.chattriggers.ctjs.api.world.pathfinding.EtherwarpLandingCandidatesResult | null | undefined;
-                getCurrentEtherwarpEyeHeight(): number;
-                getCurrentEtherwarpSneakOffset(): number;
-                cancelSearch(): void;
-                getPathArray(): Array<number>;
-                getKeyNodesArray(): Array<number>;
-                getEtherwarpPathArray(): Array<number>;
-                getEtherwarpAnglesArray(): kotlin.FloatArray;
-                getPathFlagsArray(): Array<number>;
-                getKeyNodeFlagsArray(): Array<number>;
-                getKeyNodeMetricsArray(): Array<number>;
-                getPathSignature(): string;
-                getPathFlagBits(): Array<number>;
-                getEtherwarpVoxelFlagsAt(x: number, y: number, z: number): number;
-                isEtherwarpSupportSolid(flags: number): boolean;
-                getEtherwarpStandOffsetForFlags(flags: number): number;
-                isEtherwarpTeleportSpaceClearFlags(flags: number): boolean;
-                addTransientAvoidPoint(x: number, y: number, z: number): void;
-                addTransientAvoidPoint(x: number, y: number, z: number, radius: number): void;
-                addTransientAvoidPoint(x: number, y: number, z: number, radius: number, penalty: number): void;
-                addTransientAvoidPoint(x: number, y: number, z: number, radius: number, penalty: number, ttlSearches: number): void;
-                addTransientAvoidPoints(points: Array<number>): void;
-                addTransientAvoidPoints(points: Array<number>, radius: number): void;
-                addTransientAvoidPoints(points: Array<number>, radius: number, penalty: number): void;
-                addTransientAvoidPoints(points: Array<number>, radius: number, penalty: number, ttlSearches: number): void;
-                clearTransientAvoidPoints(): void;
-                getPathSize(): number;
-                getEtherwarpPathSize(): number;
-                getKeyNodeCount(): number;
-                getLastTimeMs(): number;
-                getEtherwarpLastTimeMs(): number;
-                getNodesExplored(): number;
-                getEtherwarpNodesExplored(): number;
-                getNanosecondsPerNode(): number;
-                getEtherwarpNanosecondsPerNode(): number;
-                getSelectedStartIndex(): number;
-                setSearchVariantSeed(seed: number): void;
-                getLastError(): string | null | undefined;
-                hasPath(): boolean;
-                hasEtherwarpPath(): boolean;
-                clear(): void;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.PathManager;
-                getFLAG_FLUID_FEET(): number;
-                getFLAG_FLUID_HEAD(): number;
-                getFLAG_LOW_HEADROOM(): number;
-                getFLAG_NEAR_EDGE(): number;
-                getFLAG_NEAR_WALL(): number;
-                getFLAG_STEP_UP_NEXT(): number;
-                getFLAG_DROP_NEXT(): number;
-                getFLAG_TIGHT_CORRIDOR(): number;
-                getETHERWARP_VOXEL_SOLID(): number;
-                getETHERWARP_VOXEL_FENCE_LIKE(): number;
-                getETHERWARP_VOXEL_TELEPORT_CLEAR(): number;
-                getETHERWARP_VOXEL_FEET_BLOCKER(): number;
-              }
-              const Swift: {
-                new(): com.chattriggers.ctjs.api.world.pathfinding.Swift;
-              }
-              interface Swift extends net.fabricmc.api.ClientModInitializer { 
-              }
-              const Swift$Companion: {
-                executor: java.util.concurrent.ExecutorService;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.Swift$Companion;
-              }
-              interface Swift$Companion { 
-                executor: java.util.concurrent.ExecutorService;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.Swift$Companion;
-                getCHUNKS_PER_TICK(): number;
-                getMAXIMUM_CACHED_CHUNKS(): number;
-              }
-              const WynncraftManager: {
-                new(): com.chattriggers.ctjs.api.world.pathfinding.WynncraftManager;
-              }
-              interface WynncraftManager { 
-                new(): com.chattriggers.ctjs.api.world.pathfinding.WynncraftManager;
-                init(): void;
-                onDisconnect(): void;
-              }
-              const CachedWorld: {
-                getBlockFlags(x: number, y: number, z: number): number | null | undefined;
-                getChunk(x: number, z: number): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk | null | undefined;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.CachedWorld;
-              }
-              interface CachedWorld { 
-                getBlockFlags(x: number, y: number, z: number): number | null | undefined;
-                getChunk(x: number, z: number): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk | null | undefined;
-                new(): com.chattriggers.ctjs.api.world.pathfinding.CachedWorld;
-                onPacketReceive(packet: net.minecraft.network.protocol.Packet<any>): void;
-                processPendingChunks(): void;
-                saveAndClear(lobbyName: string): void;
-                load(lobbyName: string): void;
-                waitForLoad(): void;
-                clear(): void;
-                getCacheStats(): string;
-                setUnlimitedChunkCache(enabled: boolean): void;
-                setWorldKey(newWorldKey: string | null | undefined): void;
-              }
-            }
-            const Chunk: {
-              new(mcValue: net.minecraft.world.level.chunk.ChunkAccess): com.chattriggers.ctjs.api.world.Chunk;
-            }
-            interface Chunk extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.chunk.ChunkAccess> { 
-							/**
-							 * Gets the x position of the chunk
-							 */
-              getX(): number;
-							/**
-							 * Gets the z position of the chunk
-							 */
-              getZ(): number;
-							/**
-							 * Gets the minimum x coordinate of a block in the chunk
-							 * 
-							 *  @return the minimum x coordinate
-							 */
-              getMinBlockX(): number;
-							/**
-							 * Gets the minimum z coordinate of a block in the chunk
-							 * 
-							 *  @return the minimum z coordinate
-							 */
-              getMinBlockZ(): number;
-							/**
-							 * Gets every entity in this chunk
-							 * 
-							 *  @return the entity list
-							 */
-              getAllEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
-							/**
-							 * Gets every entity in this chunk of a certain class
-							 * 
-							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
-							 *  @return the entity list
-							 */
-              getAllEntitiesOfType(clazz: java.lang.Class<net.minecraft.world.entity.Entity>): Array<com.chattriggers.ctjs.api.entity.Entity>;
-							/**
-							 * Gets every block entity in this chunk
-							 * 
-							 *  @return the block entity list
-							 */
-              getAllBlockEntities(): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
-							/**
-							 * Gets every block entity in this chunk of a certain class
-							 * 
-							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
-							 *  @return the block entity list
-							 */
-              getAllBlockEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
-            }
-            const PotionEffectType: {
-              new(type: net.minecraft.world.effect.MobEffect): com.chattriggers.ctjs.api.world.PotionEffectType;
-            }
-            interface PotionEffectType { 
-              getType(): net.minecraft.world.effect.MobEffect;
-							/**
-							 * The Int associated with this type
-							 */
-              getRawId(): number;
-							/**
-							 * Whether this effect is instant (e.g. instant health)
-							 */
-              isInstant(): boolean;
-							/**
-							 * The raw key used for this effect type
-							 */
-              getTranslationKey(): string;
-							/**
-							 * The user-friendly name of this type as a [TextComponent]
-							 */
-              getName(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * The [net.minecraft.entity.effect.StatusEffectCategory] of this type
-							 */
-              getCategory(): net.minecraft.world.effect.MobEffectCategory;
-							/**
-							 * The color of this type
-							 */
-              getColor(): java.awt.Color;
-            }
-            const PotionEffect: {
-              new(effect: net.minecraft.world.effect.MobEffectInstance): com.chattriggers.ctjs.api.world.PotionEffect;
-            }
-            interface PotionEffect { 
-              getEffect(): net.minecraft.world.effect.MobEffectInstance;
-							/**
-							 * The type of this potion
-							 */
-              getType(): com.chattriggers.ctjs.api.world.PotionEffectType;
-							/**
-							 * Returns the translation key of the potion.
-							 *  Ex: "potion.poison"
-							 */
-              getName(): string;
-							/**
-							 * Returns the localized name of the potion that
-							 *  is displayed in the player's inventory.
-							 *  Ex: "Poison"
-							 */
-              getLocalizedName(): string;
-              getAmplifier(): number;
-              getDuration(): number;
-              getId(): number;
-              getAmbient(): boolean;
-              isInfinite(): boolean;
-              getShowsParticles(): boolean;
-            }
-            const BossBars: {
-              BossBar: typeof com.chattriggers.ctjs.api.world.BossBars$BossBar;
-              Color: typeof com.chattriggers.ctjs.api.world.BossBars$Color;
-              Style: typeof com.chattriggers.ctjs.api.world.BossBars$Style;
-              toMC(): net.minecraft.client.gui.components.BossHealthOverlay;
-							/**
-							 * Gets the list of currently shown [BossBar]s
-							 * 
-							 *  @return the currently displayed [BossBar]s
-							 */
-              getBossBars(): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
-							/**
-							 * Gets all [BossBar]s with a given name
-							 * 
-							 *  @param name the name to match
-							 *  @return the [BossBar]s
-							 */
-              getBossBarsByName(name: string): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
-							/**
-							 * Adds a new [BossBar] to be displayed
-							 * 
-							 *  Takes a parameter with the following options:
-							 *  - name: The name to appear above the BossBar. Defaults to an empty string
-							 *  - percent: The percent full the BossBar is. Defaults to 1 (full health)
-							 *  - color: The color of the BossBar. Can be any [Color], but defaults to white
-							 *  - sections: The number of notches/sections to appear on the BossBar. Can be any [Style], but
-							 *              defaults to 1 entire section
-							 *  - darkenSky: Whether the BossBar should darken the screen of the player. Defaults to false
-							 *  - dragonMusic: Whether the BossBar should play dragon music while in the End. Defaults to false
-							 *  - thickenFog: Whether the BossBar should thicken the fog around the player. Defaults to false
-							 * 
-							 *  @param obj An options bag
-							 * 
-							 *  @return the [BossBar] for further modification
-							 */
-              addBossBar(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.world.BossBars$BossBar;
-							/**
-							 * Clears all [BossBar]s on screen
-							 */
-              clearBossBars(): void;
-							/**
-							 * Removes all [BossBar]s with the given name
-							 * 
-							 *  @param name the name to match
-							 */
-              removeBossBarsByName(name: string): void;
-							/**
-							 * Removes the given [BossBar]
-							 * 
-							 *  @param bossBar the BossBar to remove
-							 */
-              removeBossBar(bossBar: com.chattriggers.ctjs.api.world.BossBars$BossBar): void;
-              new(): com.chattriggers.ctjs.api.world.BossBars;
-            }
-            interface BossBars { 
-              toMC(): net.minecraft.client.gui.components.BossHealthOverlay;
-							/**
-							 * Gets the list of currently shown [BossBar]s
-							 * 
-							 *  @return the currently displayed [BossBar]s
-							 */
-              getBossBars(): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
-							/**
-							 * Gets all [BossBar]s with a given name
-							 * 
-							 *  @param name the name to match
-							 *  @return the [BossBar]s
-							 */
-              getBossBarsByName(name: string): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
-							/**
-							 * Adds a new [BossBar] to be displayed
-							 * 
-							 *  Takes a parameter with the following options:
-							 *  - name: The name to appear above the BossBar. Defaults to an empty string
-							 *  - percent: The percent full the BossBar is. Defaults to 1 (full health)
-							 *  - color: The color of the BossBar. Can be any [Color], but defaults to white
-							 *  - sections: The number of notches/sections to appear on the BossBar. Can be any [Style], but
-							 *              defaults to 1 entire section
-							 *  - darkenSky: Whether the BossBar should darken the screen of the player. Defaults to false
-							 *  - dragonMusic: Whether the BossBar should play dragon music while in the End. Defaults to false
-							 *  - thickenFog: Whether the BossBar should thicken the fog around the player. Defaults to false
-							 * 
-							 *  @param obj An options bag
-							 * 
-							 *  @return the [BossBar] for further modification
-							 */
-              addBossBar(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.world.BossBars$BossBar;
-							/**
-							 * Clears all [BossBar]s on screen
-							 */
-              clearBossBars(): void;
-							/**
-							 * Removes all [BossBar]s with the given name
-							 * 
-							 *  @param name the name to match
-							 */
-              removeBossBarsByName(name: string): void;
-							/**
-							 * Removes the given [BossBar]
-							 * 
-							 *  @param bossBar the BossBar to remove
-							 */
-              removeBossBar(bossBar: com.chattriggers.ctjs.api.world.BossBars$BossBar): void;
-              new(): com.chattriggers.ctjs.api.world.BossBars;
-            }
-            const BossBars$BossBar: {
-              new(mcValue: net.minecraft.client.gui.components.LerpingBossEvent): com.chattriggers.ctjs.api.world.BossBars$BossBar;
-            }
-            interface BossBars$BossBar extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.gui.components.LerpingBossEvent> { 
-							/**
-							 * Gets the UUID of this BossBar
-							 * 
-							 *  @return the uuid
-							 */
-              getUUID(): java.util.UUID;
-							/**
-							 * Gets the name of this BossBar
-							 * 
-							 *  @return the name
-							 */
-              getName(): string;
-							/**
-							 * Sets the name of this BossBar
-							 * 
-							 *  @param name the name to set
-							 */
-              setName(name: string): com.chattriggers.ctjs.api.world.BossBars$BossBar;
-							/**
-							 * Gets how full this BossBar is
-							 * 
-							 *  @return how full the BossBar is
-							 */
-              getPercent(): number;
-							/**
-							 * Sets how full this BossBar is
-							 * 
-							 *  @param percent how full to set this BossBar. Must be between 0 and 1
-							 */
-              setPercent(percent: number): com.chattriggers.ctjs.api.world.BossBars$BossBar;
-							/**
-							 * Gets the [Color] of this BossBar
-							 */
-              getColor(): com.chattriggers.ctjs.api.world.BossBars$Color;
-							/**
-							 * Sets the [Color] of this BossBar
-							 * 
-							 *  @param color the color to set. Can be [Color], [MCBossBarColor], or a string
-							 */
-              setColor(color: any): com.chattriggers.ctjs.api.world.BossBars$BossBar;
-							/**
-							 * Gets the style of this BossBar. e.g. how many notches are displayed
-							 */
-              getStyle(): com.chattriggers.ctjs.api.world.BossBars$Style;
-							/**
-							 * Sets the style of this BossBar
-							 * 
-							 *  @param style the style to set. Can be [Style], [MCBossBarStyle], a string,
-							 *  or a number of how many notches to put
-							 */
-              setStyle(style: any): com.chattriggers.ctjs.api.world.BossBars$BossBar;
-							/**
-							 * Gets whether this BossBar darkens the sky
-							 */
-              shouldDarkenSky(): boolean;
-							/**
-							 * Sets whether this BossBar should darken the sky
-							 * 
-							 *  @param darken whether to darken the sky
-							 */
-              setShouldDarkenSky(darken: boolean): com.chattriggers.ctjs.api.world.BossBars$BossBar;
-							/**
-							 * Gets whether this BossBar will play dragon music.
-							 *  This will do nothing when the player is not in the end dimension
-							 */
-              hasDragonMusic(): boolean;
-							/**
-							 * Sets whether this BossBar will play dragon music
-							 * 
-							 *  @param music whether to play dragon music
-							 */
-              setHasDragonMusic(music: boolean): com.chattriggers.ctjs.api.world.BossBars$BossBar;
-							/**
-							 * Gets whether this BossBar should thicken the fog around the player
-							 */
-              shouldThickenFog(): boolean;
-							/**
-							 * Sets whether this BossBar should thicken the fog around the player
-							 * 
-							 *  @param fog whether to thicken the fog
-							 */
-              setShouldThickenFog(fog: boolean): com.chattriggers.ctjs.api.world.BossBars$BossBar;
-            }
-            const BossBars$Color: {
-              PINK: com.chattriggers.ctjs.api.world.BossBars$Color;
-              BLUE: com.chattriggers.ctjs.api.world.BossBars$Color;
-              RED: com.chattriggers.ctjs.api.world.BossBars$Color;
-              GREEN: com.chattriggers.ctjs.api.world.BossBars$Color;
-              YELLOW: com.chattriggers.ctjs.api.world.BossBars$Color;
-              PURPLE: com.chattriggers.ctjs.api.world.BossBars$Color;
-              WHITE: com.chattriggers.ctjs.api.world.BossBars$Color;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.BossBars$Color>;
-              values(): Array<com.chattriggers.ctjs.api.world.BossBars$Color>;
-              valueOf(value: string): com.chattriggers.ctjs.api.world.BossBars$Color;
-            }
-            interface BossBars$Color extends kotlin.Enum<com.chattriggers.ctjs.api.world.BossBars$Color>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.BossEvent$BossBarColor> { 
-            }
-            const BossBars$Color$Companion: {
-              fromMC(mcValue: net.minecraft.world.BossEvent$BossBarColor): com.chattriggers.ctjs.api.world.BossBars$Color;
-              from(value: any): com.chattriggers.ctjs.api.world.BossBars$Color;
-              new(): unknown;
-            }
-            interface BossBars$Color$Companion { 
-              fromMC(mcValue: net.minecraft.world.BossEvent$BossBarColor): com.chattriggers.ctjs.api.world.BossBars$Color;
-              from(value: any): com.chattriggers.ctjs.api.world.BossBars$Color;
-              new(): unknown;
-            }
-            const BossBars$Style: {
-              ONE: com.chattriggers.ctjs.api.world.BossBars$Style;
-              SIX: com.chattriggers.ctjs.api.world.BossBars$Style;
-              TEN: com.chattriggers.ctjs.api.world.BossBars$Style;
-              TWELVE: com.chattriggers.ctjs.api.world.BossBars$Style;
-              TWENTY: com.chattriggers.ctjs.api.world.BossBars$Style;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.world.BossBars$Style>;
-              values(): Array<com.chattriggers.ctjs.api.world.BossBars$Style>;
-              valueOf(value: string): com.chattriggers.ctjs.api.world.BossBars$Style;
-            }
-            interface BossBars$Style extends kotlin.Enum<com.chattriggers.ctjs.api.world.BossBars$Style>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.BossEvent$BossBarOverlay> { 
-              getSections(): number;
-            }
-            const BossBars$Style$Companion: {
-              fromMC(mcValue: net.minecraft.world.BossEvent$BossBarOverlay): com.chattriggers.ctjs.api.world.BossBars$Style;
-              from(value: any): com.chattriggers.ctjs.api.world.BossBars$Style;
-              new(): unknown;
-            }
-            interface BossBars$Style$Companion { 
-              fromMC(mcValue: net.minecraft.world.BossEvent$BossBarOverlay): com.chattriggers.ctjs.api.world.BossBars$Style;
-              from(value: any): com.chattriggers.ctjs.api.world.BossBars$Style;
-              new(): unknown;
-            }
-            const Server: {
-              toMC(): net.minecraft.client.multiplayer.ServerData | null | undefined;
-              isSingleplayer(): boolean;
-							/**
-							 * Gets the current server's IP, or "localhost" if the player
-							 *  is in a single-player world.
-							 * 
-							 *  @return The IP of the current server
-							 */
-              getIP(): string;
-							/**
-							 * Gets the current server's name, or "SinglePlayer" if the player
-							 *  is in a single-player world.
-							 * 
-							 *  @return The name of the current server
-							 */
-              getName(): string;
-							/**
-							 * Gets the current server's MOTD, or "SinglePlayer" if the player
-							 *  is in a single-player world.
-							 * 
-							 *  @return The MOTD of the current server
-							 */
-              getMOTD(): string;
-							/**
-							 * Gets the ping to the current server, or 5 if the player
-							 *  is in a single-player world. Returns -1 if not in a world
-							 * 
-							 *  @return The ping to the current server
-							 */
-              getPing(): number;
-              new(): com.chattriggers.ctjs.api.world.Server;
-            }
-            interface Server { 
-              toMC(): net.minecraft.client.multiplayer.ServerData | null | undefined;
-              isSingleplayer(): boolean;
-							/**
-							 * Gets the current server's IP, or "localhost" if the player
-							 *  is in a single-player world.
-							 * 
-							 *  @return The IP of the current server
-							 */
-              getIP(): string;
-							/**
-							 * Gets the current server's name, or "SinglePlayer" if the player
-							 *  is in a single-player world.
-							 * 
-							 *  @return The name of the current server
-							 */
-              getName(): string;
-							/**
-							 * Gets the current server's MOTD, or "SinglePlayer" if the player
-							 *  is in a single-player world.
-							 * 
-							 *  @return The MOTD of the current server
-							 */
-              getMOTD(): string;
-							/**
-							 * Gets the ping to the current server, or 5 if the player
-							 *  is in a single-player world. Returns -1 if not in a world
-							 * 
-							 *  @return The ping to the current server
-							 */
-              getPing(): number;
-              new(): com.chattriggers.ctjs.api.world.Server;
-            }
-            const World: {
-              BorderWrapper: typeof com.chattriggers.ctjs.api.world.World$BorderWrapper;
-              SpawnWrapper: typeof com.chattriggers.ctjs.api.world.World$SpawnWrapper;
-              ParticleWrapper: typeof com.chattriggers.ctjs.api.world.World$ParticleWrapper;
-              spawn: com.chattriggers.ctjs.api.world.World$SpawnWrapper;
-              particle: com.chattriggers.ctjs.api.world.World$ParticleWrapper;
-              border: com.chattriggers.ctjs.api.world.World$BorderWrapper;
-              toMC(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
-              getWorld(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
-              isLoaded(): boolean;
-              isRaining(): boolean;
-              getTime(): number;
-							/**
-							 * Gets the [Block] at a location in the world.
-							 * 
-							 *  @param x the x position
-							 *  @param y the y position
-							 *  @param z the z position
-							 *  @return the [Block] at the location
-							 */
-              getBlockAt(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.block.Block;
-							/**
-							 * Gets the [Block] at a location in the world.
-							 * 
-							 *  @param pos The block position
-							 *  @return the [Block] at the location
-							 */
-              getBlockAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): com.chattriggers.ctjs.api.world.block.Block;
-              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number): Array<com.chattriggers.ctjs.api.world.block.Block>;
-              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number, types: Array<com.chattriggers.ctjs.api.world.block.BlockType>): Array<com.chattriggers.ctjs.api.world.block.Block>;
-							/**
-							 * Gets the [BlockState] at a location in the world.
-							 * 
-							 *  @param pos The block position
-							 *  @return the [BlockState] at the location
-							 */
-              getBlockStateAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): net.minecraft.world.level.block.state.BlockState;
-							/**
-							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
-							 * 
-							 *  @param x the x coordinate
-							 *  @param y the y coordinate
-							 *  @param z the z coordinate
-							 *  @return the skylight level at the location
-							 */
-              getSkyLightLevel(x: number, y: number, z: number): number;
-							/**
-							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
-							 * 
-							 *  @param pos The block position
-							 *  @return the skylight level at the location
-							 */
-              getSkyLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
-							/**
-							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
-							 * 
-							 *  @param x the x coordinate
-							 *  @param y the y coordinate
-							 *  @param z the z coordinate
-							 *  @return the block light level at the location
-							 */
-              getBlockLightLevel(x: number, y: number, z: number): number;
-							/**
-							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
-							 * 
-							 *  @param pos The block position
-							 *  @return the block light level at the location
-							 */
-              getBlockLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
-							/**
-							 * Gets all of the players in the world, and returns their wrapped versions.
-							 * 
-							 *  @return the players
-							 */
-              getAllPlayers(): Array<com.chattriggers.ctjs.api.entity.PlayerMP>;
-							/**
-							 * Gets a player by their username, must be in the currently loaded chunks!
-							 * 
-							 *  @param name the username
-							 *  @return the player with said username, or null if they don't exist.
-							 */
-              getPlayerByName(name: string): com.chattriggers.ctjs.api.entity.PlayerMP | null | undefined;
-              getChunk(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.Chunk;
-              getAllEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
-							/**
-							 * Gets every entity loaded in the world of a certain class
-							 * 
-							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
-							 *  @return the entity list
-							 */
-              getAllEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.Entity>;
-              getAllBlockEntities(): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
-              getAllBlockEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
-							/**
-							 * Returns the TPS of the current world.
-							 * 
-							 *  On modern version (1.20.3+), this is variable. On earlier versions,
-							 *  it is always 20.
-							 */
-              getTicksPerSecond(): number;
-              new(): com.chattriggers.ctjs.api.world.World;
-            }
-            interface World { 
-              spawn: com.chattriggers.ctjs.api.world.World$SpawnWrapper;
-              particle: com.chattriggers.ctjs.api.world.World$ParticleWrapper;
-              border: com.chattriggers.ctjs.api.world.World$BorderWrapper;
-              toMC(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
-              getWorld(): net.minecraft.client.multiplayer.ClientLevel | null | undefined;
-              isLoaded(): boolean;
-              isRaining(): boolean;
-              getTime(): number;
-							/**
-							 * Gets the [Block] at a location in the world.
-							 * 
-							 *  @param x the x position
-							 *  @param y the y position
-							 *  @param z the z position
-							 *  @return the [Block] at the location
-							 */
-              getBlockAt(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.block.Block;
-							/**
-							 * Gets the [Block] at a location in the world.
-							 * 
-							 *  @param pos The block position
-							 *  @return the [Block] at the location
-							 */
-              getBlockAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): com.chattriggers.ctjs.api.world.block.Block;
-              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number): Array<com.chattriggers.ctjs.api.world.block.Block>;
-              getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number, types: Array<com.chattriggers.ctjs.api.world.block.BlockType>): Array<com.chattriggers.ctjs.api.world.block.Block>;
-							/**
-							 * Gets the [BlockState] at a location in the world.
-							 * 
-							 *  @param pos The block position
-							 *  @return the [BlockState] at the location
-							 */
-              getBlockStateAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): net.minecraft.world.level.block.state.BlockState;
-							/**
-							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
-							 * 
-							 *  @param x the x coordinate
-							 *  @param y the y coordinate
-							 *  @param z the z coordinate
-							 *  @return the skylight level at the location
-							 */
-              getSkyLightLevel(x: number, y: number, z: number): number;
-							/**
-							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
-							 * 
-							 *  @param pos The block position
-							 *  @return the skylight level at the location
-							 */
-              getSkyLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
-							/**
-							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
-							 * 
-							 *  @param x the x coordinate
-							 *  @param y the y coordinate
-							 *  @param z the z coordinate
-							 *  @return the block light level at the location
-							 */
-              getBlockLightLevel(x: number, y: number, z: number): number;
-							/**
-							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
-							 * 
-							 *  @param pos The block position
-							 *  @return the block light level at the location
-							 */
-              getBlockLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
-							/**
-							 * Gets all of the players in the world, and returns their wrapped versions.
-							 * 
-							 *  @return the players
-							 */
-              getAllPlayers(): Array<com.chattriggers.ctjs.api.entity.PlayerMP>;
-							/**
-							 * Gets a player by their username, must be in the currently loaded chunks!
-							 * 
-							 *  @param name the username
-							 *  @return the player with said username, or null if they don't exist.
-							 */
-              getPlayerByName(name: string): com.chattriggers.ctjs.api.entity.PlayerMP | null | undefined;
-              getChunk(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.Chunk;
-              getAllEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
-							/**
-							 * Gets every entity loaded in the world of a certain class
-							 * 
-							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
-							 *  @return the entity list
-							 */
-              getAllEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.Entity>;
-              getAllBlockEntities(): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
-              getAllBlockEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
-							/**
-							 * Returns the TPS of the current world.
-							 * 
-							 *  On modern version (1.20.3+), this is variable. On earlier versions,
-							 *  it is always 20.
-							 */
-              getTicksPerSecond(): number;
-              new(): com.chattriggers.ctjs.api.world.World;
-            }
-            const World$SpawnWrapper: {
-							/**
-							 * World spawn object for getting spawn location.
-							 */
-              new(): com.chattriggers.ctjs.api.world.World$SpawnWrapper;
-            }
-            interface World$SpawnWrapper { 
-							/**
-							 * Gets the spawn x location.
-							 * 
-							 *  @return the spawn x location.
-							 */
-              getX(): number;
-							/**
-							 * Gets the spawn y location.
-							 * 
-							 *  @return the spawn y location.
-							 */
-              getY(): number;
-							/**
-							 * Gets the spawn z location.
-							 * 
-							 *  @return the spawn z location.
-							 */
-              getZ(): number;
-            }
-            const World$ParticleWrapper: {
-              new(): com.chattriggers.ctjs.api.world.World$ParticleWrapper;
-            }
-            interface World$ParticleWrapper { 
-							/**
-							 * Gets an array of all the different particle names you can pass
-							 *  to [spawnParticle]
-							 * 
-							 *  @return the array of name strings
-							 */
-              getParticleNames(): Array<string>;
-							/**
-							 * Spawns a particle into the world with the given attributes,
-							 *  which can be configured further with the returned [com.chattriggers.ctjs.api.entity.Particle]
-							 * 
-							 *  @param particle the name of the particle to spawn, see [getParticleNames]
-							 *  @param x the x coordinate to spawn the particle at
-							 *  @param y the y coordinate to spawn the particle at
-							 *  @param z the z coordinate to spawn the particle at
-							 *  @param xSpeed the motion the particle should have in the x direction
-							 *  @param ySpeed the motion the particle should have in the y direction
-							 *  @param zSpeed the motion the particle should have in the z direction
-							 *  @return the newly spawned particle for further configuration
-							 */
-              spawnParticle(particle: string, x: number, y: number, z: number, xSpeed: number, ySpeed: number, zSpeed: number): com.chattriggers.ctjs.api.entity.Particle | null | undefined;
-              spawnParticle(particle: net.minecraft.client.particle.Particle): com.chattriggers.ctjs.api.entity.Particle;
-            }
-            const World$BorderWrapper: {
-							/**
-							 * World border object to get border parameters
-							 */
-              new(): com.chattriggers.ctjs.api.world.World$BorderWrapper;
-            }
-            interface World$BorderWrapper { 
-							/**
-							 * Gets the border center x location.
-							 * 
-							 *  @return the border center x location
-							 */
-              getCenterX(): number;
-							/**
-							 * Gets the border center z location.
-							 * 
-							 *  @return the border center z location
-							 */
-              getCenterZ(): number;
-							/**
-							 * Gets the border size.
-							 * 
-							 *  @return the border size
-							 */
-              getSize(): number;
-            }
-            const StructureFinder: {
-              submitChunkScan(chunkX: number, chunkZ: number): void;
-              submitBlockUpdate(blockX: number, blockY: number, blockZ: number): void;
-              getRenderBlocksArray(): Array<number>;
-              getRenderLabelsArray(): Array<string>;
-              clear(): void;
-              shutdown(): void;
-              new(): com.chattriggers.ctjs.api.world.StructureFinder;
-            }
-            interface StructureFinder { 
-              submitChunkScan(chunkX: number, chunkZ: number): void;
-              submitBlockUpdate(blockX: number, blockY: number, blockZ: number): void;
-              getRenderBlocksArray(): Array<number>;
-              getRenderLabelsArray(): Array<string>;
-              clear(): void;
-              shutdown(): void;
-              new(): com.chattriggers.ctjs.api.world.StructureFinder;
-            }
-            const TabList: {
-              Name: typeof com.chattriggers.ctjs.api.world.TabList$Name;
-              toMC(): net.minecraft.client.gui.components.PlayerTabOverlay | null | undefined;
-							/**
-							 * Gets the scoreboard objective corresponding to the tab list, or null if it doesn't exist
-							 */
-              getObjective(): net.minecraft.world.scores.Objective | null | undefined;
-							/**
-							 * Gets the tab list header as a [TextComponent]
-							 * 
-							 *  @return the header
-							 */
-              getHeaderComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
-							/**
-							 * Gets the tab list header as a formatted string.
-							 * 
-							 *  @return the header
-							 */
-              getHeader(): string | null | undefined;
-							/**
-							 * Sets the header text for the TabList.
-							 *  If [header] is null, it will remove the header entirely
-							 * 
-							 *  @param header the header to set, or null to clear
-							 */
-              setHeader(header: any | null | undefined): void;
-              clearHeader(): void;
-							/**
-							 * Gets the tab list footer as a [TextComponent]
-							 * 
-							 *  @return the footer
-							 */
-              getFooterComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
-							/**
-							 * Gets the tab list footer as a string.
-							 *  Be aware that this can contain color codes.
-							 * 
-							 *  @return the footer
-							 */
-              getFooter(): string | null | undefined;
-							/**
-							 * Sets the footer text for the TabList.
-							 *  If [footer] is null, it will remove the footer entirely
-							 * 
-							 *  @param footer the footer to set, or null to clear
-							 */
-              setFooter(footer: any | null | undefined): void;
-              clearFooter(): void;
-							/**
-							 * Gets names set in scoreboard objectives
-							 * 
-							 *  @return The formatted names
-							 */
-              getNamesByObjectives(): Array<string>;
-							/**
-							 * Get all names on the tab list
-							 * 
-							 *  @return the list of names
-							 */
-              getNames(): Array<com.chattriggers.ctjs.api.world.TabList$Name>;
-							/**
-							 * Gets all names in tabs without formatting
-							 * 
-							 *  @return the unformatted names
-							 */
-              getUnformattedNames(): Array<string>;
-							/**
-							 * Adds a new name to the tab list
-							 * 
-							 *  @param name the formatted name to add
-							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
-							 *  If false, will use a random default skin (Steve, Alex, etc)
-							 */
-              addName(name: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Adds a new name to the tab list
-							 * 
-							 *  @param name the formatted name to add
-							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
-							 *  If false, will use a random default skin (Steve, Alex, etc)
-							 */
-              addName(name: com.chattriggers.ctjs.api.message.TextComponent, useExistingSkin: boolean): void;
-              addName(name: string): void;
-              addName(name: string, useExistingSkin: boolean): void;
-							/**
-							 * Removes all names from the tab list with a certain name
-							 * 
-							 *  @param name the name of the entry to remove
-							 */
-              removeNames(name: com.chattriggers.ctjs.api.message.TextComponent): void;
-              removeNames(name: string): void;
-              new(): com.chattriggers.ctjs.api.world.TabList;
-            }
-            interface TabList { 
-              toMC(): net.minecraft.client.gui.components.PlayerTabOverlay | null | undefined;
-							/**
-							 * Gets the scoreboard objective corresponding to the tab list, or null if it doesn't exist
-							 */
-              getObjective(): net.minecraft.world.scores.Objective | null | undefined;
-							/**
-							 * Gets the tab list header as a [TextComponent]
-							 * 
-							 *  @return the header
-							 */
-              getHeaderComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
-							/**
-							 * Gets the tab list header as a formatted string.
-							 * 
-							 *  @return the header
-							 */
-              getHeader(): string | null | undefined;
-							/**
-							 * Sets the header text for the TabList.
-							 *  If [header] is null, it will remove the header entirely
-							 * 
-							 *  @param header the header to set, or null to clear
-							 */
-              setHeader(header: any | null | undefined): void;
-              clearHeader(): void;
-							/**
-							 * Gets the tab list footer as a [TextComponent]
-							 * 
-							 *  @return the footer
-							 */
-              getFooterComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
-							/**
-							 * Gets the tab list footer as a string.
-							 *  Be aware that this can contain color codes.
-							 * 
-							 *  @return the footer
-							 */
-              getFooter(): string | null | undefined;
-							/**
-							 * Sets the footer text for the TabList.
-							 *  If [footer] is null, it will remove the footer entirely
-							 * 
-							 *  @param footer the footer to set, or null to clear
-							 */
-              setFooter(footer: any | null | undefined): void;
-              clearFooter(): void;
-							/**
-							 * Gets names set in scoreboard objectives
-							 * 
-							 *  @return The formatted names
-							 */
-              getNamesByObjectives(): Array<string>;
-							/**
-							 * Get all names on the tab list
-							 * 
-							 *  @return the list of names
-							 */
-              getNames(): Array<com.chattriggers.ctjs.api.world.TabList$Name>;
-							/**
-							 * Gets all names in tabs without formatting
-							 * 
-							 *  @return the unformatted names
-							 */
-              getUnformattedNames(): Array<string>;
-							/**
-							 * Adds a new name to the tab list
-							 * 
-							 *  @param name the formatted name to add
-							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
-							 *  If false, will use a random default skin (Steve, Alex, etc)
-							 */
-              addName(name: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Adds a new name to the tab list
-							 * 
-							 *  @param name the formatted name to add
-							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
-							 *  If false, will use a random default skin (Steve, Alex, etc)
-							 */
-              addName(name: com.chattriggers.ctjs.api.message.TextComponent, useExistingSkin: boolean): void;
-              addName(name: string): void;
-              addName(name: string, useExistingSkin: boolean): void;
-							/**
-							 * Removes all names from the tab list with a certain name
-							 * 
-							 *  @param name the name of the entry to remove
-							 */
-              removeNames(name: com.chattriggers.ctjs.api.message.TextComponent): void;
-              removeNames(name: string): void;
-              new(): com.chattriggers.ctjs.api.world.TabList;
-            }
-            const TabList$Name: {
-              new(mcValue: net.minecraft.client.multiplayer.PlayerInfo): com.chattriggers.ctjs.api.world.TabList$Name;
-            }
-            interface TabList$Name extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.multiplayer.PlayerInfo> { 
-							/**
-							 * Gets the latency associated with this name
-							 * 
-							 *  @return the latency
-							 */
-              getLatency(): number;
-							/**
-							 * Sets the latency associated with this name.
-							 *  - latency between 0 and 149 represents all 5 bars
-							 *  - latency between 150 and 299 represents 4 bars
-							 *  - latency between 300 and 599 represents 3 bars
-							 *  - latency between 600 and 999 represents 2 bars
-							 *  - latency between 1000 and more represents 1 bar
-							 * 
-							 *  @param latency the latency to set
-							 *  @return the name to allow for method chaining
-							 */
-              setLatency(latency: number): com.chattriggers.ctjs.api.world.TabList$Name;
-							/**
-							 * Gets the team associated with this name, if it exists
-							 * 
-							 *  @return the team, or null if it does not exist
-							 */
-              getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
-							/**
-							 * Sets the team associated with this name
-							 * 
-							 *  @param team the new team to set for this name. Custom teams can be created
-							 *  using [Scoreboard.createTeam]
-							 *  @return the score to allow for method chaining
-							 */
-              setTeam(team: com.chattriggers.ctjs.api.entity.Team | null | undefined): com.chattriggers.ctjs.api.world.TabList$Name;
-							/**
-							 * Gets the display text of this name
-							 * 
-							 *  @return the display name
-							 */
-              getName(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Sets the display name of this name
-							 * 
-							 *  @param name the new name
-							 *  @return the name to allow for method chaining
-							 */
-              setName(name: com.chattriggers.ctjs.api.message.TextComponent | null | undefined): com.chattriggers.ctjs.api.world.TabList$Name;
-							/**
-							 * Removes this name from the tab list
-							 */
-              remove(): void;
-            }
-            const Scoreboard: {
-              Score: typeof com.chattriggers.ctjs.api.world.Scoreboard$Score;
-              toMC(): net.minecraft.world.scores.Scoreboard | null | undefined;
-              getSidebar(): net.minecraft.world.scores.Objective | null | undefined;
-							/**
-							 * Gets the top-most string which is displayed on the scoreboard. (doesn't have a score on the side).
-							 *  Be aware that this can contain color codes.
-							 * 
-							 *  @return the scoreboard title
-							 */
-              getTitle(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Sets the scoreboard title.
-							 * 
-							 *  @param title the new title
-							 *  @return the scoreboard title
-							 */
-              setTitle(title: com.chattriggers.ctjs.api.message.TextComponent): void;
-              setTitle(title: string): void;
-							/**
-							 * Get all currently visible strings on the scoreboard. (excluding title)
-							 *  Be aware that this can contain color codes.
-							 * 
-							 *  @return the list of lines
-							 */
-              getLines(): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
-							/**
-							 * Get all currently visible strings on the scoreboard. (excluding title)
-							 *  Be aware that this can contain color codes.
-							 * 
-							 *  @return the list of lines
-							 */
-              getLines(descending: boolean): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
-							/**
-							 * Gets the line at the specified index (0 based)
-							 *  Equivalent to Scoreboard.getLines().get(index)
-							 * 
-							 *  @param index the line index
-							 *  @return the score object at the index
-							 */
-              getLineByIndex(index: number): com.chattriggers.ctjs.api.world.Scoreboard$Score;
-							/**
-							 * Gets a list of lines that have a certain score,
-							 *  i.e. the numbers shown on the right
-							 * 
-							 *  @param score the score to look for
-							 *  @return a list of actual score objects
-							 */
-              getLinesByScore(score: number): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
-							/**
-							 * Sets a line in the scoreboard to the specified name and score.
-							 * 
-							 *  @param score the score value for this item
-							 *  @param line the [TextComponent] to display on said line
-							 *  @param override whether to remove old lines with the same score
-							 */
-              setLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Sets a line in the scoreboard to the specified name and score.
-							 * 
-							 *  @param score the score value for this item
-							 *  @param line the [TextComponent] to display on said line
-							 *  @param override whether to remove old lines with the same score
-							 */
-              setLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent, override: boolean): void;
-              setLine(score: number, line: string): void;
-              setLine(score: number, line: string, override: boolean): void;
-							/**
-							 * Adds a line to the scoreboard
-							 * 
-							 *  @param score the score value for this item
-							 *  @param line the [TextComponent] to display on said line
-							 */
-              addLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent): void;
-              addLine(score: number, line: string): void;
-							/**
-							 * Removes all lines from the scoreboard matching with a certain score
-							 * 
-							 *  @param score the score of the lines to remove
-							 */
-              removeScores(score: number): void;
-							/**
-							 * Removes the line at a certain index
-							 * 
-							 *  @param index the index of the line to remove
-							 */
-              removeIndex(index: number): void;
-							/**
-							 * Removes the line at a certain index
-							 * 
-							 *  @param index the index of the line to remove
-							 */
-              removeIndex(index: number, descending: boolean): void;
-              setShouldRender(shouldRender: boolean): void;
-              getShouldRender(): boolean;
-							/**
-							 * Creates or gets a [Team] with a given name
-							 * 
-							 *  @param name the name of the team
-							 */
-              createTeam(name: string): com.chattriggers.ctjs.api.entity.Team;
-              new(): com.chattriggers.ctjs.api.world.Scoreboard;
-            }
-            interface Scoreboard { 
-              toMC(): net.minecraft.world.scores.Scoreboard | null | undefined;
-              getSidebar(): net.minecraft.world.scores.Objective | null | undefined;
-							/**
-							 * Gets the top-most string which is displayed on the scoreboard. (doesn't have a score on the side).
-							 *  Be aware that this can contain color codes.
-							 * 
-							 *  @return the scoreboard title
-							 */
-              getTitle(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Sets the scoreboard title.
-							 * 
-							 *  @param title the new title
-							 *  @return the scoreboard title
-							 */
-              setTitle(title: com.chattriggers.ctjs.api.message.TextComponent): void;
-              setTitle(title: string): void;
-							/**
-							 * Get all currently visible strings on the scoreboard. (excluding title)
-							 *  Be aware that this can contain color codes.
-							 * 
-							 *  @return the list of lines
-							 */
-              getLines(): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
-							/**
-							 * Get all currently visible strings on the scoreboard. (excluding title)
-							 *  Be aware that this can contain color codes.
-							 * 
-							 *  @return the list of lines
-							 */
-              getLines(descending: boolean): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
-							/**
-							 * Gets the line at the specified index (0 based)
-							 *  Equivalent to Scoreboard.getLines().get(index)
-							 * 
-							 *  @param index the line index
-							 *  @return the score object at the index
-							 */
-              getLineByIndex(index: number): com.chattriggers.ctjs.api.world.Scoreboard$Score;
-							/**
-							 * Gets a list of lines that have a certain score,
-							 *  i.e. the numbers shown on the right
-							 * 
-							 *  @param score the score to look for
-							 *  @return a list of actual score objects
-							 */
-              getLinesByScore(score: number): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
-							/**
-							 * Sets a line in the scoreboard to the specified name and score.
-							 * 
-							 *  @param score the score value for this item
-							 *  @param line the [TextComponent] to display on said line
-							 *  @param override whether to remove old lines with the same score
-							 */
-              setLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Sets a line in the scoreboard to the specified name and score.
-							 * 
-							 *  @param score the score value for this item
-							 *  @param line the [TextComponent] to display on said line
-							 *  @param override whether to remove old lines with the same score
-							 */
-              setLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent, override: boolean): void;
-              setLine(score: number, line: string): void;
-              setLine(score: number, line: string, override: boolean): void;
-							/**
-							 * Adds a line to the scoreboard
-							 * 
-							 *  @param score the score value for this item
-							 *  @param line the [TextComponent] to display on said line
-							 */
-              addLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent): void;
-              addLine(score: number, line: string): void;
-							/**
-							 * Removes all lines from the scoreboard matching with a certain score
-							 * 
-							 *  @param score the score of the lines to remove
-							 */
-              removeScores(score: number): void;
-							/**
-							 * Removes the line at a certain index
-							 * 
-							 *  @param index the index of the line to remove
-							 */
-              removeIndex(index: number): void;
-							/**
-							 * Removes the line at a certain index
-							 * 
-							 *  @param index the index of the line to remove
-							 */
-              removeIndex(index: number, descending: boolean): void;
-              setShouldRender(shouldRender: boolean): void;
-              getShouldRender(): boolean;
-							/**
-							 * Creates or gets a [Team] with a given name
-							 * 
-							 *  @param name the name of the team
-							 */
-              createTeam(name: string): com.chattriggers.ctjs.api.entity.Team;
-              new(): com.chattriggers.ctjs.api.world.Scoreboard;
-            }
-            const Scoreboard$Score: {
-              new(mcValue: net.minecraft.world.scores.ScoreAccess): com.chattriggers.ctjs.api.world.Scoreboard$Score;
-            }
-            interface Scoreboard$Score extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.ScoreAccess> { 
-							/**
-							 * Gets the team associated with this score, if it exists
-							 * 
-							 *  @return the team, or null if it does not exist
-							 */
-              getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
-							/**
-							 * Sets the team associated with this score
-							 * 
-							 *  @param team the new team to set for this line. Custom teams can be created using [createTeam]
-							 *  @return the score to allow for method chaining
-							 */
-              setTeam(team: com.chattriggers.ctjs.api.entity.Team | null | undefined): com.chattriggers.ctjs.api.world.Scoreboard$Score;
-							/**
-							 * Gets the score value for this score,
-							 *  i.e. the number on the right of the board
-							 * 
-							 *  @return the actual point value
-							 */
-              getScore(): number;
-							/**
-							 * Sets the score value for this score
-							 * 
-							 *  @param score the new point value
-							 *  @return the score to allow for method chaining
-							 */
-              setScore(score: number): com.chattriggers.ctjs.api.world.Scoreboard$Score;
-							/**
-							 * Gets the display text of this score
-							 * 
-							 *  @return the display name
-							 */
-              getName(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Sets the name of this score
-							 * 
-							 *  @param name the new name
-							 *  @return the score to allow for method chaining
-							 */
-              setName(name: com.chattriggers.ctjs.api.message.TextComponent | null | undefined): com.chattriggers.ctjs.api.world.Scoreboard$Score;
-							/**
-							 * Gets the number format of this score
-							 * 
-							 *  @return the number format
-							 */
-              getNumberFormat(): net.minecraft.network.chat.numbers.NumberFormat | null | undefined;
-							/**
-							 * Sets the number format of this score
-							 * 
-							 *  @param format either a formatting string, i.e. "&6", style in the form of an object, see [TextComponent], a
-							 *  [NumberFormat], or hex value
-							 *  @return the score to allow for method chaining
-							 * 
-							 *  @see [TextComponent]
-							 */
-              setNumberFormat(format: any | null | undefined): com.chattriggers.ctjs.api.world.Scoreboard$Score;
-							/**
-							 * Removes this score from the scoreboard
-							 */
-              remove(): void;
-            }
-          }
-          namespace vec {
-            const Vec3i: {
-              new(): com.chattriggers.ctjs.api.vec.Vec3i;
-              new(x: number): com.chattriggers.ctjs.api.vec.Vec3i;
-              new(x: number, y: number): com.chattriggers.ctjs.api.vec.Vec3i;
-              new(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3i;
-            }
-            interface Vec3i { 
-              getX(): number;
-              getY(): number;
-              getZ(): number;
-              magnitudeSquared(): number;
-              magnitude(): number;
-              translated(dx: number, dy: number, dz: number): com.chattriggers.ctjs.api.vec.Vec3i;
-              scaled(scale: number): com.chattriggers.ctjs.api.vec.Vec3i;
-              scaled(xScale: number, yScale: number, zScale: number): com.chattriggers.ctjs.api.vec.Vec3i;
-              crossProduct(other: com.chattriggers.ctjs.api.vec.Vec3i): com.chattriggers.ctjs.api.vec.Vec3i;
-              dotProduct(other: com.chattriggers.ctjs.api.vec.Vec3i): number;
-              angleTo(other: com.chattriggers.ctjs.api.vec.Vec3i): number;
-              normalized(): com.chattriggers.ctjs.api.vec.Vec3f;
-              unaryMinus(): com.chattriggers.ctjs.api.vec.Vec3i;
-              plus(other: com.chattriggers.ctjs.api.vec.Vec3i): com.chattriggers.ctjs.api.vec.Vec3i;
-              minus(other: com.chattriggers.ctjs.api.vec.Vec3i): com.chattriggers.ctjs.api.vec.Vec3i;
-            }
-            const Vec3f: {
-              new(): com.chattriggers.ctjs.api.vec.Vec3f;
-              new(x: number): com.chattriggers.ctjs.api.vec.Vec3f;
-              new(x: number, y: number): com.chattriggers.ctjs.api.vec.Vec3f;
-              new(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3f;
-            }
-            interface Vec3f { 
-              getX(): number;
-              getY(): number;
-              getZ(): number;
-              magnitudeSquared(): number;
-              magnitude(): number;
-              translated(dx: number, dy: number, dz: number): com.chattriggers.ctjs.api.vec.Vec3f;
-              scaled(scale: number): com.chattriggers.ctjs.api.vec.Vec3f;
-              scaled(xScale: number, yScale: number, zScale: number): com.chattriggers.ctjs.api.vec.Vec3f;
-              crossProduct(other: com.chattriggers.ctjs.api.vec.Vec3f): com.chattriggers.ctjs.api.vec.Vec3f;
-              dotProduct(other: com.chattriggers.ctjs.api.vec.Vec3f): number;
-              angleTo(other: com.chattriggers.ctjs.api.vec.Vec3f): number;
-              normalized(): com.chattriggers.ctjs.api.vec.Vec3f;
-              unaryMinus(): com.chattriggers.ctjs.api.vec.Vec3f;
-              plus(other: com.chattriggers.ctjs.api.vec.Vec3f): com.chattriggers.ctjs.api.vec.Vec3f;
-              minus(other: com.chattriggers.ctjs.api.vec.Vec3f): com.chattriggers.ctjs.api.vec.Vec3f;
-              component1(): number;
-              component2(): number;
-              component3(): number;
-              copy(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3f;
-            }
-            const Vec2f: {
-              new(): com.chattriggers.ctjs.api.vec.Vec2f;
-              new(x: number): com.chattriggers.ctjs.api.vec.Vec2f;
-              new(x: number, y: number): com.chattriggers.ctjs.api.vec.Vec2f;
-            }
-            interface Vec2f { 
-              getX(): number;
-              getY(): number;
-              magnitudeSquared(): number;
-              magnitude(): number;
-              translated(dx: number, dy: number): com.chattriggers.ctjs.api.vec.Vec2f;
-              scaled(scale: number): com.chattriggers.ctjs.api.vec.Vec2f;
-              scaled(xScale: number, yScale: number): com.chattriggers.ctjs.api.vec.Vec2f;
-              dotProduct(other: com.chattriggers.ctjs.api.vec.Vec2f): number;
-              angleTo(other: com.chattriggers.ctjs.api.vec.Vec2f): number;
-              normalized(): com.chattriggers.ctjs.api.vec.Vec2f;
-              unaryMinus(): com.chattriggers.ctjs.api.vec.Vec2f;
-              plus(other: com.chattriggers.ctjs.api.vec.Vec2f): com.chattriggers.ctjs.api.vec.Vec2f;
-              minus(other: com.chattriggers.ctjs.api.vec.Vec2f): com.chattriggers.ctjs.api.vec.Vec2f;
-              component1(): number;
-              component2(): number;
-              copy(x: number, y: number): com.chattriggers.ctjs.api.vec.Vec2f;
-            }
-          }
-          namespace entity {
-            const Entity: {
-              DimensionType: typeof com.chattriggers.ctjs.api.entity.Entity$DimensionType;
-              new(mcValue: net.minecraft.world.entity.Entity): com.chattriggers.ctjs.api.entity.Entity;
-            }
-            interface Entity extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.entity.Entity> { 
-              getX(): number;
-              getY(): number;
-              getZ(): number;
-              getPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
-              getRotation(): net.minecraft.world.phys.Vec2;
-              getLastX(): number;
-              getLastY(): number;
-              getLastZ(): number;
-              getRenderX(): number;
-              getRenderY(): number;
-              getRenderZ(): number;
-							/**
-							 * Gets the pitch, the horizontal direction the entity is facing towards.
-							 *  This has a range of -180 to 180.
-							 * 
-							 *  @return the entity's pitch
-							 */
-              getPitch(): number;
-							/**
-							 * Gets the yaw, the vertical direction the entity is facing towards.
-							 *  This has a range of -180 to 180.
-							 * 
-							 *  @return the entity's yaw
-							 */
-              getYaw(): number;
-							/**
-							 * Gets the entity's x motion.
-							 *  This is the amount the entity will move in the x direction next tick.
-							 * 
-							 *  @return the entity's x motion
-							 */
-              getMotionX(): number;
-							/**
-							 * Gets the entity's y motion.
-							 *  This is the amount the entity will move in the y direction next tick.
-							 * 
-							 *  @return the entity's y motion
-							 */
-              getMotionY(): number;
-							/**
-							 * Gets the entity's z motion.
-							 *  This is the amount the entity will move in the z direction next tick.
-							 * 
-							 *  @return the entity's z motion
-							 */
-              getMotionZ(): number;
-							/**
-							 * Returns the entity this entity is riding, if one exists
-							 * 
-							 *  @return an Entity or null
-							 */
-              getRiding(): com.chattriggers.ctjs.api.entity.Entity | null | undefined;
-							/**
-							 * Returns a list of all entity riding this entity
-							 * 
-							 *  @return List of entities, empty if there are no riders
-							 */
-              getRiders(): Array<com.chattriggers.ctjs.api.entity.Entity>;
-							/**
-							 * Checks whether the entity is dead.
-							 *  This is a fairly loose term, dead for a particle could mean it has faded,
-							 *  while dead for an entity means it has no health.
-							 * 
-							 *  @return whether an entity is dead
-							 */
-              isDead(): boolean;
-							/**
-							 * Gets the entire width of the entity's hitbox
-							 * 
-							 *  @return the entity's width
-							 */
-              getWidth(): number;
-							/**
-							 * Gets the entire height of the entity's hitbox
-							 * 
-							 *  @return the entity's height
-							 */
-              getHeight(): number;
-							/**
-							 * Gets the height of the eyes on the entity,
-							 *  can be added to its Y coordinate to get the actual Y location of the eyes.
-							 *  This value defaults to 85% of an entity's height, however is different for some entities.
-							 * 
-							 *  @return the height of the entity's eyes
-							 */
-              getEyeHeight(): number;
-							/**
-							 * Gets the name of the entity, could be "Villager",
-							 *  or, if the entity has a custom name, it returns that.
-							 * 
-							 *  @return the (custom) name of the entity as a String
-							 */
-              getName(): string;
-							/**
-							 * Gets the name of the entity, could be "Villager",
-							 *  or, if the entity has a custom name, it returns that.
-							 * 
-							 *  @return the (custom) name of the entity as a [TextComponent]
-							 */
-              getNameComponent(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Gets the Java class name of the entity, for example "EntityVillager"
-							 * 
-							 *  @return the entity's class name
-							 */
-              getClassName(): string;
-							/**
-							 * Gets the Java UUID object of this entity.
-							 *  Use of [UUID.toString] in conjunction is recommended.
-							 * 
-							 *  @return the entity's uuid
-							 */
-              getUUID(): java.util.UUID;
-							/**
-							 * Gets the entity's air level.
-							 * 
-							 *  The returned value will be an integer. If the player is not taking damage, it
-							 *  will be between 300 (not in water) and 0. If the player is taking damage, it
-							 *  will be between -20 and 0, getting reset to 0 every time the player takes damage.
-							 * 
-							 *  @return the entity's air level
-							 */
-              getAir(): number;
-              distanceTo(other: com.chattriggers.ctjs.api.entity.Entity): number;
-              distanceTo(other: net.minecraft.world.entity.Entity): number;
-              distanceTo(blockPos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
-              distanceTo(x: number, y: number, z: number): number;
-              isOnGround(): boolean;
-              isCollided(): boolean;
-              getDistanceWalked(): number;
-              getStepHeight(): number;
-              hasNoClip(): boolean;
-              getTicksExisted(): number;
-              getFireResistance(): number;
-              isImmuneToFire(): boolean;
-              isInWater(): boolean;
-              isWet(): boolean;
-              getDimension(): com.chattriggers.ctjs.api.entity.Entity$DimensionType;
-              getMaxInPortalTime(): number;
-              isSilent(): boolean;
-              isInLava(): boolean;
-              getLookVector(): net.minecraft.world.phys.Vec3;
-              getLookVector(partialTicks: number): net.minecraft.world.phys.Vec3;
-              getEyePosition(): net.minecraft.world.phys.Vec3;
-              getEyePosition(partialTicks: number): net.minecraft.world.phys.Vec3;
-              canBeCollidedWith(): boolean;
-              canBePushed(): boolean;
-              isSneaking(): boolean;
-              isSprinting(): boolean;
-              isInvisible(): boolean;
-              isOutsideBorder(): boolean;
-              isBurning(): boolean;
-              getWorld(): net.minecraft.world.level.Level;
-              getChunk(): com.chattriggers.ctjs.api.world.Chunk;
-            }
-            const Entity$DimensionType: {
-              OVERWORLD: com.chattriggers.ctjs.api.entity.Entity$DimensionType;
-              NETHER: com.chattriggers.ctjs.api.entity.Entity$DimensionType;
-              END: com.chattriggers.ctjs.api.entity.Entity$DimensionType;
-              OVERWORLD_CAVES: com.chattriggers.ctjs.api.entity.Entity$DimensionType;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.entity.Entity$DimensionType>;
-              values(): Array<com.chattriggers.ctjs.api.entity.Entity$DimensionType>;
-              valueOf(value: string): com.chattriggers.ctjs.api.entity.Entity$DimensionType;
-            }
-            interface Entity$DimensionType extends kotlin.Enum<com.chattriggers.ctjs.api.entity.Entity$DimensionType>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.resources.ResourceKey<net.minecraft.world.level.dimension.DimensionType>> { 
-            }
-            const Entity$Companion: {
-              fromMC(entity: net.minecraft.world.entity.Entity): com.chattriggers.ctjs.api.entity.Entity;
-              new(): com.chattriggers.ctjs.api.entity.Entity$Companion;
-            }
-            interface Entity$Companion { 
-              fromMC(entity: net.minecraft.world.entity.Entity): com.chattriggers.ctjs.api.entity.Entity;
-              new(): com.chattriggers.ctjs.api.entity.Entity$Companion;
-            }
-            const PlayerInteraction: {
-              UseBlock: typeof com.chattriggers.ctjs.api.entity.PlayerInteraction$UseBlock;
-              UseEntity: typeof com.chattriggers.ctjs.api.entity.PlayerInteraction$UseEntity;
-              UseItem: typeof com.chattriggers.ctjs.api.entity.PlayerInteraction$UseItem;
-              new(name: string, mainHand: boolean): com.chattriggers.ctjs.api.entity.PlayerInteraction;
-            }
-            interface PlayerInteraction { 
-              getName(): string;
-              getMainHand(): boolean;
-            }
-            const PlayerInteraction$AttackBlock: {
-              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackBlock;
-            }
-            interface PlayerInteraction$AttackBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
-              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackBlock;
-            }
-            const PlayerInteraction$AttackEntity: {
-              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackEntity;
-            }
-            interface PlayerInteraction$AttackEntity extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
-              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackEntity;
-            }
-            const PlayerInteraction$BreakBlock: {
-              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$BreakBlock;
-            }
-            interface PlayerInteraction$BreakBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
-              new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$BreakBlock;
-            }
-            const PlayerInteraction$UseBlock: {
-              new(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.entity.PlayerInteraction$UseBlock;
-            }
-            interface PlayerInteraction$UseBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
-            }
-            const PlayerInteraction$UseEntity: {
-              new(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.entity.PlayerInteraction$UseEntity;
-            }
-            interface PlayerInteraction$UseEntity extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
-            }
-            const PlayerInteraction$UseItem: {
-              new(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.entity.PlayerInteraction$UseItem;
-            }
-            interface PlayerInteraction$UseItem extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
-            }
-            const LivingEntity: {
-              new(mcValue: net.minecraft.world.entity.LivingEntity): com.chattriggers.ctjs.api.entity.LivingEntity;
-            }
-            interface LivingEntity extends com.chattriggers.ctjs.api.entity.Entity { 
-              getActivePotionEffects(): Array<com.chattriggers.ctjs.api.world.PotionEffect>;
-              canSeeEntity(other: net.minecraft.world.entity.Entity): boolean;
-              canSeeEntity(other: com.chattriggers.ctjs.api.entity.Entity): boolean;
-							/**
-							 * Gets the item currently in the entity's specified inventory slot.
-							 *  0 for main hand, 1 for offhand, 2-5 for armor
-							 * 
-							 *  @param slot the slot to access
-							 *  @return the item in said slot
-							 */
-              getStackInSlot(slot: number): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-              getHP(): number;
-              getMaxHP(): number;
-              getAbsorption(): number;
-              getAge(): number;
-              getArmorValue(): number;
-              isPotionActive(id: number): boolean;
-              isPotionActive(type: com.chattriggers.ctjs.api.world.PotionEffectType): boolean;
-              isPotionActive(effect: com.chattriggers.ctjs.api.world.PotionEffect): boolean;
-            }
-            const BlockEntity: {
-              new(mcValue: net.minecraft.world.level.block.entity.BlockEntity): com.chattriggers.ctjs.api.entity.BlockEntity;
-            }
-            interface BlockEntity extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.block.entity.BlockEntity> { 
-              getX(): number;
-              getY(): number;
-              getZ(): number;
-              getBlockType(): com.chattriggers.ctjs.api.world.block.BlockType;
-              getBlockPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
-              getBlock(): com.chattriggers.ctjs.api.world.block.Block;
-            }
-            const Particle: {
-              new(mcValue: net.minecraft.client.particle.Particle): com.chattriggers.ctjs.api.entity.Particle;
-            }
-            interface Particle extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.particle.Particle> { 
-              getX(): number;
-              setX(value: number): void;
-              getY(): number;
-              setY(value: number): void;
-              getZ(): number;
-              setZ(value: number): void;
-              getLastX(): number;
-              setLastX(value: number): void;
-              getLastY(): number;
-              setLastY(value: number): void;
-              getLastZ(): number;
-              setLastZ(value: number): void;
-              getRenderX(): number;
-              getRenderY(): number;
-              getRenderZ(): number;
-              getMotionX(): number;
-              setMotionX(value: number): void;
-              getMotionY(): number;
-              setMotionY(value: number): void;
-              getMotionZ(): number;
-              setMotionZ(value: number): void;
-              getAge(): number;
-              setAge(value: number): void;
-              getDead(): boolean;
-              setDead(value: boolean): void;
-              scale(scale: number): com.chattriggers.ctjs.api.entity.Particle;
-							/**
-							 * Sets the amount of ticks this particle will live for
-							 * 
-							 *  @param maxAge the particle's max age (in ticks)
-							 */
-              setMaxAge(maxAge: number): com.chattriggers.ctjs.api.entity.Particle;
-              remove(): com.chattriggers.ctjs.api.entity.Particle;
-            }
-            const PlayerMP: {
-              new(mcValue: net.minecraft.world.entity.player.Player): com.chattriggers.ctjs.api.entity.PlayerMP;
-            }
-            interface PlayerMP extends com.chattriggers.ctjs.api.entity.LivingEntity { 
-              isSpectator(): boolean;
-              getPing(): number;
-              getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
-							/**
-							 * Gets the display name for this player,
-							 *  i.e. the name shown in tab list and in the player's nametag.
-							 *  @return the display name
-							 */
-              getDisplayName(): com.chattriggers.ctjs.api.message.TextComponent;
-              setTabDisplayName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Sets the name for this player shown above their head,
-							 *  in their name tag
-							 * 
-							 *  @param textComponent the new name to display
-							 */
-              setNametagName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]
-							 *  minus `player`.
-							 * 
-							 *  @see Renderer.drawPlayer
-							 */
-              draw(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.entity.PlayerMP;
-            }
-            const Team: {
-              Visibility: typeof com.chattriggers.ctjs.api.entity.Team$Visibility;
-              new(mcValue: net.minecraft.world.scores.PlayerTeam): com.chattriggers.ctjs.api.entity.Team;
-            }
-            interface Team extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.PlayerTeam> { 
-							/**
-							 * Gets the registered name of the team
-							 */
-              getRegisteredName(): string;
-							/**
-							 * Gets the display name of the team
-							 */
-              getName(): string;
-							/**
-							 * Sets the display name of the team
-							 *  @param name the new display name
-							 *  @return the team for method chaining
-							 */
-              setName(name: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.entity.Team;
-							/**
-							 * Sets the display name of the team
-							 *  @param name the new display name
-							 *  @return the team for method chaining
-							 */
-              setName(name: string): com.chattriggers.ctjs.api.entity.Team;
-							/**
-							 * Gets the list of names on the team
-							 */
-              getMembers(): Array<string>;
-							/**
-							 * Gets the team prefix
-							 */
-              getPrefix(): string;
-							/**
-							 * Sets the team prefix
-							 *  @param prefix the prefix to set
-							 *  @return the team for method chaining
-							 */
-              setPrefix(prefix: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.entity.Team;
-							/**
-							 * Sets the team prefix
-							 *  @param prefix the prefix to set
-							 *  @return the team for method chaining
-							 */
-              setPrefix(prefix: string): com.chattriggers.ctjs.api.entity.Team;
-							/**
-							 * Gets the team suffix
-							 */
-              getSuffix(): string;
-							/**
-							 * Sets the team suffix
-							 *  @param suffix the suffix to set
-							 *  @return the team for method chaining
-							 */
-              setSuffix(suffix: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.entity.Team;
-							/**
-							 * Sets the team suffix
-							 *  @param suffix the suffix to set
-							 *  @return the team for method chaining
-							 */
-              setSuffix(suffix: string): com.chattriggers.ctjs.api.entity.Team;
-              getColor(): string;
-							/**
-							 * Sets the team color
-							 *  @param color a string format of a [Formatting], or a hex value
-							 *  @return the team for method chaining
-							 */
-              setColor(color: any | null | undefined): com.chattriggers.ctjs.api.entity.Team;
-							/**
-							 * Gets the team's friendly fire setting
-							 */
-              getFriendlyFire(): boolean;
-							/**
-							 * Gets whether the team can see invisible players on the same team
-							 */
-              canSeeInvisibleTeammates(): boolean;
-							/**
-							 * Gets the team's name tag visibility
-							 */
-              getNameTagVisibility(): com.chattriggers.ctjs.api.entity.Team$Visibility;
-							/**
-							 * Gets the team's death message visibility
-							 */
-              getDeathMessageVisibility(): com.chattriggers.ctjs.api.entity.Team$Visibility;
-            }
-            const Team$Visibility: {
-              ALWAYS: com.chattriggers.ctjs.api.entity.Team$Visibility;
-              NEVER: com.chattriggers.ctjs.api.entity.Team$Visibility;
-              HIDE_FOR_OTHERS_TEAMS: com.chattriggers.ctjs.api.entity.Team$Visibility;
-              HIDE_FOR_OWN_TEAM: com.chattriggers.ctjs.api.entity.Team$Visibility;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.entity.Team$Visibility>;
-              values(): Array<com.chattriggers.ctjs.api.entity.Team$Visibility>;
-              valueOf(value: string): com.chattriggers.ctjs.api.entity.Team$Visibility;
-            }
-            interface Team$Visibility extends kotlin.Enum<com.chattriggers.ctjs.api.entity.Team$Visibility>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.Team$Visibility> { 
-            }
-            const Team$Visibility$Companion: {
-              fromMC(mcValue: net.minecraft.world.scores.Team$Visibility): com.chattriggers.ctjs.api.entity.Team$Visibility;
-              new(): unknown;
-            }
-            interface Team$Visibility$Companion { 
-              fromMC(mcValue: net.minecraft.world.scores.Team$Visibility): com.chattriggers.ctjs.api.entity.Team$Visibility;
-              new(): unknown;
-            }
-          }
-          namespace commands {
-            interface RootCommand { 
-              register(): void;
-            }
-            const DynamicCommands: {
-              AngleArgumentWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$AngleArgumentWrapper;
-              PosArgumentWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper;
-              BlockPredicateWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$BlockPredicateWrapper;
-              BlockStateArgumentWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$BlockStateArgumentWrapper;
-              EntitySelectorWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$EntitySelectorWrapper;
-              ItemStackArgumentWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$ItemStackArgumentWrapper;
-              MessageFormatArgumentWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$MessageFormatArgumentWrapper;
-              NbtPathWrapper: typeof com.chattriggers.ctjs.api.commands.DynamicCommands$NbtPathWrapper;
-              registerCommand(name: string): com.chattriggers.ctjs.api.commands.RootCommand;
-              registerCommand(name: string, builder: org.mozilla.javascript.Function | null | undefined): com.chattriggers.ctjs.api.commands.RootCommand;
-              buildCommand(name: string): com.chattriggers.ctjs.api.commands.RootCommand;
-              buildCommand(name: string, builder: org.mozilla.javascript.Function | null | undefined): com.chattriggers.ctjs.api.commands.RootCommand;
-              argument(name: string, type: com.mojang.brigadier.arguments.ArgumentType<any>, builder: org.mozilla.javascript.Function): void;
-              literal(name: string, builder: org.mozilla.javascript.Function): void;
-              redirect(node: com.chattriggers.ctjs.api.commands.RootCommand): void;
-              redirect(node: com.mojang.brigadier.tree.CommandNode<net.minecraft.commands.SharedSuggestionProvider>): void;
-              exec(method: org.mozilla.javascript.Function): void;
-							/**
-							 * A helper method for getting Fabric's client CommandDispatcher root node. This allows user
-							 *  commands to be redirected to the root node in the same way that "/execute run ..." does.
-							 * 
-							 *  As the result is a CommandNode, `.getChild(name)` can be used to access sub-command nodes
-							 *  to, for example, redirect to just `/advancement` instead of `/`.
-							 */
-              getDispatcherRoot(): com.mojang.brigadier.tree.RootCommandNode<net.minecraft.client.multiplayer.ClientSuggestionProvider> | null | undefined;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:bool">Argument Types: bool</a>
-							 */
-              bool(): com.mojang.brigadier.arguments.BoolArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
-							 */
-              double(): com.mojang.brigadier.arguments.DoubleArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
-							 */
-              double(min: number): com.mojang.brigadier.arguments.DoubleArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
-							 */
-              double(min: number, max: number): com.mojang.brigadier.arguments.DoubleArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
-							 */
-              float(): com.mojang.brigadier.arguments.FloatArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
-							 */
-              float(min: number): com.mojang.brigadier.arguments.FloatArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
-							 */
-              float(min: number, max: number): com.mojang.brigadier.arguments.FloatArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
-							 */
-              integer(): com.mojang.brigadier.arguments.IntegerArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
-							 */
-              integer(min: number): com.mojang.brigadier.arguments.IntegerArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
-							 */
-              integer(min: number, max: number): com.mojang.brigadier.arguments.IntegerArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
-							 */
-              long(): com.mojang.brigadier.arguments.LongArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
-							 */
-              long(min: number): com.mojang.brigadier.arguments.LongArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
-							 */
-              long(min: number, max: number): com.mojang.brigadier.arguments.LongArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
-							 */
-              string(): com.mojang.brigadier.arguments.StringArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
-							 */
-              greedyString(): com.mojang.brigadier.arguments.StringArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
-							 */
-              word(): com.mojang.brigadier.arguments.StringArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:angle">minecraft:angle</a>
-							 */
-              angle(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$AngleArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_pos">minecraft:block_pos</a>
-							 */
-              blockPos(): com.mojang.brigadier.arguments.ArgumentType<net.minecraft.commands.arguments.coordinates.Coordinates>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_predicate">minecraft:block_predicate</a>
-							 */
-              blockPredicate(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$BlockPredicateWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_state">minecraft:block_state</a>
-							 */
-              blockState(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$BlockStateArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:color">minecraft:color</a>
-							 */
-              color(): net.minecraft.commands.arguments.ColorArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:column_pos">minecraft:column_pos</a>
-							 */
-              columnPos(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:dimension">minecraft:dimension</a>
-							 */
-              dimension(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.Entity$DimensionType>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:entity">minecraft:entity</a>
-							 */
-              entity(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.Entity>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:entity">minecraft:entity</a>
-							 */
-              entities(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.Entity>>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:float_range">minecraft:float_range</a>
-							 */
-              floatRange(): net.minecraft.commands.arguments.RangeArgument$Floats;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
-							 */
-              gameProfile(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.PlayerMP>>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
-							 */
-              player(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.PlayerMP>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
-							 */
-              players(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.PlayerMP>>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:gamemode">minecraft:gamemode</a>
-							 */
-              gameMode(): net.minecraft.commands.arguments.GameModeArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:int_range">minecraft:int_range</a>
-							 */
-              intRange(): net.minecraft.commands.arguments.RangeArgument$Ints;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_predicate">minecraft:item_predicate</a>
-							 */
-              itemPredicate(): com.mojang.brigadier.arguments.ArgumentType<kotlin.Function1<com.chattriggers.ctjs.api.inventory.Item, boolean>>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_slot">minecraft:item_slot</a>
-							 */
-              itemSlot(): net.minecraft.commands.arguments.SlotArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_stack">minecraft:item_stack</a>
-							 */
-              itemStack(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$ItemStackArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:message">minecraft:message</a>
-							 */
-              message(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$MessageFormatArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_compound_tag">minecraft:nbt_compound_tag</a>
-							 */
-              nbtCompoundTag(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_path">minecraft:nbt_path</a>
-							 */
-              nbtPath(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$NbtPathWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_tag">minecraft:nbt_tag</a>
-							 */
-              nbtTag(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.inventory.nbt.NBTBase>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:resource">minecraft:resource</a>
-							 */
-              resource(): net.minecraft.commands.arguments.IdentifierArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:rotation">minecraft:rotation</a>
-							 */
-              rotation(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:swizzle">minecraft:swizzle</a>
-							 */
-              swizzle(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:time">minecraft:time</a>
-							 */
-              time(): net.minecraft.commands.arguments.TimeArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:time">minecraft:time</a>
-							 */
-              time(minimum: number): net.minecraft.commands.arguments.TimeArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:uuid">minecraft:uuid</a>
-							 */
-              uuid(): net.minecraft.commands.arguments.UuidArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec2">minecraft:vec2</a>
-							 */
-              vec2(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec2">minecraft:vec2</a>
-							 */
-              vec2(centerIntegers: boolean): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec3">minecraft:vec3</a>
-							 */
-              vec3(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec3">minecraft:vec3</a>
-							 */
-              vec3(centerIntegers: boolean): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * Allows choosing from a set list of strings. When suggested to the user, this
-							 *  will look as though this argument is multiple "literal()" nodes.
-							 */
-              choices(options: string): com.mojang.brigadier.arguments.ArgumentType<string>;
-							/**
-							 * Allows easy creation of a custom ArgumentType without needing to use
-							 *  JavaAdapter. Example:
-							 * 
-							 *  ```js
-							 *  const HEADS = 0;
-							 *  const TAILS = 1;
-							 * 
-							 *  const coinFlipArgType = Commands.custom({
-							 *      parse(reader) {
-							 *          // `reader` is a com.mojang.brigadier.StringReader
-							 * 
-							 *          const savedCursor = reader.getCursor();
-							 *          const str = reader.readString();
-							 *          if (str === 'heads')
-							 *              return HEADS;
-							 *          if (str === 'tails')
-							 *              return TAILS;
-							 *          Commands.error(reader, `Expected one of: 'heads', 'tails'`);
-							 *      },
-							 *      suggest(ctx, builder) {
-							 *          // ctx is a com.mojang.brigadier.context.CommandContext<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource>
-							 *          // builder is a com.mojang.brigadier.suggestion.SuggestionsBuilder
-							 *          builder.suggest('heads');
-							 *          builder.suggest('tails');
-							 *          return builder.buildFuture();
-							 *      },
-							 *      getExamples() {
-							 *          return ['heads', 'tails'];
-							 *      }
-							 *  });
-							 *  ```
-							 * 
-							 *  @see StringReader
-							 *  @see CommandContext
-							 *  @see SuggestionsBuilder
-							 */
-              custom(obj: org.mozilla.javascript.NativeObject): com.mojang.brigadier.arguments.ArgumentType<any>;
-							/**
-							 * Throw a detailed error given the reader, meant to be used with [custom]
-							 */
-              error(reader: com.mojang.brigadier.ImmutableStringReader, message: string): never;
-							/**
-							 * Throw a detailed error given the reader, meant to be used with [custom]
-							 */
-              error(reader: com.mojang.brigadier.ImmutableStringReader, message: com.chattriggers.ctjs.api.message.TextComponent): never;
-							/**
-							 * An alternative to the command register that allows full use of the
-							 *  functionality provided by Brigadier.
-							 * 
-							 *  For more information about Brigadier, see
-							 *  <a href="https://github.com/Mojang/brigadier">their GitHub page.</a>
-							 *  Also see [CTCommand] for an example Brigadier command.
-							 * 
-							 *  ## General
-							 * 
-							 *  This API works similarly to Brigadier, however much of the annoyance
-							 *  of using the Brigadier API has been eliminated, mainly the excessive
-							 *  use of nested function calls. It works via a global context, so function
-							 *  calls are free. However, this means that multiples commands cannot be
-							 *  built at once. This means that commands should only ever be built on the
-							 *  main thread. If two commands are built at the same time, an error will be
-							 *  thrown.
-							 * 
-							 *  ## Argument Types
-							 * 
-							 *  The [ArgumentType] interface is a fundamental part of Brigadier, and
-							 *  most of the MC argument types have been exposed via helper function
-							 *  in this class. It is also possible to build new instances of
-							 *  [ArgumentType] via [custom].
-							 * 
-							 *  When possible, the argument types returned from the helper function on
-							 *  this class resolve in a way that their Minecraft variants do. For example,
-							 *  the [message] type will replace selectors with their target entity, if
-							 *  possible.
-							 * 
-							 *  ## Basic Example
-							 * 
-							 *  Here is an example command that recreates the `/advancement` command
-							 *  (without any of the actual functionality, of course):
-							 * 
-							 *  ```js
-							 *  // The `Commands` object supports destructuring, which makes assembling long
-							 *  // commands much nicer
-							 *  const { argument, choices, exec, greedyString, literal, registerCommand, resource, players } = Commands;
-							 * 
-							 *  registerCommand('ctadvancement', () => {
-							 *      // Note the use of choices to avoid having to copy-paste two separate literal() trees
-							 *      argument('kind', choices('grant', 'revoke'), () => {
-							 *          argument('targets', players(), () => {
-							 *              literal('everything', () => {
-							 *                  // exec() receives a single object with all of the arguments, which means we can
-							 *                  // destructure it to pull out the ones we want. Only values from argument() calls
-							 *                  // are included here; the literal nodes are ignored and have no impact on this object.
-							 *                  exec(({ kind, targets }) => {
-							 *                      ChatLib.chat(`${kind} everything from ${targets}`);
-							 *                  });
-							 *              });
-							 * 
-							 *              literal('only', () => {
-							 *                  argument('advancement', resource(), () => {
-							 *                      argument('criterion', greedyString(), () => {
-							 *                          exec(({ kind, targets, advancement, criterion }) => {
-							 *                              ChatLib.chat(`${kind} only ${advancement} applied to ${targets} (criterion = ${criterion})`);
-							 *                          });
-							 *                      });
-							 *                  });
-							 *              });
-							 * 
-							 *              argument('subkind', choices('from', 'through', 'until'), () => {
-							 *                  argument('advancement', resource(), () => {
-							 *                      exec(({ kind, subkind, targets, advancement }) => {
-							 *                          ChatLib.chat(`kind = ${kind}, subkind = ${subkind}, advancement = ${advancement}, targets = ${targets}`);
-							 *                      });
-							 *                  });
-							 *              });
-							 *          });
-							 *      });
-							 *  });
-							 *  ```
-							 * 
-							 *  ## Redirect
-							 * 
-							 *  Like Brigadier, this API supports assembling partial command nodes for use
-							 *  in redirection. To do this, use [buildCommand], which returns the command node
-							 *  (well, an internal representation of it). This object can then be passed to
-							 *  further calls to [redirect] inside of a [literal] or [argument] block.
-							 * 
-							 *  Examples:
-							 * 
-							 *  ```js
-							 *  // destructuring omitted
-							 * 
-							 *  const testCmdNode = buildCommand('testcmd', () => {
-							 *      exec(({ arg }) => {
-							 *          if (arg) {
-							 *              ChatLib.chat(`arg supplied, value = ${arg}`);
-							 *          } else {
-							 *              ChatLib.chat('no arg supplied');
-							 *          }
-							 *      });
-							 *  });
-							 * 
-							 *  // Manually register it since we used buildCommand() instead of registerCommand()
-							 *  testCmdNode.register()
-							 * 
-							 *  registerCommand('testcmd', () => {
-							 *      argument('arg', greedyString(), () => {
-							 *          redirect(testCmdNode);
-							 *      });
-							 *  });
-							 *  ```
-							 */
-              new(): com.chattriggers.ctjs.api.commands.DynamicCommands;
-            }
-            interface DynamicCommands extends com.chattriggers.ctjs.internal.commands.CommandCollection { 
-              registerCommand(name: string): com.chattriggers.ctjs.api.commands.RootCommand;
-              registerCommand(name: string, builder: org.mozilla.javascript.Function | null | undefined): com.chattriggers.ctjs.api.commands.RootCommand;
-              buildCommand(name: string): com.chattriggers.ctjs.api.commands.RootCommand;
-              buildCommand(name: string, builder: org.mozilla.javascript.Function | null | undefined): com.chattriggers.ctjs.api.commands.RootCommand;
-              argument(name: string, type: com.mojang.brigadier.arguments.ArgumentType<any>, builder: org.mozilla.javascript.Function): void;
-              literal(name: string, builder: org.mozilla.javascript.Function): void;
-              redirect(node: com.chattriggers.ctjs.api.commands.RootCommand): void;
-              redirect(node: com.mojang.brigadier.tree.CommandNode<net.minecraft.commands.SharedSuggestionProvider>): void;
-              exec(method: org.mozilla.javascript.Function): void;
-							/**
-							 * A helper method for getting Fabric's client CommandDispatcher root node. This allows user
-							 *  commands to be redirected to the root node in the same way that "/execute run ..." does.
-							 * 
-							 *  As the result is a CommandNode, `.getChild(name)` can be used to access sub-command nodes
-							 *  to, for example, redirect to just `/advancement` instead of `/`.
-							 */
-              getDispatcherRoot(): com.mojang.brigadier.tree.RootCommandNode<net.minecraft.client.multiplayer.ClientSuggestionProvider> | null | undefined;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:bool">Argument Types: bool</a>
-							 */
-              bool(): com.mojang.brigadier.arguments.BoolArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
-							 */
-              double(): com.mojang.brigadier.arguments.DoubleArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
-							 */
-              double(min: number): com.mojang.brigadier.arguments.DoubleArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:double">brigadier:double</a>
-							 */
-              double(min: number, max: number): com.mojang.brigadier.arguments.DoubleArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
-							 */
-              float(): com.mojang.brigadier.arguments.FloatArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
-							 */
-              float(min: number): com.mojang.brigadier.arguments.FloatArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:float">brigadier:float</a>
-							 */
-              float(min: number, max: number): com.mojang.brigadier.arguments.FloatArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
-							 */
-              integer(): com.mojang.brigadier.arguments.IntegerArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
-							 */
-              integer(min: number): com.mojang.brigadier.arguments.IntegerArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:integer">brigadier:integer</a>
-							 */
-              integer(min: number, max: number): com.mojang.brigadier.arguments.IntegerArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
-							 */
-              long(): com.mojang.brigadier.arguments.LongArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
-							 */
-              long(min: number): com.mojang.brigadier.arguments.LongArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:long">brigadier:long</a>
-							 */
-              long(min: number, max: number): com.mojang.brigadier.arguments.LongArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
-							 */
-              string(): com.mojang.brigadier.arguments.StringArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
-							 */
-              greedyString(): com.mojang.brigadier.arguments.StringArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#brigadier:string">brigadier:string</a>
-							 */
-              word(): com.mojang.brigadier.arguments.StringArgumentType;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:angle">minecraft:angle</a>
-							 */
-              angle(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$AngleArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_pos">minecraft:block_pos</a>
-							 */
-              blockPos(): com.mojang.brigadier.arguments.ArgumentType<net.minecraft.commands.arguments.coordinates.Coordinates>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_predicate">minecraft:block_predicate</a>
-							 */
-              blockPredicate(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$BlockPredicateWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_state">minecraft:block_state</a>
-							 */
-              blockState(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$BlockStateArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:color">minecraft:color</a>
-							 */
-              color(): net.minecraft.commands.arguments.ColorArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:column_pos">minecraft:column_pos</a>
-							 */
-              columnPos(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:dimension">minecraft:dimension</a>
-							 */
-              dimension(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.Entity$DimensionType>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:entity">minecraft:entity</a>
-							 */
-              entity(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.Entity>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:entity">minecraft:entity</a>
-							 */
-              entities(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.Entity>>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:float_range">minecraft:float_range</a>
-							 */
-              floatRange(): net.minecraft.commands.arguments.RangeArgument$Floats;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
-							 */
-              gameProfile(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.PlayerMP>>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
-							 */
-              player(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.entity.PlayerMP>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
-							 */
-              players(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.entity.PlayerMP>>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:gamemode">minecraft:gamemode</a>
-							 */
-              gameMode(): net.minecraft.commands.arguments.GameModeArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:int_range">minecraft:int_range</a>
-							 */
-              intRange(): net.minecraft.commands.arguments.RangeArgument$Ints;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_predicate">minecraft:item_predicate</a>
-							 */
-              itemPredicate(): com.mojang.brigadier.arguments.ArgumentType<kotlin.Function1<com.chattriggers.ctjs.api.inventory.Item, boolean>>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_slot">minecraft:item_slot</a>
-							 */
-              itemSlot(): net.minecraft.commands.arguments.SlotArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_stack">minecraft:item_stack</a>
-							 */
-              itemStack(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$ItemStackArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:message">minecraft:message</a>
-							 */
-              message(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$MessageFormatArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_compound_tag">minecraft:nbt_compound_tag</a>
-							 */
-              nbtCompoundTag(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_path">minecraft:nbt_path</a>
-							 */
-              nbtPath(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$NbtPathWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_tag">minecraft:nbt_tag</a>
-							 */
-              nbtTag(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.inventory.nbt.NBTBase>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:resource">minecraft:resource</a>
-							 */
-              resource(): net.minecraft.commands.arguments.IdentifierArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:rotation">minecraft:rotation</a>
-							 */
-              rotation(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:swizzle">minecraft:swizzle</a>
-							 */
-              swizzle(): com.mojang.brigadier.arguments.ArgumentType<Array<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:time">minecraft:time</a>
-							 */
-              time(): net.minecraft.commands.arguments.TimeArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:time">minecraft:time</a>
-							 */
-              time(minimum: number): net.minecraft.commands.arguments.TimeArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:uuid">minecraft:uuid</a>
-							 */
-              uuid(): net.minecraft.commands.arguments.UuidArgument;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec2">minecraft:vec2</a>
-							 */
-              vec2(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec2">minecraft:vec2</a>
-							 */
-              vec2(centerIntegers: boolean): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec3">minecraft:vec3</a>
-							 */
-              vec3(): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec3">minecraft:vec3</a>
-							 */
-              vec3(centerIntegers: boolean): com.mojang.brigadier.arguments.ArgumentType<com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper>;
-							/**
-							 * Allows choosing from a set list of strings. When suggested to the user, this
-							 *  will look as though this argument is multiple "literal()" nodes.
-							 */
-              choices(options: string): com.mojang.brigadier.arguments.ArgumentType<string>;
-							/**
-							 * Allows easy creation of a custom ArgumentType without needing to use
-							 *  JavaAdapter. Example:
-							 * 
-							 *  ```js
-							 *  const HEADS = 0;
-							 *  const TAILS = 1;
-							 * 
-							 *  const coinFlipArgType = Commands.custom({
-							 *      parse(reader) {
-							 *          // `reader` is a com.mojang.brigadier.StringReader
-							 * 
-							 *          const savedCursor = reader.getCursor();
-							 *          const str = reader.readString();
-							 *          if (str === 'heads')
-							 *              return HEADS;
-							 *          if (str === 'tails')
-							 *              return TAILS;
-							 *          Commands.error(reader, `Expected one of: 'heads', 'tails'`);
-							 *      },
-							 *      suggest(ctx, builder) {
-							 *          // ctx is a com.mojang.brigadier.context.CommandContext<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource>
-							 *          // builder is a com.mojang.brigadier.suggestion.SuggestionsBuilder
-							 *          builder.suggest('heads');
-							 *          builder.suggest('tails');
-							 *          return builder.buildFuture();
-							 *      },
-							 *      getExamples() {
-							 *          return ['heads', 'tails'];
-							 *      }
-							 *  });
-							 *  ```
-							 * 
-							 *  @see StringReader
-							 *  @see CommandContext
-							 *  @see SuggestionsBuilder
-							 */
-              custom(obj: org.mozilla.javascript.NativeObject): com.mojang.brigadier.arguments.ArgumentType<any>;
-							/**
-							 * Throw a detailed error given the reader, meant to be used with [custom]
-							 */
-              error(reader: com.mojang.brigadier.ImmutableStringReader, message: string): never;
-							/**
-							 * Throw a detailed error given the reader, meant to be used with [custom]
-							 */
-              error(reader: com.mojang.brigadier.ImmutableStringReader, message: com.chattriggers.ctjs.api.message.TextComponent): never;
-							/**
-							 * An alternative to the command register that allows full use of the
-							 *  functionality provided by Brigadier.
-							 * 
-							 *  For more information about Brigadier, see
-							 *  <a href="https://github.com/Mojang/brigadier">their GitHub page.</a>
-							 *  Also see [CTCommand] for an example Brigadier command.
-							 * 
-							 *  ## General
-							 * 
-							 *  This API works similarly to Brigadier, however much of the annoyance
-							 *  of using the Brigadier API has been eliminated, mainly the excessive
-							 *  use of nested function calls. It works via a global context, so function
-							 *  calls are free. However, this means that multiples commands cannot be
-							 *  built at once. This means that commands should only ever be built on the
-							 *  main thread. If two commands are built at the same time, an error will be
-							 *  thrown.
-							 * 
-							 *  ## Argument Types
-							 * 
-							 *  The [ArgumentType] interface is a fundamental part of Brigadier, and
-							 *  most of the MC argument types have been exposed via helper function
-							 *  in this class. It is also possible to build new instances of
-							 *  [ArgumentType] via [custom].
-							 * 
-							 *  When possible, the argument types returned from the helper function on
-							 *  this class resolve in a way that their Minecraft variants do. For example,
-							 *  the [message] type will replace selectors with their target entity, if
-							 *  possible.
-							 * 
-							 *  ## Basic Example
-							 * 
-							 *  Here is an example command that recreates the `/advancement` command
-							 *  (without any of the actual functionality, of course):
-							 * 
-							 *  ```js
-							 *  // The `Commands` object supports destructuring, which makes assembling long
-							 *  // commands much nicer
-							 *  const { argument, choices, exec, greedyString, literal, registerCommand, resource, players } = Commands;
-							 * 
-							 *  registerCommand('ctadvancement', () => {
-							 *      // Note the use of choices to avoid having to copy-paste two separate literal() trees
-							 *      argument('kind', choices('grant', 'revoke'), () => {
-							 *          argument('targets', players(), () => {
-							 *              literal('everything', () => {
-							 *                  // exec() receives a single object with all of the arguments, which means we can
-							 *                  // destructure it to pull out the ones we want. Only values from argument() calls
-							 *                  // are included here; the literal nodes are ignored and have no impact on this object.
-							 *                  exec(({ kind, targets }) => {
-							 *                      ChatLib.chat(`${kind} everything from ${targets}`);
-							 *                  });
-							 *              });
-							 * 
-							 *              literal('only', () => {
-							 *                  argument('advancement', resource(), () => {
-							 *                      argument('criterion', greedyString(), () => {
-							 *                          exec(({ kind, targets, advancement, criterion }) => {
-							 *                              ChatLib.chat(`${kind} only ${advancement} applied to ${targets} (criterion = ${criterion})`);
-							 *                          });
-							 *                      });
-							 *                  });
-							 *              });
-							 * 
-							 *              argument('subkind', choices('from', 'through', 'until'), () => {
-							 *                  argument('advancement', resource(), () => {
-							 *                      exec(({ kind, subkind, targets, advancement }) => {
-							 *                          ChatLib.chat(`kind = ${kind}, subkind = ${subkind}, advancement = ${advancement}, targets = ${targets}`);
-							 *                      });
-							 *                  });
-							 *              });
-							 *          });
-							 *      });
-							 *  });
-							 *  ```
-							 * 
-							 *  ## Redirect
-							 * 
-							 *  Like Brigadier, this API supports assembling partial command nodes for use
-							 *  in redirection. To do this, use [buildCommand], which returns the command node
-							 *  (well, an internal representation of it). This object can then be passed to
-							 *  further calls to [redirect] inside of a [literal] or [argument] block.
-							 * 
-							 *  Examples:
-							 * 
-							 *  ```js
-							 *  // destructuring omitted
-							 * 
-							 *  const testCmdNode = buildCommand('testcmd', () => {
-							 *      exec(({ arg }) => {
-							 *          if (arg) {
-							 *              ChatLib.chat(`arg supplied, value = ${arg}`);
-							 *          } else {
-							 *              ChatLib.chat('no arg supplied');
-							 *          }
-							 *      });
-							 *  });
-							 * 
-							 *  // Manually register it since we used buildCommand() instead of registerCommand()
-							 *  testCmdNode.register()
-							 * 
-							 *  registerCommand('testcmd', () => {
-							 *      argument('arg', greedyString(), () => {
-							 *          redirect(testCmdNode);
-							 *      });
-							 *  });
-							 *  ```
-							 */
-              new(): com.chattriggers.ctjs.api.commands.DynamicCommands;
-            }
-            const DynamicCommands$AngleArgumentWrapper: {
-              new(angle: net.minecraft.commands.arguments.AngleArgument$SingleAngle): com.chattriggers.ctjs.api.commands.DynamicCommands$AngleArgumentWrapper;
-            }
-            interface DynamicCommands$AngleArgumentWrapper { 
-              getAngle(): net.minecraft.commands.arguments.AngleArgument$SingleAngle;
-              getAngle(): number;
-              getAngle(entity: com.chattriggers.ctjs.api.entity.Entity): number;
-              component1(): net.minecraft.commands.arguments.AngleArgument$SingleAngle;
-              copy(angle: net.minecraft.commands.arguments.AngleArgument$SingleAngle): com.chattriggers.ctjs.api.commands.DynamicCommands$AngleArgumentWrapper;
-            }
-            const DynamicCommands$PosArgumentWrapper: {
-              new(impl: net.minecraft.commands.arguments.coordinates.Coordinates): com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper;
-            }
-            interface DynamicCommands$PosArgumentWrapper extends net.minecraft.commands.arguments.coordinates.Coordinates { 
-              getImpl(): net.minecraft.commands.arguments.coordinates.Coordinates;
-              toAbsolutePos(): net.minecraft.world.phys.Vec3;
-              toAbsoluteBlockPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
-              toAbsoluteRotation(): net.minecraft.world.phys.Vec2;
-              component1(): net.minecraft.commands.arguments.coordinates.Coordinates;
-              copy(impl: net.minecraft.commands.arguments.coordinates.Coordinates): com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper;
-            }
-            const DynamicCommands$BlockPredicateWrapper: {
-              new(impl: net.minecraft.commands.arguments.blocks.BlockPredicateArgument$Result): com.chattriggers.ctjs.api.commands.DynamicCommands$BlockPredicateWrapper;
-            }
-            interface DynamicCommands$BlockPredicateWrapper { 
-              getImpl(): net.minecraft.commands.arguments.blocks.BlockPredicateArgument$Result;
-              test(blockPos: com.chattriggers.ctjs.api.world.block.BlockPos): boolean;
-              component1(): net.minecraft.commands.arguments.blocks.BlockPredicateArgument$Result;
-              copy(impl: net.minecraft.commands.arguments.blocks.BlockPredicateArgument$Result): com.chattriggers.ctjs.api.commands.DynamicCommands$BlockPredicateWrapper;
-            }
-            const DynamicCommands$BlockStateArgumentWrapper: {
-              new(impl: net.minecraft.commands.arguments.blocks.BlockInput): com.chattriggers.ctjs.api.commands.DynamicCommands$BlockStateArgumentWrapper;
-            }
-            interface DynamicCommands$BlockStateArgumentWrapper { 
-              getImpl(): net.minecraft.commands.arguments.blocks.BlockInput;
-              test(blockPos: com.chattriggers.ctjs.api.world.block.BlockPos): boolean;
-              component1(): net.minecraft.commands.arguments.blocks.BlockInput;
-              copy(impl: net.minecraft.commands.arguments.blocks.BlockInput): com.chattriggers.ctjs.api.commands.DynamicCommands$BlockStateArgumentWrapper;
-            }
-            const DynamicCommands$EntitySelectorWrapper: {
-              new(impl: net.minecraft.commands.arguments.selector.EntitySelector): com.chattriggers.ctjs.api.commands.DynamicCommands$EntitySelectorWrapper;
-            }
-            interface DynamicCommands$EntitySelectorWrapper { 
-              getEntity(): com.chattriggers.ctjs.api.entity.Entity;
-              getEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
-              getPlayers(): Array<com.chattriggers.ctjs.api.entity.PlayerMP>;
-            }
-            const DynamicCommands$ItemStackArgumentWrapper: {
-              new(impl: net.minecraft.commands.arguments.item.ItemInput): com.chattriggers.ctjs.api.commands.DynamicCommands$ItemStackArgumentWrapper;
-            }
-            interface DynamicCommands$ItemStackArgumentWrapper { 
-              getItemType(): com.chattriggers.ctjs.api.inventory.ItemType;
-              test(type: com.chattriggers.ctjs.api.inventory.ItemType): boolean;
-              component1(): net.minecraft.commands.arguments.item.ItemInput;
-              copy(impl: net.minecraft.commands.arguments.item.ItemInput): com.chattriggers.ctjs.api.commands.DynamicCommands$ItemStackArgumentWrapper;
-            }
-            const DynamicCommands$MessageFormatArgumentWrapper: {
-              new(impl: net.minecraft.commands.arguments.MessageArgument$Message): com.chattriggers.ctjs.api.commands.DynamicCommands$MessageFormatArgumentWrapper;
-            }
-            interface DynamicCommands$MessageFormatArgumentWrapper { 
-              getText(): string;
-              setText(value: string): void;
-              format(): com.chattriggers.ctjs.api.message.TextComponent;
-              component1(): net.minecraft.commands.arguments.MessageArgument$Message;
-              copy(impl: net.minecraft.commands.arguments.MessageArgument$Message): com.chattriggers.ctjs.api.commands.DynamicCommands$MessageFormatArgumentWrapper;
-            }
-            const DynamicCommands$NbtPathWrapper: {
-              new(impl: net.minecraft.commands.arguments.NbtPathArgument$NbtPath): com.chattriggers.ctjs.api.commands.DynamicCommands$NbtPathWrapper;
-            }
-            interface DynamicCommands$NbtPathWrapper { 
-              get(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): Array<net.minecraft.nbt.Tag>;
-              count(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): number;
-              getOrInit(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase, supplier: kotlin.Function0<com.chattriggers.ctjs.api.inventory.nbt.NBTBase>): Array<net.minecraft.nbt.Tag>;
-              put(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase, source: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): number;
-              insert(index: number, compound: com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound, elements: Array<com.chattriggers.ctjs.api.inventory.nbt.NBTBase>): number;
-              remove(element: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): number;
-              component1(): net.minecraft.commands.arguments.NbtPathArgument$NbtPath;
-              copy(impl: net.minecraft.commands.arguments.NbtPathArgument$NbtPath): com.chattriggers.ctjs.api.commands.DynamicCommands$NbtPathWrapper;
-            }
-          }
-          namespace client {
-            const KeyBind: {
-							/**
-							 * Creates a new keybind, editable in the user's controls.
-							 * 
-							 *  @param description what the keybind does
-							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
-							 *  @param category the keybind category the keybind will be in
-							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
-							 */
-              new(description: string, keyCode: number): com.chattriggers.ctjs.api.client.KeyBind;
-							/**
-							 * Creates a new keybind, editable in the user's controls.
-							 * 
-							 *  @param description what the keybind does
-							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
-							 *  @param category the keybind category the keybind will be in
-							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
-							 */
-              new(description: string, keyCode: number, category: string): com.chattriggers.ctjs.api.client.KeyBind;
-              new(keyBinding: net.minecraft.client.KeyMapping): com.chattriggers.ctjs.api.client.KeyBind;
-            }
-            interface KeyBind { 
-              registerKeyPress(method: any): com.chattriggers.ctjs.api.client.KeyBind;
-              registerKeyRelease(method: any): com.chattriggers.ctjs.api.client.KeyBind;
-              registerKeyDown(method: any): com.chattriggers.ctjs.api.client.KeyBind;
-              unregisterKeyPress(): com.chattriggers.ctjs.api.client.KeyBind;
-              unregisterKeyRelease(): com.chattriggers.ctjs.api.client.KeyBind;
-              unregisterKeyDown(): com.chattriggers.ctjs.api.client.KeyBind;
-							/**
-							 * Returns true if the key is pressed (used for continuous querying).
-							 * 
-							 *  @return whether the key is pressed
-							 */
-              isKeyDown(): boolean;
-							/**
-							 * Returns true on the initial key press. For continuous querying use [isKeyDown].
-							 * 
-							 *  @return whether the key has just been pressed
-							 */
-              isPressed(): boolean;
-							/**
-							 * Gets the description of the key.
-							 * 
-							 *  @return the description
-							 */
-              getDescription(): string;
-							/**
-							 * Gets the key code of the key.
-							 * 
-							 *  @return the integer key code
-							 */
-              getKeyCode(): number;
-							/**
-							 * Gets the category of the key.
-							 * 
-							 *  @return the category
-							 */
-              getCategory(): string;
-							/**
-							 * Sets the state of the key.
-							 * 
-							 *  @param pressed True to press, False to release
-							 */
-              setState(pressed: boolean): void;
-            }
-            const KeyBind$Companion: {
-              new(): com.chattriggers.ctjs.api.client.KeyBind$Companion;
-            }
-            interface KeyBind$Companion { 
-              new(): com.chattriggers.ctjs.api.client.KeyBind$Companion;
-            }
-            const ScreenHelper: {
-              MenuButton: typeof com.chattriggers.ctjs.api.client.ScreenHelper$MenuButton;
-              titleFont: com.chattriggers.ctjs.api.render.Font;
-              smallerFont: com.chattriggers.ctjs.api.render.Font;
-              drawMenuButton(label: string, x: number, y: number, width: number, height: number, hovered: boolean, textColorOverride: number | null | undefined): void;
-              argb(a: number, r: number, g: number, b: number): number;
-              new(): com.chattriggers.ctjs.api.client.ScreenHelper;
-            }
-            interface ScreenHelper { 
-              titleFont: com.chattriggers.ctjs.api.render.Font;
-              smallerFont: com.chattriggers.ctjs.api.render.Font;
-              drawMenuButton(label: string, x: number, y: number, width: number, height: number, hovered: boolean, textColorOverride: number | null | undefined): void;
-              argb(a: number, r: number, g: number, b: number): number;
-              new(): com.chattriggers.ctjs.api.client.ScreenHelper;
-            }
-            const ScreenHelper$MenuButton: {
-              new(label: string, x: number, y: number, width: number, height: number, onClick: kotlin.Function0<void>): com.chattriggers.ctjs.api.client.ScreenHelper$MenuButton;
-            }
-            interface ScreenHelper$MenuButton { 
-              getLabel(): string;
-              getX(): number;
-              getY(): number;
-              getWidth(): number;
-              getHeight(): number;
-              getOnClick(): kotlin.Function0<void>;
-              isHovered(mouseX: number, mouseY: number): boolean;
-              component1(): string;
-              component2(): number;
-              component3(): number;
-              component4(): number;
-              component5(): number;
-              component6(): kotlin.Function0<void>;
-              copy(label: string, x: number, y: number, width: number, height: number, onClick: kotlin.Function0<void>): com.chattriggers.ctjs.api.client.ScreenHelper$MenuButton;
-            }
-            const WelcomeScreen: {
-              new(): com.chattriggers.ctjs.api.client.WelcomeScreen;
-            }
-            interface WelcomeScreen extends net.minecraft.client.gui.screens.Screen { 
-            }
-            const WelcomeScreen$Companion: {
-              open(): void;
-              new(): com.chattriggers.ctjs.api.client.WelcomeScreen$Companion;
-            }
-            interface WelcomeScreen$Companion { 
-              open(): void;
-              new(): com.chattriggers.ctjs.api.client.WelcomeScreen$Companion;
-            }
-            const FileLib: {
-							/**
-							 * Writes a file to folder in modules.
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @param toWrite string to write in file
-							 *  @param recursive whether to create folders to the file location if they don't exist
-							 */
-              write(importName: string, fileName: string, toWrite: string): void;
-							/**
-							 * Writes a file to folder in modules.
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @param toWrite string to write in file
-							 *  @param recursive whether to create folders to the file location if they don't exist
-							 */
-              write(importName: string, fileName: string, toWrite: string, recursive: boolean): void;
-							/**
-							 * Writes a file to anywhere on the system.
-							 *  Use "./" for the ".minecraft" folder.
-							 * 
-							 *  @param fileLocation the location and file name
-							 *  @param toWrite string to write in file
-							 *  @param recursive whether to create folders to the file location if they don't exist
-							 */
-              write(fileLocation: string, toWrite: string): void;
-							/**
-							 * Writes a file to anywhere on the system.
-							 *  Use "./" for the ".minecraft" folder.
-							 * 
-							 *  @param fileLocation the location and file name
-							 *  @param toWrite string to write in file
-							 *  @param recursive whether to create folders to the file location if they don't exist
-							 */
-              write(fileLocation: string, toWrite: string, recursive: boolean): void;
-							/**
-							 * Writes a file to folder in modules.
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @param toAppend string to append in file
-							 */
-              append(importName: string, fileName: string, toAppend: string): void;
-							/**
-							 * Writes a file to anywhere on the system.
-							 *  Use "./" for the ".minecraft" folder.
-							 * 
-							 *  @param fileLocation the location and file name
-							 *  @param toAppend string to append in file
-							 */
-              append(fileLocation: string, toAppend: string): void;
-							/**
-							 * Reads a file from folder in modules.
-							 *  Returns null if file is not found.
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @return the string in the file, or null if not found
-							 */
-              read(importName: string, fileName: string): string | null | undefined;
-							/**
-							 * Reads a file from anywhere on the system.
-							 *  Use "./" for the ".minecraft" folder.
-							 *  Returns null if file is not found.
-							 * 
-							 *  @param fileLocation the location and file name
-							 *  @return the string in the file, or null if not found
-							 */
-              read(fileLocation: string): string | null | undefined;
-							/**
-							 * Reads a file from anywhere on the system using java.io.File.
-							 * 
-							 *  @param file the java.io.File to read
-							 *  @return the string in the file, or null if not found
-							 */
-              read(file: java.io.File): string | null | undefined;
-							/**
-							 * Determines if a file or directory exists at the specified location
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @return if the file exists
-							 */
-              exists(importName: string, fileName: string): boolean;
-							/**
-							 * Determines if a file or directory exists at the specified location
-							 * 
-							 *  @param fileLocation the path of the file
-							 *  @return if the file exists
-							 */
-              exists(fileLocation: string): boolean;
-							/**
-							 * Determines if a file or directory exists at the specified location
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @return if the location is a directory
-							 */
-              isDirectory(importName: string, fileName: string): boolean;
-							/**
-							 * Determines if a file or directory exists at the specified location
-							 * 
-							 *  @param fileLocation the path of the file
-							 *  @return if the location is a directory
-							 */
-              isDirectory(fileLocation: string): boolean;
-							/**
-							 * Gets the contents of a url as a string.
-							 * 
-							 *  @param theUrl the url to get the data from
-							 *  @param userAgent the user agent to use in the connection
-							 *  @return the string stored in the url content
-							 */
-              getUrlContent(theUrl: string): string;
-							/**
-							 * Gets the contents of a url as a string.
-							 * 
-							 *  @param theUrl the url to get the data from
-							 *  @param userAgent the user agent to use in the connection
-							 *  @return the string stored in the url content
-							 */
-              getUrlContent(theUrl: string, userAgent: string | null | undefined): string;
-							/**
-							 * Deletes a directory at the specified location
-							 * 
-							 *  @param dir the directory to delete
-							 *  @return if the directory was deleted
-							 */
-              deleteDirectory(dir: string): boolean;
-							/**
-							 * Deletes a directory at the specified location
-							 * 
-							 *  @param dir the directory to delete
-							 *  @return if the directory was deleted
-							 */
-              deleteDirectory(dir: java.io.File): boolean;
-							/**
-							 * Extracts a zip file specified by the zipFilePath to a directory specified by
-							 *  destDirectory (will be created if does not exist).
-							 *  @param zipFilePath the zip file path
-							 *  @param destDirectory the destination directory
-							 *  @throws IOException IOException
-							 */
-              unzip(zipFilePath: string, destDirectory: string): void;
-							/**
-							 * Encodes a string to a base64 string
-							 * 
-							 *  @param toEncode string to encode
-							 *  @return base64 encoded string
-							 */
-              encodeBase64(toEncode: string): string;
-							/**
-							 * Decodes a base64 string to a string
-							 * 
-							 *  @param toDecode base64 encoded string to decode
-							 *  @return decoded string
-							 */
-              decodeBase64(toDecode: string): string;
-							/**
-							 * Opens a url in the default browser
-							 * 
-							 *  @param url the url to open
-							 */
-              open(url: string): void;
-							/**
-							 * Opens a path in the file explorer
-							 * 
-							 *  @param path the path to open
-							 */
-              open(path: java.io.File): void;
-              new(): com.chattriggers.ctjs.api.client.FileLib;
-            }
-            interface FileLib { 
-							/**
-							 * Writes a file to folder in modules.
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @param toWrite string to write in file
-							 *  @param recursive whether to create folders to the file location if they don't exist
-							 */
-              write(importName: string, fileName: string, toWrite: string): void;
-							/**
-							 * Writes a file to folder in modules.
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @param toWrite string to write in file
-							 *  @param recursive whether to create folders to the file location if they don't exist
-							 */
-              write(importName: string, fileName: string, toWrite: string, recursive: boolean): void;
-							/**
-							 * Writes a file to anywhere on the system.
-							 *  Use "./" for the ".minecraft" folder.
-							 * 
-							 *  @param fileLocation the location and file name
-							 *  @param toWrite string to write in file
-							 *  @param recursive whether to create folders to the file location if they don't exist
-							 */
-              write(fileLocation: string, toWrite: string): void;
-							/**
-							 * Writes a file to anywhere on the system.
-							 *  Use "./" for the ".minecraft" folder.
-							 * 
-							 *  @param fileLocation the location and file name
-							 *  @param toWrite string to write in file
-							 *  @param recursive whether to create folders to the file location if they don't exist
-							 */
-              write(fileLocation: string, toWrite: string, recursive: boolean): void;
-							/**
-							 * Writes a file to folder in modules.
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @param toAppend string to append in file
-							 */
-              append(importName: string, fileName: string, toAppend: string): void;
-							/**
-							 * Writes a file to anywhere on the system.
-							 *  Use "./" for the ".minecraft" folder.
-							 * 
-							 *  @param fileLocation the location and file name
-							 *  @param toAppend string to append in file
-							 */
-              append(fileLocation: string, toAppend: string): void;
-							/**
-							 * Reads a file from folder in modules.
-							 *  Returns null if file is not found.
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @return the string in the file, or null if not found
-							 */
-              read(importName: string, fileName: string): string | null | undefined;
-							/**
-							 * Reads a file from anywhere on the system.
-							 *  Use "./" for the ".minecraft" folder.
-							 *  Returns null if file is not found.
-							 * 
-							 *  @param fileLocation the location and file name
-							 *  @return the string in the file, or null if not found
-							 */
-              read(fileLocation: string): string | null | undefined;
-							/**
-							 * Reads a file from anywhere on the system using java.io.File.
-							 * 
-							 *  @param file the java.io.File to read
-							 *  @return the string in the file, or null if not found
-							 */
-              read(file: java.io.File): string | null | undefined;
-							/**
-							 * Determines if a file or directory exists at the specified location
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @return if the file exists
-							 */
-              exists(importName: string, fileName: string): boolean;
-							/**
-							 * Determines if a file or directory exists at the specified location
-							 * 
-							 *  @param fileLocation the path of the file
-							 *  @return if the file exists
-							 */
-              exists(fileLocation: string): boolean;
-							/**
-							 * Determines if a file or directory exists at the specified location
-							 * 
-							 *  @param importName name of the import
-							 *  @param fileName name of the file
-							 *  @return if the location is a directory
-							 */
-              isDirectory(importName: string, fileName: string): boolean;
-							/**
-							 * Determines if a file or directory exists at the specified location
-							 * 
-							 *  @param fileLocation the path of the file
-							 *  @return if the location is a directory
-							 */
-              isDirectory(fileLocation: string): boolean;
-							/**
-							 * Gets the contents of a url as a string.
-							 * 
-							 *  @param theUrl the url to get the data from
-							 *  @param userAgent the user agent to use in the connection
-							 *  @return the string stored in the url content
-							 */
-              getUrlContent(theUrl: string): string;
-							/**
-							 * Gets the contents of a url as a string.
-							 * 
-							 *  @param theUrl the url to get the data from
-							 *  @param userAgent the user agent to use in the connection
-							 *  @return the string stored in the url content
-							 */
-              getUrlContent(theUrl: string, userAgent: string | null | undefined): string;
-							/**
-							 * Deletes a directory at the specified location
-							 * 
-							 *  @param dir the directory to delete
-							 *  @return if the directory was deleted
-							 */
-              deleteDirectory(dir: string): boolean;
-							/**
-							 * Deletes a directory at the specified location
-							 * 
-							 *  @param dir the directory to delete
-							 *  @return if the directory was deleted
-							 */
-              deleteDirectory(dir: java.io.File): boolean;
-							/**
-							 * Extracts a zip file specified by the zipFilePath to a directory specified by
-							 *  destDirectory (will be created if does not exist).
-							 *  @param zipFilePath the zip file path
-							 *  @param destDirectory the destination directory
-							 *  @throws IOException IOException
-							 */
-              unzip(zipFilePath: string, destDirectory: string): void;
-							/**
-							 * Encodes a string to a base64 string
-							 * 
-							 *  @param toEncode string to encode
-							 *  @return base64 encoded string
-							 */
-              encodeBase64(toEncode: string): string;
-							/**
-							 * Decodes a base64 string to a string
-							 * 
-							 *  @param toDecode base64 encoded string to decode
-							 *  @return decoded string
-							 */
-              decodeBase64(toDecode: string): string;
-							/**
-							 * Opens a url in the default browser
-							 * 
-							 *  @param url the url to open
-							 */
-              open(url: string): void;
-							/**
-							 * Opens a path in the file explorer
-							 * 
-							 *  @param path the path to open
-							 */
-              open(path: java.io.File): void;
-              new(): com.chattriggers.ctjs.api.client.FileLib;
-            }
-            const MathLib: {
-							/**
-							 * Maps a number from one range to another.
-							 * 
-							 *  @param number the number to map
-							 *  @param in_min the original range min
-							 *  @param in_max the original range max
-							 *  @param out_min the final range min
-							 *  @param out_max the final range max
-							 *  @return the re-mapped number
-							 */
-              map(number: number, in_min: number, in_max: number, out_min: number, out_max: number): number;
-							/**
-							 * Clamps a floating number between two values.
-							 * 
-							 *  @param number the number to clamp
-							 *  @param min the minimum
-							 *  @param max the maximum
-							 *  @return the clamped number
-							 */
-              clampFloat(number: number, min: number, max: number): number;
-							/**
-							 * Clamps an integer number between two values.
-							 * 
-							 *  @param number the number to clamp
-							 *  @param min the minimum
-							 *  @param max the maximum
-							 *  @return the clamped number
-							 */
-              clamp(number: number, min: number, max: number): number;
-              new(): com.chattriggers.ctjs.api.client.MathLib;
-            }
-            interface MathLib { 
-							/**
-							 * Maps a number from one range to another.
-							 * 
-							 *  @param number the number to map
-							 *  @param in_min the original range min
-							 *  @param in_max the original range max
-							 *  @param out_min the final range min
-							 *  @param out_max the final range max
-							 *  @return the re-mapped number
-							 */
-              map(number: number, in_min: number, in_max: number, out_min: number, out_max: number): number;
-							/**
-							 * Clamps a floating number between two values.
-							 * 
-							 *  @param number the number to clamp
-							 *  @param min the minimum
-							 *  @param max the maximum
-							 *  @return the clamped number
-							 */
-              clampFloat(number: number, min: number, max: number): number;
-							/**
-							 * Clamps an integer number between two values.
-							 * 
-							 *  @param number the number to clamp
-							 *  @param min the minimum
-							 *  @param max the maximum
-							 *  @return the clamped number
-							 */
-              clamp(number: number, min: number, max: number): number;
-              new(): com.chattriggers.ctjs.api.client.MathLib;
-            }
-            const ProxyInfo: {
-              getProxies(): Array<com.chattriggers.ctjs.api.client.Proxy>;
-              addProxy(proxy: com.chattriggers.ctjs.api.client.Proxy): void;
-              removeProxy(proxy: com.chattriggers.ctjs.api.client.Proxy): void;
-              updateProxy(original: com.chattriggers.ctjs.api.client.Proxy, newProxy: com.chattriggers.ctjs.api.client.Proxy): void;
-              setProxyEnabled(proxy: com.chattriggers.ctjs.api.client.Proxy, enabled: boolean): void;
-              getEnabledProxies(): Array<com.chattriggers.ctjs.api.client.Proxy>;
-              new(): com.chattriggers.ctjs.api.client.ProxyInfo;
-            }
-            interface ProxyInfo { 
-              getProxies(): Array<com.chattriggers.ctjs.api.client.Proxy>;
-              addProxy(proxy: com.chattriggers.ctjs.api.client.Proxy): void;
-              removeProxy(proxy: com.chattriggers.ctjs.api.client.Proxy): void;
-              updateProxy(original: com.chattriggers.ctjs.api.client.Proxy, newProxy: com.chattriggers.ctjs.api.client.Proxy): void;
-              setProxyEnabled(proxy: com.chattriggers.ctjs.api.client.Proxy, enabled: boolean): void;
-              getEnabledProxies(): Array<com.chattriggers.ctjs.api.client.Proxy>;
-              new(): com.chattriggers.ctjs.api.client.ProxyInfo;
-            }
-            const Proxy: {
-              new(ip: string, port: number, name: string, username: string, password: string, isEnabled: boolean): com.chattriggers.ctjs.api.client.Proxy;
-            }
-            interface Proxy { 
-              getIp(): string;
-              setIp(value: string): void;
-              getPort(): number;
-              setPort(value: number): void;
-              getName(): string;
-              setName(value: string): void;
-              getUsername(): string;
-              setUsername(value: string): void;
-              getPassword(): string;
-              setPassword(value: string): void;
-              isEnabled(): boolean;
-              setEnabled(value: boolean): void;
-              component1(): string;
-              component2(): number;
-              component3(): string;
-              component4(): string;
-              component5(): string;
-              component6(): boolean;
-              copy(ip: string, port: number, name: string, username: string, password: string, isEnabled: boolean): com.chattriggers.ctjs.api.client.Proxy;
-            }
-            const DiscordRPC: {
-              stayOn(): void;
-              turnOff(): void;
-              updatePresence(details: string, state: string): void;
-              resetTimestamp(): void;
-              revertToIdle(): void;
-              new(): com.chattriggers.ctjs.api.client.DiscordRPC;
-            }
-            interface DiscordRPC { 
-              stayOn(): void;
-              turnOff(): void;
-              updatePresence(details: string, state: string): void;
-              resetTimestamp(): void;
-              revertToIdle(): void;
-              new(): com.chattriggers.ctjs.api.client.DiscordRPC;
-            }
-            const ProxyManagerScreen: {
-              new(parent: net.minecraft.client.gui.screens.Screen): com.chattriggers.ctjs.api.client.ProxyManagerScreen;
-            }
-            interface ProxyManagerScreen extends net.minecraft.client.gui.screens.Screen { 
-              refreshList(): void;
-            }
-            const ProxyEditScreen: {
-              new(parent: com.chattriggers.ctjs.api.client.ProxyManagerScreen, existingProxy: com.chattriggers.ctjs.api.client.Proxy | null | undefined): com.chattriggers.ctjs.api.client.ProxyEditScreen;
-            }
-            interface ProxyEditScreen extends net.minecraft.client.gui.screens.Screen { 
-            }
-            const Client: {
-              CurrentGuiWrapper: typeof com.chattriggers.ctjs.api.client.Client$CurrentGuiWrapper;
-              CameraWrapper: typeof com.chattriggers.ctjs.api.client.Client$CameraWrapper;
-              currentGui: com.chattriggers.ctjs.api.client.Client$CurrentGuiWrapper;
-              camera: com.chattriggers.ctjs.api.client.Client$CameraWrapper;
-							/**
-							 * Gets Minecraft's Minecraft object
-							 * 
-							 *  @return The Minecraft object
-							 */
-              getMinecraft(): net.minecraft.client.Minecraft;
-							/**
-							 * Gets Minecraft's NetHandlerPlayClient object
-							 * 
-							 *  @return The NetHandlerPlayClient object
-							 */
-              getConnection(): net.minecraft.client.multiplayer.ClientPacketListener | null | undefined;
-							/**
-							 * Schedule's a task to run on Minecraft's main thread in [delay] ticks.
-							 *  Defaults to the next tick.
-							 *  @param delay The delay in ticks
-							 *  @param callback The task to run on the main thread
-							 */
-              scheduleTask(callback: kotlin.Function0<void>): void;
-							/**
-							 * Schedule's a task to run on Minecraft's main thread in [delay] ticks.
-							 *  Defaults to the next tick.
-							 *  @param delay The delay in ticks
-							 *  @param callback The task to run on the main thread
-							 */
-              scheduleTask(delay: number, callback: kotlin.Function0<void>): void;
-							/**
-							 * Quits the client back to the main menu.
-							 *  This acts just like clicking the "Disconnect" or "Save and quit to title" button.
-							 */
-              disconnect(): void;
-							/**
-							 * Connects to the server with the given ip.
-							 *  @param ip The ip to connect to
-							 */
-              connect(ip: string): void;
-							/**
-							 * Connects to the server with the given ip.
-							 *  @param ip The ip to connect to
-							 */
-              connect(ip: string, port: number): void;
-							/**
-							 * Gets the Minecraft ChatHud object for the chat gui
-							 * 
-							 *  @return The GuiNewChat object for the chat gui
-							 */
-              getChatGui(): net.minecraft.client.gui.components.ChatComponent | null | undefined;
-              isInChat(): boolean;
-              getTabGui(): net.minecraft.client.gui.components.PlayerTabOverlay | null | undefined;
-              isInTab(): boolean;
-							/**
-							 * Gets whether the Minecraft window is active
-							 *  and in the foreground of the user's screen.
-							 * 
-							 *  @return true if the game is active, false otherwise
-							 */
-              isTabbedIn(): boolean;
-              isControlDown(): boolean;
-              isShiftDown(): boolean;
-              isAltDown(): boolean;
-              getFPS(): number;
-              getVersion(): string;
-              getSystemTime(): number;
-              getMouseX(): number;
-              getMouseY(): number;
-              isInGui(): boolean;
-							/**
-							 * Gets the chat message currently typed into the chat gui.
-							 * 
-							 *  @return A blank string if the gui isn't open, otherwise, the message
-							 */
-              getCurrentChatMessage(): string;
-							/**
-							 * Sets the current chat message, if the chat gui is not open, one will be opened.
-							 * 
-							 *  @param message the message to put in the chat text box.
-							 */
-              setCurrentChatMessage(message: string): void;
-              setSignLine(line: number, text: string): void;
-              leftClick(): void;
-              rightClick(): void;
-              setKey(key: string): boolean;
-              setKey(key: string, pressed: boolean): boolean;
-              isKeyDown(key: string): boolean;
-              stopMovement(): void;
-              unpressKeys(): void;
-              sendPacket(packet: net.minecraft.network.protocol.Packet<any>): void;
-              sendSequencedPacket(packetFactory: kotlin.Function1<number, net.minecraft.network.protocol.Packet<any>>): void;
-							/**
-							 * Display a title.
-							 * 
-							 *  @param title title text
-							 *  @param subtitle subtitle text
-							 *  @param fadeIn time to fade in
-							 *  @param time time to stay on screen
-							 *  @param fadeOut time to fade out
-							 */
-              showTitle(title: string | null | undefined, subtitle: string | null | undefined, fadeIn: number, time: number, fadeOut: number): void;
-							/**
-							 * Copies a string to the clipboard
-							 * 
-							 *  @param text The text to copy
-							 */
-              copy(): void;
-							/**
-							 * Copies a string to the clipboard
-							 * 
-							 *  @param text The text to copy
-							 */
-              copy(text: string): void;
-							/**
-							 * Get the string currently on the clipboard
-							 */
-              paste(): string;
-							/**
-							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, otherwise, returns null.
-							 * 
-							 *  @param keyCode the keycode to search for, see Keyboard below. Ex. Keyboard.KEY_A
-							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or null if one doesn't exist
-							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
-							 */
-              getKeyBindFromKey(keyCode: number): com.chattriggers.ctjs.api.client.KeyBind | null | undefined;
-							/**
-							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
-							 * 
-							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
-							 *  @param description the description of the keybind
-							 *  @param category the keybind category the keybind will be in
-							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or a new one if one doesn't exist
-							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
-							 */
-              getKeyBindFromKey(keyCode: number, description: string): com.chattriggers.ctjs.api.client.KeyBind;
-							/**
-							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
-							 * 
-							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
-							 *  @param description the description of the keybind
-							 *  @param category the keybind category the keybind will be in
-							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or a new one if one doesn't exist
-							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
-							 */
-              getKeyBindFromKey(keyCode: number, description: string, category: string): com.chattriggers.ctjs.api.client.KeyBind;
-							/**
-							 * Get the [KeyBinding] from an already existing
-							 *  Minecraft KeyBinding, otherwise, returns null.
-							 * 
-							 *  @param description the description of the keybind
-							 *  @return the [KeyBinding], or null if one doesn't exist
-							 */
-              getKeyBindFromDescription(description: string): com.chattriggers.ctjs.api.client.KeyBind | null | undefined;
-              new(): com.chattriggers.ctjs.api.client.Client;
-            }
-            interface Client { 
-              currentGui: com.chattriggers.ctjs.api.client.Client$CurrentGuiWrapper;
-              camera: com.chattriggers.ctjs.api.client.Client$CameraWrapper;
-							/**
-							 * Gets Minecraft's Minecraft object
-							 * 
-							 *  @return The Minecraft object
-							 */
-              getMinecraft(): net.minecraft.client.Minecraft;
-							/**
-							 * Gets Minecraft's NetHandlerPlayClient object
-							 * 
-							 *  @return The NetHandlerPlayClient object
-							 */
-              getConnection(): net.minecraft.client.multiplayer.ClientPacketListener | null | undefined;
-							/**
-							 * Schedule's a task to run on Minecraft's main thread in [delay] ticks.
-							 *  Defaults to the next tick.
-							 *  @param delay The delay in ticks
-							 *  @param callback The task to run on the main thread
-							 */
-              scheduleTask(callback: kotlin.Function0<void>): void;
-							/**
-							 * Schedule's a task to run on Minecraft's main thread in [delay] ticks.
-							 *  Defaults to the next tick.
-							 *  @param delay The delay in ticks
-							 *  @param callback The task to run on the main thread
-							 */
-              scheduleTask(delay: number, callback: kotlin.Function0<void>): void;
-							/**
-							 * Quits the client back to the main menu.
-							 *  This acts just like clicking the "Disconnect" or "Save and quit to title" button.
-							 */
-              disconnect(): void;
-							/**
-							 * Connects to the server with the given ip.
-							 *  @param ip The ip to connect to
-							 */
-              connect(ip: string): void;
-							/**
-							 * Connects to the server with the given ip.
-							 *  @param ip The ip to connect to
-							 */
-              connect(ip: string, port: number): void;
-							/**
-							 * Gets the Minecraft ChatHud object for the chat gui
-							 * 
-							 *  @return The GuiNewChat object for the chat gui
-							 */
-              getChatGui(): net.minecraft.client.gui.components.ChatComponent | null | undefined;
-              isInChat(): boolean;
-              getTabGui(): net.minecraft.client.gui.components.PlayerTabOverlay | null | undefined;
-              isInTab(): boolean;
-							/**
-							 * Gets whether the Minecraft window is active
-							 *  and in the foreground of the user's screen.
-							 * 
-							 *  @return true if the game is active, false otherwise
-							 */
-              isTabbedIn(): boolean;
-              isControlDown(): boolean;
-              isShiftDown(): boolean;
-              isAltDown(): boolean;
-              getFPS(): number;
-              getVersion(): string;
-              getSystemTime(): number;
-              getMouseX(): number;
-              getMouseY(): number;
-              isInGui(): boolean;
-							/**
-							 * Gets the chat message currently typed into the chat gui.
-							 * 
-							 *  @return A blank string if the gui isn't open, otherwise, the message
-							 */
-              getCurrentChatMessage(): string;
-							/**
-							 * Sets the current chat message, if the chat gui is not open, one will be opened.
-							 * 
-							 *  @param message the message to put in the chat text box.
-							 */
-              setCurrentChatMessage(message: string): void;
-              setSignLine(line: number, text: string): void;
-              leftClick(): void;
-              rightClick(): void;
-              setKey(key: string): boolean;
-              setKey(key: string, pressed: boolean): boolean;
-              isKeyDown(key: string): boolean;
-              stopMovement(): void;
-              unpressKeys(): void;
-              sendPacket(packet: net.minecraft.network.protocol.Packet<any>): void;
-              sendSequencedPacket(packetFactory: kotlin.Function1<number, net.minecraft.network.protocol.Packet<any>>): void;
-							/**
-							 * Display a title.
-							 * 
-							 *  @param title title text
-							 *  @param subtitle subtitle text
-							 *  @param fadeIn time to fade in
-							 *  @param time time to stay on screen
-							 *  @param fadeOut time to fade out
-							 */
-              showTitle(title: string | null | undefined, subtitle: string | null | undefined, fadeIn: number, time: number, fadeOut: number): void;
-							/**
-							 * Copies a string to the clipboard
-							 * 
-							 *  @param text The text to copy
-							 */
-              copy(): void;
-							/**
-							 * Copies a string to the clipboard
-							 * 
-							 *  @param text The text to copy
-							 */
-              copy(text: string): void;
-							/**
-							 * Get the string currently on the clipboard
-							 */
-              paste(): string;
-							/**
-							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, otherwise, returns null.
-							 * 
-							 *  @param keyCode the keycode to search for, see Keyboard below. Ex. Keyboard.KEY_A
-							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or null if one doesn't exist
-							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
-							 */
-              getKeyBindFromKey(keyCode: number): com.chattriggers.ctjs.api.client.KeyBind | null | undefined;
-							/**
-							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
-							 * 
-							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
-							 *  @param description the description of the keybind
-							 *  @param category the keybind category the keybind will be in
-							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or a new one if one doesn't exist
-							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
-							 */
-              getKeyBindFromKey(keyCode: number, description: string): com.chattriggers.ctjs.api.client.KeyBind;
-							/**
-							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
-							 * 
-							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
-							 *  @param description the description of the keybind
-							 *  @param category the keybind category the keybind will be in
-							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or a new one if one doesn't exist
-							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
-							 */
-              getKeyBindFromKey(keyCode: number, description: string, category: string): com.chattriggers.ctjs.api.client.KeyBind;
-							/**
-							 * Get the [KeyBinding] from an already existing
-							 *  Minecraft KeyBinding, otherwise, returns null.
-							 * 
-							 *  @param description the description of the keybind
-							 *  @return the [KeyBinding], or null if one doesn't exist
-							 */
-              getKeyBindFromDescription(description: string): com.chattriggers.ctjs.api.client.KeyBind | null | undefined;
-              new(): com.chattriggers.ctjs.api.client.Client;
-            }
-            const Client$CurrentGuiWrapper: {
-              new(): com.chattriggers.ctjs.api.client.Client$CurrentGuiWrapper;
-            }
-            interface Client$CurrentGuiWrapper { 
-							/**
-							 * Gets the Java class name of the currently open gui, for example, "GuiChest"
-							 * 
-							 *  @return the class name of the current gui
-							 */
-              getClassName(): string;
-							/**
-							 * Gets the Minecraft gui class that is currently open
-							 * 
-							 *  @return the Minecraft gui
-							 */
-              get(): net.minecraft.client.gui.screens.Screen | null | undefined;
-              set(screen: net.minecraft.client.gui.screens.Screen | null | undefined): void;
-							/**
-							 * Gets the slot under the mouse in the current gui, if one exists.
-							 * 
-							 *  @return the [Slot] under the mouse
-							 */
-              getSlotUnderMouse(): com.chattriggers.ctjs.api.inventory.Slot | null | undefined;
-							/**
-							 * Closes the currently open gui
-							 */
-              close(): void;
-            }
-            const Client$CameraWrapper: {
-              new(): com.chattriggers.ctjs.api.client.Client$CameraWrapper;
-            }
-            interface Client$CameraWrapper { 
-              getX(): number;
-              getY(): number;
-              getZ(): number;
-            }
-            const Player: {
-              ArmorWrapper: typeof com.chattriggers.ctjs.api.client.Player$ArmorWrapper;
-              armor: com.chattriggers.ctjs.api.client.Player$ArmorWrapper;
-              toMC(): net.minecraft.client.player.LocalPlayer | null | undefined;
-							/**
-							 * Gets Minecraft's EntityPlayerSP object representing the user
-							 * 
-							 *  @return The Minecraft EntityPlayerSP object representing the user
-							 */
-              getPlayer(): net.minecraft.client.player.LocalPlayer | null | undefined;
-              getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
-              asPlayerMP(): com.chattriggers.ctjs.api.entity.PlayerMP | null | undefined;
-              getX(): number;
-              getY(): number;
-              getZ(): number;
-              getPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
-              getRotation(): net.minecraft.world.phys.Vec2;
-              getLastX(): number;
-              getLastY(): number;
-              getLastZ(): number;
-              getRenderX(): number;
-              getRenderY(): number;
-              getRenderZ(): number;
-							/**
-							 * Gets the player's x motion.
-							 *  This is the amount the player will move in the x direction next tick.
-							 * 
-							 *  @return the player's x motion
-							 */
-              getMotionX(): number;
-							/**
-							 * Gets the player's y motion.
-							 *  This is the amount the player will move in the y direction next tick.
-							 * 
-							 *  @return the player's y motion
-							 */
-              getMotionY(): number;
-							/**
-							 * Gets the player's z motion.
-							 *  This is the amount the player will move in the z direction next tick.
-							 * 
-							 *  @return the player's z motion
-							 */
-              getMotionZ(): number;
-							/**
-							 * Gets the player's camera pitch.
-							 * 
-							 *  @return the player's camera pitch
-							 */
-              getPitch(): number;
-							/**
-							 * Gets the player's camera yaw.
-							 * 
-							 *  @return the player's camera yaw
-							 */
-              getYaw(): number;
-							/**
-							 * Gets the player's username.
-							 * 
-							 *  @return the player's username
-							 */
-              getName(): string;
-							/**
-							 * Gets the Java UUID object of the player.
-							 *  Use of [UUID.toString] in conjunction is recommended.
-							 * 
-							 *  @return the player's uuid
-							 */
-              getUUID(): java.util.UUID;
-              getHP(): number;
-							/**
-							 * Gets the player's air level.
-							 * 
-							 *  The returned value will be an integer. If the player is not taking damage, it
-							 *  will be between 300 (not in water) and 0. If the player is taking damage, it
-							 *  will be between -20 and 0, getting reset to 0 every time the player takes damage.
-							 * 
-							 *  @return the player's air level
-							 */
-              getAirLevel(): number;
-              getXPLevel(): number;
-              isMoving(): boolean;
-              isSneaking(): boolean;
-              isSprinting(): boolean;
-							/**
-							 * Checks if player can be pushed by water.
-							 * 
-							 *  @return true if the player is flying, false otherwise
-							 */
-              isFlying(): boolean;
-              isSleeping(): boolean;
-							/**
-							 * Gets the direction the player is facing.
-							 *  Example: "South West"
-							 * 
-							 *  @return The direction the player is facing, one of the four cardinal directions
-							 */
-              facing(): string;
-							/**
-							 * Gets the current active potion effects. Returns an empty list
-							 *  if the player has no active potion effects.
-							 * 
-							 *  @return a list of the active [PotionEffect]s
-							 */
-              getActivePotionEffects(): Array<com.chattriggers.ctjs.api.world.PotionEffect>;
-							/**
-							 * Gets the current object that the player is looking at,
-							 *  whether that be a block or an entity. Returns null when not looking
-							 *  at anything.
-							 * 
-							 *  @return the [Block] or [Entity] being looked at, or null if air
-							 */
-              lookingAt(): any | null | undefined;
-							/**
-							 * Gets the current item in the player's hand.
-							 * 
-							 *  @param hand the hand of the item
-							 *  @return the current held [Item]
-							 */
-              getHeldItem(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-							/**
-							 * Gets the current item in the player's hand.
-							 * 
-							 *  @param hand the hand of the item
-							 *  @return the current held [Item]
-							 */
-              getHeldItem(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-							/**
-							 * Sets the current held item based on the provided index.
-							 * 
-							 *  @param index the new held item index
-							 */
-              setHeldItemIndex(index: number): void;
-							/**
-							 * Gets the current index of the held item.
-							 * 
-							 *  @return the current index
-							 */
-              getHeldItemIndex(): number;
-							/**
-							 * Gets the inventory of the player, i.e. the inventory accessed by 'e'.
-							 * 
-							 *  @return the player's inventory
-							 */
-              getInventory(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
-							/**
-							 * Gets the display name for the player,
-							 *  i.e. the name shown in tab list and in the player's nametag.
-							 *  @return the display name
-							 */
-              getDisplayName(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Sets the name for this player shown in tab list
-							 * 
-							 *  @param textComponent the new name to display
-							 */
-              setTabDisplayName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Sets the name for this player shown above their head,
-							 *  in their name tag
-							 * 
-							 *  @param textComponent the new name to display
-							 */
-              setNametagName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Gets the container the user currently has open, i.e. a chest.
-							 * 
-							 *  @return the currently opened container
-							 */
-              getContainer(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
-							/**
-							 * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]
-							 *  minus `player`.
-							 * 
-							 *  @see Renderer.drawPlayer
-							 */
-              draw(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.client.Player;
-              new(): com.chattriggers.ctjs.api.client.Player;
-            }
-            interface Player { 
-              armor: com.chattriggers.ctjs.api.client.Player$ArmorWrapper;
-              toMC(): net.minecraft.client.player.LocalPlayer | null | undefined;
-							/**
-							 * Gets Minecraft's EntityPlayerSP object representing the user
-							 * 
-							 *  @return The Minecraft EntityPlayerSP object representing the user
-							 */
-              getPlayer(): net.minecraft.client.player.LocalPlayer | null | undefined;
-              getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
-              asPlayerMP(): com.chattriggers.ctjs.api.entity.PlayerMP | null | undefined;
-              getX(): number;
-              getY(): number;
-              getZ(): number;
-              getPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
-              getRotation(): net.minecraft.world.phys.Vec2;
-              getLastX(): number;
-              getLastY(): number;
-              getLastZ(): number;
-              getRenderX(): number;
-              getRenderY(): number;
-              getRenderZ(): number;
-							/**
-							 * Gets the player's x motion.
-							 *  This is the amount the player will move in the x direction next tick.
-							 * 
-							 *  @return the player's x motion
-							 */
-              getMotionX(): number;
-							/**
-							 * Gets the player's y motion.
-							 *  This is the amount the player will move in the y direction next tick.
-							 * 
-							 *  @return the player's y motion
-							 */
-              getMotionY(): number;
-							/**
-							 * Gets the player's z motion.
-							 *  This is the amount the player will move in the z direction next tick.
-							 * 
-							 *  @return the player's z motion
-							 */
-              getMotionZ(): number;
-							/**
-							 * Gets the player's camera pitch.
-							 * 
-							 *  @return the player's camera pitch
-							 */
-              getPitch(): number;
-							/**
-							 * Gets the player's camera yaw.
-							 * 
-							 *  @return the player's camera yaw
-							 */
-              getYaw(): number;
-							/**
-							 * Gets the player's username.
-							 * 
-							 *  @return the player's username
-							 */
-              getName(): string;
-							/**
-							 * Gets the Java UUID object of the player.
-							 *  Use of [UUID.toString] in conjunction is recommended.
-							 * 
-							 *  @return the player's uuid
-							 */
-              getUUID(): java.util.UUID;
-              getHP(): number;
-							/**
-							 * Gets the player's air level.
-							 * 
-							 *  The returned value will be an integer. If the player is not taking damage, it
-							 *  will be between 300 (not in water) and 0. If the player is taking damage, it
-							 *  will be between -20 and 0, getting reset to 0 every time the player takes damage.
-							 * 
-							 *  @return the player's air level
-							 */
-              getAirLevel(): number;
-              getXPLevel(): number;
-              isMoving(): boolean;
-              isSneaking(): boolean;
-              isSprinting(): boolean;
-							/**
-							 * Checks if player can be pushed by water.
-							 * 
-							 *  @return true if the player is flying, false otherwise
-							 */
-              isFlying(): boolean;
-              isSleeping(): boolean;
-							/**
-							 * Gets the direction the player is facing.
-							 *  Example: "South West"
-							 * 
-							 *  @return The direction the player is facing, one of the four cardinal directions
-							 */
-              facing(): string;
-							/**
-							 * Gets the current active potion effects. Returns an empty list
-							 *  if the player has no active potion effects.
-							 * 
-							 *  @return a list of the active [PotionEffect]s
-							 */
-              getActivePotionEffects(): Array<com.chattriggers.ctjs.api.world.PotionEffect>;
-							/**
-							 * Gets the current object that the player is looking at,
-							 *  whether that be a block or an entity. Returns null when not looking
-							 *  at anything.
-							 * 
-							 *  @return the [Block] or [Entity] being looked at, or null if air
-							 */
-              lookingAt(): any | null | undefined;
-							/**
-							 * Gets the current item in the player's hand.
-							 * 
-							 *  @param hand the hand of the item
-							 *  @return the current held [Item]
-							 */
-              getHeldItem(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-							/**
-							 * Gets the current item in the player's hand.
-							 * 
-							 *  @param hand the hand of the item
-							 *  @return the current held [Item]
-							 */
-              getHeldItem(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-							/**
-							 * Sets the current held item based on the provided index.
-							 * 
-							 *  @param index the new held item index
-							 */
-              setHeldItemIndex(index: number): void;
-							/**
-							 * Gets the current index of the held item.
-							 * 
-							 *  @return the current index
-							 */
-              getHeldItemIndex(): number;
-							/**
-							 * Gets the inventory of the player, i.e. the inventory accessed by 'e'.
-							 * 
-							 *  @return the player's inventory
-							 */
-              getInventory(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
-							/**
-							 * Gets the display name for the player,
-							 *  i.e. the name shown in tab list and in the player's nametag.
-							 *  @return the display name
-							 */
-              getDisplayName(): com.chattriggers.ctjs.api.message.TextComponent;
-							/**
-							 * Sets the name for this player shown in tab list
-							 * 
-							 *  @param textComponent the new name to display
-							 */
-              setTabDisplayName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Sets the name for this player shown above their head,
-							 *  in their name tag
-							 * 
-							 *  @param textComponent the new name to display
-							 */
-              setNametagName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
-							/**
-							 * Gets the container the user currently has open, i.e. a chest.
-							 * 
-							 *  @return the currently opened container
-							 */
-              getContainer(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
-							/**
-							 * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]
-							 *  minus `player`.
-							 * 
-							 *  @see Renderer.drawPlayer
-							 */
-              draw(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.client.Player;
-              new(): com.chattriggers.ctjs.api.client.Player;
-            }
-            const Player$ArmorWrapper: {
-              new(): com.chattriggers.ctjs.api.client.Player$ArmorWrapper;
-            }
-            interface Player$ArmorWrapper { 
-							/**
-							 * @return the [Item] in the player's helmet slot or null if the slot is empty
-							 */
-              getHelmet(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-							/**
-							 * @return the [Item] in the player's chestplate slot or null if the slot is empty
-							 */
-              getChestplate(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-							/**
-							 * @return the [Item] in the player's leggings slot or null if the slot is empty
-							 */
-              getLeggings(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-							/**
-							 * @return the [Item] in the player's boots slot or null if the slot is empty
-							 */
-              getBoots(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
-            }
-            const Sound: {
-              Category: typeof com.chattriggers.ctjs.api.client.Sound$Category;
-              AttenuationType: typeof com.chattriggers.ctjs.api.client.Sound$AttenuationType;
-              new(config: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.client.Sound;
-            }
-            interface Sound { 
-              destroy(): void;
-							/**
-							 * Gets the category of this sound, making it respect the Player's sound volume sliders.
-							 * 
-							 *  @return the category
-							 */
-              getCategory(): com.chattriggers.ctjs.api.client.Sound$Category;
-							/**
-							 * Sets the category of this sound, making it respect the Player's sound volume sliders.
-							 * 
-							 *  @param category the category
-							 */
-              setCategory(category: com.chattriggers.ctjs.api.client.Sound$Category): com.chattriggers.ctjs.api.client.Sound;
-							/**
-							 * Gets this sound's volume.
-							 * 
-							 *  @return A float value (0.0f - 1.0f).
-							 */
-              getVolume(): number;
-							/**
-							 * Sets this sound's volume.
-							 * 
-							 *  @param volume A float value (0.0f - 1.0f).
-							 */
-              setVolume(volume: number): com.chattriggers.ctjs.api.client.Sound;
-              getX(): number;
-              getY(): number;
-              getZ(): number;
-              setX(x: number): com.chattriggers.ctjs.api.client.Sound;
-              setY(y: number): com.chattriggers.ctjs.api.client.Sound;
-              setZ(z: number): com.chattriggers.ctjs.api.client.Sound;
-              getPosition(): net.minecraft.world.phys.Vec3;
-              setPosition(x: number, y: number, z: number): com.chattriggers.ctjs.api.client.Sound;
-							/**
-							 * Gets this sound's pitch.
-							 * 
-							 *  @return A float value (0.5f - 2.0f).
-							 */
-              getPitch(): number;
-							/**
-							 * Sets this sound's pitch.
-							 * 
-							 *  @param pitch A float value (0.5f - 2.0f).
-							 */
-              setPitch(pitch: number): com.chattriggers.ctjs.api.client.Sound;
-							/**
-							 * Gets the attenuation type (fade out over space) of the sound
-							 * 
-							 *  @return The type of Attenuation
-							 */
-              getAttenuationType(): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
-							/**
-							 * Sets the attenuation type (fade out over space) of the sound
-							 * 
-							 *  @param attenuationType The type of Attenuation
-							 */
-              setAttenuationType(attenuationType: com.chattriggers.ctjs.api.client.Sound$AttenuationType): com.chattriggers.ctjs.api.client.Sound;
-							/**
-							 * Gets the attenuation distance of the sound
-							 */
-              getAttenuation(): number;
-							/**
-							 * Sets the attenuation distance of the sound
-							 */
-              setAttenuation(attenuation: number): com.chattriggers.ctjs.api.client.Sound;
-							/**
-							 * Gets whether the sound should repeat after finishing
-							 */
-              getLoop(): boolean;
-							/**
-							 * Sets whether the sound should repeat after finishing
-							 */
-              setLoop(loop: boolean): com.chattriggers.ctjs.api.client.Sound;
-							/**
-							 * Gets the tick delay after finishing before looping again (if getLoop() is true)
-							 */
-              getLoopDelay(): number;
-							/**
-							 * Sets the tick delay after finishing before looping again (if getLoop() is true)
-							 */
-              setLoopDelay(loopDelay: number): com.chattriggers.ctjs.api.client.Sound;
-							/**
-							 * Plays/resumes the sound. This requires the world to be loaded
-							 */
-              play(): void;
-							/**
-							 * Plays/resumes the sound. This requires the world to be loaded
-							 */
-              play(delay: number): void;
-							/**
-							 * Pauses the sound, to be resumed later. This requires the world to be loaded
-							 */
-              pause(): void;
-							/**
-							 * Completely stops the sound. This requires the world to be loaded
-							 */
-              stop(): void;
-							/**
-							 * Immediately restarts the sound. This requires the world to be loaded
-							 */
-              rewind(): void;
-            }
-            const Sound$Category: {
-              MASTER: com.chattriggers.ctjs.api.client.Sound$Category;
-              MUSIC: com.chattriggers.ctjs.api.client.Sound$Category;
-              RECORDS: com.chattriggers.ctjs.api.client.Sound$Category;
-              WEATHER: com.chattriggers.ctjs.api.client.Sound$Category;
-              BLOCKS: com.chattriggers.ctjs.api.client.Sound$Category;
-              HOSTILE: com.chattriggers.ctjs.api.client.Sound$Category;
-              NEUTRAL: com.chattriggers.ctjs.api.client.Sound$Category;
-              PLAYERS: com.chattriggers.ctjs.api.client.Sound$Category;
-              AMBIENT: com.chattriggers.ctjs.api.client.Sound$Category;
-              VOICE: com.chattriggers.ctjs.api.client.Sound$Category;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.client.Sound$Category>;
-              values(): Array<com.chattriggers.ctjs.api.client.Sound$Category>;
-              valueOf(value: string): com.chattriggers.ctjs.api.client.Sound$Category;
-            }
-            interface Sound$Category extends kotlin.Enum<com.chattriggers.ctjs.api.client.Sound$Category>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.sounds.SoundSource> { 
-            }
-            const Sound$Category$Companion: {
-              fromMC(mcValue: net.minecraft.sounds.SoundSource): com.chattriggers.ctjs.api.client.Sound$Category;
-              from(value: any): com.chattriggers.ctjs.api.client.Sound$Category;
-              new(): unknown;
-            }
-            interface Sound$Category$Companion { 
-              fromMC(mcValue: net.minecraft.sounds.SoundSource): com.chattriggers.ctjs.api.client.Sound$Category;
-              from(value: any): com.chattriggers.ctjs.api.client.Sound$Category;
-              new(): unknown;
-            }
-            const Sound$AttenuationType: {
-              NONE: com.chattriggers.ctjs.api.client.Sound$AttenuationType;
-              LINEAR: com.chattriggers.ctjs.api.client.Sound$AttenuationType;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.client.Sound$AttenuationType>;
-              values(): Array<com.chattriggers.ctjs.api.client.Sound$AttenuationType>;
-              valueOf(value: string): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
-            }
-            interface Sound$AttenuationType extends kotlin.Enum<com.chattriggers.ctjs.api.client.Sound$AttenuationType>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.resources.sounds.SoundInstance$Attenuation> { 
-            }
-            const Sound$AttenuationType$Companion: {
-              fromMC(mcValue: net.minecraft.client.resources.sounds.SoundInstance$Attenuation): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
-              from(value: any): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
-              new(): unknown;
-            }
-            interface Sound$AttenuationType$Companion { 
-              fromMC(mcValue: net.minecraft.client.resources.sounds.SoundInstance$Attenuation): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
-              from(value: any): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
-              new(): unknown;
-            }
-          }
-          namespace render {
-            const Font: {
-              new(name: string, resourcePath: string): com.chattriggers.ctjs.api.render.Font;
-              new(name: string, inputStream: java.io.InputStream): com.chattriggers.ctjs.api.render.Font;
-            }
-            interface Font { 
-              getName(): string;
-              buffer(): java.nio.ByteBuffer;
-            }
-            const Display: {
-              Background: typeof com.chattriggers.ctjs.api.render.Display$Background;
-              Order: typeof com.chattriggers.ctjs.api.render.Display$Order;
-              new(): com.chattriggers.ctjs.api.render.Display;
-              new(config: org.mozilla.javascript.NativeObject | null | undefined): com.chattriggers.ctjs.api.render.Display;
-            }
-            interface Display { 
-              getTextColor(): number;
-							/**
-							 * Sets the color of the texts
-							 * 
-							 *  Overrides the color of the individual texts
-							 */
-              setTextColor(textColor: number): com.chattriggers.ctjs.api.render.Display;
-              getAlign(): com.chattriggers.ctjs.api.render.Text$Align;
-							/**
-							 * Set the alignment of the texts in the display
-							 * 
-							 *  Overrides alignment of the individual texts
-							 */
-              setAlign(align: any): com.chattriggers.ctjs.api.render.Display;
-              getOrder(): com.chattriggers.ctjs.api.render.Display$Order;
-              setOrder(order: any): com.chattriggers.ctjs.api.render.Display;
-              getBackground(): com.chattriggers.ctjs.api.render.Display$Background;
-              setBackground(background: any): com.chattriggers.ctjs.api.render.Display;
-              getBackgroundColor(): number;
-              setBackgroundColor(backgroundColor: number): com.chattriggers.ctjs.api.render.Display;
-              setLine(index: number, line: any): com.chattriggers.ctjs.api.render.Display;
-              getLine(index: number): com.chattriggers.ctjs.api.render.Text;
-              getLines(): Array<com.chattriggers.ctjs.api.render.Text>;
-              setLines(lines: Array<com.chattriggers.ctjs.api.render.Text>): com.chattriggers.ctjs.api.render.Display;
-              addLine(line: any): com.chattriggers.ctjs.api.render.Display;
-              addLines(lines: any): com.chattriggers.ctjs.api.render.Display;
-              removeLine(index: number): com.chattriggers.ctjs.api.render.Display;
-              clearLines(): com.chattriggers.ctjs.api.render.Display;
-              getX(): number;
-              setX(x: number): com.chattriggers.ctjs.api.render.Display;
-              getY(): number;
-              setY(y: number): com.chattriggers.ctjs.api.render.Display;
-              getWidth(): number;
-              getHeight(): number;
-              getMinWidth(): number;
-              setMinWidth(minWidth: number): com.chattriggers.ctjs.api.render.Display;
-              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor): void;
-            }
-            const Text$Align: {
-              LEFT: com.chattriggers.ctjs.api.render.Text$Align;
-              CENTER: com.chattriggers.ctjs.api.render.Text$Align;
-              RIGHT: com.chattriggers.ctjs.api.render.Text$Align;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Text$Align>;
-              values(): Array<com.chattriggers.ctjs.api.render.Text$Align>;
-              valueOf(value: string): com.chattriggers.ctjs.api.render.Text$Align;
-            }
-            interface Text$Align extends kotlin.Enum<com.chattriggers.ctjs.api.render.Text$Align> { 
-            }
-            const Display$Order: {
-              REVERSED: com.chattriggers.ctjs.api.render.Display$Order;
-              NORMAL: com.chattriggers.ctjs.api.render.Display$Order;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Display$Order>;
-              values(): Array<com.chattriggers.ctjs.api.render.Display$Order>;
-              valueOf(value: string): com.chattriggers.ctjs.api.render.Display$Order;
-            }
-            interface Display$Order extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Order> { 
-            }
-            const Display$Background: {
-              NONE: com.chattriggers.ctjs.api.render.Display$Background;
-              FULL: com.chattriggers.ctjs.api.render.Display$Background;
-              PER_LINE: com.chattriggers.ctjs.api.render.Display$Background;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Display$Background>;
-              values(): Array<com.chattriggers.ctjs.api.render.Display$Background>;
-              valueOf(value: string): com.chattriggers.ctjs.api.render.Display$Background;
-            }
-            interface Display$Background extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Background> { 
-            }
-            const Text: {
-              Align: typeof com.chattriggers.ctjs.api.render.Text$Align;
-              new(string: string): com.chattriggers.ctjs.api.render.Text;
-              new(string: string, x: number): com.chattriggers.ctjs.api.render.Text;
-              new(string: string, x: number, y: number): com.chattriggers.ctjs.api.render.Text;
-              new(string: string, config: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.render.Text;
-            }
-            interface Text { 
-              getString(): string;
-              setString(string: string): com.chattriggers.ctjs.api.render.Text;
-              getColor(): number;
-              setColor(color: number): com.chattriggers.ctjs.api.render.Text;
-              getFormatted(): boolean;
-              setFormatted(formatted: boolean): com.chattriggers.ctjs.api.render.Text;
-              getShadow(): boolean;
-              setShadow(shadow: boolean): com.chattriggers.ctjs.api.render.Text;
-              getAlign(): com.chattriggers.ctjs.api.render.Text$Align;
-              setAlign(align: any): com.chattriggers.ctjs.api.render.Text;
-              getBackground(): boolean;
-							/**
-							 * Set the background
-							 * 
-							 *  true: Background is enabled
-							 *  false: Background is disabled
-							 */
-              setBackground(background: boolean): com.chattriggers.ctjs.api.render.Text;
-              getBackgroundColor(): number;
-              setBackgroundColor(backgroundColor: number): com.chattriggers.ctjs.api.render.Text;
-              getX(): number;
-              setX(x: number): com.chattriggers.ctjs.api.render.Text;
-              getY(): number;
-              setY(y: number): com.chattriggers.ctjs.api.render.Text;
-							/**
-							 * Gets the width of the text
-							 *  This is automatically updated when the text is drawn.
-							 * 
-							 *  @return the width of the text
-							 */
-              getWidth(): number;
-              getLines(): Array<string>;
-              getMaxLines(): number;
-              setMaxLines(maxLines: number): com.chattriggers.ctjs.api.render.Text;
-              getScale(): number;
-              setScale(scale: number): com.chattriggers.ctjs.api.render.Text;
-							/**
-							 * Sets the maximum width of the text, splitting it into multiple lines if necessary.
-							 * 
-							 *  @param maxWidth the maximum width of the text
-							 *  @return the Text object for method chaining
-							 */
-              setMaxWidth(maxWidth: number): com.chattriggers.ctjs.api.render.Text;
-              getMaxWidth(): number;
-              getHeight(): number;
-              exceedsMaxLines(): boolean;
-              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor): com.chattriggers.ctjs.api.render.Text;
-              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor, x: number | null | undefined): com.chattriggers.ctjs.api.render.Text;
-              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor, x: number | null | undefined, y: number | null | undefined): com.chattriggers.ctjs.api.render.Text;
-            }
-            const DrawContextHolder: {
-              getCurrentContext(): net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined;
-              setCurrentContext(value: net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined): void;
-              new(): com.chattriggers.ctjs.api.render.DrawContextHolder;
-            }
-            interface DrawContextHolder { 
-              getCurrentContext(): net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined;
-              setCurrentContext(value: net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined): void;
-              new(): com.chattriggers.ctjs.api.render.DrawContextHolder;
-              withContext<T>(context: net.minecraft.client.gui.GuiGraphicsExtractor, block: kotlin.Function0<T>): T;
-            }
-            const NVGRenderer: {
-              GifData: typeof com.chattriggers.ctjs.api.render.NVGRenderer$GifData;
-              vg: number;
-              registerV5Render(runnable: java.lang.Runnable): void;
-              unregisterV5Render(runnable: java.lang.Runnable): void;
-              registerV5PreRender(runnable: java.lang.Runnable): void;
-              unregisterV5PreRender(runnable: java.lang.Runnable): void;
-              runPreDrawables(): void;
-              runDrawables(): void;
-              beginFrame(width: number, height: number): void;
-              endFrame(): void;
-              drawCheckerboard(x: number, y: number, w: number, h: number, radius: number): void;
-              drawCheckerboard(x: number, y: number, w: number, h: number, radius: number, size: number): void;
-              drawHueBar(x: number, y: number, w: number, h: number, radius: number): void;
-              drawGradientRect(x: number, y: number, w: number, h: number, color1: number, color2: number, direction: any): void;
-              drawGradientRect(x: number, y: number, w: number, h: number, color1: number, color2: number, direction: any, radius: number): void;
-              drawHollowGradientRect(x: number, y: number, w: number, h: number, thickness: number, color1: number, color2: number, direction: any): void;
-              drawHollowGradientRect(x: number, y: number, w: number, h: number, thickness: number, color1: number, color2: number, direction: any, radius: number): void;
-              linearGradient(sx: number, sy: number, ex: number, ey: number, color1: number, color2: number): void;
-              setGlobalCompositeOperation(op: number): void;
-              save(): void;
-              restore(): void;
-              translate(x: number, y: number): void;
-              rotate(angle: number): void;
-              scale(x: number, y: number): void;
-              globalAlpha(alpha: number): void;
-              drawRect(x: number, y: number, w: number, h: number, color: number): void;
-              drawRoundedRect(x: number, y: number, w: number, h: number, radius: number, color: number): void;
-              drawRoundedRectVaried(x: number, y: number, w: number, h: number, color: number, tl: number, tr: number, br: number, bl: number): void;
-              drawCircle(x: number, y: number, radius: number, color: number): void;
-              drawDropShadow(x: number, y: number, w: number, h: number, radius: number, blur: number, spread: number, color: number): void;
-              drawHollowRect(x: number, y: number, w: number, h: number, thickness: number, color: number): void;
-              drawHollowRect(x: number, y: number, w: number, h: number, thickness: number, color: number, radius: number): void;
-              drawLine(x1: number, y1: number, x2: number, y2: number, thickness: number, color: number): void;
-              loadImage(path: string): string;
-              unloadImage(path: string): void;
-              isImageLoaded(path: string): boolean;
-              loadGif(path: string): com.chattriggers.ctjs.api.render.NVGRenderer$GifData | null | undefined;
-              unloadGif(path: string): void;
-              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number): void;
-              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number): void;
-              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number, alpha: number): void;
-              drawImage(path: string, x: number, y: number, w: number, h: number): void;
-              drawImage(path: string, x: number, y: number, w: number, h: number, radius: number): void;
-              drawImage(path: string, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
-              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number): void;
-              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number): void;
-              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
-              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number): void;
-              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number, radius: number): void;
-              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
-              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number): void;
-              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number, radius: number): void;
-              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
-              invalidateGLTexture(glTextureId: number): void;
-              clearImageCache(): void;
-              getCacheStats(): string;
-              scissor(x: number, y: number, w: number, h: number): void;
-              pushScissor(x: number, y: number, w: number, h: number): void;
-              popScissor(): void;
-              resetScissor(): void;
-              text(text: string, x: number, y: number, size: number, color: number, align: number): void;
-              text(text: string, x: number, y: number, size: number, color: number, font: com.chattriggers.ctjs.api.render.Font | null | undefined, align: number): void;
-              textWidth(text: string, size: number): number;
-              textWidth(text: string, size: number, font: com.chattriggers.ctjs.api.render.Font | null | undefined): number;
-              destroy(): void;
-              new(): com.chattriggers.ctjs.api.render.NVGRenderer;
-            }
-            interface NVGRenderer { 
-              vg: number;
-              registerV5Render(runnable: java.lang.Runnable): void;
-              unregisterV5Render(runnable: java.lang.Runnable): void;
-              registerV5PreRender(runnable: java.lang.Runnable): void;
-              unregisterV5PreRender(runnable: java.lang.Runnable): void;
-              runPreDrawables(): void;
-              runDrawables(): void;
-              beginFrame(width: number, height: number): void;
-              endFrame(): void;
-              drawCheckerboard(x: number, y: number, w: number, h: number, radius: number): void;
-              drawCheckerboard(x: number, y: number, w: number, h: number, radius: number, size: number): void;
-              drawHueBar(x: number, y: number, w: number, h: number, radius: number): void;
-              drawGradientRect(x: number, y: number, w: number, h: number, color1: number, color2: number, direction: any): void;
-              drawGradientRect(x: number, y: number, w: number, h: number, color1: number, color2: number, direction: any, radius: number): void;
-              drawHollowGradientRect(x: number, y: number, w: number, h: number, thickness: number, color1: number, color2: number, direction: any): void;
-              drawHollowGradientRect(x: number, y: number, w: number, h: number, thickness: number, color1: number, color2: number, direction: any, radius: number): void;
-              linearGradient(sx: number, sy: number, ex: number, ey: number, color1: number, color2: number): void;
-              setGlobalCompositeOperation(op: number): void;
-              save(): void;
-              restore(): void;
-              translate(x: number, y: number): void;
-              rotate(angle: number): void;
-              scale(x: number, y: number): void;
-              globalAlpha(alpha: number): void;
-              drawRect(x: number, y: number, w: number, h: number, color: number): void;
-              drawRoundedRect(x: number, y: number, w: number, h: number, radius: number, color: number): void;
-              drawRoundedRectVaried(x: number, y: number, w: number, h: number, color: number, tl: number, tr: number, br: number, bl: number): void;
-              drawCircle(x: number, y: number, radius: number, color: number): void;
-              drawDropShadow(x: number, y: number, w: number, h: number, radius: number, blur: number, spread: number, color: number): void;
-              drawHollowRect(x: number, y: number, w: number, h: number, thickness: number, color: number): void;
-              drawHollowRect(x: number, y: number, w: number, h: number, thickness: number, color: number, radius: number): void;
-              drawLine(x1: number, y1: number, x2: number, y2: number, thickness: number, color: number): void;
-              loadImage(path: string): string;
-              unloadImage(path: string): void;
-              isImageLoaded(path: string): boolean;
-              loadGif(path: string): com.chattriggers.ctjs.api.render.NVGRenderer$GifData | null | undefined;
-              unloadGif(path: string): void;
-              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number): void;
-              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number): void;
-              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number, alpha: number): void;
-              drawImage(path: string, x: number, y: number, w: number, h: number): void;
-              drawImage(path: string, x: number, y: number, w: number, h: number, radius: number): void;
-              drawImage(path: string, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
-              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number): void;
-              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number): void;
-              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
-              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number): void;
-              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number, radius: number): void;
-              drawGLTexture(glTextureId: number, texW: number, texH: number, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
-              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number): void;
-              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number, radius: number): void;
-              drawGLTextureRegion(glTextureId: number, textureWidth: number, textureHeight: number, subX: number, subY: number, subW: number, subH: number, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
-              invalidateGLTexture(glTextureId: number): void;
-              clearImageCache(): void;
-              getCacheStats(): string;
-              scissor(x: number, y: number, w: number, h: number): void;
-              pushScissor(x: number, y: number, w: number, h: number): void;
-              popScissor(): void;
-              resetScissor(): void;
-              text(text: string, x: number, y: number, size: number, color: number, align: number): void;
-              text(text: string, x: number, y: number, size: number, color: number, font: com.chattriggers.ctjs.api.render.Font | null | undefined, align: number): void;
-              textWidth(text: string, size: number): number;
-              textWidth(text: string, size: number, font: com.chattriggers.ctjs.api.render.Font | null | undefined): number;
-              destroy(): void;
-              new(): com.chattriggers.ctjs.api.render.NVGRenderer;
-              getDefaultFont(): com.chattriggers.ctjs.api.render.Font | null | undefined;
-              clearCallbacks(): void;
-            }
-            const NVGRenderer$GifData: {
-              new(width: number, height: number, frameCount: number, delays: Array<number>): com.chattriggers.ctjs.api.render.NVGRenderer$GifData;
-            }
-            interface NVGRenderer$GifData { 
-              getWidth(): number;
-              getHeight(): number;
-              getFrameCount(): number;
-              getDelays(): Array<number>;
-              component1(): number;
-              component2(): number;
-              component3(): number;
-              component4(): Array<number>;
-              copy(width: number, height: number, frameCount: number, delays: Array<number>): com.chattriggers.ctjs.api.render.NVGRenderer$GifData;
-            }
-            const LegacyPipelineBuilder: {
-              new(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
-            }
-            interface LegacyPipelineBuilder { 
-              new(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat, snippet: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
-              enableBlend(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
-              disableBlend(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
-              enableCull(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
-              disableCull(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
-              enableDepth(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
-              disableDepth(): com.chattriggers.ctjs.api.render.LegacyPipelineBuilder;
-              build(): com.mojang.blaze3d.pipeline.RenderPipeline;
-              layer(): net.minecraft.client.renderer.rendertype.RenderType;
-              state(): string;
-            }
-            const Renderer$DrawMode: {
-              LINES: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
-              LINE_STRIP: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
-              TRIANGLES: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
-              TRIANGLE_STRIP: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
-              TRIANGLE_FAN: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
-              QUADS: com.chattriggers.ctjs.api.render.Renderer$DrawMode;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Renderer$DrawMode>;
-              values(): Array<com.chattriggers.ctjs.api.render.Renderer$DrawMode>;
-              valueOf(value: string): com.chattriggers.ctjs.api.render.Renderer$DrawMode;
-            }
-            interface Renderer$DrawMode extends kotlin.Enum<com.chattriggers.ctjs.api.render.Renderer$DrawMode> { 
-              toUC(): gg.essential.universal.UGraphics$DrawMode;
-            }
-            const Renderer$DrawMode$Companion: {
-              fromUC(ucValue: gg.essential.universal.UGraphics$DrawMode): com.chattriggers.ctjs.api.render.Renderer$DrawMode;
-              new(): unknown;
-            }
-            interface Renderer$DrawMode$Companion { 
-              fromUC(ucValue: gg.essential.universal.UGraphics$DrawMode): com.chattriggers.ctjs.api.render.Renderer$DrawMode;
-              new(): unknown;
-            }
-            const Renderer$VertexFormat: {
-              LINES: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              POSITION: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              POSITION_COLOR: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              POSITION_TEXTURE: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              POSITION_TEXTURE_COLOR: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              POSITION_COLOR_TEXTURE_LIGHT: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              POSITION_TEXTURE_LIGHT_COLOR: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              POSITION_TEXTURE_COLOR_LIGHT: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              POSITION_TEXTURE_COLOR_NORMAL: com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Renderer$VertexFormat>;
-              values(): Array<com.chattriggers.ctjs.api.render.Renderer$VertexFormat>;
-              valueOf(value: string): com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-            }
-            interface Renderer$VertexFormat extends kotlin.Enum<com.chattriggers.ctjs.api.render.Renderer$VertexFormat> { 
-              toMC(): com.mojang.blaze3d.vertex.VertexFormat;
-            }
-            const Renderer$VertexFormat$Companion: {
-              fromMC(ucValue: com.mojang.blaze3d.vertex.VertexFormat): com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              new(): unknown;
-            }
-            interface Renderer$VertexFormat$Companion { 
-              fromMC(ucValue: com.mojang.blaze3d.vertex.VertexFormat): com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              new(): unknown;
-            }
-            const Renderer$RenderSnippet: {
-              TERRAIN_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              ENTITY_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              RENDERTYPE_BEACON_BEAM_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              TEXT_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              RENDERTYPE_END_PORTAL_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              RENDERTYPE_CLOUDS_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              RENDERTYPE_LINES_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              POSITION_COLOR_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              PARTICLE_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              WEATHER_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              GUI_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              POSITION_TEX_COLOR_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              RENDERTYPE_OUTLINE_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              POST_EFFECT_PROCESSOR_SNIPPET: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Renderer$RenderSnippet>;
-              values(): Array<com.chattriggers.ctjs.api.render.Renderer$RenderSnippet>;
-              valueOf(value: string): com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-            }
-            interface Renderer$RenderSnippet extends kotlin.Enum<com.chattriggers.ctjs.api.render.Renderer$RenderSnippet> { 
-              getMcSnippet(): com.mojang.blaze3d.pipeline.RenderPipeline$Snippet;
-            }
-            const RenderPipelines: {
-              LINE_LIST: com.mojang.blaze3d.pipeline.RenderPipeline;
-              LINE_LIST_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
-              TRIANGLE_STRIP: com.mojang.blaze3d.pipeline.RenderPipeline;
-              TRIANGLE_STRIP_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
-              new(): com.chattriggers.ctjs.api.render.RenderPipelines;
-            }
-            interface RenderPipelines { 
-              LINE_LIST: com.mojang.blaze3d.pipeline.RenderPipeline;
-              LINE_LIST_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
-              TRIANGLE_STRIP: com.mojang.blaze3d.pipeline.RenderPipeline;
-              TRIANGLE_STRIP_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
-              new(): com.chattriggers.ctjs.api.render.RenderPipelines;
-            }
-            const RenderLayers: {
-              LINE_LIST: net.minecraft.client.renderer.rendertype.RenderType;
-              LINE_LIST_ESP: net.minecraft.client.renderer.rendertype.RenderType;
-              TRIANGLE_STRIP: net.minecraft.client.renderer.rendertype.RenderType;
-              TRIANGLE_STRIP_ESP: net.minecraft.client.renderer.rendertype.RenderType;
-              new(): com.chattriggers.ctjs.api.render.RenderLayers;
-            }
-            interface RenderLayers { 
-              LINE_LIST: net.minecraft.client.renderer.rendertype.RenderType;
-              LINE_LIST_ESP: net.minecraft.client.renderer.rendertype.RenderType;
-              TRIANGLE_STRIP: net.minecraft.client.renderer.rendertype.RenderType;
-              TRIANGLE_STRIP_ESP: net.minecraft.client.renderer.rendertype.RenderType;
-              new(): com.chattriggers.ctjs.api.render.RenderLayers;
-            }
-            const Rectangle: {
-              new(color: number, x: number, y: number, width: number, height: number): com.chattriggers.ctjs.api.render.Rectangle;
-            }
-            interface Rectangle { 
-              getColor(): number;
-              setColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getX(): number;
-              setX(x: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getY(): number;
-              setY(y: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getWidth(): number;
-              setWidth(width: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getHeight(): number;
-              setHeight(height: number): com.chattriggers.ctjs.api.render.Rectangle;
-              isShadow(): boolean;
-              setShadow(shadow: boolean): com.chattriggers.ctjs.api.render.Rectangle;
-              setShadow(color: number, x: number, y: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getShadowOffset(): com.chattriggers.ctjs.api.vec.Vec2f;
-              getShadowOffsetX(): number;
-              getShadowOffsetY(): number;
-              setShadowOffset(x: number, y: number): com.chattriggers.ctjs.api.render.Rectangle;
-              setShadowOffsetX(x: number): com.chattriggers.ctjs.api.render.Rectangle;
-              setShadowOffsetY(y: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getShadowColor(): number;
-              setShadowColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getOutline(): boolean;
-              setOutline(outline: boolean): com.chattriggers.ctjs.api.render.Rectangle;
-              setOutline(color: number, thickness: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getOutlineColor(): number;
-              setOutlineColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getThickness(): number;
-              setThickness(thickness: number): com.chattriggers.ctjs.api.render.Rectangle;
-              draw(): com.chattriggers.ctjs.api.render.Rectangle;
-            }
-            const Renderer: {
-              DrawMode: typeof com.chattriggers.ctjs.api.render.Renderer$DrawMode;
-              VertexFormat: typeof com.chattriggers.ctjs.api.render.Renderer$VertexFormat;
-              RenderSnippet: typeof com.chattriggers.ctjs.api.render.Renderer$RenderSnippet;
-              ScreenWrapper: typeof com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
-              screen: com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
-              getPartialTicks(): number;
-              BLACK: number;
-              DARK_BLUE: number;
-              DARK_GREEN: number;
-              DARK_AQUA: number;
-              DARK_RED: number;
-              DARK_PURPLE: number;
-              GOLD: number;
-              GRAY: number;
-              DARK_GRAY: number;
-              BLUE: number;
-              GREEN: number;
-              AQUA: number;
-              RED: number;
-              LIGHT_PURPLE: number;
-              YELLOW: number;
-              WHITE: number;
-              color(color: number): number;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 1
-							 *  @param g the green value of the color, between 0 and 1
-							 *  @param b the blue value of the color, between 0 and 1
-							 *  @param a the alpha value of the color, between 0 and 1
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 1
-							 *  @param g the green value of the color, between 0 and 1
-							 *  @param b the blue value of the color, between 0 and 1
-							 *  @param a the alpha value of the color, between 0 and 1
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 255
-							 *  @param g the green value of the color, between 0 and 255
-							 *  @param b the blue value of the color, between 0 and 255
-							 *  @param a the alpha value of the color, between 0 and 255
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 255
-							 *  @param g the green value of the color, between 0 and 255
-							 *  @param b the blue value of the color, between 0 and 255
-							 *  @param a the alpha value of the color, between 0 and 255
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param color the color value, can use [getColor] to get this
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              color(color: number): com.chattriggers.ctjs.api.render.Renderer;
-              getFontRenderer(): net.minecraft.client.gui.Font;
-              getRenderManager(): net.minecraft.client.renderer.LevelRenderer;
-              getStringWidth(text: string): number;
-              getColor(red: number, green: number, blue: number): number;
-              getColor(red: number, green: number, blue: number, alpha: number): number;
-              getRainbow(step: number): number;
-              getRainbow(step: number, speed: number): number;
-              getRainbowColors(step: number): Array<number>;
-              getRainbowColors(step: number, speed: number): Array<number>;
-              disableCull(): com.chattriggers.ctjs.api.render.Renderer;
-              enableCull(): com.chattriggers.ctjs.api.render.Renderer;
-              disableLighting(): com.chattriggers.ctjs.api.render.Renderer;
-              enableLighting(): com.chattriggers.ctjs.api.render.Renderer;
-              disableDepth(): com.chattriggers.ctjs.api.render.Renderer;
-              enableDepth(): com.chattriggers.ctjs.api.render.Renderer;
-              disableBlend(): com.chattriggers.ctjs.api.render.Renderer;
-              enableBlend(): com.chattriggers.ctjs.api.render.Renderer;
-              bindTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
-              bindTexture(texture: com.chattriggers.ctjs.api.render.Image, textureIndex: number): com.chattriggers.ctjs.api.render.Renderer;
-              deleteTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
-              pushMatrix(): com.chattriggers.ctjs.api.render.Renderer;
-              pushMatrix(stack: gg.essential.universal.UMatrixStack): com.chattriggers.ctjs.api.render.Renderer;
-              popMatrix(): com.chattriggers.ctjs.api.render.Renderer;
-              translate(x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
-              translate(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
-              scale(scaleX: number): com.chattriggers.ctjs.api.render.Renderer;
-              scale(scaleX: number, scaleY: number): com.chattriggers.ctjs.api.render.Renderer;
-              scale(scaleX: number, scaleY: number, scaleZ: number): com.chattriggers.ctjs.api.render.Renderer;
-              rotate(angle: number): com.chattriggers.ctjs.api.render.Renderer;
-              rotate(angle: number, x: number): com.chattriggers.ctjs.api.render.Renderer;
-              rotate(angle: number, x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
-              rotate(angle: number, x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
-              multiply(quaternion: org.joml.Quaternionf): com.chattriggers.ctjs.api.render.Renderer;
-              fixAlpha(color: number): number;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer] to allow for method chaining
-							 *  @see DrawMode
-							 */
-              begin(): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer] to allow for method chaining
-							 *  @see DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer] to allow for method chaining
-							 *  @see DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer] to allow for method chaining
-							 *  @see DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat, snippet: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets a new vertex in the world renderer.
-							 * 
-							 *  @param x the x position
-							 *  @param y the y position
-							 *  @param z the z position
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              pos(x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets a new vertex in the world renderer.
-							 * 
-							 *  @param x the x position
-							 *  @param y the y position
-							 *  @param z the z position
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              pos(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the texture location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the texture
-							 *  @param v the v position in the texture
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              tex(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the normal of the vertex. This is mostly used with [VertexFormat.LINES]
-							 * 
-							 *  @param x the x position of the normal vector
-							 *  @param y the y position of the normal vector
-							 *  @param z the z position of the normal vector
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              normal(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the overlay location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the overlay
-							 *  @param v the v position in the overlay
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              overlay(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the light location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the light
-							 *  @param v the v position in the light
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Finalizes vertices and draws the world renderer.
-							 */
-              draw(): void;
-							/**
-							 * Gets a fixed render position from x, y, and z inputs adjusted with partial ticks
-							 *  @param x the X coordinate
-							 *  @param y the Y coordinate
-							 *  @param z the Z coordinate
-							 *  @return the Vec3f position to render at
-							 */
-              getRenderPos(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3f;
-              drawRect(color: number, x: number, y: number, width: number, height: number): com.chattriggers.ctjs.api.render.Renderer;
-              drawLine(color: number, x1: number, y1: number, x2: number, y2: number, thickness: number): void;
-              drawCircle(color: number, x: number, y: number, radius: number, steps: number): void;
-              drawString(text: string, x: number, y: number): void;
-              drawString(text: string, x: number, y: number, color: number): void;
-              drawString(text: string, x: number, y: number, color: number, shadow: boolean): void;
-              drawStringWithShadow(text: string, x: number, y: number): void;
-              drawStringWithShadow(text: string, x: number, y: number, color: number): void;
-              drawImage(image: com.chattriggers.ctjs.api.render.Image, x: number, y: number, width: number, height: number): void;
-							/**
-							 * Draws a player entity to the screen, similar to the one displayed in the inventory screen.
-							 * 
-							 *  Takes a parameter with the following options:
-							 *  - player: The player entity to draw. Can be a [PlayerMP] or [AbstractClientPlayerEntity].
-							 *            Defaults to Player.toMC()
-							 *  - x: The x position on the screen to render the player
-							 *  - y: The y position on the screen to render the player
-							 *  - size: The size of the rendered player
-							 *  - rotate: Whether the player should look at the mouse cursor, similar to the inventory screen
-							 *  - pitch: THe pitch the rendered player will face, if rotate is false
-							 *  - yaw: The yaw the rendered player will face, if rotate is false
-							 *  - showNametag: Whether the nametag of the player should be rendered
-							 *  - showArmor: Whether the armor of the player should be rendered
-							 *  - showCape: Whether the cape of the player should be rendered
-							 *  - showHeldItem: Whether the held item of the player should be rendered
-							 *  - showArrows: Whether any arrows stuck in the player's model should be rendered
-							 *  - showElytra: Whether the player's Elytra should be rendered
-							 *  - showParrot: Whether a perched parrot should be rendered
-							 *  - showBeeStinger: Whether any stuck bee stingers should be rendered
-							 * 
-							 *  @param obj An options bag
-							 */
-              drawPlayer(obj: org.mozilla.javascript.NativeObject): void;
-              new(): com.chattriggers.ctjs.api.render.Renderer;
-            }
-            interface Renderer { 
-              screen: com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
-              getPartialTicks(): number;
-              BLACK: number;
-              DARK_BLUE: number;
-              DARK_GREEN: number;
-              DARK_AQUA: number;
-              DARK_RED: number;
-              DARK_PURPLE: number;
-              GOLD: number;
-              GRAY: number;
-              DARK_GRAY: number;
-              BLUE: number;
-              GREEN: number;
-              AQUA: number;
-              RED: number;
-              LIGHT_PURPLE: number;
-              YELLOW: number;
-              WHITE: number;
-              color(color: number): number;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 1
-							 *  @param g the green value of the color, between 0 and 1
-							 *  @param b the blue value of the color, between 0 and 1
-							 *  @param a the alpha value of the color, between 0 and 1
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 1
-							 *  @param g the green value of the color, between 0 and 1
-							 *  @param b the blue value of the color, between 0 and 1
-							 *  @param a the alpha value of the color, between 0 and 1
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 255
-							 *  @param g the green value of the color, between 0 and 255
-							 *  @param b the blue value of the color, between 0 and 255
-							 *  @param a the alpha value of the color, between 0 and 255
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 255
-							 *  @param g the green value of the color, between 0 and 255
-							 *  @param b the blue value of the color, between 0 and 255
-							 *  @param a the alpha value of the color, between 0 and 255
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param color the color value, can use [getColor] to get this
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              color(color: number): com.chattriggers.ctjs.api.render.Renderer;
-              getFontRenderer(): net.minecraft.client.gui.Font;
-              getRenderManager(): net.minecraft.client.renderer.LevelRenderer;
-              getStringWidth(text: string): number;
-              getColor(red: number, green: number, blue: number): number;
-              getColor(red: number, green: number, blue: number, alpha: number): number;
-              getRainbow(step: number): number;
-              getRainbow(step: number, speed: number): number;
-              getRainbowColors(step: number): Array<number>;
-              getRainbowColors(step: number, speed: number): Array<number>;
-              disableCull(): com.chattriggers.ctjs.api.render.Renderer;
-              enableCull(): com.chattriggers.ctjs.api.render.Renderer;
-              disableLighting(): com.chattriggers.ctjs.api.render.Renderer;
-              enableLighting(): com.chattriggers.ctjs.api.render.Renderer;
-              disableDepth(): com.chattriggers.ctjs.api.render.Renderer;
-              enableDepth(): com.chattriggers.ctjs.api.render.Renderer;
-              disableBlend(): com.chattriggers.ctjs.api.render.Renderer;
-              enableBlend(): com.chattriggers.ctjs.api.render.Renderer;
-              bindTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
-              bindTexture(texture: com.chattriggers.ctjs.api.render.Image, textureIndex: number): com.chattriggers.ctjs.api.render.Renderer;
-              deleteTexture(texture: com.chattriggers.ctjs.api.render.Image): com.chattriggers.ctjs.api.render.Renderer;
-              pushMatrix(): com.chattriggers.ctjs.api.render.Renderer;
-              pushMatrix(stack: gg.essential.universal.UMatrixStack): com.chattriggers.ctjs.api.render.Renderer;
-              popMatrix(): com.chattriggers.ctjs.api.render.Renderer;
-              translate(x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
-              translate(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
-              scale(scaleX: number): com.chattriggers.ctjs.api.render.Renderer;
-              scale(scaleX: number, scaleY: number): com.chattriggers.ctjs.api.render.Renderer;
-              scale(scaleX: number, scaleY: number, scaleZ: number): com.chattriggers.ctjs.api.render.Renderer;
-              rotate(angle: number): com.chattriggers.ctjs.api.render.Renderer;
-              rotate(angle: number, x: number): com.chattriggers.ctjs.api.render.Renderer;
-              rotate(angle: number, x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
-              rotate(angle: number, x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
-              multiply(quaternion: org.joml.Quaternionf): com.chattriggers.ctjs.api.render.Renderer;
-              fixAlpha(color: number): number;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer] to allow for method chaining
-							 *  @see DrawMode
-							 */
-              begin(): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer] to allow for method chaining
-							 *  @see DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer] to allow for method chaining
-							 *  @see DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer] to allow for method chaining
-							 *  @see DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat, snippet: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets a new vertex in the world renderer.
-							 * 
-							 *  @param x the x position
-							 *  @param y the y position
-							 *  @param z the z position
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              pos(x: number, y: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets a new vertex in the world renderer.
-							 * 
-							 *  @param x the x position
-							 *  @param y the y position
-							 *  @param z the z position
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              pos(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the texture location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the texture
-							 *  @param v the v position in the texture
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              tex(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the normal of the vertex. This is mostly used with [VertexFormat.LINES]
-							 * 
-							 *  @param x the x position of the normal vector
-							 *  @param y the y position of the normal vector
-							 *  @param z the z position of the normal vector
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              normal(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the overlay location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the overlay
-							 *  @param v the v position in the overlay
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              overlay(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Sets the light location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the light
-							 *  @param v the v position in the light
-							 *  @return [Renderer] to allow for method chaining
-							 */
-              light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer;
-							/**
-							 * Finalizes vertices and draws the world renderer.
-							 */
-              draw(): void;
-							/**
-							 * Gets a fixed render position from x, y, and z inputs adjusted with partial ticks
-							 *  @param x the X coordinate
-							 *  @param y the Y coordinate
-							 *  @param z the Z coordinate
-							 *  @return the Vec3f position to render at
-							 */
-              getRenderPos(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3f;
-              drawRect(color: number, x: number, y: number, width: number, height: number): com.chattriggers.ctjs.api.render.Renderer;
-              drawLine(color: number, x1: number, y1: number, x2: number, y2: number, thickness: number): void;
-              drawCircle(color: number, x: number, y: number, radius: number, steps: number): void;
-              drawString(text: string, x: number, y: number): void;
-              drawString(text: string, x: number, y: number, color: number): void;
-              drawString(text: string, x: number, y: number, color: number, shadow: boolean): void;
-              drawStringWithShadow(text: string, x: number, y: number): void;
-              drawStringWithShadow(text: string, x: number, y: number, color: number): void;
-              drawImage(image: com.chattriggers.ctjs.api.render.Image, x: number, y: number, width: number, height: number): void;
-							/**
-							 * Draws a player entity to the screen, similar to the one displayed in the inventory screen.
-							 * 
-							 *  Takes a parameter with the following options:
-							 *  - player: The player entity to draw. Can be a [PlayerMP] or [AbstractClientPlayerEntity].
-							 *            Defaults to Player.toMC()
-							 *  - x: The x position on the screen to render the player
-							 *  - y: The y position on the screen to render the player
-							 *  - size: The size of the rendered player
-							 *  - rotate: Whether the player should look at the mouse cursor, similar to the inventory screen
-							 *  - pitch: THe pitch the rendered player will face, if rotate is false
-							 *  - yaw: The yaw the rendered player will face, if rotate is false
-							 *  - showNametag: Whether the nametag of the player should be rendered
-							 *  - showArmor: Whether the armor of the player should be rendered
-							 *  - showCape: Whether the cape of the player should be rendered
-							 *  - showHeldItem: Whether the held item of the player should be rendered
-							 *  - showArrows: Whether any arrows stuck in the player's model should be rendered
-							 *  - showElytra: Whether the player's Elytra should be rendered
-							 *  - showParrot: Whether a perched parrot should be rendered
-							 *  - showBeeStinger: Whether any stuck bee stingers should be rendered
-							 * 
-							 *  @param obj An options bag
-							 */
-              drawPlayer(obj: org.mozilla.javascript.NativeObject): void;
-              new(): com.chattriggers.ctjs.api.render.Renderer;
-            }
-            const Renderer$ScreenWrapper: {
-              new(): com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
-            }
-            interface Renderer$ScreenWrapper { 
-              getWidth(): number;
-              getHeight(): number;
-              getScale(): number;
-            }
-            const Image: {
-              new(image: java.awt.image.BufferedImage | null | undefined): com.chattriggers.ctjs.api.render.Image;
-            }
-            interface Image { 
-              getImage(): java.awt.image.BufferedImage | null | undefined;
-              setImage(value: java.awt.image.BufferedImage | null | undefined): void;
-              getTextureWidth(): number;
-              getTextureHeight(): number;
-              getTexture(): net.minecraft.client.renderer.texture.DynamicTexture | null | undefined;
-							/**
-							 * Clears the image from GPU memory and removes its references CT side
-							 *  that way it can be garbage collected if not referenced in js code.
-							 */
-              destroy(): void;
-              draw(x: number, y: number): com.chattriggers.ctjs.api.render.Image;
-              draw(x: number, y: number, width: number | null | undefined): com.chattriggers.ctjs.api.render.Image;
-              draw(x: number, y: number, width: number | null | undefined, height: number | null | undefined): com.chattriggers.ctjs.api.render.Image;
-            }
-            const Image$Companion: {
-							/**
-							 * Create an image object from a java.io.File object. Throws an exception
-							 *  if the file cannot be found.
-							 */
-              fromFile(file: java.io.File): com.chattriggers.ctjs.api.render.Image;
-							/**
-							 * Create an image object from a file path. Throws an exception
-							 *  if the file cannot be found.
-							 */
-              fromFile(file: string): com.chattriggers.ctjs.api.render.Image;
-							/**
-							 * Create an image object from a file path, relative to the assets directory.
-							 *  Throws an exception if the file cannot be found.
-							 */
-              fromAsset(name: string): com.chattriggers.ctjs.api.render.Image;
-							/**
-							 * Creates an image object from a URL. Throws an exception if an image
-							 *  cannot be created from the URL. Will cache the image in the assets
-							 */
-              fromUrl(url: string): com.chattriggers.ctjs.api.render.Image;
-							/**
-							 * Creates an image object from a URL. Throws an exception if an image
-							 *  cannot be created from the URL. Will cache the image in the assets
-							 */
-              fromUrl(url: string, cachedImageName: string | null | undefined): com.chattriggers.ctjs.api.render.Image;
-              new(): com.chattriggers.ctjs.api.render.Image$Companion;
-            }
-            interface Image$Companion { 
-							/**
-							 * Create an image object from a java.io.File object. Throws an exception
-							 *  if the file cannot be found.
-							 */
-              fromFile(file: java.io.File): com.chattriggers.ctjs.api.render.Image;
-							/**
-							 * Create an image object from a file path. Throws an exception
-							 *  if the file cannot be found.
-							 */
-              fromFile(file: string): com.chattriggers.ctjs.api.render.Image;
-							/**
-							 * Create an image object from a file path, relative to the assets directory.
-							 *  Throws an exception if the file cannot be found.
-							 */
-              fromAsset(name: string): com.chattriggers.ctjs.api.render.Image;
-							/**
-							 * Creates an image object from a URL. Throws an exception if an image
-							 *  cannot be created from the URL. Will cache the image in the assets
-							 */
-              fromUrl(url: string): com.chattriggers.ctjs.api.render.Image;
-							/**
-							 * Creates an image object from a URL. Throws an exception if an image
-							 *  cannot be created from the URL. Will cache the image in the assets
-							 */
-              fromUrl(url: string, cachedImageName: string | null | undefined): com.chattriggers.ctjs.api.render.Image;
-              new(): com.chattriggers.ctjs.api.render.Image$Companion;
-            }
-            const Book: {
-              new(): com.chattriggers.ctjs.api.render.Book;
-            }
-            interface Book { 
-							/**
-							 * Add a page to the book.
-							 * 
-							 *  @param contents the entire message for what the page should be
-							 *  @return the current book to allow method chaining
-							 */
-              addPage(contents: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Book;
-							/**
-							 * Overloaded method for adding a simple page to the book.
-							 * 
-							 *  @param message a simple string to make the page
-							 *  @return the current book to allow method chaining
-							 */
-              addPage(message: string): com.chattriggers.ctjs.api.render.Book;
-							/**
-							 * Inserts a page at the specified index of the book
-							 * 
-							 *  @param pageIndex the index of the page to set
-							 *  @param message the message to set the page to
-							 *  @return the current book to allow method chaining
-							 */
-              insertPage(pageIndex: number, message: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Book;
-              insertPage(pageIndex: number, message: string): com.chattriggers.ctjs.api.render.Book;
-							/**
-							 * Sets a page of the book to the specified message.
-							 * 
-							 *  @param pageIndex the index of the page to set
-							 *  @param message the message to set the page to
-							 *  @return the current book to allow method chaining
-							 */
-              setPage(pageIndex: number, message: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Book;
-              setPage(pageIndex: number, message: string): com.chattriggers.ctjs.api.render.Book;
-              display(): void;
-              display(pageIndex: number): void;
-              isOpen(): boolean;
-              getCurrentPage(): number;
-            }
-            const Renderer3d: {
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer3d] to allow for method chaining
-							 *  @see Renderer.DrawMode
-							 */
-              begin(): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer3d] to allow for method chaining
-							 *  @see Renderer.DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer3d] to allow for method chaining
-							 *  @see Renderer.DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer3d] to allow for method chaining
-							 *  @see Renderer.DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat, snippet: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets a new vertex in the world renderer.
-							 * 
-							 *  @param x the x position
-							 *  @param y the y position
-							 *  @param z the z position
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              pos(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the texture location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the texture
-							 *  @param v the v position in the texture
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              tex(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 1
-							 *  @param g the green value of the color, between 0 and 1
-							 *  @param b the blue value of the color, between 0 and 1
-							 *  @param a the alpha value of the color, between 0 and 1
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 1
-							 *  @param g the green value of the color, between 0 and 1
-							 *  @param b the blue value of the color, between 0 and 1
-							 *  @param a the alpha value of the color, between 0 and 1
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 255
-							 *  @param g the green value of the color, between 0 and 255
-							 *  @param b the blue value of the color, between 0 and 255
-							 *  @param a the alpha value of the color, between 0 and 255
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 255
-							 *  @param g the green value of the color, between 0 and 255
-							 *  @param b the blue value of the color, between 0 and 255
-							 *  @param a the alpha value of the color, between 0 and 255
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param color the color value, can use [Renderer.getColor] to get this
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              color(color: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the normal of the vertex. This is mostly used with [Renderer.VertexFormat.LINES]
-							 * 
-							 *  @param x the x position of the normal vector
-							 *  @param y the y position of the normal vector
-							 *  @param z the z position of the normal vector
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              normal(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the overlay location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the overlay
-							 *  @param v the v position in the overlay
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              overlay(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the light location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the light
-							 *  @param v the v position in the light
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Finalizes vertices and draws the world renderer.
-							 */
-              draw(): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean, centered: boolean): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean, centered: boolean, renderThroughBlocks: boolean): void;
-							/**
-							 * A variant of drawString that takes an object instead of positional parameters
-							 */
-              drawString(obj: org.mozilla.javascript.NativeObject): void;
-							/**
-							 * Draws a line in the world from (x1, y1, z1) to (x2, y2, z2)
-							 * 
-							 *  @param color the color of the line
-							 *  @param x1 the starting x coordinate
-							 *  @param y1 the starting y coordinate
-							 *  @param z1 the starting z coordinate
-							 *  @param x2 the ending x coordinate
-							 *  @param y2 the ending y coordinate
-							 *  @param z2 the ending z coordinate
-							 */
-              drawLine(color: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): void;
-              new(): com.chattriggers.ctjs.api.render.Renderer3d;
-            }
-            interface Renderer3d { 
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer3d] to allow for method chaining
-							 *  @see Renderer.DrawMode
-							 */
-              begin(): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer3d] to allow for method chaining
-							 *  @see Renderer.DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer3d] to allow for method chaining
-							 *  @see Renderer.DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Begin drawing with the world renderer
-							 * 
-							 *  @param drawMode the GL draw mode
-							 *  @param vertexFormat The [VertexFormat] to use for drawing
-							 *  @return [Renderer3d] to allow for method chaining
-							 *  @see Renderer.DrawMode
-							 */
-              begin(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode, vertexFormat: com.chattriggers.ctjs.api.render.Renderer$VertexFormat, snippet: com.chattriggers.ctjs.api.render.Renderer$RenderSnippet): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets a new vertex in the world renderer.
-							 * 
-							 *  @param x the x position
-							 *  @param y the y position
-							 *  @param z the z position
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              pos(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the texture location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the texture
-							 *  @param v the v position in the texture
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              tex(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 1
-							 *  @param g the green value of the color, between 0 and 1
-							 *  @param b the blue value of the color, between 0 and 1
-							 *  @param a the alpha value of the color, between 0 and 1
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 1
-							 *  @param g the green value of the color, between 0 and 1
-							 *  @param b the blue value of the color, between 0 and 1
-							 *  @param a the alpha value of the color, between 0 and 1
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 255
-							 *  @param g the green value of the color, between 0 and 255
-							 *  @param b the blue value of the color, between 0 and 255
-							 *  @param a the alpha value of the color, between 0 and 255
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param r the red value of the color, between 0 and 255
-							 *  @param g the green value of the color, between 0 and 255
-							 *  @param b the blue value of the color, between 0 and 255
-							 *  @param a the alpha value of the color, between 0 and 255
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              color(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the color for the last defined vertex.
-							 * 
-							 *  @param color the color value, can use [Renderer.getColor] to get this
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              color(color: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the normal of the vertex. This is mostly used with [Renderer.VertexFormat.LINES]
-							 * 
-							 *  @param x the x position of the normal vector
-							 *  @param y the y position of the normal vector
-							 *  @param z the z position of the normal vector
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              normal(x: number, y: number, z: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the overlay location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the overlay
-							 *  @param v the v position in the overlay
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              overlay(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Sets the light location on the last defined vertex.
-							 * 
-							 *  @param u the u position in the light
-							 *  @param v the v position in the light
-							 *  @return [Renderer3d] to allow for method chaining
-							 */
-              light(u: number, v: number): com.chattriggers.ctjs.api.render.Renderer3d;
-							/**
-							 * Finalizes vertices and draws the world renderer.
-							 */
-              draw(): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean, centered: boolean): void;
-							/**
-							 * Renders floating lines of text in the 3D world at a specific position.
-							 *  This should be placed inside a `preRenderWorld` trigger.
-							 * 
-							 *  @param text The string array of text to render
-							 *  @param x X coordinate in the game world
-							 *  @param y Y coordinate in the game world
-							 *  @param z Z coordinate in the game world
-							 *  @param color the color of the text
-							 *  @param renderBlackBox render a pretty black border behind the text
-							 *  @param scale the scale of the text
-							 *  @param increase whether to scale the text up as the player moves away
-							 *  @param centered whether to center each line based on the longest line (this has no effect if there are no newline characters)
-							 *  @param renderThroughBlocks whether to render the text through blocks
-							 */
-              drawString(text: string, x: number, y: number, z: number, color: number, renderBlackBox: boolean, scale: number, increase: boolean, centered: boolean, renderThroughBlocks: boolean): void;
-							/**
-							 * A variant of drawString that takes an object instead of positional parameters
-							 */
-              drawString(obj: org.mozilla.javascript.NativeObject): void;
-							/**
-							 * Draws a line in the world from (x1, y1, z1) to (x2, y2, z2)
-							 * 
-							 *  @param color the color of the line
-							 *  @param x1 the starting x coordinate
-							 *  @param y1 the starting y coordinate
-							 *  @param z1 the starting z coordinate
-							 *  @param x2 the ending x coordinate
-							 *  @param y2 the ending y coordinate
-							 *  @param z2 the ending z coordinate
-							 */
-              drawLine(color: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): void;
-              new(): com.chattriggers.ctjs.api.render.Renderer3d;
-            }
-            const Shape: {
-              new(color: number): com.chattriggers.ctjs.api.render.Shape;
-            }
-            interface Shape { 
-              copy(): com.chattriggers.ctjs.api.render.Shape;
-              getColor(): number;
-              setColor(color: number): com.chattriggers.ctjs.api.render.Shape;
-              getDrawMode(): com.chattriggers.ctjs.api.render.Renderer$DrawMode;
-							/**
-							 * Sets the GL draw mode of the shape
-							 */
-              setDrawMode(drawMode: com.chattriggers.ctjs.api.render.Renderer$DrawMode): com.chattriggers.ctjs.api.render.Shape;
-              getVertexes(): Array<com.chattriggers.ctjs.api.vec.Vec2f>;
-              addVertex(x: number, y: number): com.chattriggers.ctjs.api.render.Shape;
-              insertVertex(index: number, x: number, y: number): com.chattriggers.ctjs.api.render.Shape;
-              removeVertex(index: number): com.chattriggers.ctjs.api.render.Shape;
-              clearVertices(): com.chattriggers.ctjs.api.render.Shape;
-							/**
-							 * Sets the shape as a line pointing from [x1, y1] to [x2, y2] with a thickness
-							 */
-              setLine(x1: number, y1: number, x2: number, y2: number, thickness: number): com.chattriggers.ctjs.api.render.Shape;
-							/**
-							 * Sets the shape as a circle with a center at [x, y]
-							 *  with radius and number of steps around the circle
-							 */
-              setCircle(x: number, y: number, radius: number, steps: number): com.chattriggers.ctjs.api.render.Shape;
-              draw(): com.chattriggers.ctjs.api.render.Shape;
-            }
-            const Gui: {
-              new(): com.chattriggers.ctjs.api.render.Gui;
-              new(title: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Gui;
-            }
-            interface Gui extends gg.essential.universal.UScreen { 
-              open(): void;
-              isOpen(): boolean;
-							/**
-							 * Registers a method to be run while gui is open.
-							 *  Registered method runs on draw.
-							 *  Arguments passed through to method:
-							 *  - int mouseX
-							 *  - int mouseY
-							 *  - float partialTicks
-							 * 
-							 *  @param method the method to run
-							 *  @return the trigger
-							 */
-              registerDraw(method: any): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Registers a method to be run while gui is open.
-							 *  Registered method runs on mouse click.
-							 *  Arguments passed through to method:
-							 *  - int mouseX
-							 *  - int mouseY
-							 *  - int button
-							 * 
-							 *  @param method the method to run
-							 *  @return the trigger
-							 */
-              registerClicked(method: any): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Registers a method to be run while the gui is open.
-							 *  Registered method runs on mouse scroll.
-							 *  Arguments passed through to method:
-							 *  - int mouseX
-							 *  - int mouseY
-							 *  - int scroll direction
-							 */
-              registerScrolled(method: any): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Registers a method to be run while gui is open.
-							 *  Registered method runs on key input.
-							 *  Arguments passed through to method:
-							 *  - char typed character
-							 *  - int key code
-							 * 
-							 *  @param method the method to run
-							 *  @return the trigger
-							 */
-              registerKeyTyped(method: any): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Registers a method to be run while gui is open.
-							 *  Registered method runs on key input.
-							 *  Arguments passed through to method:
-							 *  - int mouseX
-							 *  - int mouseY
-							 *  - int clickedMouseButton
-							 *  - long timeSinceLastClick
-							 * 
-							 *  @param method the method to run
-							 *  @return the trigger
-							 */
-              registerMouseDragged(method: any): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Registers a method to be run while gui is open.
-							 *  Registered method runs on mouse release.
-							 *  Arguments passed through to method:
-							 *  - int mouseX
-							 *  - int mouseY
-							 *  - int button
-							 * 
-							 *  @param method the method to run
-							 *  @return the trigger
-							 */
-              registerMouseReleased(method: any): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Registers a method to be run while gui is open.
-							 *  Registered method runs when an action is performed (clicking a button)
-							 *  Arguments passed through to method:
-							 *  - the button that is clicked
-							 * 
-							 *  @param method the method to run
-							 *  @return the trigger
-							 */
-              registerActionPerformed(method: any): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Registers a method to be run when the gui is opened.
-							 *  Arguments passed through to method:
-							 *  - the gui that is opened
-							 * 
-							 *  @param method the method to run
-							 *  @return the trigger
-							 */
-              registerOpened(method: any): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Registers a method to be run when the gui is closed.
-							 *  Arguments passed through to method:
-							 *  - the gui that is closed
-							 * 
-							 *  @param method the method to run
-							 *  @return the trigger
-							 */
-              registerClosed(method: any): com.chattriggers.ctjs.api.render.Gui;
-              unregisterDraw(): com.chattriggers.ctjs.api.render.Gui;
-              unregisterClicked(): com.chattriggers.ctjs.api.render.Gui;
-              unregisterScrolled(): com.chattriggers.ctjs.api.render.Gui;
-              unregisterKeyTyped(): com.chattriggers.ctjs.api.render.Gui;
-              unregisterMouseDragged(): com.chattriggers.ctjs.api.render.Gui;
-              unregisterMouseReleased(): com.chattriggers.ctjs.api.render.Gui;
-              unregisterActionPerformed(): com.chattriggers.ctjs.api.render.Gui;
-              unregisterOpened(): com.chattriggers.ctjs.api.render.Gui;
-              unregisterClosed(): com.chattriggers.ctjs.api.render.Gui;
-              setDoesPauseGame(doesPauseGame: boolean): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Add a base Minecraft button to the gui
-							 * 
-							 *  @param button the button to add
-							 *  @return the button ID for use in actionPerformed
-							 */
-              addButton(button: net.minecraft.client.gui.components.Button): number;
-							/**
-							 * Add a base Minecraft button to the gui
-							 * 
-							 *  @param x the x position of the button
-							 *  @param y the y position of the button
-							 *  @param width the width of the button
-							 *  @param height the height of the button
-							 *  @param buttonText the label of the button
-							 *  @return the button ID for use in actionPerformed
-							 */
-              addButton(x: number, y: number, buttonText: com.chattriggers.ctjs.api.message.TextComponent): number;
-							/**
-							 * Add a base Minecraft button to the gui
-							 * 
-							 *  @param x the x position of the button
-							 *  @param y the y position of the button
-							 *  @param width the width of the button
-							 *  @param height the height of the button
-							 *  @param buttonText the label of the button
-							 *  @return the button ID for use in actionPerformed
-							 */
-              addButton(x: number, y: number, width: number, buttonText: com.chattriggers.ctjs.api.message.TextComponent): number;
-							/**
-							 * Add a base Minecraft button to the gui
-							 * 
-							 *  @param x the x position of the button
-							 *  @param y the y position of the button
-							 *  @param width the width of the button
-							 *  @param height the height of the button
-							 *  @param buttonText the label of the button
-							 *  @return the button ID for use in actionPerformed
-							 */
-              addButton(x: number, y: number, width: number, height: number, buttonText: com.chattriggers.ctjs.api.message.TextComponent): number;
-              addButton(x: number, y: number, width: number, height: number, buttonText: string): number;
-							/**
-							 * Removes a button from the gui with the given id
-							 * 
-							 *  @param buttonId the id of the button to remove
-							 *  @return the Gui for method chaining
-							 */
-              removeButton(buttonId: number): com.chattriggers.ctjs.api.render.Gui;
-              clearButtons(): com.chattriggers.ctjs.api.render.Gui;
-              getButtonVisibility(buttonId: number): boolean;
-							/**
-							 * Sets the visibility of a button
-							 * 
-							 *  @param buttonId the id of the button to change
-							 *  @param visible the new visibility of the button
-							 *  @return the Gui for method chaining
-							 */
-              setButtonVisibility(buttonId: number, visible: boolean): com.chattriggers.ctjs.api.render.Gui;
-              getButtonEnabled(buttonId: number): boolean;
-							/**
-							 * Sets the enabled state of a button
-							 * 
-							 *  @param buttonId the id of the button to set
-							 *  @param enabled the enabled state of the button
-							 *  @return the Gui for method chaining
-							 */
-              setButtonEnabled(buttonId: number, enabled: boolean): com.chattriggers.ctjs.api.render.Gui;
-              getButtonWidth(buttonId: number): number;
-							/**
-							 * Sets the button's width. Button textures break if the width is greater than 200
-							 * 
-							 *  @param buttonId id of the button
-							 *  @param width the new width
-							 *  @return the Gui for method chaining
-							 */
-              setButtonWidth(buttonId: number, width: number): com.chattriggers.ctjs.api.render.Gui;
-              getButtonHeight(buttonId: number): number;
-							/**
-							 * Sets the button's height. Button textures break if the height is not 20
-							 * 
-							 *  @param buttonId id of the button
-							 *  @param height the new height
-							 *  @return the Gui for method chaining
-							 */
-              setButtonHeight(buttonId: number, height: number): com.chattriggers.ctjs.api.render.Gui;
-              getButtonX(buttonId: number): number;
-							/**
-							 * Sets the button's x position
-							 * 
-							 *  @param buttonId id of the button
-							 *  @param x the new x position
-							 *  @return the Gui for method chaining
-							 */
-              setButtonX(buttonId: number, x: number): com.chattriggers.ctjs.api.render.Gui;
-              getButtonY(buttonId: number): number;
-							/**
-							 * Sets the button's y position
-							 * 
-							 *  @param buttonId id of the button
-							 *  @param y the new y position
-							 *  @return the Gui for method chaining
-							 */
-              setButtonY(buttonId: number, y: number): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Sets the button's position
-							 * 
-							 *  @param buttonId id of the button
-							 *  @param x the new x position
-							 *  @param y the new y position
-							 *  @return the Gui for method chaining
-							 */
-              setButtonLoc(buttonId: number, x: number, y: number): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Sets the button's text
-							 * 
-							 *  @param buttonId id of the button
-							 *  @param text the new text
-							 */
-              setButtonText(buttonId: number, text: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Sets the button's text
-							 * 
-							 *  @param buttonId id of the button
-							 *  @param text the new text
-							 */
-              setButtonText(buttonId: number, text: string): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Sets the gui's tooltip, this will be visible on top of the cursor
-							 *  when the gui is open.
-							 * 
-							 *  @param text the contents of the tooltip
-							 */
-              setTooltip(text: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Gui;
-							/**
-							 * Sets the gui's tooltip, this will be visible on top of the cursor
-							 *  when the gui is open.
-							 * 
-							 *  @param text the contents of the tooltip
-							 */
-              setTooltip(text: string): com.chattriggers.ctjs.api.render.Gui;
-            }
-            const Toast: {
-              new(config: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.render.Toast;
-            }
-            interface Toast extends net.minecraft.client.gui.components.toasts.Toast { 
-              getTitle(): any | null | undefined;
-              setTitle(value: any | null | undefined): void;
-              getDescription(): any | null | undefined;
-              setDescription(value: any | null | undefined): void;
-              getBackground(): any | null | undefined;
-              setBackground(value: any | null | undefined): void;
-              getIcon(): any | null | undefined;
-              setIcon(value: any | null | undefined): void;
-              getDisplayTime(): number;
-              setDisplayTime(value: number): void;
-              show(): com.chattriggers.ctjs.api.render.Toast;
-            }
-            const RenderUtils: {
-              Color: typeof com.chattriggers.ctjs.api.render.RenderUtils$Color;
-              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, depth: boolean): void;
-              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, depth: boolean): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color, wireThickness: number): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color, wireThickness: number, depth: boolean): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean, thickness: number): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean, thickness: number, depth: boolean): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean, translate: boolean): void;
-              new(): com.chattriggers.ctjs.api.render.RenderUtils;
-            }
-            interface RenderUtils { 
-              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, depth: boolean): void;
-              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, depth: boolean): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color, wireThickness: number): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.RenderUtils$Color, color2: com.chattriggers.ctjs.api.render.RenderUtils$Color, wireThickness: number, depth: boolean): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean, thickness: number): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, filled: boolean, thickness: number, depth: boolean): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, thickness: number, depth: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean, translate: boolean): void;
-              new(): com.chattriggers.ctjs.api.render.RenderUtils;
-            }
-            const RenderUtils$Color: {
-              new(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.RenderUtils$Color;
-            }
-            interface RenderUtils$Color { 
-              getR(): number;
-              getG(): number;
-              getB(): number;
-              getA(): number;
-              getRf(): number;
-              getGf(): number;
-              getBf(): number;
-              getAf(): number;
-              getPacked(): number;
-              component1(): number;
-              component2(): number;
-              component3(): number;
-              component4(): number;
-              copy(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.RenderUtils$Color;
-            }
-          }
-          const Config$ConsoleSettings: {
-            new(clearConsoleOnLoad: boolean, openConsoleOnError: boolean, consoleFiraCodeFont: boolean, consoleFontSize: number, customTheme: boolean, consoleTheme: number, consoleTextColor: java.awt.Color, consoleBackgroundColor: java.awt.Color, consoleErrorColor: java.awt.Color, consoleWarningColor: java.awt.Color): com.chattriggers.ctjs.api.Config$ConsoleSettings;
-          }
-          interface Config$ConsoleSettings { 
-            getClearConsoleOnLoad(): boolean;
-            setClearConsoleOnLoad(value: boolean): void;
-            getOpenConsoleOnError(): boolean;
-            setOpenConsoleOnError(value: boolean): void;
-            getConsoleFiraCodeFont(): boolean;
-            setConsoleFiraCodeFont(value: boolean): void;
-            getConsoleFontSize(): number;
-            setConsoleFontSize(value: number): void;
-            getCustomTheme(): boolean;
-            setCustomTheme(value: boolean): void;
-            getConsoleTheme(): number;
-            setConsoleTheme(value: number): void;
-            getConsoleTextColor(): java.awt.Color;
-            setConsoleTextColor(value: java.awt.Color): void;
-            getConsoleBackgroundColor(): java.awt.Color;
-            setConsoleBackgroundColor(value: java.awt.Color): void;
-            getConsoleErrorColor(): java.awt.Color;
-            setConsoleErrorColor(value: java.awt.Color): void;
-            getConsoleWarningColor(): java.awt.Color;
-            setConsoleWarningColor(value: java.awt.Color): void;
-            component1(): boolean;
-            component2(): boolean;
-            component3(): boolean;
-            component4(): number;
-            component5(): boolean;
-            component6(): number;
-            component7(): java.awt.Color;
-            component8(): java.awt.Color;
-            component9(): java.awt.Color;
-            component10(): java.awt.Color;
-            copy(clearConsoleOnLoad: boolean, openConsoleOnError: boolean, consoleFiraCodeFont: boolean, consoleFontSize: number, customTheme: boolean, consoleTheme: number, consoleTextColor: java.awt.Color, consoleBackgroundColor: java.awt.Color, consoleErrorColor: java.awt.Color, consoleWarningColor: java.awt.Color): com.chattriggers.ctjs.api.Config$ConsoleSettings;
-          }
-          const Config$ConsoleSettings$Companion: {
-            new(): unknown;
-          }
-          interface Config$ConsoleSettings$Companion { 
-            new(): unknown;
-            make(): com.chattriggers.ctjs.api.Config$ConsoleSettings;
-          }
-          interface CTWrapper<MCClass> { 
-            getMcValue(): MCClass;
-            toMC(): MCClass;
-          }
-          const Config: {
-            ConsoleSettings: typeof com.chattriggers.ctjs.api.Config$ConsoleSettings;
-            getModuleImportHelp(): boolean;
-            setModuleImportHelp(value: boolean): void;
-            getModuleChangelog(): boolean;
-            setModuleChangelog(value: boolean): void;
-            getShowUpdatesInChat(): boolean;
-            setShowUpdatesInChat(value: boolean): void;
-            getAutoUpdateModules(): boolean;
-            setAutoUpdateModules(value: boolean): void;
-            getSendStatistics(): boolean;
-            setSendStatistics(value: boolean): void;
-            getClearConsoleOnLoad(): boolean;
-            setClearConsoleOnLoad(value: boolean): void;
-            getOpenConsoleOnError(): boolean;
-            setOpenConsoleOnError(value: boolean): void;
-            getConsoleFiraCodeFont(): boolean;
-            setConsoleFiraCodeFont(value: boolean): void;
-            getConsoleFontSize(): number;
-            setConsoleFontSize(value: number): void;
-            getCustomTheme(): boolean;
-            setCustomTheme(value: boolean): void;
-            getConsoleTheme(): number;
-            setConsoleTheme(value: number): void;
-            getConsoleTextColor(): java.awt.Color;
-            setConsoleTextColor(value: java.awt.Color): void;
-            getConsoleBackgroundColor(): java.awt.Color;
-            setConsoleBackgroundColor(value: java.awt.Color): void;
-            getConsoleErrorColor(): java.awt.Color;
-            setConsoleErrorColor(value: java.awt.Color): void;
-            getConsoleWarningColor(): java.awt.Color;
-            setConsoleWarningColor(value: java.awt.Color): void;
-            wasWelcomeShown(): boolean;
-            markWelcomeShown(): void;
-            new(): com.chattriggers.ctjs.api.Config;
-          }
-          interface Config extends gg.essential.vigilance.Vigilant { 
-            getModuleImportHelp(): boolean;
-            setModuleImportHelp(value: boolean): void;
-            getModuleChangelog(): boolean;
-            setModuleChangelog(value: boolean): void;
-            getShowUpdatesInChat(): boolean;
-            setShowUpdatesInChat(value: boolean): void;
-            getAutoUpdateModules(): boolean;
-            setAutoUpdateModules(value: boolean): void;
-            getSendStatistics(): boolean;
-            setSendStatistics(value: boolean): void;
-            getClearConsoleOnLoad(): boolean;
-            setClearConsoleOnLoad(value: boolean): void;
-            getOpenConsoleOnError(): boolean;
-            setOpenConsoleOnError(value: boolean): void;
-            getConsoleFiraCodeFont(): boolean;
-            setConsoleFiraCodeFont(value: boolean): void;
-            getConsoleFontSize(): number;
-            setConsoleFontSize(value: number): void;
-            getCustomTheme(): boolean;
-            setCustomTheme(value: boolean): void;
-            getConsoleTheme(): number;
-            setConsoleTheme(value: number): void;
-            getConsoleTextColor(): java.awt.Color;
-            setConsoleTextColor(value: java.awt.Color): void;
-            getConsoleBackgroundColor(): java.awt.Color;
-            setConsoleBackgroundColor(value: java.awt.Color): void;
-            getConsoleErrorColor(): java.awt.Color;
-            setConsoleErrorColor(value: java.awt.Color): void;
-            getConsoleWarningColor(): java.awt.Color;
-            setConsoleWarningColor(value: java.awt.Color): void;
-            wasWelcomeShown(): boolean;
-            markWelcomeShown(): void;
-            new(): com.chattriggers.ctjs.api.Config;
-          }
-          const V5Auth: {
-            getJwtToken(): string | null | undefined;
-            getFreshJwtToken(): string | null | undefined;
-            setJwtToken(token: string | null | undefined): void;
-            shutDownHard(): java.lang.Void;
-            new(): com.chattriggers.ctjs.api.V5Auth;
-          }
-          interface V5Auth { 
-            getJwtToken(): string | null | undefined;
-            getFreshJwtToken(): string | null | undefined;
-            setJwtToken(token: string | null | undefined): void;
-            shutDownHard(): java.lang.Void;
-            new(): com.chattriggers.ctjs.api.V5Auth;
-          }
-          const Mappings: {
-						/**
-						 * Gets a classes unmapped class name, or throws an error if it is not mapped
-						 */
-            unmapClass(clazz: java.lang.Class<any>): string | null | undefined;
-						/**
-						 * Gets an unmapped class name from a mapped class name, or returns null if
-						 *  it either does not exist or is not mapped.
-						 */
-            unmapClassName(className: string): string | null | undefined;
-						/**
-						 * Gets the mapped class name from an unmapped class name or null if the class
-						 *  name does not exist. Note that this is not required to use mapped classes,
-						 *  as Rhino performs this mapping automatically during runtime.
-						 */
-            mapClassName(className: string): string | null | undefined;
-						/**
-						 * Allows runtime inspection of mappings
-						 */
-            new(): com.chattriggers.ctjs.api.Mappings;
-          }
-          interface Mappings { 
-						/**
-						 * Gets a classes unmapped class name, or throws an error if it is not mapped
-						 */
-            unmapClass(clazz: java.lang.Class<any>): string | null | undefined;
-						/**
-						 * Gets an unmapped class name from a mapped class name, or returns null if
-						 *  it either does not exist or is not mapped.
-						 */
-            unmapClassName(className: string): string | null | undefined;
-						/**
-						 * Gets the mapped class name from an unmapped class name or null if the class
-						 *  name does not exist. Note that this is not required to use mapped classes,
-						 *  as Rhino performs this mapping automatically during runtime.
-						 */
-            mapClassName(className: string): string | null | undefined;
-						/**
-						 * Allows runtime inspection of mappings
-						 */
-            new(): com.chattriggers.ctjs.api.Mappings;
-          }
-        }
-        namespace internal {
-          namespace launch {
-            interface IInjector { 
-            }
-          }
-          namespace commands {
-            const CommandCollection: {
-              new(): com.chattriggers.ctjs.internal.commands.CommandCollection;
-            }
-            interface CommandCollection { 
-              register(command: com.chattriggers.ctjs.internal.commands.Command): void;
-              unregister(command: com.chattriggers.ctjs.internal.commands.Command): void;
-              unregisterAll(): void;
-              onExecute<S, T>(block: kotlin.Function1<com.mojang.brigadier.context.CommandContext<S>, void>): T;
-            }
-            interface Command { 
-              getOverrideExisting(): boolean;
-              getName(): string;
-              registerImpl(dispatcher: com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.SharedSuggestionProvider>): void;
-              unregisterImpl(dispatcher: com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.SharedSuggestionProvider>): void;
-            }
-          }
         }
         const CTJS: {
           new(): com.chattriggers.ctjs.CTJS;
@@ -53116,6 +53012,117 @@ declare global {
           getMODULES_FOLDER(): string;
           getConfigLocation(): java.io.File;
           getAssetsDir(): java.io.File;
+        }
+      }
+    }
+    namespace v5 {
+      namespace loader {
+        const V5PreLaunch: {
+          new(): com.v5.loader.V5PreLaunch;
+        }
+        interface V5PreLaunch extends net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint { 
+        }
+      }
+      namespace storage {
+        const V5MixinStorage: {
+          get(key: string, defaultValue: any): any;
+          getBoolean(key: string, defaultValue: boolean): boolean;
+          getString(key: string, defaultValue: string): string;
+          set(key: string, value: any): void;
+          clear(): void;
+          applyMethod<T>(methodName: string, original: T, expectedType: java.lang.Class<T>): T;
+        }
+        interface V5MixinStorage { 
+        }
+      }
+      namespace mixins {
+        const CrossCollisionBlockMixin: {
+          new(): com.v5.mixins.CrossCollisionBlockMixin;
+        }
+        interface CrossCollisionBlockMixin { 
+        }
+        const MinecraftMixin: {
+          new(): com.v5.mixins.MinecraftMixin;
+        }
+        interface MinecraftMixin { 
+          options: net.minecraft.client.Options;
+        }
+        const MouseHandlerMixin: {
+          new(): com.v5.mixins.MouseHandlerMixin;
+        }
+        interface MouseHandlerMixin { 
+        }
+        const DrawContextCapture: {
+          new(): com.v5.mixins.DrawContextCapture;
+        }
+        interface DrawContextCapture { 
+        }
+        const BlockMixin: {
+          new(): com.v5.mixins.BlockMixin;
+        }
+        interface BlockMixin { 
+        }
+        const FramerateLimitTrackerMixin: {
+          new(): com.v5.mixins.FramerateLimitTrackerMixin;
+        }
+        interface FramerateLimitTrackerMixin { 
+        }
+        interface JoinMultiplayerScreenMixin extends net.minecraft.client.gui.screens.Screen { 
+        }
+        const KeyboardHandlerMixin: {
+          new(): com.v5.mixins.KeyboardHandlerMixin;
+        }
+        interface KeyboardHandlerMixin { 
+        }
+        const YggdrasilServicesKeyInfoMixin: {
+          new(): com.v5.mixins.YggdrasilServicesKeyInfoMixin;
+        }
+        interface YggdrasilServicesKeyInfoMixin { 
+        }
+        const EntityRendererMixin: {
+          new(): com.v5.mixins.EntityRendererMixin;
+        }
+        interface EntityRendererMixin { 
+        }
+        const ChatComponentMixin: {
+          new(): com.v5.mixins.ChatComponentMixin;
+        }
+        interface ChatComponentMixin { 
+        }
+        const FirmamentModAnnouncerMixin: {
+          new(): com.v5.mixins.FirmamentModAnnouncerMixin;
+        }
+        interface FirmamentModAnnouncerMixin { 
+        }
+        const ConnectionProxyMixin: {
+          new(): com.v5.mixins.ConnectionProxyMixin;
+        }
+        interface ConnectionProxyMixin { 
+        }
+        const GameRendererMixin: {
+          new(): com.v5.mixins.GameRendererMixin;
+        }
+        interface GameRendererMixin { 
+        }
+        const LevelRendererMixin: {
+          new(): com.v5.mixins.LevelRendererMixin;
+        }
+        interface LevelRendererMixin { 
+        }
+        const CameraMixin: {
+          new(): com.v5.mixins.CameraMixin;
+        }
+        interface CameraMixin { 
+        }
+        const ConnectionMixin: {
+          new(): com.v5.mixins.ConnectionMixin;
+        }
+        interface ConnectionMixin { 
+        }
+        const PlayerTabOverlayMixin: {
+          new(): com.v5.mixins.PlayerTabOverlayMixin;
+        }
+        interface PlayerTabOverlayMixin { 
         }
       }
     }

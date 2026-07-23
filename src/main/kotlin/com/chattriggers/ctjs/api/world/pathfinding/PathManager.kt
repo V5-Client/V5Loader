@@ -2,6 +2,7 @@ package com.chattriggers.ctjs.api.world.pathfinding
 
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.world.TabList
+import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.floor
@@ -18,6 +19,10 @@ object PathManager {
   private const val ETHERWARP_STANDING_EYE_HEIGHT = 1.62
   private const val ETHERWARP_LEGACY_SNEAK_OFFSET = 0.08
   private const val ETHERWARP_MODERN_SNEAK_OFFSET = 0.35
+  private const val MIN_HORIZONTAL_COORDINATE = -30_000_000
+  private const val MAX_HORIZONTAL_COORDINATE = 30_000_000
+  private const val MIN_VERTICAL_COORDINATE = -2_048
+  private const val MAX_VERTICAL_COORDINATE = 2_047
 
   private val MODERN_ETHERWARP_AREAS = setOf(
     "Hub",
@@ -122,6 +127,12 @@ object PathManager {
 
   private val avoidLock = Any()
   private val transientAvoidEntries = ArrayList<ManagedAvoidEntry>(8)
+  private val searchExecutor = Executors.newSingleThreadExecutor { runnable ->
+    Thread(runnable, "Swift-Pathfinder-Search").apply {
+      isDaemon = true
+      priority = Thread.NORM_PRIORITY - 1
+    }
+  }
 
   private var currentTask: Future<*>? = null
   private val searchId = AtomicInteger(0)
@@ -237,7 +248,7 @@ object PathManager {
     val endFlat = flattenPoints(endPoints)
 
     try {
-      currentTask = Swift.executor.submit {
+      currentTask = searchExecutor.submit {
         try {
           val result = NativePathfinderBridge.findPath(
             NativePathfinderBridge.NativePathSearchRequest(
@@ -382,11 +393,17 @@ object PathManager {
     if (!originX.isFinite() || !originY.isFinite() || !originZ.isFinite()) {
       return fail("Unable to resolve player eye origin")
     }
+    if (!isValidHorizontalCoordinate(originX) || !isValidHorizontalCoordinate(originZ)) {
+      return fail("Player eye origin is outside the supported world bounds")
+    }
 
     val minSupportY = world.minY
     val maxSupportY = world.maxY - 2
     if (goalY !in minSupportY..maxSupportY) {
       return fail("Etherwarp goal Y must be between $minSupportY and $maxSupportY")
+    }
+    if (!isValidHorizontalCoordinate(goalX) || !isValidHorizontalCoordinate(goalZ)) {
+      return fail("Etherwarp goal X and Z must be between $MIN_HORIZONTAL_COORDINATE and $MAX_HORIZONTAL_COORDINATE")
     }
     validateEtherwarpLanding("Goal block", goalX, goalY, goalZ)?.let {
       return fail(it)
@@ -397,7 +414,7 @@ object PathManager {
     isSearching = true
 
     try {
-      currentTask = Swift.executor.submit {
+      currentTask = searchExecutor.submit {
         try {
           val result = NativePathfinderBridge.findEtherwarpPath(
             NativePathfinderBridge.NativeEtherwarpSearchRequest(
@@ -535,8 +552,17 @@ object PathManager {
     if (points.any { it.size != 3 }) {
       return "$label must contain [x, y, z] points"
     }
+    if (points.any { !isValidHorizontalCoordinate(it[0]) || !isValidHorizontalCoordinate(it[2]) }) {
+      return "$label X and Z must be between $MIN_HORIZONTAL_COORDINATE and $MAX_HORIZONTAL_COORDINATE"
+    }
     return null
   }
+
+  private fun isValidHorizontalCoordinate(value: Int): Boolean =
+    value in MIN_HORIZONTAL_COORDINATE..MAX_HORIZONTAL_COORDINATE
+
+  private fun isValidHorizontalCoordinate(value: Double): Boolean =
+    value in MIN_HORIZONTAL_COORDINATE.toDouble()..MAX_HORIZONTAL_COORDINATE.toDouble()
 
   private fun validateHeights(
     startPoints: Array<IntArray>,
@@ -913,6 +939,8 @@ object PathManager {
   @JvmStatic
   @JvmOverloads
   fun addTransientAvoidPoint(x: Int, y: Int, z: Int, radius: Int = 2, penalty: Double = 36.0, ttlSearches: Int = 2) {
+    if (!isValidHorizontalCoordinate(x) || y !in MIN_VERTICAL_COORDINATE..MAX_VERTICAL_COORDINATE || !isValidHorizontalCoordinate(z)) return
+
     val clampedRadius = radius.coerceIn(1, 6)
     val clampedPenalty = penalty.coerceIn(5.0, 120.0)
     val clampedTtl = ttlSearches.coerceIn(1, 8)

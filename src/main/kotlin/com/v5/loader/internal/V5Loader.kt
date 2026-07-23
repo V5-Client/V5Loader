@@ -228,7 +228,9 @@ internal object V5Loader {
         if (sessionFilePath.isEmpty()) return ""
         val path = Path.of(sessionFilePath)
         if (!path.isRegularFile()) return ""
-        return parseJsonObject(path.readText())?.getStringOrNull("refresh_token").orEmpty().trim()
+        return runCatching {
+            parseJsonObject(path.readText())?.getStringOrNull("refresh_token").orEmpty().trim()
+        }.getOrDefault("")
     }
 
     private fun writeRefreshTokenToSessionFile(sessionFilePath: String, refreshToken: String): Boolean {
