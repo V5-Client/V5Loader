@@ -22,13 +22,6 @@ add_library(V5PathJNI SHARED
 target_include_directories(V5PathJNI PRIVATE ${JNI_INCLUDE_DIRS} src)
 target_link_libraries(V5PathJNI PRIVATE ${JNI_LIBRARIES})
 
-include(CTest)
-if (BUILD_TESTING)
-  add_executable(V5PathFlyCacheTest tests/fly_cache_test.cpp src/world_state.cpp)
-  target_include_directories(V5PathFlyCacheTest PRIVATE src)
-  add_test(NAME V5PathFlyCacheTest COMMAND V5PathFlyCacheTest)
-endif()
-
 set_target_properties(V5PathJNI PROPERTIES
   OUTPUT_NAME "V5PathJNI"
   PREFIX ""

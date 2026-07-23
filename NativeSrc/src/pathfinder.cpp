@@ -63,8 +63,11 @@ std::optional<SearchResult> findPath(
   std::unordered_map<uint64_t, int> coordToNode;
   coordToNode.reserve(reserveSize);
 
-  auto createNode = [&](const int x, const int y, const int z) {
+  auto getOrCreateNode = [&](const int x, const int y, const int z) {
     const int idx = static_cast<int>(nodeX.size());
+    const auto [it, inserted] = coordToNode.try_emplace(coordKey(x, y, z), idx);
+    if (!inserted) return std::pair{it->second, false};
+
     nodeX.push_back(x);
     nodeY.push_back(y);
     nodeZ.push_back(z);
@@ -74,8 +77,7 @@ std::optional<SearchResult> findPath(
     nodeParent.push_back(-1);
     nodeStartIndex.push_back(-1);
     nodeHeapPos.push_back(-1);
-    coordToNode.emplace(coordKey(x, y, z), idx);
-    return idx;
+    return std::pair{idx, true};
   };
 
   detail::Heap heap(nodeF, nodeHeapPos);
@@ -99,14 +101,7 @@ std::optional<SearchResult> findPath(
     const auto& start = params.starts[i];
     const double startPenalty = i == 0 ? 0.0 : std::max(0.0, params.nonPrimaryStartPenalty);
 
-    const uint64_t key = coordKey(start.x, start.y, start.z);
-    int nodeIdx = -1;
-    const auto it = coordToNode.find(key);
-    if (it == coordToNode.end()) {
-      nodeIdx = createNode(start.x, start.y, start.z);
-    } else {
-      nodeIdx = it->second;
-    }
+    const int nodeIdx = getOrCreateNode(start.x, start.y, start.z).first;
 
     if (startPenalty < nodeG[static_cast<size_t>(nodeIdx)]) {
       nodeParent[static_cast<size_t>(nodeIdx)] = -1;
@@ -181,19 +176,14 @@ std::optional<SearchResult> findPath(
         if (out.cost >= ActionCosts::INF_COST) continue;
 
         const double newCost = currCost + out.cost + runtime.transientAvoidPenalty(out.pos.x, out.pos.y, out.pos.z);
-        const uint64_t key = coordKey(out.pos.x, out.pos.y, out.pos.z);
-
-        int nIdx = -1;
-        const auto it = coordToNode.find(key);
-        if (it == coordToNode.end()) {
-          nIdx = createNode(out.pos.x, out.pos.y, out.pos.z);
+        const auto [nIdx, inserted] = getOrCreateNode(out.pos.x, out.pos.y, out.pos.z);
+        if (inserted) {
           nodeParent[static_cast<size_t>(nIdx)] = currIdx;
           nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;
           nodeG[static_cast<size_t>(nIdx)] = newCost;
           nodeF[static_cast<size_t>(nIdx)] = newCost + nodeH[static_cast<size_t>(nIdx)] * weight;
           heap.add(nIdx);
         } else {
-          nIdx = it->second;
           if (newCost < nodeG[static_cast<size_t>(nIdx)]) {
             nodeParent[static_cast<size_t>(nIdx)] = currIdx;
             nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;
@@ -217,19 +207,14 @@ std::optional<SearchResult> findPath(
       if (out.cost >= ActionCosts::INF_COST) continue;
 
       const double newCost = currCost + out.cost + runtime.transientAvoidPenalty(out.pos.x, out.pos.y, out.pos.z);
-      const uint64_t key = coordKey(out.pos.x, out.pos.y, out.pos.z);
-
-      int nIdx = -1;
-      const auto it = coordToNode.find(key);
-      if (it == coordToNode.end()) {
-        nIdx = createNode(out.pos.x, out.pos.y, out.pos.z);
+      const auto [nIdx, inserted] = getOrCreateNode(out.pos.x, out.pos.y, out.pos.z);
+      if (inserted) {
         nodeParent[static_cast<size_t>(nIdx)] = currIdx;
         nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;
         nodeG[static_cast<size_t>(nIdx)] = newCost;
         nodeF[static_cast<size_t>(nIdx)] = newCost + nodeH[static_cast<size_t>(nIdx)] * weight;
         heap.add(nIdx);
       } else {
-        nIdx = it->second;
         if (newCost < nodeG[static_cast<size_t>(nIdx)]) {
           nodeParent[static_cast<size_t>(nIdx)] = currIdx;
           nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;

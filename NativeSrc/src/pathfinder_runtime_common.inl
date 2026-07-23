@@ -13,17 +13,18 @@ inline Runtime::Runtime(const WorldSnapshot& world, const SearchParams& params)
     walkStartX_(params.starts.empty() ? 0 : params.starts.front().x),
     walkStartZ_(params.starts.empty() ? 0 : params.starts.front().z) {
   const int reserveTarget = std::clamp(params_.maxIterations / 2, 4096, 262144);
-  cacheReserve_ = static_cast<size_t>(reserveTarget);
+  const size_t cacheReserve = static_cast<size_t>(reserveTarget);
   avoidPenaltyCacheEnabled_ = params_.avoidZones.size() >= 3;
 
-  safeCache_.reserve(cacheReserve_);
-  flyClearCache_.reserve(cacheReserve_);
   if (params_.isFly) {
-    flyEnvironmentCache_.reserve(cacheReserve_);
+    flyClearCache_.reserve(cacheReserve);
+    flyEnvironmentCache_.reserve(cacheReserve);
+  } else {
+    safeCache_.reserve(cacheReserve);
+    penaltyCache_.reserve(cacheReserve);
   }
-  penaltyCache_.reserve(cacheReserve_);
   if (avoidPenaltyCacheEnabled_) {
-    avoidPenaltyCache_.reserve(cacheReserve_);
+    avoidPenaltyCache_.reserve(cacheReserve);
   }
 
   flyMinY_ = world_.minY;

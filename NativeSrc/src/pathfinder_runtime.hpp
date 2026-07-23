@@ -66,6 +66,7 @@ struct FlyEnvironment {
   double horizontalCost = 0.0;
   double enclosureCost = 0.0;
   bool confined = false;
+  uint8_t computed = 0;
 };
 
 class Runtime {
@@ -93,7 +94,6 @@ class Runtime {
   std::unordered_map<uint64_t, double> penaltyCache_;
   mutable std::unordered_map<uint64_t, double> avoidPenaltyCache_;
 
-  size_t cacheReserve_ = 0;
   bool avoidPenaltyCacheEnabled_ = false;
 
   int walkStartX_ = 0;
@@ -145,9 +145,7 @@ class Runtime {
   [[nodiscard]] bool moveDescend(const Int3& current, int dx, int dz, MoveOut& out);
 
   [[nodiscard]] bool moveFly(const Int3& current, int dx, int dy, int dz, double progress, MoveOut& out);
-  [[nodiscard]] bool shouldRejectConfined(int x, int y, int z, double progress);
-  [[nodiscard]] double horizontalClearanceCost(int x, int y, int z, double progress);
-  [[nodiscard]] double enclosureCost(int x, int y, int z, double progress);
+  void populateFlyEnvironment(int x, int y, int z, uint8_t needed, FlyEnvironment& environment);
 };
 
 } // namespace v5pf::detail
