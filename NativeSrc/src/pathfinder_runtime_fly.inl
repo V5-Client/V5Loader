@@ -129,7 +129,7 @@ inline void Runtime::populateFlyEnvironment(
   if (missing == 0) return;
 
   if ((missing & FLY_ENV_GROUND) != 0) {
-    for (int distance = 1; distance <= 5; distance++) {
+    for (int distance = 1; distance <= 3; distance++) {
       if (!isPassableForFlying(x, y - distance, z)) {
         environment.groundCost = groundClearanceCost(distance);
         break;
