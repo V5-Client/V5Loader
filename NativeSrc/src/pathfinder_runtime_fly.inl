@@ -97,8 +97,6 @@ inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, co
   if (progress <= 0.94) needed |= FLY_ENV_ENCLOSURE;
   populateFlyEnvironment(destX, destY, destZ, needed, environment);
 
-  if (progress <= 0.92 && environment.confined) return false;
-
   if (dy != 0) {
     cost += (diagonalHorizontal || dx != 0 || dz != 0) ? 0.2 : 1.2;
   }
