@@ -1,10 +1,8 @@
 package com.chattriggers.ctjs.api.client
 
 import com.chattriggers.ctjs.api.render.Font
-import com.chattriggers.ctjs.api.render.NVGRenderer
+import com.chattriggers.ctjs.api.render.Renderer
 import net.minecraft.util.ARGB
-import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER
-import org.lwjgl.nanovg.NanoVG.NVG_ALIGN_MIDDLE
 
 object ScreenHelper {
     @JvmField
@@ -41,17 +39,17 @@ object ScreenHelper {
         val defaultTextColor = if (hovered) argb(255, 255, 255, 255) else argb(252, 224, 232, 242)
         val textColor = textColorOverride ?: defaultTextColor
 
-        NVGRenderer.drawDropShadow(x, y, width, height, 5f, 14f, 1.3f, argb(60, 0, 10, 28))
-        NVGRenderer.drawRoundedRect(x, y, width, height, 5f, bg)
-        NVGRenderer.drawHollowRect(x, y, width, height, 0.65f, border, 5f)
-        NVGRenderer.text(
+        Renderer.drawDropShadow(x, y, width, height, 5f, 14f, 1.3f, argb(60, 0, 10, 28))
+        Renderer.drawRoundedRect(x, y, width, height, 5f, bg)
+        Renderer.drawHollowRect(x, y, width, height, 0.65f, border, 5f)
+        Renderer.text(
             label,
             x + width / 2f,
             y + height / 2f,
             8.7f,
             textColor,
             smallerFont,
-            NVG_ALIGN_CENTER or NVG_ALIGN_MIDDLE
+            Renderer.ALIGN_CENTER or Renderer.ALIGN_MIDDLE
         )
     }
 

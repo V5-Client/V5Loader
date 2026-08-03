@@ -35,6 +35,7 @@
       "AbstractContainerScreenAccessor",
       "AbstractContainerScreenMixin",
       "GuiMixin",
+      "GuiGraphicsExtractorAccessor",
       "GuiRendererMixin",
       "ItemInHandRendererMixin",
       "JoinMultiplayerScreenMixin",

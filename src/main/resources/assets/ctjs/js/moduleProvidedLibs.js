@@ -38,9 +38,8 @@
 
     global.Priority = Java.class("com.chattriggers.ctjs.api.triggers.Trigger").Priority;
     global.Console = Java.type("com.chattriggers.ctjs.engine.Console").INSTANCE;
+    global.Renderer = Java.class("com.chattriggers.ctjs.api.render.Renderer").INSTANCE;
     const JSErrorReporter = Java.type("com.chattriggers.ctjs.internal.engine.JSErrorReporter").INSTANCE;
-    global.NVG = Java.class("com.chattriggers.ctjs.api.render.NVGRenderer").INSTANCE;
-
     global.cancel = event => {
         if (event instanceof CancellableEvent) {
             event.setCanceled(true);

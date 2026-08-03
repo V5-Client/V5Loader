@@ -82,7 +82,7 @@ class Rectangle(
     fun draw() = apply {
         shadow.draw()
         outline.draw()
-        Renderer.drawRect(color, x, y, width, height)
+        Renderer.drawRect(x, y, width, height, color.toInt())
     }
 
     private class Shadow(
@@ -93,20 +93,8 @@ class Rectangle(
     ) {
         fun draw() {
             if (!on) return
-            Renderer.drawRect(
-                color,
-                rect.x + offset.x,
-                rect.y + rect.height,
-                rect.width,
-                offset.y
-            )
-            Renderer.drawRect(
-                color,
-                rect.x + rect.width,
-                rect.y + offset.y,
-                offset.x,
-                rect.height - offset.y
-            )
+            Renderer.drawRect(rect.x + offset.x, rect.y + rect.height, rect.width, offset.y, color.toInt())
+            Renderer.drawRect(rect.x + rect.width, rect.y + offset.y, offset.x, rect.height - offset.y, color.toInt())
         }
     }
 
@@ -119,11 +107,11 @@ class Rectangle(
         fun draw() {
             if (!on) return
             Renderer.drawRect(
-                color,
                 rect.x - thickness,
                 rect.y - thickness,
                 rect.width + thickness * 2,
-                rect.height + thickness * 2
+                rect.height + thickness * 2,
+                color.toInt(),
             )
         }
     }

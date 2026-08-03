@@ -3,7 +3,7 @@ package com.chattriggers.ctjs.api.render
 import net.minecraft.client.gui.GuiGraphicsExtractor
 
 object DrawContextHolder {
-    @JvmStatic
+    @JvmField
     var currentContext: GuiGraphicsExtractor? = null
 
     inline fun <T> withContext(context: GuiGraphicsExtractor, block: () -> T): T {

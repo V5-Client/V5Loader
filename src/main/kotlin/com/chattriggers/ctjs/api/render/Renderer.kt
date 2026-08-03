@@ -1,6 +1,5 @@
 package com.chattriggers.ctjs.api.render
 
-import com.chattriggers.ctjs.MCVertexFormat
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.entity.PlayerMP
@@ -10,15 +9,9 @@ import com.chattriggers.ctjs.engine.LogType
 import com.chattriggers.ctjs.engine.printToConsole
 import com.chattriggers.ctjs.internal.utils.getOrDefault
 import com.chattriggers.ctjs.internal.utils.toRadians
-import com.mojang.blaze3d.opengl.GlStateManager
-import com.mojang.blaze3d.opengl.GlTexture
-import com.mojang.blaze3d.pipeline.RenderPipeline.Snippet
-import gg.essential.universal.UGraphics
 import gg.essential.universal.UMatrixStack
 import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.player.AbstractClientPlayer
-import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import com.mojang.blaze3d.vertex.PoseStack
 import org.joml.Matrix4f
@@ -27,15 +20,10 @@ import org.mozilla.javascript.NativeObject
 import kotlin.collections.ArrayDeque
 import kotlin.math.PI
 import kotlin.math.atan
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
-import org.lwjgl.opengl.GL13.GL_TEXTURE0
 
-object Renderer {
+object Renderer : GuiRendererBackend() {
     private val NEWLINE_REGEX = """\n|\r\n?""".toRegex()
 
     // The currently-active matrix stack
@@ -168,37 +156,6 @@ object Renderer {
     }
 
     @JvmStatic
-    fun disableCull() = apply { LegacyPipelineBuilder.disableCull() }
-
-    @JvmStatic
-    fun enableCull() = apply { LegacyPipelineBuilder.enableCull() }
-
-    @JvmStatic
-    fun disableLighting() = apply { UGraphics.disableLighting() }
-
-    @JvmStatic
-    fun enableLighting() = apply { UGraphics.enableLighting() }
-
-    @JvmStatic
-    fun disableDepth() = apply { LegacyPipelineBuilder.disableDepth() }
-
-    @JvmStatic
-    fun enableDepth() = apply { LegacyPipelineBuilder.enableDepth() }
-
-    @JvmStatic
-    fun disableBlend() = apply { LegacyPipelineBuilder.disableBlend() }
-
-    @JvmStatic
-    fun enableBlend() = apply { LegacyPipelineBuilder.enableBlend() }
-
-    @JvmStatic
-    @JvmOverloads
-    fun bindTexture(texture: Image, textureIndex: Int = 0) = apply {
-        GlStateManager._activeTexture(GL_TEXTURE0 + textureIndex)
-        GlStateManager._bindTexture((texture.getTexture()?.getTexture() as? GlTexture)?.glId() ?: 0)
-    }
-
-    @JvmStatic
     fun deleteTexture(texture: Image) = apply {
         texture.destroy()
     }
@@ -224,24 +181,22 @@ object Renderer {
     @JvmStatic
     @JvmOverloads
     fun translate(x: Float, y: Float, z: Float = 0.0F) = apply {
-        matrixStack.translate(x, y, z)
-        DrawContextHolder.currentContext?.pose()?.translate(x, y)
+        DrawContextHolder.currentContext?.pose()?.translate(x, y) ?: matrixStack.translate(x, y, z)
     }
 
     @JvmStatic
     @JvmOverloads
     fun scale(scaleX: Float, scaleY: Float = scaleX, scaleZ: Float = 1f) = apply {
-        matrixStack.scale(scaleX, scaleY, scaleZ)
-        DrawContextHolder.currentContext?.pose()?.scale(scaleX, scaleY)
+        DrawContextHolder.currentContext?.pose()?.scale(scaleX, scaleY) ?: matrixStack.scale(scaleX, scaleY, scaleZ)
     }
 
     @JvmStatic
     @JvmOverloads
     fun rotate(angle: Float, x: Float = 0f, y: Float = 0f, z: Float = 1f) = apply {
-        matrixStack.rotate(angle, x, y, z)
         if (x == 0f && y == 0f && z != 0f) {
-            DrawContextHolder.currentContext?.pose()?.rotate(angle * z)
-        }
+            DrawContextHolder.currentContext?.pose()?.rotate(Math.toRadians((angle * z).toDouble()).toFloat())
+                ?: matrixStack.rotate(angle, x, y, z)
+        } else matrixStack.rotate(angle, x, y, z)
     }
 
     @JvmStatic
@@ -258,135 +213,6 @@ object Renderer {
     }
 
     /**
-     * Begin drawing with the world renderer
-     *
-     * @param drawMode the GL draw mode
-     * @param vertexFormat The [VertexFormat] to use for drawing
-     * @return [Renderer] to allow for method chaining
-     * @see DrawMode
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun begin(
-        drawMode: DrawMode = Renderer.DrawMode.QUADS,
-        vertexFormat: VertexFormat = Renderer.VertexFormat.POSITION,
-        snippet: Renderer.RenderSnippet = Renderer.RenderSnippet.POSITION_COLOR_SNIPPET
-    ) = apply {
-        Renderer3d.begin(drawMode, vertexFormat, snippet)
-    }
-
-    /**
-     * Sets a new vertex in the world renderer.
-     *
-     * @param x the x position
-     * @param y the y position
-     * @param z the z position
-     * @return [Renderer] to allow for method chaining
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun pos(x: Float, y: Float, z: Float = 0f) = apply {
-        val camera = Client.getMinecraft().gameRenderer.mainCamera.position()
-        Renderer3d.pos(x + camera.x.toFloat(), y + camera.y.toFloat(), z + camera.z.toFloat())
-    }
-
-    /**
-     * Sets the texture location on the last defined vertex.
-     *
-     * @param u the u position in the texture
-     * @param v the v position in the texture
-     * @return [Renderer] to allow for method chaining
-     */
-    @JvmStatic
-    fun tex(u: Float, v: Float) = apply {
-        Renderer3d.tex(u, v)
-    }
-
-    /**
-     * Sets the color for the last defined vertex.
-     *
-     * @param r the red value of the color, between 0 and 1
-     * @param g the green value of the color, between 0 and 1
-     * @param b the blue value of the color, between 0 and 1
-     * @param a the alpha value of the color, between 0 and 1
-     * @return [Renderer] to allow for method chaining
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun color(r: Float, g: Float, b: Float, a: Float = 1f) = apply {
-        Renderer3d.color(r, g, b, a)
-    }
-
-    /**
-     * Sets the color for the last defined vertex.
-     *
-     * @param r the red value of the color, between 0 and 255
-     * @param g the green value of the color, between 0 and 255
-     * @param b the blue value of the color, between 0 and 255
-     * @param a the alpha value of the color, between 0 and 255
-     * @return [Renderer] to allow for method chaining
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun color(r: Int, g: Int, b: Int, a: Int = 255) = apply {
-        Renderer3d.color(r, g, b, a)
-    }
-
-    /**
-     * Sets the color for the last defined vertex.
-     *
-     * @param color the color value, can use [getColor] to get this
-     * @return [Renderer] to allow for method chaining
-     */
-    @JvmStatic
-    fun color(color: Long) = apply {
-        Renderer3d.color(color)
-    }
-
-    /**
-     * Sets the normal of the vertex. This is mostly used with [VertexFormat.LINES]
-     *
-     * @param x the x position of the normal vector
-     * @param y the y position of the normal vector
-     * @param z the z position of the normal vector
-     * @return [Renderer] to allow for method chaining
-     */
-    @JvmStatic
-    fun normal(x: Float, y: Float, z: Float) = apply {
-        Renderer3d.normal(x, y, z)
-    }
-
-    /**
-     * Sets the overlay location on the last defined vertex.
-     *
-     * @param u the u position in the overlay
-     * @param v the v position in the overlay
-     * @return [Renderer] to allow for method chaining
-     */
-    @JvmStatic
-    fun overlay(u: Int, v: Int) = apply {
-        Renderer3d.overlay(u, v)
-    }
-
-    /**
-     * Sets the light location on the last defined vertex.
-     *
-     * @param u the u position in the light
-     * @param v the v position in the light
-     * @return [Renderer] to allow for method chaining
-     */
-    @JvmStatic
-    fun light(u: Int, v: Int) = apply {
-        Renderer3d.light(u, v)
-    }
-
-    /**
-     * Finalizes vertices and draws the world renderer.
-     */
-    @JvmStatic
-    fun draw() = Renderer3d.draw()
-
-    /**
      * Gets a fixed render position from x, y, and z inputs adjusted with partial ticks
      * @param x the X coordinate
      * @param y the Y coordinate
@@ -400,80 +226,6 @@ object Renderer {
             y - Player.getRenderY().toFloat(),
             z - Player.getRenderZ().toFloat()
         )
-    }
-
-    @JvmStatic
-    fun drawRect(color: Long, x: Float, y: Float, width: Float, height: Float) = apply {
-        DrawContextHolder.currentContext?.let { context ->
-            val x1 = x.roundToInt()
-            val y1 = y.roundToInt()
-            context.fill(x1, y1, (x + width).roundToInt(), (y + height).roundToInt(), color.toInt())
-            return@apply
-        }
-
-        val left = min(x, x + width)
-        val right = max(x, x + width)
-        val top = min(y, y + height)
-        val bottom = max(y, y + height)
-
-        begin(vertexFormat = VertexFormat.POSITION_COLOR)
-        pos(left, bottom, 0f).color(color)
-        pos(right, bottom, 0f).color(color)
-        pos(right, top, 0f).color(color)
-        pos(left, top, 0f).color(color)
-        draw()
-    }
-
-    @JvmStatic
-    fun drawLine(
-        color: Long,
-        x1: Float,
-        y1: Float,
-        x2: Float,
-        y2: Float,
-        thickness: Float,
-    ) {
-        val theta = -atan2(y2 - y1, x2 - x1)
-        val i = sin(theta) * (thickness / 2)
-        val j = cos(theta) * (thickness / 2)
-
-        begin(vertexFormat = VertexFormat.POSITION_COLOR)
-        pos(x1 + i, y1 + j, 0f).color(color)
-        pos(x2 + i, y2 + j, 0f).color(color)
-        pos(x2 - i, y2 - j, 0f).color(color)
-        pos(x1 - i, y1 - j, 0f).color(color)
-        draw()
-    }
-
-    @JvmStatic
-    fun drawCircle(
-        color: Long,
-        x: Float,
-        y: Float,
-        radius: Float,
-        steps: Int,
-    ) {
-        val theta = 2 * PI / steps
-        val cos = cos(theta).toFloat()
-        val sin = sin(theta).toFloat()
-
-        var xHolder: Float
-        var circleX = 1f
-        var circleY = 0f
-
-        begin(DrawMode.TRIANGLE_STRIP, VertexFormat.POSITION_COLOR)
-
-        for (i in 0..steps) {
-            pos(x, y, 0f).color(color)
-            pos(circleX * radius + x, circleY * radius + y, 0f).color(color)
-            xHolder = circleX
-            circleX = cos * circleX - sin * circleY
-            circleY = sin * xHolder + cos * circleY
-
-            pos(circleX * radius + x, circleY * radius + y, 0f).color(color)
-        }
-
-        draw()
     }
 
     @JvmStatic
@@ -533,17 +285,13 @@ object Renderer {
 
     @JvmStatic
     fun drawImage(image: Image, x: Float, y: Float, width: Float, height: Float) {
-        scale(1f, 1f, 50f)
-
-        // FIXME: icba to do this
-//        RenderSystem.setShaderTexture(0, image.getTexture()?.glTextureView)
-
-        begin(DrawMode.QUADS, VertexFormat.POSITION_TEXTURE_COLOR, snippet = RenderSnippet.POSITION_TEX_COLOR_SNIPPET)
-        pos(x, y + height, 0f).tex(0f, 1f).color(WHITE)
-        pos(x + width, y + height, 0f).tex(1f, 1f).color(WHITE)
-        pos(x + width, y, 0f).tex(1f, 0f).color(WHITE)
-        pos(x, y, 0f).tex(0f, 0f).color(WHITE)
-        draw()
+        val texture = image.getTexture() ?: return
+        DrawContextHolder.currentContext?.blit(
+            texture.textureView,
+            texture.sampler,
+            x.roundToInt(), y.roundToInt(), width.roundToInt(), height.roundToInt(),
+            0f, 0f, 1f, 1f,
+        )
     }
 
     /**
@@ -721,58 +469,6 @@ object Renderer {
         } else if (matrixPushCounter < 0) {
             "Warning: Render function has too many calls to Renderer.popMatrix()".printToConsole(LogType.WARN)
         }
-    }
-
-    enum class DrawMode(private val ucValue: UGraphics.DrawMode) {
-        LINES(UGraphics.DrawMode.LINES),
-        LINE_STRIP(UGraphics.DrawMode.LINE_STRIP),
-        TRIANGLES(UGraphics.DrawMode.TRIANGLES),
-        TRIANGLE_STRIP(UGraphics.DrawMode.TRIANGLE_STRIP),
-        TRIANGLE_FAN(UGraphics.DrawMode.TRIANGLE_FAN),
-        QUADS(UGraphics.DrawMode.QUADS);
-
-        fun toUC() = ucValue
-
-        companion object {
-            @JvmStatic
-            fun fromUC(ucValue: UGraphics.DrawMode) = entries.first { it.ucValue == ucValue }
-        }
-    }
-
-    enum class VertexFormat(private val mcValue: MCVertexFormat) {
-        LINES(DefaultVertexFormat.POSITION_COLOR_NORMAL),
-        POSITION(DefaultVertexFormat.POSITION),
-        POSITION_COLOR(DefaultVertexFormat.POSITION_COLOR),
-        POSITION_TEXTURE(DefaultVertexFormat.POSITION_TEX),
-        POSITION_TEXTURE_COLOR(DefaultVertexFormat.POSITION_TEX_COLOR),
-        POSITION_COLOR_TEXTURE_LIGHT(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP),
-        POSITION_TEXTURE_LIGHT_COLOR(DefaultVertexFormat.POSITION_TEX_LIGHTMAP_COLOR),
-        POSITION_TEXTURE_COLOR_LIGHT(DefaultVertexFormat.PARTICLE),
-        POSITION_TEXTURE_COLOR_NORMAL(DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
-
-        fun toMC() = mcValue
-
-        companion object {
-            @JvmStatic
-            fun fromMC(ucValue: MCVertexFormat) = entries.first { it.mcValue == ucValue }
-        }
-    }
-
-    enum class RenderSnippet(val mcSnippet: Snippet) {
-        TERRAIN_SNIPPET(RenderPipelines.TERRAIN_SNIPPET),
-        ENTITY_SNIPPET(RenderPipelines.ENTITY_SNIPPET),
-        RENDERTYPE_BEACON_BEAM_SNIPPET(RenderPipelines.BEACON_BEAM_SNIPPET),
-        TEXT_SNIPPET(RenderPipelines.TEXT_SNIPPET),
-        RENDERTYPE_END_PORTAL_SNIPPET(RenderPipelines.END_PORTAL_SNIPPET),
-        RENDERTYPE_CLOUDS_SNIPPET(RenderPipelines.CLOUDS_SNIPPET),
-        RENDERTYPE_LINES_SNIPPET(RenderPipelines.LINES_SNIPPET),
-        POSITION_COLOR_SNIPPET(RenderPipelines.DEBUG_FILLED_SNIPPET),
-        PARTICLE_SNIPPET(RenderPipelines.PARTICLE_SNIPPET),
-        WEATHER_SNIPPET(RenderPipelines.WEATHER_SNIPPET),
-        GUI_SNIPPET(RenderPipelines.GUI_SNIPPET),
-        POSITION_TEX_COLOR_SNIPPET(RenderPipelines.GUI_TEXTURED_SNIPPET),
-        RENDERTYPE_OUTLINE_SNIPPET(RenderPipelines.OUTLINE_SNIPPET),
-        POST_EFFECT_PROCESSOR_SNIPPET(RenderPipelines.POST_PROCESSING_SNIPPET),
     }
 
     class ScreenWrapper {

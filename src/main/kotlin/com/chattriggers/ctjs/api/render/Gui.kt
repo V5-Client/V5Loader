@@ -277,15 +277,14 @@ class Gui @JvmOverloads constructor(
 
         @Suppress("UNCHECKED_CAST")
         val drawContexts = drawContextsField.get(this) as List<GuiGraphicsExtractor>
-        Renderer.pushMatrix(UMatrixStack(drawContexts.last().pose()))
-
-        Renderer.partialTicks = partialTicks
-
-        this.mouseX = mouseX
-        this.mouseY = mouseY
-        onDraw?.trigger(arrayOf<Any?>(mouseX, mouseY, partialTicks))
-
-        Renderer.popMatrix()
+        DrawContextHolder.withContext(drawContexts.last()) {
+            Renderer.pushMatrix(UMatrixStack(drawContexts.last().pose()))
+            Renderer.partialTicks = partialTicks
+            this.mouseX = mouseX
+            this.mouseY = mouseY
+            onDraw?.trigger(arrayOf<Any?>(mouseX, mouseY, partialTicks))
+            Renderer.popMatrix()
+        }
     }
 
     /**

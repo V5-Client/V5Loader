@@ -50,7 +50,7 @@ dependencies {
     implementation("meteordevelopment:discord-ipc:1.1")
     include("meteordevelopment:discord-ipc:1.1")
 
-    // NanoVG (with natives)
+    // CPU-only NanoSVG rasterization (no NanoVG renderer or GL backend)
     implementation(libs.lwjgl.nanovg) { include(this) }
     listOf("windows", "linux", "macos", "macos-arm64").forEach {
         implementation(variantOf(libs.lwjgl.nanovg) { classifier("natives-$it") }) {
