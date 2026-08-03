@@ -55,7 +55,7 @@ class CTJS : ClientModInitializer {
     companion object {
         const val MOD_ID = "ctjs"
         const val WEBSITE_ROOT = "https://www.chattriggers.com"
-        const val MOD_VERSION = "5.1.1"
+        const val MOD_VERSION = "5.2.0"
         const val MODULES_FOLDER = "./config/ChatTriggers/modules"
 
         val configLocation = File("./config")
