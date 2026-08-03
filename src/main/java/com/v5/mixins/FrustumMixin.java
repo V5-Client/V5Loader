@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.storage.V5MixinStorage;
+import com.chattriggers.ctjs.api.client.Client;
 import net.minecraft.client.renderer.culling.Frustum;
 import org.joml.FrustumIntersection;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,6 +14,6 @@ public class FrustumMixin {
     private void v5$showEverythingInFreecam(double minX, double minY, double minZ,
                                              double maxX, double maxY, double maxZ,
                                              CallbackInfoReturnable<Integer> cir) {
-        if (V5MixinStorage.getBoolean("freecamEnabled", false)) cir.setReturnValue(FrustumIntersection.INSIDE);
+        if (Client.isFreecam()) cir.setReturnValue(FrustumIntersection.INSIDE);
     }
 }

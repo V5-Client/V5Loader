@@ -2,7 +2,6 @@ package com.v5.mixins;
 
 import com.chattriggers.ctjs.api.client.Client;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.v5.storage.V5MixinStorage;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -22,7 +21,7 @@ public class KeyboardHandlerMixin {
         }
 
         Minecraft client = Minecraft.getInstance();
-        if (!V5MixinStorage.getBoolean("freecamEnabled", false) || client.screen != null) {
+        if (!Client.isFreecam() || client.screen != null) {
             return;
         }
 

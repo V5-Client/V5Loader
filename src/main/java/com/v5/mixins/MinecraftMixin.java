@@ -1,7 +1,6 @@
 package com.v5.mixins;
 
 import com.chattriggers.ctjs.api.client.Client;
-import com.v5.storage.V5MixinStorage;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -20,6 +19,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftMixin {
 
     @Shadow @Final public Options options;
+
+    private Integer v5$savedDistance;
+    private CameraType v5$savedPerspective;
+    private Integer v5$savedFps;
+    private Float v5$savedMasterVolume;
 
     @ModifyExpressionValue(
             method = "pauseIfInactive",
@@ -40,12 +44,12 @@ public class MinecraftMixin {
             )
     )
     private boolean v5$allowAttackWhileUngrabbed(boolean original) {
-        return original || V5MixinStorage.getBoolean("ungrabbed", false) || Client.automatedAttackHeld;
+        return original || Client.isUngrabbed() || Client.automatedAttackHeld;
     }
 
     @Inject(method = "handleKeybinds()V", at = @At("HEAD"))
     private void v5$handleInputEvents(CallbackInfo ci) {
-        if (!V5MixinStorage.getBoolean("inputLocked", false)) {
+        if (!Client.isInputLocked()) {
             return;
         }
 
@@ -63,74 +67,59 @@ public class MinecraftMixin {
         int currentFps = options.framerateLimit().get();
         float currentMasterVolume = options.getFinalSoundSourceVolume(SoundSource.MASTER);
 
-        boolean macroEnabled = V5MixinStorage.getBoolean("macroEnabled", false);
-        String renderLimiter = V5MixinStorage.getString("renderLimiter", "Off");
-        boolean forcePerspective = V5MixinStorage.getBoolean("forcePerspective", false);
-        boolean limitFps = V5MixinStorage.getBoolean("limitFps", false);
-        boolean muteGame = V5MixinStorage.getBoolean("muteGame", false);
+        boolean macroEnabled = Client.isMacroEnabled();
+        String renderLimiter = Client.getRenderLimiter();
+        boolean forcePerspective = Client.isForcePerspective();
+        boolean limitFps = Client.getLimitFps();
+        boolean muteGame = Client.getMuteGame();
 
-        Object savedDistanceObj = V5MixinStorage.get("savedDistance", null);
         if (macroEnabled && "Limit Chunks".equals(renderLimiter)) {
-            if (savedDistanceObj == null) {
-                V5MixinStorage.set("savedDistance", currentDist);
-            }
+            if (v5$savedDistance == null) v5$savedDistance = currentDist;
             if (currentDist != 2) {
                 options.renderDistance().set(2);
             }
-        } else if (savedDistanceObj instanceof Number savedDistanceNum) {
-            int savedDistance = savedDistanceNum.intValue();
-            if (currentDist != savedDistance) {
-                options.renderDistance().set(savedDistance);
+        } else if (v5$savedDistance != null) {
+            if (currentDist != v5$savedDistance) {
+                options.renderDistance().set(v5$savedDistance);
             }
-            V5MixinStorage.set("savedDistance", null);
+            v5$savedDistance = null;
         }
 
-        Object savedPerspectiveObj = V5MixinStorage.get("savedPerspective", null);
         if (macroEnabled && forcePerspective) {
-            if (savedPerspectiveObj == null) {
-                V5MixinStorage.set("savedPerspective", currentPerspective);
-            }
+            if (v5$savedPerspective == null) v5$savedPerspective = currentPerspective;
             if (currentPerspective != CameraType.THIRD_PERSON_BACK) {
                 options.setCameraType(CameraType.THIRD_PERSON_BACK);
             }
-        } else if (savedPerspectiveObj instanceof CameraType savedPerspective) {
-            if (currentPerspective != savedPerspective) {
-                options.setCameraType(savedPerspective);
+        } else if (v5$savedPerspective != null) {
+            if (currentPerspective != v5$savedPerspective) {
+                options.setCameraType(v5$savedPerspective);
             }
-            V5MixinStorage.set("savedPerspective", null);
+            v5$savedPerspective = null;
         }
 
-        Object savedFpsObj = V5MixinStorage.get("savedFps", null);
         if (macroEnabled && limitFps) {
-            if (savedFpsObj == null) {
-                V5MixinStorage.set("savedFps", currentFps);
-            }
+            if (v5$savedFps == null) v5$savedFps = currentFps;
             if (currentFps != 30) {
                 options.framerateLimit().set(30);
             }
-        } else if (savedFpsObj instanceof Number savedFpsNum) {
-            int savedFps = savedFpsNum.intValue();
-            if (currentFps != savedFps) {
-                int restoreValue = savedFps > 240 ? 260 : savedFps;
+        } else if (v5$savedFps != null) {
+            if (currentFps != v5$savedFps) {
+                int restoreValue = v5$savedFps > 240 ? 260 : v5$savedFps;
                 options.framerateLimit().set(restoreValue);
             }
-            V5MixinStorage.set("savedFps", null);
+            v5$savedFps = null;
         }
 
-        Object savedMasterVolumeObj = V5MixinStorage.get("savedMasterVolume", null);
         if (macroEnabled && muteGame) {
-            if (savedMasterVolumeObj == null) {
-                V5MixinStorage.set("savedMasterVolume", currentMasterVolume);
-            }
+            if (v5$savedMasterVolume == null) v5$savedMasterVolume = currentMasterVolume;
             if (Float.compare(currentMasterVolume, 0.0F) != 0) {
                 options.getSoundSourceOptionInstance(SoundSource.MASTER).set(0.0D);
             }
-        } else if (savedMasterVolumeObj instanceof Number savedMasterVolumeNum) {
-            float savedMasterVolume = savedMasterVolumeNum.floatValue();
-            if (Float.compare(currentMasterVolume, savedMasterVolume) != 0) {
-                options.getSoundSourceOptionInstance(SoundSource.MASTER).set((double) savedMasterVolume);
+        } else if (v5$savedMasterVolume != null) {
+            if (Float.compare(currentMasterVolume, v5$savedMasterVolume) != 0) {
+                options.getSoundSourceOptionInstance(SoundSource.MASTER).set((double) v5$savedMasterVolume);
             }
-            V5MixinStorage.set("savedMasterVolume", null);
+            v5$savedMasterVolume = null;
         }
     }
 }

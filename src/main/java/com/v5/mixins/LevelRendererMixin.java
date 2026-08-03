@@ -2,7 +2,7 @@ package com.v5.mixins;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
-import com.v5.storage.V5MixinStorage;
+import com.chattriggers.ctjs.api.client.Client;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
@@ -21,13 +21,12 @@ public class LevelRendererMixin {
 
   @ModifyVariable(method = "cullTerrain", at = @At("HEAD"), argsOnly = true)
   private boolean v5$useSpectatorCullingInFreecam(boolean spectator) {
-    return spectator || V5MixinStorage.getBoolean("freecamEnabled", false);
+    return spectator || Client.isFreecam();
   }
 
   @Inject(method = "addMainPass", at = @At("HEAD"), cancellable = true)
   private void v5$renderMain(FrameGraphBuilder frameGraphBuilder, Frustum frustum, Matrix4fc matrix4f, GpuBufferSlice gpuBufferSlice, boolean renderBlockOutline, LevelRenderState worldRenderState, DeltaTracker deltaTracker, ProfilerFiller profiler, ChunkSectionsToRender chunkSectionsToRender, CallbackInfo ci) {
-    if (V5MixinStorage.getBoolean("macroEnabled", false)
-            && "No Render".equals(V5MixinStorage.getString("renderLimiter", "Off"))) {
+    if (Client.isMacroEnabled() && "No Render".equals(Client.getRenderLimiter())) {
       ci.cancel();
     }
   }

@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.storage.V5MixinStorage;
+import com.chattriggers.ctjs.api.client.Client;
 import net.minecraft.client.renderer.chunk.VisGraph;
 import net.minecraft.core.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,6 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class VisGraphMixin {
     @Inject(method = "setOpaque", at = @At("HEAD"), cancellable = true)
     private void v5$disableFreecamOcclusion(BlockPos pos, CallbackInfo ci) {
-        if (V5MixinStorage.getBoolean("freecamEnabled", false)) ci.cancel();
+        if (Client.isFreecam()) ci.cancel();
     }
 }

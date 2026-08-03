@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.storage.V5MixinStorage;
+import com.chattriggers.ctjs.api.client.Client;
 import java.util.Set;
 import net.minecraft.world.level.block.Block;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,7 +27,7 @@ public class BlockMixin {
 
     @Inject(method = "spawnDestroyParticles", at = @At("HEAD"), cancellable = true)
     private void v5$spawnBreakParticles(CallbackInfo ci) {
-        if (!V5MixinStorage.getBoolean("hideParticles", false)) {
+        if (!Client.getHideParticles()) {
             return;
         }
 

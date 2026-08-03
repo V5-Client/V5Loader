@@ -1,6 +1,6 @@
 package com.v5.mixins;
 
-import com.v5.storage.V5MixinStorage;
+import com.chattriggers.ctjs.api.client.Client;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,6 +15,6 @@ public class ChatComponentMixin {
             ordinal = 0,
             argsOnly = true)
     private Component v5$addMessage(Component original) {
-        return V5MixinStorage.applyMethod("nameProcessor", original, Component.class);
+        return Client.processName(original);
     }
 }

@@ -2,7 +2,6 @@ package com.v5.mixins;
 
 import com.chattriggers.ctjs.api.client.Client;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.v5.storage.V5MixinStorage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.input.MouseButtonInfo;
@@ -20,8 +19,7 @@ public class MouseHandlerMixin {
     private int v5$guiMouseButton = -1;
 
     private boolean v5$cameraLookEnabled() {
-        return V5MixinStorage.getBoolean("freecamEnabled", false)
-                || V5MixinStorage.getBoolean("freelookEnabled", false);
+        return Client.isFreecam() || Client.isFreelook();
     }
 
     @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
@@ -55,19 +53,16 @@ public class MouseHandlerMixin {
             return;
         }
 
-        Object yaw = V5MixinStorage.get("cameraOverrideYaw", player.getYRot());
-        Object pitch = V5MixinStorage.get("cameraOverridePitch", player.getXRot());
-        if (yaw instanceof Number yawNumber && pitch instanceof Number pitchNumber) {
-            V5MixinStorage.set("cameraOverrideYaw", yawNumber.floatValue() + (float) yawDelta * 0.15F);
-            V5MixinStorage.set(
-                    "cameraOverridePitch",
-                    Mth.clamp(pitchNumber.floatValue() + (float) pitchDelta * 0.15F, -90.0F, 90.0F));
-        }
+        Float yaw = Client.getCameraYaw();
+        Float pitch = Client.getCameraPitch();
+        Client.setCameraRotation(
+                (yaw != null ? yaw : player.getYRot()) + (float) yawDelta * 0.15F,
+                Mth.clamp((pitch != null ? pitch : player.getXRot()) + (float) pitchDelta * 0.15F, -90.0F, 90.0F));
     }
 
     @Inject(method = "grabMouse()V", at = @At("HEAD"), cancellable = true)
     private void v5$lockCursor(CallbackInfo ci) {
-        if (V5MixinStorage.getBoolean("ungrabbed", false)) {
+        if (Client.isUngrabbed()) {
             Client.resumeHeldKeys();
             ci.cancel();
         }
@@ -80,7 +75,7 @@ public class MouseHandlerMixin {
 
     @Inject(method = "turnPlayer(D)V", at = @At("HEAD"), cancellable = true)
     private void v5$updateMouse(CallbackInfo ci) {
-        if (V5MixinStorage.getBoolean("ungrabbed", false)) {
+        if (Client.isUngrabbed()) {
             ci.cancel();
         }
     }
@@ -88,15 +83,13 @@ public class MouseHandlerMixin {
     @Inject(method = "onScroll(JDD)V", at = @At("HEAD"), cancellable = true)
     private void v5$onMouseScroll(long window, double horizontalScroll, double verticalScroll, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
-        if (V5MixinStorage.getBoolean("freelookEnabled", false) && client.screen == null) {
-            Object storedDistance = V5MixinStorage.get("freelookCameraDistance", 4.0);
-            double distance = storedDistance instanceof Number number ? number.doubleValue() : 4.0;
-            V5MixinStorage.set("freelookCameraDistance", Mth.clamp(distance - verticalScroll, 1.0, 12.0));
+        if (Client.isFreelook() && client.screen == null) {
+            Client.setFreelookDistance(Client.getFreelookDistance() - verticalScroll);
             ci.cancel();
             return;
         }
 
-        if (!V5MixinStorage.getBoolean("inputLocked", false)) {
+        if (!Client.isInputLocked()) {
             return;
         }
 
