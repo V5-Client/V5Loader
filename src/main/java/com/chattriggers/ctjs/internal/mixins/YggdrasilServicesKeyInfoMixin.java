@@ -1,4 +1,4 @@
-package com.v5.mixins;
+package com.chattriggers.ctjs.internal.mixins;
 
 import com.mojang.authlib.yggdrasil.YggdrasilServicesKeyInfo;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package com.v5.mixins;
+package com.chattriggers.ctjs.internal.mixins;
 
 import com.mojang.blaze3d.platform.FramerateLimitTracker;
 import org.spongepowered.asm.mixin.Mixin;

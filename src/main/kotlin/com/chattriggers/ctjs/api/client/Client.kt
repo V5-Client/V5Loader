@@ -40,6 +40,12 @@ import org.mozilla.javascript.Callable
 import org.mozilla.javascript.Undefined
 
 object Client {
+    enum class RenderLimiter {
+        OFF,
+        LIMIT_CHUNKS,
+        NO_RENDER,
+    }
+
     internal var referenceSystemTime: Long = 0
     private val heldKeys = mutableSetOf<String>()
 
@@ -47,12 +53,11 @@ object Client {
     @JvmStatic @Volatile var isFreelook = false
     @JvmStatic @Volatile var isUngrabbed = false
     @JvmStatic @Volatile var isInputLocked = false
-    @JvmStatic @Volatile var hideParticles = false
     @JvmStatic @Volatile var isMacroEnabled = false
     @JvmStatic @Volatile var isForcePerspective = false
     @JvmStatic @Volatile var limitFps = false
     @JvmStatic @Volatile var muteGame = false
-    @JvmStatic @Volatile var renderLimiter = "Off"
+    @JvmStatic @Volatile var renderLimiter = RenderLimiter.OFF
     @Volatile private var cameraYaw: Float? = null
     @Volatile private var cameraPitch: Float? = null
     @JvmStatic @Volatile var cameraPosition: Vec3? = null

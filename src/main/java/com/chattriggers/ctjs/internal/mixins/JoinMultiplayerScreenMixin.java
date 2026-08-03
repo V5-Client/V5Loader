@@ -1,4 +1,4 @@
-package com.v5.mixins;
+package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.api.client.ProxyManagerScreen;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

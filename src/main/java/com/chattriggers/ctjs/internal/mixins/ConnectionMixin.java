@@ -1,14 +1,15 @@
 package com.chattriggers.ctjs.internal.mixins;
 
+import com.chattriggers.ctjs.api.triggers.PacketEvent;
 import com.chattriggers.ctjs.internal.engine.CTEvents;
 import com.chattriggers.ctjs.api.triggers.TriggerType;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.Connection;
+import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.PacketFlow;
-import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.protocol.Packet;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,6 +33,15 @@ public abstract class ConnectionMixin {
     private void injectHandlePacket(ChannelHandlerContext channelHandlerContext, Packet<?> packet, CallbackInfo ci) {
         if (getReceiving() == PacketFlow.CLIENTBOUND)
             CTEvents.PACKET_RECEIVED.invoker().receive(packet, ci);
+    }
+
+    @Inject(method = "genericsFtw", at = @At("HEAD"))
+    private static void triggerPacketEvent(Packet<?> packet, PacketListener listener, CallbackInfo ci) {
+        if (packet instanceof ClientboundBundlePacket bundlePacket) {
+            bundlePacket.subPackets().forEach(PacketEvent.RECEIVE.invoker()::trigger);
+        } else {
+            PacketEvent.RECEIVE.invoker().trigger(packet);
+        }
     }
 
     @Inject(

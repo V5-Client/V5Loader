@@ -1,4 +1,4 @@
-package com.v5.mixins;
+package com.chattriggers.ctjs.internal.mixins;
 
 import net.minecraft.world.level.block.CrossCollisionBlock;
 import net.minecraft.world.level.block.StainedGlassPaneBlock;

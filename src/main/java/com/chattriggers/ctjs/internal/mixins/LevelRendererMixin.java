@@ -1,8 +1,10 @@
 package com.chattriggers.ctjs.internal.mixins;
 
+import com.chattriggers.ctjs.api.client.Client;
 import com.chattriggers.ctjs.internal.listeners.WorldListener;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -10,6 +12,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.BlockOutlineRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
@@ -19,12 +22,25 @@ import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
     private float ctjs$tickDelta = 1.0F;
+
+    @ModifyVariable(method = "cullTerrain", at = @At("HEAD"), argsOnly = true)
+    private boolean v5$useSpectatorCullingInFreecam(boolean spectator) {
+        return spectator || Client.isFreecam();
+    }
+
+    @Inject(method = "addMainPass", at = @At("HEAD"), cancellable = true)
+    private void v5$renderMain(FrameGraphBuilder frameGraphBuilder, Frustum frustum, Matrix4fc matrix4f, GpuBufferSlice gpuBufferSlice, boolean renderBlockOutline, LevelRenderState worldRenderState, DeltaTracker deltaTracker, ProfilerFiller profiler, ChunkSectionsToRender chunkSectionsToRender, CallbackInfo ci) {
+        if (Client.isMacroEnabled() && Client.getRenderLimiter() == Client.RenderLimiter.NO_RENDER) {
+            ci.cancel();
+        }
+    }
 
     @Inject(
         method = "renderBlockOutline",

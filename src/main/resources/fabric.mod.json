@@ -27,7 +27,7 @@
             "com.chattriggers.ctjs.api.world.pathfinding.Swift"
         ]
     },
-    "mixins": ["ctjs.mixins.json", "v5.mixins.json"],
+    "mixins": ["ctjs.mixins.json"],
     "depends": {
         "minecraft": "=$minecraft_version",
         "fabricloader": ">=$loader_version",

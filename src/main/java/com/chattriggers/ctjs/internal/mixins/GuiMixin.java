@@ -1,5 +1,6 @@
 package com.chattriggers.ctjs.internal.mixins;
 
+import com.chattriggers.ctjs.api.render.DrawContextHolder;
 import com.chattriggers.ctjs.api.world.Scoreboard;
 import com.chattriggers.ctjs.internal.engine.CTEvents;
 import gg.essential.universal.UMatrixStack;
@@ -14,6 +15,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Gui.class)
 public class GuiMixin {
+    @Inject(method = "extractRenderState", at = @At("HEAD"))
+    private void captureContext(GuiGraphicsExtractor context, DeltaTracker tickCounter, CallbackInfo ci) {
+        DrawContextHolder.setCurrentContext(context);
+    }
+
     @Inject(method = "extractScoreboardSidebar", at = @At("HEAD"), cancellable = true)
     private void injectRenderScoreboard(GuiGraphicsExtractor matrices, DeltaTracker tickCounter, CallbackInfo ci) {
         if (!Scoreboard.getShouldRender())
