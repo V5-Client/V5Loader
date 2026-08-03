@@ -13,10 +13,16 @@ import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
 public class LevelRendererMixin {
+
+  @ModifyVariable(method = "cullTerrain", at = @At("HEAD"), argsOnly = true)
+  private boolean v5$useSpectatorCullingInFreecam(boolean spectator) {
+    return spectator || V5MixinStorage.getBoolean("freecamEnabled", false);
+  }
 
   @Inject(method = "addMainPass", at = @At("HEAD"), cancellable = true)
   private void v5$renderMain(FrameGraphBuilder frameGraphBuilder, Frustum frustum, Matrix4fc matrix4f, GpuBufferSlice gpuBufferSlice, boolean renderBlockOutline, LevelRenderState worldRenderState, DeltaTracker deltaTracker, ProfilerFiller profiler, ChunkSectionsToRender chunkSectionsToRender, CallbackInfo ci) {

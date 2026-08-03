@@ -2,7 +2,6 @@ package com.v5.mixins;
 
 import com.v5.storage.V5MixinStorage;
 import net.minecraft.client.Camera;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
@@ -16,13 +15,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Camera.class)
 public abstract class CameraMixin {
     @Shadow
+    private boolean detached;
+
+    @Shadow
     protected abstract void setPosition(Vec3 pos);
 
     @Shadow
     protected abstract void setRotation(float yaw, float pitch);
 
-    @Inject(method = "update", at = @At("TAIL"))
-    private void v5$applyCameraOverride(DeltaTracker deltaTracker, CallbackInfo ci) {
+    @Inject(method = "alignWithEntity", at = @At("TAIL"))
+    private void v5$applyCameraOverride(float partialTick, CallbackInfo ci) {
         Object yaw = V5MixinStorage.get("cameraOverrideYaw", null);
         Object pitch = V5MixinStorage.get("cameraOverridePitch", null);
         if (V5MixinStorage.getBoolean("freelookEnabled", false)
@@ -35,7 +37,7 @@ public abstract class CameraMixin {
                 float cosPitch = Mth.cos(pitchRadians);
                 Object storedDistance = V5MixinStorage.get("freelookCameraDistance", 4.0);
                 double distance = storedDistance instanceof Number number ? Mth.clamp(number.doubleValue(), 1.0, 12.0) : 4.0;
-                Vec3 eyePos = player.getEyePosition(deltaTracker.getGameTimeDeltaPartialTick(false));
+                Vec3 eyePos = player.getEyePosition(partialTick);
                 this.setPosition(eyePos.add(
                         Mth.sin(yawRadians) * cosPitch * distance,
                         Mth.sin(pitchRadians) * distance,
@@ -51,5 +53,7 @@ public abstract class CameraMixin {
         if (yaw instanceof Number yawNumber && pitch instanceof Number pitchNumber) {
             this.setRotation(yawNumber.floatValue(), pitchNumber.floatValue());
         }
+
+        if (V5MixinStorage.getBoolean("freecamEnabled", false)) this.detached = true;
     }
 }

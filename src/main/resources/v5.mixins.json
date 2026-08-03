@@ -13,13 +13,16 @@
         "EntityRendererMixin",
         "FirmamentModAnnouncerMixin",
         "FramerateLimitTrackerMixin",
+        "FrustumMixin",
         "GameRendererMixin",
+        "ItemInHandRendererMixin",
         "KeyboardHandlerMixin",
         "MinecraftMixin",
         "MouseHandlerMixin",
         "JoinMultiplayerScreenMixin",
         "PlayerTabOverlayMixin",
         "LevelRendererMixin",
+        "VisGraphMixin",
         "YggdrasilServicesKeyInfoMixin"
     ],
     "mixins": [
