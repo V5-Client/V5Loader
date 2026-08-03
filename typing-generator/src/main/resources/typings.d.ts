@@ -4250,7 +4250,7 @@ declare global {
           new<E>(p0: Array<E>): java.util.concurrent.CopyOnWriteArrayList<any>;
           new<E>(p0: Array<E>): java.util.concurrent.CopyOnWriteArrayList<any>;
         }
-        interface CopyOnWriteArrayList<E> extends Array<E>, java.util.RandomAccess, kotlin.Cloneable, java.io.Serializable {
+        interface CopyOnWriteArrayList<E> extends Array<E>, java.util.RandomAccess, kotlin.Cloneable, java.io.Serializable { 
           indexOf(p0: E, p1: number): number;
           lastIndexOf(p0: E, p1: number): number;
           toArray(): Array<any>;
@@ -9070,7 +9070,7 @@ declare global {
       }
     }
     namespace reflect {
-      interface KClass<T> extends kotlin.reflect.KDeclarationContainer, kotlin.reflect.KAnnotatedElement, kotlin.reflect.KClassifier {
+      interface KClass<T> extends kotlin.reflect.KDeclarationContainer, kotlin.reflect.KAnnotatedElement, kotlin.reflect.KClassifier { 
         getSimpleName(): string | null | undefined;
         getQualifiedName(): string | null | undefined;
         getConstructors(): Array<kotlin.reflect.KFunction<T>>;
@@ -9091,13 +9091,13 @@ declare global {
         isValue(): boolean;
         isInstance(value: any | null | undefined): boolean;
       }
-      interface KDeclarationContainer {
+      interface KDeclarationContainer { 
         getMembers(): Array<kotlin.reflect.KCallable<any>>;
       }
-      interface KAnnotatedElement {
+      interface KAnnotatedElement { 
         getAnnotations(): Array<kotlin.Annotation>;
       }
-      interface KClassifier {
+      interface KClassifier { 
       }
       const KVisibility: {
         PUBLIC: kotlin.reflect.KVisibility;
@@ -9108,7 +9108,7 @@ declare global {
         values(): Array<kotlin.reflect.KVisibility>;
         valueOf(value: string): kotlin.reflect.KVisibility;
       }
-      interface KVisibility extends kotlin.Enum<kotlin.reflect.KVisibility> {
+      interface KVisibility extends kotlin.Enum<kotlin.reflect.KVisibility> { 
       }
       interface KProperty<V> extends kotlin.reflect.KCallable<V> { 
         isLateinit(): boolean;
@@ -38630,7 +38630,7 @@ declare global {
         }
       }
       namespace api {
-        interface ClientModInitializer {
+        interface ClientModInitializer { 
           onInitializeClient(): void;
           (): void;
         }
@@ -43443,7 +43443,7 @@ declare global {
         const V5PreLaunch: {
           new(): com.v5.loader.V5PreLaunch;
         }
-        interface V5PreLaunch extends net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint {
+        interface V5PreLaunch extends net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint { 
         }
       }
     }
@@ -43453,7 +43453,7 @@ declare global {
           const WrappedThread: {
             new(task: java.lang.Runnable): com.chattriggers.ctjs.engine.WrappedThread;
           }
-          interface WrappedThread {
+          interface WrappedThread { 
             start(): void;
             run(): void;
             stop(): void;
@@ -44501,115 +44501,115 @@ declare global {
             registerGuiMouseDrag(method: any): com.chattriggers.ctjs.api.triggers.Trigger;
 						/**
 						 * Registers a new trigger that runs whenever a packet is sent from the client to the server
-						 *
+						 * 
 						 *  Passes through two arguments:
 						 *  - The packet
 						 *  - The event, which can be cancelled
-						 *
+						 * 
 						 *  Available modifications:
 						 *  - [Trigger.setPriority] Sets the priority
 						 *  - [ClassFilterTrigger.setFilteredClasses] Sets the packet classes which this trigger
 						 *    gets fired for
-						 *
+						 * 
 						 *  @param method The method to call when the event is fired
 						 *  @return The trigger for additional modification
 						 */
             registerPacketSent(method: any): com.chattriggers.ctjs.api.triggers.Trigger;
 						/**
 						 * Registers a new trigger that runs whenever a packet is sent to the client from the server
-						 *
+						 * 
 						 *  Passes through two arguments:
 						 *  - The packet
 						 *  - The event, which can be cancelled
-						 *
+						 * 
 						 *  Available modifications:
 						 *  - [Trigger.setPriority] Sets the priority
 						 *  - [ClassFilterTrigger.setFilteredClasses] Sets the packet classes which this trigger
 						 *    gets fired for
-						 *
+						 * 
 						 *  @param method The method to call when the event is fired
 						 *  @return The trigger for additional modification
 						 */
             registerPacketReceived(method: any): com.chattriggers.ctjs.api.triggers.Trigger;
 						/**
 						 * Registers a new trigger that runs whenever the player connects to a server
-						 *
+						 * 
 						 *  Available modifications:
 						 *  - [Trigger.setPriority] Sets the priority
-						 *
+						 * 
 						 *  @param method The method to call when the event is fired
 						 *  @return The trigger for additional modification
 						 */
             registerServerConnect(method: any): com.chattriggers.ctjs.api.triggers.Trigger;
 						/**
 						 * Registers a new trigger that runs whenever the player disconnects from a server
-						 *
+						 * 
 						 *  Available modifications:
 						 *  - [Trigger.setPriority] Sets the priority
-						 *
+						 * 
 						 *  @param method The method to call when the event is fired
 						 *  @return The trigger for additional modification
 						 */
             registerServerDisconnect(method: any): com.chattriggers.ctjs.api.triggers.Trigger;
 						/**
 						 * Registers a new trigger that runs whenever an entity is rendered
-						 *
+						 * 
 						 *  Passes through three arguments:
 						 *  - The [com.chattriggers.ctjs.api.entity.Entity]
 						 *  - The partial ticks
 						 *  - The event, which can be cancelled
-						 *
+						 * 
 						 *  Available modifications:
 						 *  - [Trigger.setPriority] Sets the priority
 						 *  - [ClassFilterTrigger.setFilteredClasses] Sets the entity classes which this trigger
 						 *    gets fired for
-						 *
+						 * 
 						 *  @param method The method to call when the event is fired
 						 *  @return The trigger for additional modification
 						 */
             registerRenderEntity(method: any): com.chattriggers.ctjs.api.triggers.Trigger;
 						/**
 						 * Registers a new trigger that runs whenever a block entity is rendered
-						 *
+						 * 
 						 *  Passes through three arguments:
 						 *  - The [com.chattriggers.ctjs.api.entity.BlockEntity]
 						 *  - The partial ticks
 						 *  - The event, which can be cancelled
-						 *
+						 * 
 						 *  Available modifications:
 						 *  - [Trigger.setPriority] Sets the priority
 						 *  - [ClassFilterTrigger.setFilteredClasses] Sets the tile entity classes which this trigger
 						 *    gets fired for
-						 *
+						 * 
 						 *  @param method The method to call when the event is fired
 						 *  @return The trigger for additional modification
 						 */
             registerRenderBlockEntity(method: any): com.chattriggers.ctjs.api.triggers.Trigger;
 						/**
 						 * Registers a new trigger that runs after the current screen is rendered
-						 *
+						 * 
 						 *  Passes through three arguments:
 						 *  - The mouseX
 						 *  - The mouseY
 						 *  - The GuiScreen
-						 *
+						 * 
 						 *  Available modifications:
 						 *  - [Trigger.setPriority] Sets the priority
-						 *
+						 * 
 						 *  @param method The method to call when the event is fired
 						 *  @return The trigger for additional modification
 						 */
             registerPostGuiRender(method: any): com.chattriggers.ctjs.api.triggers.Trigger;
 						/**
 						 * Registers a new trigger that runs whenever a particle is spawned
-						 *
+						 * 
 						 *  Passes through two arguments:
 						 *  - The [com.chattriggers.ctjs.api.entity.Particle]
 						 *  - The event, which can be cancelled
-						 *
+						 * 
 						 *  Available modifications:
 						 *  - [Trigger.setPriority] Sets the priority
-						 *
+						 * 
 						 *  @param method The method to call when the event is fired
 						 *  @return The trigger for additional modification
 						 */
@@ -44619,7 +44619,7 @@ declare global {
           const MixinCallback: {
             new(id: number, injector: com.chattriggers.ctjs.internal.launch.IInjector): com.chattriggers.ctjs.engine.MixinCallback;
           }
-          interface MixinCallback {
+          interface MixinCallback { 
             attach(method: any): void;
             component1(): number;
             component2(): com.chattriggers.ctjs.internal.launch.IInjector;
@@ -44628,7 +44628,7 @@ declare global {
           const Console: {
             new(): com.chattriggers.ctjs.engine.Console;
           }
-          interface Console {
+          interface Console { 
             new(): com.chattriggers.ctjs.engine.Console;
             clear(): void;
             println(obj: any, logType: com.chattriggers.ctjs.engine.LogType, end: string, customColor: java.awt.Color | null | undefined): void;
@@ -44648,7 +44648,7 @@ declare global {
             values(): Array<com.chattriggers.ctjs.engine.LogType>;
             valueOf(value: string): com.chattriggers.ctjs.engine.LogType;
           }
-          interface LogType extends kotlin.Enum<com.chattriggers.ctjs.engine.LogType> {
+          interface LogType extends kotlin.Enum<com.chattriggers.ctjs.engine.LogType> { 
           }
         }
         namespace api {
@@ -44656,7 +44656,7 @@ declare global {
             const Trigger: {
               Priority: typeof com.chattriggers.ctjs.api.triggers.Trigger$Priority;
             }
-            interface Trigger extends kotlin.Comparable<com.chattriggers.ctjs.api.triggers.Trigger> {
+            interface Trigger extends kotlin.Comparable<com.chattriggers.ctjs.api.triggers.Trigger> { 
               getMethod(): any;
               setMethod(value: any): void;
               getType(): com.chattriggers.ctjs.api.triggers.ITriggerType;
@@ -44681,7 +44681,7 @@ declare global {
 							 */
               unregister(): com.chattriggers.ctjs.api.triggers.Trigger;
             }
-            interface ITriggerType {
+            interface ITriggerType { 
               getName(): string;
               triggerAll(): void;
               triggerAll(arg0: any | null | undefined): void;
@@ -44701,13 +44701,13 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.triggers.Trigger$Priority>;
               valueOf(value: string): com.chattriggers.ctjs.api.triggers.Trigger$Priority;
             }
-            interface Trigger$Priority extends kotlin.Enum<com.chattriggers.ctjs.api.triggers.Trigger$Priority> {
+            interface Trigger$Priority extends kotlin.Enum<com.chattriggers.ctjs.api.triggers.Trigger$Priority> { 
             }
             const ChatTrigger: {
               Event: typeof com.chattriggers.ctjs.api.triggers.ChatTrigger$Event;
               new(method: any, type: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.ChatTrigger;
             }
-            interface ChatTrigger extends com.chattriggers.ctjs.api.triggers.Trigger {
+            interface ChatTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
 							/**
 							 * Sets if the chat trigger should run if the chat event has already been canceled.
 							 *  True by default.
@@ -44798,12 +44798,12 @@ declare global {
               message: com.chattriggers.ctjs.api.message.TextComponent;
               new(message: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.triggers.ChatTrigger$Event;
             }
-            interface ChatTrigger$Event extends com.chattriggers.ctjs.api.triggers.CancellableEvent {
+            interface ChatTrigger$Event extends com.chattriggers.ctjs.api.triggers.CancellableEvent { 
             }
             const CancellableEvent: {
               new(): com.chattriggers.ctjs.api.triggers.CancellableEvent;
             }
-            interface CancellableEvent {
+            interface CancellableEvent { 
               setCanceled(): void;
               setCanceled(newVal: boolean): void;
               setCancelled(): void;
@@ -44816,17 +44816,17 @@ declare global {
             const ClassFilterTrigger: {
               new<Wrapped, Unwrapped>(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType, wrappedClass: java.lang.Class<Wrapped>): com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<any, any>;
             }
-            interface ClassFilterTrigger<Wrapped, Unwrapped> extends com.chattriggers.ctjs.api.triggers.Trigger {
+            interface ClassFilterTrigger<Wrapped, Unwrapped> extends com.chattriggers.ctjs.api.triggers.Trigger { 
 							/**
 							 * Alias for `setFilteredClasses([A.class])`
-							 *
+							 * 
 							 *  @param clazz The class for which this trigger should run for
 							 */
               setFilteredClass(clazz: java.lang.Class<Unwrapped>): com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<Wrapped, Unwrapped>;
 							/**
 							 * Sets which classes this trigger should run for. If the list is empty, it runs
 							 *  for every class.
-							 *
+							 * 
 							 *  @param classes The classes for which this trigger should run for
 							 *  @return This trigger object for chaining
 							 */
@@ -44835,25 +44835,25 @@ declare global {
             const RenderEntityTrigger: {
               new(method: any): com.chattriggers.ctjs.api.triggers.RenderEntityTrigger;
             }
-            interface RenderEntityTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<com.chattriggers.ctjs.api.entity.Entity, net.minecraft.world.entity.Entity> {
+            interface RenderEntityTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<com.chattriggers.ctjs.api.entity.Entity, net.minecraft.world.entity.Entity> { 
             }
             const RenderBlockEntityTrigger: {
               new(method: any): com.chattriggers.ctjs.api.triggers.RenderBlockEntityTrigger;
             }
-            interface RenderBlockEntityTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<com.chattriggers.ctjs.api.entity.BlockEntity, net.minecraft.world.level.block.entity.BlockEntity> {
+            interface RenderBlockEntityTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<com.chattriggers.ctjs.api.entity.BlockEntity, net.minecraft.world.level.block.entity.BlockEntity> { 
             }
             const PacketTrigger: {
               new(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.PacketTrigger;
             }
-            interface PacketTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<net.minecraft.network.protocol.Packet<any>, net.minecraft.network.protocol.Packet<any>> {
+            interface PacketTrigger extends com.chattriggers.ctjs.api.triggers.ClassFilterTrigger<net.minecraft.network.protocol.Packet<any>, net.minecraft.network.protocol.Packet<any>> { 
             }
             const SoundPlayTrigger: {
               new(method: any): com.chattriggers.ctjs.api.triggers.SoundPlayTrigger;
             }
-            interface SoundPlayTrigger extends com.chattriggers.ctjs.api.triggers.Trigger {
+            interface SoundPlayTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
 							/**
 							 * Sets the sound name criteria.
-							 *
+							 * 
 							 *  @param soundNameCriteria the sound name
 							 *  @return the trigger for method chaining
 							 */
@@ -44903,23 +44903,23 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.triggers.TriggerType>;
               valueOf(value: string): com.chattriggers.ctjs.api.triggers.TriggerType;
             }
-            interface TriggerType extends kotlin.Enum<com.chattriggers.ctjs.api.triggers.TriggerType>, com.chattriggers.ctjs.api.triggers.ITriggerType {
+            interface TriggerType extends kotlin.Enum<com.chattriggers.ctjs.api.triggers.TriggerType>, com.chattriggers.ctjs.api.triggers.ITriggerType { 
             }
             const CustomTriggerType: {
               new(name: string): com.chattriggers.ctjs.api.triggers.CustomTriggerType;
             }
-            interface CustomTriggerType extends com.chattriggers.ctjs.api.triggers.ITriggerType {
+            interface CustomTriggerType extends com.chattriggers.ctjs.api.triggers.ITriggerType { 
               component1(): string;
               copy(name: string): com.chattriggers.ctjs.api.triggers.CustomTriggerType;
             }
             const EventTrigger: {
               new(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.EventTrigger;
             }
-            interface EventTrigger extends com.chattriggers.ctjs.api.triggers.Trigger {
+            interface EventTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
 							/**
 							 * Sets if this trigger should run if the event has already been canceled.
 							 *  True by default.
-							 *
+							 * 
 							 *  @param bool Boolean to set
 							 *  @return the trigger object for method chaining
 							 */
@@ -44928,24 +44928,24 @@ declare global {
             const CommandTrigger: {
               new(method: any): com.chattriggers.ctjs.api.triggers.CommandTrigger;
             }
-            interface CommandTrigger extends com.chattriggers.ctjs.api.triggers.Trigger {
+            interface CommandTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
 							/**
 							 * Sets the tab completion options for the command.
 							 *  This method must be used before setting the command name, otherwise, the tab completions will not be set.
-							 *
+							 * 
 							 *  @param args all the tab completion options.
 							 */
               setTabCompletions(args: string): com.chattriggers.ctjs.api.triggers.CommandTrigger;
 							/**
 							 * This sets the possible tab completions for the command.
 							 *  This method must be used before setting the command name, otherwise, the tab completions will not be set.
-							 *
+							 * 
 							 *  @param callback the callback that returns the tab completion options.
-							 *
+							 * 
 							 *  For example:
 							 *  ```js
 							 *  register("command", () => {
-							 *
+							 * 
 							 *  }).setTabCompletions((args) => {
 							 *       return ["option1", "option2"];
 							 *  }).setName("test");
@@ -44953,14 +44953,14 @@ declare global {
 							 *  The `args` parameter of the callback are the arguments currently passed to the command.
 							 *  For instance, if you want to not show the options after the user tabs the first time, just add a check
 							 *  for the length of the arguments and return an empty array.
-							 *
+							 * 
 							 *  The return value of the callback **must be an array of strings**, and in this case will always return the 2
 							 *  options in the array.
 							 */
               setTabCompletions(callback: kotlin.Function1<Array<string>, Array<string>>): com.chattriggers.ctjs.api.triggers.CommandTrigger;
 							/**
 							 * Sets the aliases for the command.
-							 *
+							 * 
 							 *  @param args all the aliases.
 							 */
               setAliases(args: string): com.chattriggers.ctjs.api.triggers.CommandTrigger;
@@ -44969,7 +44969,7 @@ declare global {
 							 *  Example:
 							 *  setCommandName("test")
 							 *  would result in the command being /test
-							 *
+							 * 
 							 *  @param commandName The command name
 							 *  @param overrideExisting Whether existing commands with the same name should be overridden
 							 *  @return the trigger for additional modification
@@ -44980,7 +44980,7 @@ declare global {
 							 *  Example:
 							 *  setCommandName("test")
 							 *  would result in the command being /test
-							 *
+							 * 
 							 *  @param commandName The command name
 							 *  @param overrideExisting Whether existing commands with the same name should be overridden
 							 *  @return the trigger for additional modification
@@ -44988,7 +44988,7 @@ declare global {
               setCommandName(commandName: string, overrideExisting: boolean): com.chattriggers.ctjs.api.triggers.CommandTrigger;
 							/**
 							 * Alias for [setCommandName]
-							 *
+							 * 
 							 *  @param commandName The command name
 							 *  @param overrideExisting Whether existing commands with the same name should be overridden
 							 *  @return the trigger for additional modification
@@ -44996,7 +44996,7 @@ declare global {
               setName(commandName: string): com.chattriggers.ctjs.api.triggers.CommandTrigger;
 							/**
 							 * Alias for [setCommandName]
-							 *
+							 * 
 							 *  @param commandName The command name
 							 *  @param overrideExisting Whether existing commands with the same name should be overridden
 							 *  @return the trigger for additional modification
@@ -45006,12 +45006,12 @@ declare global {
             const RegularTrigger: {
               new(method: any, triggerType: com.chattriggers.ctjs.api.triggers.ITriggerType): com.chattriggers.ctjs.api.triggers.RegularTrigger;
             }
-            interface RegularTrigger extends com.chattriggers.ctjs.api.triggers.Trigger {
+            interface RegularTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
             }
             const StepTrigger: {
               new(method: any): com.chattriggers.ctjs.api.triggers.StepTrigger;
             }
-            interface StepTrigger extends com.chattriggers.ctjs.api.triggers.Trigger {
+            interface StepTrigger extends com.chattriggers.ctjs.api.triggers.Trigger { 
 							/**
 							 * Sets the frames per second that the trigger activates.
 							 *  This has a maximum one step per second.
@@ -45030,18 +45030,18 @@ declare global {
             const StepTrigger$Companion: {
               new(): com.chattriggers.ctjs.api.triggers.StepTrigger$Companion;
             }
-            interface StepTrigger$Companion {
+            interface StepTrigger$Companion { 
               new(): com.chattriggers.ctjs.api.triggers.StepTrigger$Companion;
             }
             const PacketEvent: {
               RECEIVE: net.fabricmc.fabric.api.event.Event<com.chattriggers.ctjs.api.triggers.PacketEvent$ReceiveEvent>;
               new(): com.chattriggers.ctjs.api.triggers.PacketEvent;
             }
-            interface PacketEvent {
+            interface PacketEvent { 
               RECEIVE: net.fabricmc.fabric.api.event.Event<com.chattriggers.ctjs.api.triggers.PacketEvent$ReceiveEvent>;
               new(): com.chattriggers.ctjs.api.triggers.PacketEvent;
             }
-            interface PacketEvent$ReceiveEvent {
+            interface PacketEvent$ReceiveEvent { 
               trigger(packet: net.minecraft.network.protocol.Packet<any>): void;
             }
           }
@@ -45051,18 +45051,18 @@ declare global {
                 ClickType: typeof com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
                 new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.ClickAction;
               }
-              interface ClickAction extends com.chattriggers.ctjs.api.inventory.action.Action {
+              interface ClickAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
                 getClickType(): com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
 								/**
 								 * The type of click (REQUIRED)
-								 *
+								 * 
 								 *  @param clickType the new click type
 								 */
                 setClickType(clickType: com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType): com.chattriggers.ctjs.api.inventory.action.ClickAction;
                 getHoldingShift(): boolean;
 								/**
 								 * Whether the click should act as if shift is being held (defaults to false)
-								 *
+								 * 
 								 *  @param holdingShift to hold shift or not
 								 */
                 setHoldingShift(holdingShift: boolean): com.chattriggers.ctjs.api.inventory.action.ClickAction;
@@ -45070,7 +45070,7 @@ declare global {
 								/**
 								 * Whether the click should act as if an item is being held
 								 *  (defaults to whether there actually is an item in the hand)
-								 *
+								 * 
 								 *  @param itemInHand to be holding an item or not
 								 */
                 setItemInHand(itemInHand: boolean): com.chattriggers.ctjs.api.inventory.action.ClickAction;
@@ -45078,14 +45078,14 @@ declare global {
 								/**
 								 * Whether the click should try to pick up all items of said type in the inventory (essentially double clicking)
 								 *  (defaults to whether there actually is an item in the hand)
-								 *
+								 * 
 								 *  @param pickupAll to pick up all items of the same type
 								 */
                 setPickupAll(pickupAll: boolean): com.chattriggers.ctjs.api.inventory.action.ClickAction;
 								/**
 								 * Sets the type of click.
 								 *  Possible values are: LEFT, RIGHT, MIDDLE
-								 *
+								 * 
 								 *  @param clickType the click type
 								 *  @return the current Action for method chaining
 								 */
@@ -45095,7 +45095,7 @@ declare global {
                 Type: typeof com.chattriggers.ctjs.api.inventory.action.Action$Type;
                 new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.Action;
               }
-              interface Action {
+              interface Action { 
                 getSlot(): number;
                 setSlot(value: number): void;
                 getWindowId(): number;
@@ -45108,7 +45108,7 @@ declare global {
 								 * Creates a new action.
 								 *  The Inventory must be a container, see [Inventory.isContainer].
 								 *  The slot can be -999 for outside of the gui
-								 *
+								 * 
 								 *  @param inventory the inventory to complete the action on
 								 *  @param slot the slot to complete the action on
 								 *  @param typeString the type of action to do (CLICK, DRAG, DROP, KEY)
@@ -45117,12 +45117,12 @@ declare global {
                 of(inventory: com.chattriggers.ctjs.api.inventory.Inventory, slot: number, typeString: string): com.chattriggers.ctjs.api.inventory.action.Action;
                 new(): com.chattriggers.ctjs.api.inventory.action.Action$Companion;
               }
-              interface Action$Companion {
+              interface Action$Companion { 
 								/**
 								 * Creates a new action.
 								 *  The Inventory must be a container, see [Inventory.isContainer].
 								 *  The slot can be -999 for outside of the gui
-								 *
+								 * 
 								 *  @param inventory the inventory to complete the action on
 								 *  @param slot the slot to complete the action on
 								 *  @param typeString the type of action to do (CLICK, DRAG, DROP, KEY)
@@ -45140,7 +45140,7 @@ declare global {
                 values(): Array<com.chattriggers.ctjs.api.inventory.action.Action$Type>;
                 valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.Action$Type;
               }
-              interface Action$Type extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.Action$Type> {
+              interface Action$Type extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.Action$Type> { 
               }
               const ClickAction$ClickType: {
                 LEFT: com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
@@ -45150,7 +45150,7 @@ declare global {
                 values(): Array<com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType>;
                 valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType;
               }
-              interface ClickAction$ClickType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType> {
+              interface ClickAction$ClickType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.ClickAction$ClickType> { 
                 getButton(): number;
               }
               const DragAction: {
@@ -45158,11 +45158,11 @@ declare global {
                 Stage: typeof com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
                 new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.DragAction;
               }
-              interface DragAction extends com.chattriggers.ctjs.api.inventory.action.Action {
+              interface DragAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
                 getClickType(): com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
 								/**
 								 * The type of click (REQUIRED)
-								 *
+								 * 
 								 *  @param clickType the new click type
 								 */
                 setClickType(clickType: com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType): com.chattriggers.ctjs.api.inventory.action.DragAction;
@@ -45172,14 +45172,14 @@ declare global {
 								 *  BEGIN is when beginning the drag
 								 *  SLOT is for each slot being dragged into
 								 *  END is for ending the drag
-								 *
+								 * 
 								 *  @param stage the stage
 								 */
                 setStage(stage: com.chattriggers.ctjs.api.inventory.action.DragAction$Stage): com.chattriggers.ctjs.api.inventory.action.DragAction;
 								/**
 								 * Sets the type of click.
 								 *  Possible values are: LEFT, RIGHT, MIDDLE
-								 *
+								 * 
 								 *  @param clickType the click type
 								 *  @return the current Action for method chaining
 								 */
@@ -45187,7 +45187,7 @@ declare global {
 								/**
 								 * Sets the stage of this drag.
 								 *  Possible values are: BEGIN, SLOT, END [stage]
-								 *
+								 * 
 								 *  @param stage the stage
 								 *  @return the current Action for method chaining
 								 */
@@ -45201,7 +45201,7 @@ declare global {
                 values(): Array<com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType>;
                 valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType;
               }
-              interface DragAction$ClickType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType> {
+              interface DragAction$ClickType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.DragAction$ClickType> { 
                 getButton(): number;
               }
               const DragAction$Stage: {
@@ -45212,17 +45212,17 @@ declare global {
                 values(): Array<com.chattriggers.ctjs.api.inventory.action.DragAction$Stage>;
                 valueOf(value: string): com.chattriggers.ctjs.api.inventory.action.DragAction$Stage;
               }
-              interface DragAction$Stage extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.DragAction$Stage> {
+              interface DragAction$Stage extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.action.DragAction$Stage> { 
                 getStage(): number;
               }
               const DropAction: {
                 new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.DropAction;
               }
-              interface DropAction extends com.chattriggers.ctjs.api.inventory.action.Action {
+              interface DropAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
                 getHoldingCtrl(): boolean;
 								/**
 								 * Whether the click should act as if control is being held (defaults to false)
-								 *
+								 * 
 								 *  @param holdingCtrl to hold ctrl or not
 								 */
                 setHoldingCtrl(holdingCtrl: boolean): com.chattriggers.ctjs.api.inventory.action.DropAction;
@@ -45230,12 +45230,12 @@ declare global {
               const KeyAction: {
                 new(slot: number, windowId: number): com.chattriggers.ctjs.api.inventory.action.KeyAction;
               }
-              interface KeyAction extends com.chattriggers.ctjs.api.inventory.action.Action {
+              interface KeyAction extends com.chattriggers.ctjs.api.inventory.action.Action { 
                 getKey(): number;
 								/**
 								 * Which key to act as if has been clicked (REQUIRED).
 								 *  Options currently are 0-8, representing the hotbar keys
-								 *
+								 * 
 								 *  @param key which key to "click"
 								 */
                 setKey(key: number): com.chattriggers.ctjs.api.inventory.action.KeyAction;
@@ -45245,7 +45245,7 @@ declare global {
               const NBTBase: {
                 new(mcValue: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
               }
-              interface NBTBase extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.nbt.Tag> {
+              interface NBTBase extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.nbt.Tag> { 
 								/**
 								 * Gets the type byte for the tag.
 								 */
@@ -45264,7 +45264,7 @@ declare global {
                 fromMC(nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
                 new(): com.chattriggers.ctjs.api.inventory.nbt.NBTBase$Companion;
               }
-              interface NBTBase$Companion {
+              interface NBTBase$Companion { 
                 fromMC(nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
                 new(): com.chattriggers.ctjs.api.inventory.nbt.NBTBase$Companion;
                 toObject(): any | null | undefined;
@@ -45275,7 +45275,7 @@ declare global {
                 NBTDataType: typeof com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
                 new(mcValue: net.minecraft.nbt.CompoundTag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound;
               }
-              interface NBTTagCompound extends com.chattriggers.ctjs.api.inventory.nbt.NBTBase {
+              interface NBTTagCompound extends com.chattriggers.ctjs.api.inventory.nbt.NBTBase { 
                 getTagMap(): Map<string, net.minecraft.nbt.Tag>;
                 getKeySet(): Set<string>;
                 getTag(key: string): com.chattriggers.ctjs.api.inventory.nbt.NBTBase | null | undefined;
@@ -45314,7 +45314,7 @@ declare global {
               const NBTTagList: {
                 new(mcValue: net.minecraft.nbt.ListTag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
               }
-              interface NBTTagList extends com.chattriggers.ctjs.api.inventory.nbt.NBTBase {
+              interface NBTTagList extends com.chattriggers.ctjs.api.inventory.nbt.NBTBase { 
                 getTagCount(): number;
                 appendTag(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
                 appendTag(nbt: net.minecraft.nbt.Tag): com.chattriggers.ctjs.api.inventory.nbt.NBTTagList;
@@ -45354,12 +45354,12 @@ declare global {
                 values(): Array<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType>;
                 valueOf(value: string): com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType;
               }
-              interface NBTTagCompound$NBTDataType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType> {
+              interface NBTTagCompound$NBTDataType extends kotlin.Enum<com.chattriggers.ctjs.api.inventory.nbt.NBTTagCompound$NBTDataType> { 
               }
               const NBT: {
 								/**
 								 * Creates a new [NBTBase] from the given [nbt]
-								 *
+								 * 
 								 *  @param nbt the value to convert to NBT
 								 *  @param options optional argument to allow refinement of the NBT data.
 								 *  Possible options include:
@@ -45369,14 +45369,14 @@ declare global {
 								 *  - preferArraysOverLists: Boolean, default false
 								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
 								 *  NBTTagIntArray accordingly
-								 *
+								 * 
 								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
 								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
 								 */
                 parse(nbt: any): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
 								/**
 								 * Creates a new [NBTBase] from the given [nbt]
-								 *
+								 * 
 								 *  @param nbt the value to convert to NBT
 								 *  @param options optional argument to allow refinement of the NBT data.
 								 *  Possible options include:
@@ -45386,7 +45386,7 @@ declare global {
 								 *  - preferArraysOverLists: Boolean, default false
 								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
 								 *  NBTTagIntArray accordingly
-								 *
+								 * 
 								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
 								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
 								 */
@@ -45395,10 +45395,10 @@ declare global {
                 toArray(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTTagList): org.mozilla.javascript.NativeArray;
                 new(): com.chattriggers.ctjs.api.inventory.nbt.NBT;
               }
-              interface NBT {
+              interface NBT { 
 								/**
 								 * Creates a new [NBTBase] from the given [nbt]
-								 *
+								 * 
 								 *  @param nbt the value to convert to NBT
 								 *  @param options optional argument to allow refinement of the NBT data.
 								 *  Possible options include:
@@ -45408,14 +45408,14 @@ declare global {
 								 *  - preferArraysOverLists: Boolean, default false
 								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
 								 *  NBTTagIntArray accordingly
-								 *
+								 * 
 								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
 								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
 								 */
                 parse(nbt: any): com.chattriggers.ctjs.api.inventory.nbt.NBTBase;
 								/**
 								 * Creates a new [NBTBase] from the given [nbt]
-								 *
+								 * 
 								 *  @param nbt the value to convert to NBT
 								 *  @param options optional argument to allow refinement of the NBT data.
 								 *  Possible options include:
@@ -45425,7 +45425,7 @@ declare global {
 								 *  - preferArraysOverLists: Boolean, default false
 								 *  E.g. a list with all bytes or integers will be converted to an NBTTagByteArray or
 								 *  NBTTagIntArray accordingly
-								 *
+								 * 
 								 *  @return [NBTTagCompound] if [nbt] is an object, [NBTTagList] if [nbt]
 								 *  is an array and preferArraysOverLists is false, or [NBTBase] otherwise.
 								 */
@@ -45438,7 +45438,7 @@ declare global {
             const Slot: {
               new(mcValue: net.minecraft.world.inventory.Slot): com.chattriggers.ctjs.api.inventory.Slot;
             }
-            interface Slot extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.inventory.Slot> {
+            interface Slot extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.inventory.Slot> { 
               getIndex(): number;
               getDisplayX(): number;
               getDisplayY(): number;
@@ -45450,20 +45450,20 @@ declare global {
               new(inventory: net.minecraft.world.Container): com.chattriggers.ctjs.api.inventory.Inventory;
               new(container: net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<any>): com.chattriggers.ctjs.api.inventory.Inventory;
             }
-            interface Inventory {
+            interface Inventory { 
               getInventory(): net.minecraft.world.Container;
               getScreen(): net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<any> | null | undefined;
 							/**
 							 * Gets the total size of the Inventory.
 							 *  The player's inventory size is 36, 27 for the main inventory, plus 9 for the hotbar.
 							 *  A single chest's size would be 63, because it also counts the player's inventory.
-							 *
+							 * 
 							 *  @return the size of the Inventory
 							 */
               getSize(): number;
 							/**
 							 * Gets the item in any slot, starting from 0.
-							 *
+							 * 
 							 *  @param slot the slot index
 							 *  @return the [Item] in that slot, or null if there is no item
 							 */
@@ -45471,13 +45471,13 @@ declare global {
 							/**
 							 * Returns the window identifier number of this Inventory.
 							 *  This Inventory must be backed by a HandledScreen [isScreen]
-							 *
+							 * 
 							 *  @return the window id
 							 */
               getWindowId(): number;
 							/**
 							 * Checks if an item can be shift clicked into a certain slot, i.e. coal into the bottom of a furnace.
-							 *
+							 * 
 							 *  @param slot the slot index
 							 *  @param item the item for checking
 							 *  @return whether it can be shift clicked in
@@ -45489,14 +45489,14 @@ declare global {
               getItems(): Array<com.chattriggers.ctjs.api.inventory.Item | null | undefined>;
 							/**
 							 * Checks whether the inventory contains the given item.
-							 *
+							 * 
 							 *  @param item the item to check for
 							 *  @return whether the inventory contains the item
 							 */
               contains(item: com.chattriggers.ctjs.api.inventory.Item): boolean;
 							/**
 							 * Checks whether the inventory contains an item with ID.
-							 *
+							 * 
 							 *  @param id the ID of the item to match
 							 *  @return whether the inventory contains an item with ID
 							 */
@@ -45504,7 +45504,7 @@ declare global {
 							/**
 							 * Gets the index of any item in the inventory, and returns the slot number.
 							 *  Returns -1 if the inventory does not contain the item.
-							 *
+							 * 
 							 *  @param item the item to check for
 							 *  @return the index of the given item
 							 */
@@ -45512,7 +45512,7 @@ declare global {
 							/**
 							 * Gets the index of any item in the inventory with matching ID, and returns the slot number.
 							 *  Returns -1 if the inventory does not contain the item.
-							 *
+							 * 
 							 *  @param id the item ID to check for
 							 *  @return the index of the given item with ID
 							 */
@@ -45520,13 +45520,13 @@ declare global {
 							/**
 							 * Returns true if this Inventory wraps a [HandledScreen] object
 							 *  rather than an [MCInventory] object
-							 *
+							 * 
 							 *  @return if this is a container
 							 */
               isScreen(): boolean;
 							/**
 							 * Shorthand for [ClickAction]
-							 *
+							 * 
 							 *  @param slot the slot to click on
 							 *  @param button the mouse button to use. "LEFT" by default.
 							 *  @param shift whether shift is being held. False by default
@@ -45535,7 +45535,7 @@ declare global {
               click(slot: number): com.chattriggers.ctjs.api.inventory.Inventory;
 							/**
 							 * Shorthand for [ClickAction]
-							 *
+							 * 
 							 *  @param slot the slot to click on
 							 *  @param button the mouse button to use. "LEFT" by default.
 							 *  @param shift whether shift is being held. False by default
@@ -45544,7 +45544,7 @@ declare global {
               click(slot: number, shift: boolean): com.chattriggers.ctjs.api.inventory.Inventory;
 							/**
 							 * Shorthand for [ClickAction]
-							 *
+							 * 
 							 *  @param slot the slot to click on
 							 *  @param button the mouse button to use. "LEFT" by default.
 							 *  @param shift whether shift is being held. False by default
@@ -45553,7 +45553,7 @@ declare global {
               click(slot: number, shift: boolean, button: string): com.chattriggers.ctjs.api.inventory.Inventory;
 							/**
 							 * Shorthand for [DropAction]
-							 *
+							 * 
 							 *  @param slot the slot to drop
 							 *  @param ctrl whether control should be held (drops whole stack)
 							 *  @return this inventory for method chaining
@@ -45561,7 +45561,7 @@ declare global {
               drop(slot: number, ctrl: boolean): com.chattriggers.ctjs.api.inventory.Inventory;
 							/**
 							 * Shorthand for [DragAction]
-							 *
+							 * 
 							 *  @param type what click type this should be: LEFT, MIDDLE, RIGHT
 							 *  @param slots all of the slots to drag onto
 							 *  @return this inventory for method chaining
@@ -45569,7 +45569,7 @@ declare global {
               drag(type: string, slots: number): com.chattriggers.ctjs.api.inventory.Inventory;
 							/**
 							 * Gets the name of the inventory, simply "container" for most chest-like blocks.
-							 *
+							 * 
 							 *  @return the name of the inventory
 							 */
               getName(): com.chattriggers.ctjs.api.message.TextComponent;
@@ -45579,7 +45579,7 @@ declare global {
               new(mcValue: net.minecraft.world.item.ItemStack): com.chattriggers.ctjs.api.inventory.Item;
               new(type: com.chattriggers.ctjs.api.inventory.ItemType): com.chattriggers.ctjs.api.inventory.Item;
             }
-            interface Item extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.item.ItemStack> {
+            interface Item extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.item.ItemStack> { 
               getType(): com.chattriggers.ctjs.api.inventory.ItemType;
               getStackSize(): number;
               setStackSize(size: number): com.chattriggers.ctjs.api.inventory.Item;
@@ -45613,7 +45613,7 @@ declare global {
               new(id: number): com.chattriggers.ctjs.api.inventory.ItemType;
               new(blockType: com.chattriggers.ctjs.api.world.block.BlockType): com.chattriggers.ctjs.api.inventory.ItemType;
             }
-            interface ItemType extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.item.Item> {
+            interface ItemType extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.item.Item> { 
               getName(): string;
               getNameComponent(): com.chattriggers.ctjs.api.message.TextComponent;
               getId(): number;
@@ -45625,7 +45625,7 @@ declare global {
               fromMC(mcValue: net.minecraft.world.item.Item): com.chattriggers.ctjs.api.inventory.ItemType | null | undefined;
               new(): com.chattriggers.ctjs.api.inventory.ItemType$Companion;
             }
-            interface ItemType$Companion {
+            interface ItemType$Companion { 
               fromMC(mcValue: net.minecraft.world.item.Item): com.chattriggers.ctjs.api.inventory.ItemType | null | undefined;
               new(): com.chattriggers.ctjs.api.inventory.ItemType$Companion;
             }
@@ -45633,7 +45633,7 @@ declare global {
               fromMC(mcValue: net.minecraft.world.item.ItemStack): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
               new(): com.chattriggers.ctjs.api.inventory.Item$Companion;
             }
-            interface Item$Companion {
+            interface Item$Companion { 
               fromMC(mcValue: net.minecraft.world.item.ItemStack): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
               new(): com.chattriggers.ctjs.api.inventory.Item$Companion;
             }
@@ -45664,12 +45664,12 @@ declare global {
 							 *    - hoverEvent: object with { action: [HoverEvent.Action], string format of a [HoverEvent.Action], or null, value: string or null }
 							 *    - insertion: string or null
 							 *    - font: string format of an [net.minecraft.util.Identifier]
-							 *
+							 * 
 							 *  @see Style
 							 */
               new(parts: any): com.chattriggers.ctjs.api.message.TextComponent;
             }
-            interface TextComponent extends net.minecraft.network.chat.Component, kotlin.collections.Iterable<org.mozilla.javascript.NativeObject> {
+            interface TextComponent extends net.minecraft.network.chat.Component, kotlin.collections.Iterable<org.mozilla.javascript.NativeObject> { 
 							/**
 							 * Returns the text of all parts concatenated without formatting codes.
 							 */
@@ -45683,7 +45683,7 @@ declare global {
 							 * If this [TextComponent] is recursive, sending this instance (via [chat] or
 							 *  [actionBar]) may trigger other `chat` triggers as if it had been received by
 							 *  the server. [TextComponent]s are non-recursive by default.
-							 *
+							 * 
 							 *  @return true if the message can trigger other triggers.
 							 */
               isRecursive(): boolean;
@@ -45691,7 +45691,7 @@ declare global {
 							 * Get the chat line ID of this message, if it exists. The chat line can be used
 							 *  to easily edit or delete a message later via [ChatLib.editChat] and
 							 *  [ChatLib.deleteChat].
-							 *
+							 * 
 							 *  @return the chat line ID of the message, or -1 if this [TextComponent] does
 							 *          not have an associated chat line ID.
 							 */
@@ -45706,13 +45706,13 @@ declare global {
               withChatLineId(id: number): com.chattriggers.ctjs.api.message.TextComponent;
 							/**
 							 * Sets whether the message can trigger other triggers.
-							 *
+							 * 
 							 *  @param recursive true if message can trigger other triggers.
 							 */
               withRecursive(): com.chattriggers.ctjs.api.message.TextComponent;
 							/**
 							 * Sets whether the message can trigger other triggers.
-							 *
+							 * 
 							 *  @param recursive true if message can trigger other triggers.
 							 */
               withRecursive(recursive: boolean): com.chattriggers.ctjs.api.message.TextComponent;
@@ -45745,19 +45745,19 @@ declare global {
               edit(parts: any): com.chattriggers.ctjs.api.message.TextComponent;
 							/**
 							 * Sends this [TextComponent] to the players chat.
-							 *
+							 * 
 							 *  Note that this is purely client-side, and will not be sent to the server. If [isRecursive],
 							 *  will trigger any matching `chat` triggers
-							 *
+							 * 
 							 *  @see ChatLib.chat
 							 *  @see ChatLib.say
 							 */
               chat(): com.chattriggers.ctjs.api.message.TextComponent;
 							/**
 							 * Sends this [TextComponent] to the players action bar.
-							 *
+							 * 
 							 *  If [isRecursive], will trigger any matching `actionBar` triggers
-							 *
+							 * 
 							 *  @see ChatLib.actionBar
 							 */
               actionBar(): com.chattriggers.ctjs.api.message.TextComponent;
@@ -45771,27 +45771,27 @@ declare global {
 							/**
 							 * Prints text in the chat.
 							 *  The text can be a String or a [TextComponent]
-							 *
+							 * 
 							 *  @param text the text to be printed
 							 */
               chat(text: any | null | undefined): void;
 							/**
 							 * Shows text in the action bar.
 							 *  The text can be a String or a [TextComponent]
-							 *
+							 * 
 							 *  @param text the text to show
 							 */
               actionBar(text: any | null | undefined): void;
 							/**
 							 * Simulates a chat message to be caught by other triggers for testing.
 							 *  The text can be a String or a [TextComponent]
-							 *
+							 * 
 							 *  @param text The message to simulate
 							 */
               simulateChat(text: any | null | undefined): void;
 							/**
 							 * Replaces the easier to type '&' color codes with proper color codes in a string.
-							 *
+							 * 
 							 *  @param message The string to add color codes to
 							 *  @return the formatted message
 							 */
@@ -45799,20 +45799,20 @@ declare global {
 							/**
 							 * Says chat message.
 							 *  This message is actually sent to the server.
-							 *
+							 * 
 							 *  @param text the message to be sent
 							 */
               say(text: string): void;
 							/**
 							 * Runs a command.
-							 *
+							 * 
 							 *  @param text the command to run, without the leading slash (Ex. "help")
 							 *  @param clientSide should the command be run as a client side command
 							 */
               command(text: string): void;
 							/**
 							 * Runs a command.
-							 *
+							 * 
 							 *  @param text the command to run, without the leading slash (Ex. "help")
 							 *  @param clientSide should the command be run as a client side command
 							 */
@@ -45825,7 +45825,7 @@ declare global {
 							 * Get a message that will be perfectly one line of chat,
 							 *  the separator repeated as many times as necessary.
 							 *  The separator defaults to "-"
-							 *
+							 * 
 							 *  @param separator the message to split chat with
 							 *  @return the message that would split chat
 							 */
@@ -45834,68 +45834,68 @@ declare global {
 							 * Get a message that will be perfectly one line of chat,
 							 *  the separator repeated as many times as necessary.
 							 *  The separator defaults to "-"
-							 *
+							 * 
 							 *  @param separator the message to split chat with
 							 *  @return the message that would split chat
 							 */
               getChatBreak(separator: string): string;
 							/**
 							 * Gets the width of Minecraft's chat
-							 *
+							 * 
 							 *  @return the width of chat
 							 */
               getChatWidth(): number;
 							/**
 							 * Remove all formatting
-							 *
+							 * 
 							 *  @param text the string to un-format
 							 *  @return the unformatted string
 							 */
               removeFormatting(text: string): string;
 							/**
 							 * Replaces Minecraft formatted text with normal formatted text
-							 *
+							 * 
 							 *  @param text the formatted string
 							 *  @return the unformatted string
 							 */
               replaceFormatting(text: string): string;
 							/**
 							 * Get a message that will be perfectly centered in chat.
-							 *
+							 * 
 							 *  @param text the text to be centered
 							 *  @return the centered message
 							 */
               getCenteredText(text: string): string;
 							/**
 							 * Copies the given String to the user's clipboard
-							 *
+							 * 
 							 *  @param text the text to copy
 							 */
               copyToClipboard(text: string): void;
 							/**
 							 * Edits an already sent chat message matched by [regexp].
-							 *
+							 * 
 							 *  @param regexp the regex object to match to the message
 							 *  @param replacements the new message(s) to be put in replace of the old one
 							 */
               editChat(regexp: org.mozilla.javascript.regexp.NativeRegExp, replacements: any): void;
 							/**
 							 * Edits an already sent chat message by the text of the chat
-							 *
+							 * 
 							 *  @param toReplace the unformatted text of the message to be replaced
 							 *  @param replacements the new message(s) to be put in place of the old one
 							 */
               editChat(toReplace: string, replacements: any): void;
 							/**
 							 * Edits an already sent chat message by the [TextComponent]
-							 *
+							 * 
 							 *  @param toReplace the message to be replaced
 							 *  @param replacements the new message(s) to be put in place of the old one
 							 */
               editChat(toReplace: com.chattriggers.ctjs.api.message.TextComponent, replacements: any): void;
 							/**
 							 * Edits an already sent chat message by its chat line id
-							 *
+							 * 
 							 *  @param chatLineId the chat line id of the message to be replaced
 							 *  @param replacements the new message(s) to be put in place of the old one
 							 */
@@ -45903,52 +45903,52 @@ declare global {
 							/**
 							 * Edits an already sent chat message by given a callback that receives
 							 *  [TextComponent] instances
-							 *
+							 * 
 							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
 							 *  @param replacements the new message(s) to be put in place of the old one
 							 */
               editChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>, replacements: any): void;
 							/**
 							 * Deletes an already sent chat message matching [regexp].
-							 *
+							 * 
 							 *  @param regexp the regex object to match to the message
 							 */
               deleteChat(regexp: org.mozilla.javascript.regexp.NativeRegExp): void;
 							/**
 							 * Deletes an already sent chat message by the text of the chat
-							 *
+							 * 
 							 *  @param toDelete the unformatted text of the message to be deleted
 							 */
               deleteChat(toDelete: string): void;
 							/**
 							 * Deletes an already sent chat message by the [TextComponent]
-							 *
+							 * 
 							 *  @param toDelete the message to be deleted
 							 */
               deleteChat(toDelete: com.chattriggers.ctjs.api.message.TextComponent): void;
 							/**
 							 * Deletes an already sent chat message by its chat line id
-							 *
+							 * 
 							 *  @param chatLineId the chat line id of the message to be deleted
 							 */
               deleteChat(chatLineId: number): void;
 							/**
 							 * Deletes an already sent chat message given a callback that receives
 							 *  [TextComponent] instances
-							 *
+							 * 
 							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
 							 */
               deleteChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>): void;
 							/**
 							 * Gets the previous 1000 lines of chat
-							 *
+							 * 
 							 *  @return A list of the last 1000 chat lines
 							 */
               getChatLines(): Array<string>;
 							/**
 							 * Adds a message to the player's chat history. This allows the message to
 							 *  show up for the player when pressing the up/down keys while in the chat gui
-							 *
+							 * 
 							 *  @param index the index to insert the message
 							 *  @param message the message to add to chat history
 							 */
@@ -45956,38 +45956,38 @@ declare global {
 							/**
 							 * Adds a message to the player's chat history. This allows the message to
 							 *  show up for the player when pressing the up/down keys while in the chat gui
-							 *
+							 * 
 							 *  @param index the index to insert the message
 							 *  @param message the message to add to chat history
 							 */
               addToSentMessageHistory(index: number, message: string): void;
               new(): com.chattriggers.ctjs.api.message.ChatLib;
             }
-            interface ChatLib {
+            interface ChatLib { 
 							/**
 							 * Prints text in the chat.
 							 *  The text can be a String or a [TextComponent]
-							 *
+							 * 
 							 *  @param text the text to be printed
 							 */
               chat(text: any | null | undefined): void;
 							/**
 							 * Shows text in the action bar.
 							 *  The text can be a String or a [TextComponent]
-							 *
+							 * 
 							 *  @param text the text to show
 							 */
               actionBar(text: any | null | undefined): void;
 							/**
 							 * Simulates a chat message to be caught by other triggers for testing.
 							 *  The text can be a String or a [TextComponent]
-							 *
+							 * 
 							 *  @param text The message to simulate
 							 */
               simulateChat(text: any | null | undefined): void;
 							/**
 							 * Replaces the easier to type '&' color codes with proper color codes in a string.
-							 *
+							 * 
 							 *  @param message The string to add color codes to
 							 *  @return the formatted message
 							 */
@@ -45995,20 +45995,20 @@ declare global {
 							/**
 							 * Says chat message.
 							 *  This message is actually sent to the server.
-							 *
+							 * 
 							 *  @param text the message to be sent
 							 */
               say(text: string): void;
 							/**
 							 * Runs a command.
-							 *
+							 * 
 							 *  @param text the command to run, without the leading slash (Ex. "help")
 							 *  @param clientSide should the command be run as a client side command
 							 */
               command(text: string): void;
 							/**
 							 * Runs a command.
-							 *
+							 * 
 							 *  @param text the command to run, without the leading slash (Ex. "help")
 							 *  @param clientSide should the command be run as a client side command
 							 */
@@ -46021,7 +46021,7 @@ declare global {
 							 * Get a message that will be perfectly one line of chat,
 							 *  the separator repeated as many times as necessary.
 							 *  The separator defaults to "-"
-							 *
+							 * 
 							 *  @param separator the message to split chat with
 							 *  @return the message that would split chat
 							 */
@@ -46030,68 +46030,68 @@ declare global {
 							 * Get a message that will be perfectly one line of chat,
 							 *  the separator repeated as many times as necessary.
 							 *  The separator defaults to "-"
-							 *
+							 * 
 							 *  @param separator the message to split chat with
 							 *  @return the message that would split chat
 							 */
               getChatBreak(separator: string): string;
 							/**
 							 * Gets the width of Minecraft's chat
-							 *
+							 * 
 							 *  @return the width of chat
 							 */
               getChatWidth(): number;
 							/**
 							 * Remove all formatting
-							 *
+							 * 
 							 *  @param text the string to un-format
 							 *  @return the unformatted string
 							 */
               removeFormatting(text: string): string;
 							/**
 							 * Replaces Minecraft formatted text with normal formatted text
-							 *
+							 * 
 							 *  @param text the formatted string
 							 *  @return the unformatted string
 							 */
               replaceFormatting(text: string): string;
 							/**
 							 * Get a message that will be perfectly centered in chat.
-							 *
+							 * 
 							 *  @param text the text to be centered
 							 *  @return the centered message
 							 */
               getCenteredText(text: string): string;
 							/**
 							 * Copies the given String to the user's clipboard
-							 *
+							 * 
 							 *  @param text the text to copy
 							 */
               copyToClipboard(text: string): void;
 							/**
 							 * Edits an already sent chat message matched by [regexp].
-							 *
+							 * 
 							 *  @param regexp the regex object to match to the message
 							 *  @param replacements the new message(s) to be put in replace of the old one
 							 */
               editChat(regexp: org.mozilla.javascript.regexp.NativeRegExp, replacements: any): void;
 							/**
 							 * Edits an already sent chat message by the text of the chat
-							 *
+							 * 
 							 *  @param toReplace the unformatted text of the message to be replaced
 							 *  @param replacements the new message(s) to be put in place of the old one
 							 */
               editChat(toReplace: string, replacements: any): void;
 							/**
 							 * Edits an already sent chat message by the [TextComponent]
-							 *
+							 * 
 							 *  @param toReplace the message to be replaced
 							 *  @param replacements the new message(s) to be put in place of the old one
 							 */
               editChat(toReplace: com.chattriggers.ctjs.api.message.TextComponent, replacements: any): void;
 							/**
 							 * Edits an already sent chat message by its chat line id
-							 *
+							 * 
 							 *  @param chatLineId the chat line id of the message to be replaced
 							 *  @param replacements the new message(s) to be put in place of the old one
 							 */
@@ -46099,52 +46099,52 @@ declare global {
 							/**
 							 * Edits an already sent chat message by given a callback that receives
 							 *  [TextComponent] instances
-							 *
+							 * 
 							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
 							 *  @param replacements the new message(s) to be put in place of the old one
 							 */
               editChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>, replacements: any): void;
 							/**
 							 * Deletes an already sent chat message matching [regexp].
-							 *
+							 * 
 							 *  @param regexp the regex object to match to the message
 							 */
               deleteChat(regexp: org.mozilla.javascript.regexp.NativeRegExp): void;
 							/**
 							 * Deletes an already sent chat message by the text of the chat
-							 *
+							 * 
 							 *  @param toDelete the unformatted text of the message to be deleted
 							 */
               deleteChat(toDelete: string): void;
 							/**
 							 * Deletes an already sent chat message by the [TextComponent]
-							 *
+							 * 
 							 *  @param toDelete the message to be deleted
 							 */
               deleteChat(toDelete: com.chattriggers.ctjs.api.message.TextComponent): void;
 							/**
 							 * Deletes an already sent chat message by its chat line id
-							 *
+							 * 
 							 *  @param chatLineId the chat line id of the message to be deleted
 							 */
               deleteChat(chatLineId: number): void;
 							/**
 							 * Deletes an already sent chat message given a callback that receives
 							 *  [TextComponent] instances
-							 *
+							 * 
 							 *  @param matcher a function that accepts a [TextComponent] and returns a boolean
 							 */
               deleteChat(matcher: kotlin.Function1<com.chattriggers.ctjs.api.message.TextComponent, boolean>): void;
 							/**
 							 * Gets the previous 1000 lines of chat
-							 *
+							 * 
 							 *  @return A list of the last 1000 chat lines
 							 */
               getChatLines(): Array<string>;
 							/**
 							 * Adds a message to the player's chat history. This allows the message to
 							 *  show up for the player when pressing the up/down keys while in the chat gui
-							 *
+							 * 
 							 *  @param index the index to insert the message
 							 *  @param message the message to add to chat history
 							 */
@@ -46152,7 +46152,7 @@ declare global {
 							/**
 							 * Adds a message to the player's chat history. This allows the message to
 							 *  show up for the player when pressing the up/down keys while in the chat gui
-							 *
+							 * 
 							 *  @param index the index to insert the message
 							 *  @param message the message to add to chat history
 							 */
@@ -46163,7 +46163,7 @@ declare global {
               sendGradientMsg(prefix: string, startRgb: number, endRgb: number, messages: any): void;
               new(): com.chattriggers.ctjs.api.message.Chat;
             }
-            interface Chat {
+            interface Chat { 
               sendGradientMsg(prefix: string, startRgb: number, endRgb: number, messages: any): void;
               new(): com.chattriggers.ctjs.api.message.Chat;
             }
@@ -46177,11 +46177,11 @@ declare global {
                 new(blockID: number): com.chattriggers.ctjs.api.world.block.BlockType;
                 new(item: com.chattriggers.ctjs.api.inventory.Item): com.chattriggers.ctjs.api.world.block.BlockType;
               }
-              interface BlockType extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.block.Block> {
+              interface BlockType extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.block.Block> { 
 								/**
 								 * Returns a [Block] based on this block and the
 								 *  provided BlockPos
-								 *
+								 * 
 								 *  @param blockPos the block position
 								 *  @return a [Block] object
 								 */
@@ -46190,21 +46190,21 @@ declare global {
 								/**
 								 * Gets the block's registry name.
 								 *  Example: minecraft:oak_planks
-								 *
+								 * 
 								 *  @return the block's registry name
 								 */
                 getRegistryName(): string;
 								/**
 								 * Gets the block's translation key.
 								 *  Example: block.minecraft.oak_planks
-								 *
+								 * 
 								 *  @return the block's translation key
 								 */
                 getTranslationKey(): string;
 								/**
 								 * Gets the block's localized name.
 								 *  Example: Wooden Planks
-								 *
+								 * 
 								 *  @return the block's localized name
 								 */
                 getName(): string;
@@ -46220,7 +46220,7 @@ declare global {
                 new(pos: net.minecraft.core.BlockPos): com.chattriggers.ctjs.api.world.block.BlockPos;
                 new(source: com.chattriggers.ctjs.api.entity.Entity): com.chattriggers.ctjs.api.world.block.BlockPos;
               }
-              interface BlockPos extends com.chattriggers.ctjs.api.vec.Vec3i, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.BlockPos> {
+              interface BlockPos extends com.chattriggers.ctjs.api.vec.Vec3i, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.BlockPos> { 
                 up(): com.chattriggers.ctjs.api.world.block.BlockPos;
                 up(n: number): com.chattriggers.ctjs.api.world.block.BlockPos;
                 down(): com.chattriggers.ctjs.api.world.block.BlockPos;
@@ -46252,7 +46252,7 @@ declare global {
                 values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace>;
                 valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace;
               }
-              interface BlockFace extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace>, net.minecraft.util.StringRepresentable, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction> {
+              interface BlockFace extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace>, net.minecraft.util.StringRepresentable, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction> { 
                 getAxisDirection(): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
                 getAxis(): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
                 getDirectionVec(): com.chattriggers.ctjs.api.vec.Vec3i;
@@ -46272,14 +46272,14 @@ declare global {
                 values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection>;
                 valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
               }
-              interface BlockFace$AxisDirection extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction$AxisDirection> {
+              interface BlockFace$AxisDirection extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction$AxisDirection> { 
                 getOffset(): number;
               }
               const BlockFace$AxisDirection$Companion: {
                 fromMC(axisDirection: net.minecraft.core.Direction$AxisDirection): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
                 new(): unknown;
               }
-              interface BlockFace$AxisDirection$Companion {
+              interface BlockFace$AxisDirection$Companion { 
                 fromMC(axisDirection: net.minecraft.core.Direction$AxisDirection): com.chattriggers.ctjs.api.world.block.BlockFace$AxisDirection;
                 new(): unknown;
               }
@@ -46291,7 +46291,7 @@ declare global {
                 values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>;
                 valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
               }
-              interface BlockFace$Axis extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>, net.minecraft.util.StringRepresentable, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction$Axis> {
+              interface BlockFace$Axis extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$Axis>, net.minecraft.util.StringRepresentable, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.core.Direction$Axis> { 
                 getPlane(): com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
                 isHorizontal(): boolean;
                 isVertical(): boolean;
@@ -46303,14 +46303,14 @@ declare global {
                 values(): Array<com.chattriggers.ctjs.api.world.block.BlockFace$Plane>;
                 valueOf(value: string): com.chattriggers.ctjs.api.world.block.BlockFace$Plane;
               }
-              interface BlockFace$Plane extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$Plane>, kotlin.collections.Iterable<com.chattriggers.ctjs.api.world.block.BlockFace> {
+              interface BlockFace$Plane extends kotlin.Enum<com.chattriggers.ctjs.api.world.block.BlockFace$Plane>, kotlin.collections.Iterable<com.chattriggers.ctjs.api.world.block.BlockFace> { 
                 facings(): Array<com.chattriggers.ctjs.api.world.block.BlockFace>;
               }
               const BlockFace$Axis$Companion: {
                 fromMC(axis: net.minecraft.core.Direction$Axis): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
                 new(): unknown;
               }
-              interface BlockFace$Axis$Companion {
+              interface BlockFace$Axis$Companion { 
                 fromMC(axis: net.minecraft.core.Direction$Axis): com.chattriggers.ctjs.api.world.block.BlockFace$Axis;
                 new(): unknown;
               }
@@ -46318,14 +46318,14 @@ declare global {
                 fromMC(facing: net.minecraft.core.Direction): com.chattriggers.ctjs.api.world.block.BlockFace;
                 new(): com.chattriggers.ctjs.api.world.block.BlockFace$Companion;
               }
-              interface BlockFace$Companion {
+              interface BlockFace$Companion { 
                 fromMC(facing: net.minecraft.core.Direction): com.chattriggers.ctjs.api.world.block.BlockFace;
                 new(): com.chattriggers.ctjs.api.world.block.BlockFace$Companion;
               }
               const Block: {
                 new(type: com.chattriggers.ctjs.api.world.block.BlockType, pos: com.chattriggers.ctjs.api.world.block.BlockPos, face: com.chattriggers.ctjs.api.world.block.BlockFace | null | undefined): com.chattriggers.ctjs.api.world.block.Block;
               }
-              interface Block {
+              interface Block { 
                 getType(): com.chattriggers.ctjs.api.world.block.BlockType;
                 getPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
                 getFace(): com.chattriggers.ctjs.api.world.block.BlockFace | null | undefined;
@@ -46349,7 +46349,7 @@ declare global {
                 getReceivingPower(): number;
 								/**
 								 * Checks whether the block can be mined with the tool in the player's hand
-								 *
+								 * 
 								 *  @return whether the block can be mined
 								 */
                 canBeHarvested(): boolean;
@@ -46360,7 +46360,7 @@ declare global {
               const HypixelManager: {
                 new(): com.chattriggers.ctjs.api.world.pathfinding.HypixelManager;
               }
-              interface HypixelManager {
+              interface HypixelManager { 
                 new(): com.chattriggers.ctjs.api.world.pathfinding.HypixelManager;
                 init(): void;
                 onDisconnect(): void;
@@ -46372,7 +46372,7 @@ declare global {
                 flagsShortForStateId(stateId: number): number;
                 new(): com.chattriggers.ctjs.api.world.pathfinding.NativeStateEncoder;
               }
-              interface NativeStateEncoder {
+              interface NativeStateEncoder { 
                 flagsForStateId(stateId: number): number;
                 flagsForState(state: net.minecraft.world.level.block.state.BlockState): number;
                 flagsShortForState(state: net.minecraft.world.level.block.state.BlockState): number;
@@ -46382,7 +46382,7 @@ declare global {
               const NativeVoxelFlags: {
                 new(): com.chattriggers.ctjs.api.world.pathfinding.NativeVoxelFlags;
               }
-              interface NativeVoxelFlags {
+              interface NativeVoxelFlags { 
                 new(): com.chattriggers.ctjs.api.world.pathfinding.NativeVoxelFlags;
                 getPASSABLE(): number;
                 getSOLID(): number;
@@ -46401,7 +46401,7 @@ declare global {
               const WorldSerializer: {
                 new(): com.chattriggers.ctjs.api.world.pathfinding.WorldSerializer;
               }
-              interface WorldSerializer {
+              interface WorldSerializer { 
                 new(): com.chattriggers.ctjs.api.world.pathfinding.WorldSerializer;
                 save(name: string, chunks: Map<number, com.chattriggers.ctjs.api.world.pathfinding.CachedChunk>): void;
                 load(name: string): java.util.concurrent.ConcurrentHashMap<number, com.chattriggers.ctjs.api.world.pathfinding.CachedChunk> | null | undefined;
@@ -46412,7 +46412,7 @@ declare global {
                 ready: boolean;
                 new(minY: number, maxY: number): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk;
               }
-              interface CachedChunk {
+              interface CachedChunk { 
                 getFlags(localX: number, y: number, localZ: number): number;
                 setFlags(localX: number, y: number, localZ: number, flags: number): void;
                 hasSection(index: number): boolean;
@@ -46423,7 +46423,7 @@ declare global {
                 AIR_FLAGS: number;
                 new(): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk$Companion;
               }
-              interface CachedChunk$Companion {
+              interface CachedChunk$Companion { 
                 AIR_FLAGS: number;
                 new(): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk$Companion;
               }
@@ -46432,7 +46432,7 @@ declare global {
                 centers: kotlin.DoubleArray;
                 new(goals: Array<number>, centers: kotlin.DoubleArray): com.chattriggers.ctjs.api.world.pathfinding.EtherwarpLandingCandidatesResult;
               }
-              interface EtherwarpLandingCandidatesResult {
+              interface EtherwarpLandingCandidatesResult { 
               }
               const NativeEtherwarpResult: {
                 path: Array<number>;
@@ -46442,7 +46442,7 @@ declare global {
                 nanosecondsPerNode: number;
                 new(path: Array<number>, angles: kotlin.FloatArray, timeMs: number, nodesExplored: number, nanosecondsPerNode: number): com.chattriggers.ctjs.api.world.pathfinding.NativeEtherwarpResult;
               }
-              interface NativeEtherwarpResult {
+              interface NativeEtherwarpResult { 
               }
               const NativePathfinderBridge: {
                 NativePathSearchRequest: typeof com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest;
@@ -46458,7 +46458,7 @@ declare global {
                 cancelSearch(): void;
                 new(): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge;
               }
-              interface NativePathfinderBridge {
+              interface NativePathfinderBridge { 
                 isAvailable(): boolean;
                 getLastError(): string | null | undefined;
                 setWorld(worldKey: string, minY: number, maxY: number): void;
@@ -46473,7 +46473,7 @@ declare global {
               const NativePathfinderBridge$NativePathSearchRequest: {
                 new(startPoints: Array<number>, endPoints: Array<number>, isFly: boolean, maxIterations: number, heuristicWeight: number, nonPrimaryStartPenalty: number, moveOrderOffset: number, avoidMeta: Array<number>, avoidPenalty: kotlin.DoubleArray): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativePathSearchRequest;
               }
-              interface NativePathfinderBridge$NativePathSearchRequest {
+              interface NativePathfinderBridge$NativePathSearchRequest { 
                 getStartPoints(): Array<number>;
                 getEndPoints(): Array<number>;
                 isFly(): boolean;
@@ -46507,12 +46507,12 @@ declare global {
                 pathSignature: string;
                 new(path: Array<number>, keyPath: Array<number>, timeMs: number, nodesExplored: number, nanosecondsPerNode: number, selectedStartIndex: number, pathFlags: Array<number>, keyNodeFlags: Array<number>, keyNodeMetrics: Array<number>, pathSignature: string): com.chattriggers.ctjs.api.world.pathfinding.NativePathResult;
               }
-              interface NativePathResult {
+              interface NativePathResult { 
               }
               const NativePathfinderBridge$NativeEtherwarpSearchRequest: {
                 new(goalX: number, goalY: number, goalZ: number, startEyeX: number, startEyeY: number, startEyeZ: number, maxIterations: number, threadCount: number, yawStep: number, pitchStep: number, newNodeCost: number, heuristicWeight: number, rayLength: number, rewireEpsilon: number, eyeHeight: number): com.chattriggers.ctjs.api.world.pathfinding.NativePathfinderBridge$NativeEtherwarpSearchRequest;
               }
-              interface NativePathfinderBridge$NativeEtherwarpSearchRequest {
+              interface NativePathfinderBridge$NativeEtherwarpSearchRequest { 
                 getGoalX(): number;
                 getGoalY(): number;
                 getGoalZ(): number;
@@ -46614,7 +46614,7 @@ declare global {
                 clear(): void;
                 new(): com.chattriggers.ctjs.api.world.pathfinding.PathManager;
               }
-              interface PathManager {
+              interface PathManager { 
                 isSearching(): boolean;
                 findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number): boolean;
                 findPath(startX: number, startY: number, startZ: number, endX: number, endY: number, endZ: number, maxIterations: number): boolean;
@@ -46698,13 +46698,13 @@ declare global {
               const Swift: {
                 new(): com.chattriggers.ctjs.api.world.pathfinding.Swift;
               }
-              interface Swift extends net.fabricmc.api.ClientModInitializer {
+              interface Swift extends net.fabricmc.api.ClientModInitializer { 
               }
               const Swift$Companion: {
                 executor: java.util.concurrent.ExecutorService;
                 new(): com.chattriggers.ctjs.api.world.pathfinding.Swift$Companion;
               }
-              interface Swift$Companion {
+              interface Swift$Companion { 
                 executor: java.util.concurrent.ExecutorService;
                 new(): com.chattriggers.ctjs.api.world.pathfinding.Swift$Companion;
                 getCHUNKS_PER_TICK(): number;
@@ -46713,7 +46713,7 @@ declare global {
               const WynncraftManager: {
                 new(): com.chattriggers.ctjs.api.world.pathfinding.WynncraftManager;
               }
-              interface WynncraftManager {
+              interface WynncraftManager { 
                 new(): com.chattriggers.ctjs.api.world.pathfinding.WynncraftManager;
                 init(): void;
                 onDisconnect(): void;
@@ -46723,7 +46723,7 @@ declare global {
                 getChunk(x: number, z: number): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk | null | undefined;
                 new(): com.chattriggers.ctjs.api.world.pathfinding.CachedWorld;
               }
-              interface CachedWorld {
+              interface CachedWorld { 
                 getBlockFlags(x: number, y: number, z: number): number | null | undefined;
                 getChunk(x: number, z: number): com.chattriggers.ctjs.api.world.pathfinding.CachedChunk | null | undefined;
                 new(): com.chattriggers.ctjs.api.world.pathfinding.CachedWorld;
@@ -46741,7 +46741,7 @@ declare global {
             const Chunk: {
               new(mcValue: net.minecraft.world.level.chunk.ChunkAccess): com.chattriggers.ctjs.api.world.Chunk;
             }
-            interface Chunk extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.chunk.ChunkAccess> {
+            interface Chunk extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.chunk.ChunkAccess> { 
 							/**
 							 * Gets the x position of the chunk
 							 */
@@ -46752,38 +46752,38 @@ declare global {
               getZ(): number;
 							/**
 							 * Gets the minimum x coordinate of a block in the chunk
-							 *
+							 * 
 							 *  @return the minimum x coordinate
 							 */
               getMinBlockX(): number;
 							/**
 							 * Gets the minimum z coordinate of a block in the chunk
-							 *
+							 * 
 							 *  @return the minimum z coordinate
 							 */
               getMinBlockZ(): number;
 							/**
 							 * Gets every entity in this chunk
-							 *
+							 * 
 							 *  @return the entity list
 							 */
               getAllEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
 							/**
 							 * Gets every entity in this chunk of a certain class
-							 *
+							 * 
 							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
 							 *  @return the entity list
 							 */
               getAllEntitiesOfType(clazz: java.lang.Class<net.minecraft.world.entity.Entity>): Array<com.chattriggers.ctjs.api.entity.Entity>;
 							/**
 							 * Gets every block entity in this chunk
-							 *
+							 * 
 							 *  @return the block entity list
 							 */
               getAllBlockEntities(): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
 							/**
 							 * Gets every block entity in this chunk of a certain class
-							 *
+							 * 
 							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
 							 *  @return the block entity list
 							 */
@@ -46792,7 +46792,7 @@ declare global {
             const PotionEffectType: {
               new(type: net.minecraft.world.effect.MobEffect): com.chattriggers.ctjs.api.world.PotionEffectType;
             }
-            interface PotionEffectType {
+            interface PotionEffectType { 
               getType(): net.minecraft.world.effect.MobEffect;
 							/**
 							 * The Int associated with this type
@@ -46822,7 +46822,7 @@ declare global {
             const PotionEffect: {
               new(effect: net.minecraft.world.effect.MobEffectInstance): com.chattriggers.ctjs.api.world.PotionEffect;
             }
-            interface PotionEffect {
+            interface PotionEffect { 
               getEffect(): net.minecraft.world.effect.MobEffectInstance;
 							/**
 							 * The type of this potion
@@ -46853,20 +46853,20 @@ declare global {
               toMC(): net.minecraft.client.gui.components.BossHealthOverlay;
 							/**
 							 * Gets the list of currently shown [BossBar]s
-							 *
+							 * 
 							 *  @return the currently displayed [BossBar]s
 							 */
               getBossBars(): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
 							/**
 							 * Gets all [BossBar]s with a given name
-							 *
+							 * 
 							 *  @param name the name to match
 							 *  @return the [BossBar]s
 							 */
               getBossBarsByName(name: string): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
 							/**
 							 * Adds a new [BossBar] to be displayed
-							 *
+							 * 
 							 *  Takes a parameter with the following options:
 							 *  - name: The name to appear above the BossBar. Defaults to an empty string
 							 *  - percent: The percent full the BossBar is. Defaults to 1 (full health)
@@ -46876,9 +46876,9 @@ declare global {
 							 *  - darkenSky: Whether the BossBar should darken the screen of the player. Defaults to false
 							 *  - dragonMusic: Whether the BossBar should play dragon music while in the End. Defaults to false
 							 *  - thickenFog: Whether the BossBar should thicken the fog around the player. Defaults to false
-							 *
+							 * 
 							 *  @param obj An options bag
-							 *
+							 * 
 							 *  @return the [BossBar] for further modification
 							 */
               addBossBar(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.world.BossBars$BossBar;
@@ -46888,36 +46888,36 @@ declare global {
               clearBossBars(): void;
 							/**
 							 * Removes all [BossBar]s with the given name
-							 *
+							 * 
 							 *  @param name the name to match
 							 */
               removeBossBarsByName(name: string): void;
 							/**
 							 * Removes the given [BossBar]
-							 *
+							 * 
 							 *  @param bossBar the BossBar to remove
 							 */
               removeBossBar(bossBar: com.chattriggers.ctjs.api.world.BossBars$BossBar): void;
               new(): com.chattriggers.ctjs.api.world.BossBars;
             }
-            interface BossBars {
+            interface BossBars { 
               toMC(): net.minecraft.client.gui.components.BossHealthOverlay;
 							/**
 							 * Gets the list of currently shown [BossBar]s
-							 *
+							 * 
 							 *  @return the currently displayed [BossBar]s
 							 */
               getBossBars(): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
 							/**
 							 * Gets all [BossBar]s with a given name
-							 *
+							 * 
 							 *  @param name the name to match
 							 *  @return the [BossBar]s
 							 */
               getBossBarsByName(name: string): Array<com.chattriggers.ctjs.api.world.BossBars$BossBar>;
 							/**
 							 * Adds a new [BossBar] to be displayed
-							 *
+							 * 
 							 *  Takes a parameter with the following options:
 							 *  - name: The name to appear above the BossBar. Defaults to an empty string
 							 *  - percent: The percent full the BossBar is. Defaults to 1 (full health)
@@ -46927,9 +46927,9 @@ declare global {
 							 *  - darkenSky: Whether the BossBar should darken the screen of the player. Defaults to false
 							 *  - dragonMusic: Whether the BossBar should play dragon music while in the End. Defaults to false
 							 *  - thickenFog: Whether the BossBar should thicken the fog around the player. Defaults to false
-							 *
+							 * 
 							 *  @param obj An options bag
-							 *
+							 * 
 							 *  @return the [BossBar] for further modification
 							 */
               addBossBar(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.world.BossBars$BossBar;
@@ -46939,13 +46939,13 @@ declare global {
               clearBossBars(): void;
 							/**
 							 * Removes all [BossBar]s with the given name
-							 *
+							 * 
 							 *  @param name the name to match
 							 */
               removeBossBarsByName(name: string): void;
 							/**
 							 * Removes the given [BossBar]
-							 *
+							 * 
 							 *  @param bossBar the BossBar to remove
 							 */
               removeBossBar(bossBar: com.chattriggers.ctjs.api.world.BossBars$BossBar): void;
@@ -46954,34 +46954,34 @@ declare global {
             const BossBars$BossBar: {
               new(mcValue: net.minecraft.client.gui.components.LerpingBossEvent): com.chattriggers.ctjs.api.world.BossBars$BossBar;
             }
-            interface BossBars$BossBar extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.gui.components.LerpingBossEvent> {
+            interface BossBars$BossBar extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.gui.components.LerpingBossEvent> { 
 							/**
 							 * Gets the UUID of this BossBar
-							 *
+							 * 
 							 *  @return the uuid
 							 */
               getUUID(): java.util.UUID;
 							/**
 							 * Gets the name of this BossBar
-							 *
+							 * 
 							 *  @return the name
 							 */
               getName(): string;
 							/**
 							 * Sets the name of this BossBar
-							 *
+							 * 
 							 *  @param name the name to set
 							 */
               setName(name: string): com.chattriggers.ctjs.api.world.BossBars$BossBar;
 							/**
 							 * Gets how full this BossBar is
-							 *
+							 * 
 							 *  @return how full the BossBar is
 							 */
               getPercent(): number;
 							/**
 							 * Sets how full this BossBar is
-							 *
+							 * 
 							 *  @param percent how full to set this BossBar. Must be between 0 and 1
 							 */
               setPercent(percent: number): com.chattriggers.ctjs.api.world.BossBars$BossBar;
@@ -46991,7 +46991,7 @@ declare global {
               getColor(): com.chattriggers.ctjs.api.world.BossBars$Color;
 							/**
 							 * Sets the [Color] of this BossBar
-							 *
+							 * 
 							 *  @param color the color to set. Can be [Color], [MCBossBarColor], or a string
 							 */
               setColor(color: any): com.chattriggers.ctjs.api.world.BossBars$BossBar;
@@ -47001,7 +47001,7 @@ declare global {
               getStyle(): com.chattriggers.ctjs.api.world.BossBars$Style;
 							/**
 							 * Sets the style of this BossBar
-							 *
+							 * 
 							 *  @param style the style to set. Can be [Style], [MCBossBarStyle], a string,
 							 *  or a number of how many notches to put
 							 */
@@ -47012,7 +47012,7 @@ declare global {
               shouldDarkenSky(): boolean;
 							/**
 							 * Sets whether this BossBar should darken the sky
-							 *
+							 * 
 							 *  @param darken whether to darken the sky
 							 */
               setShouldDarkenSky(darken: boolean): com.chattriggers.ctjs.api.world.BossBars$BossBar;
@@ -47023,7 +47023,7 @@ declare global {
               hasDragonMusic(): boolean;
 							/**
 							 * Sets whether this BossBar will play dragon music
-							 *
+							 * 
 							 *  @param music whether to play dragon music
 							 */
               setHasDragonMusic(music: boolean): com.chattriggers.ctjs.api.world.BossBars$BossBar;
@@ -47033,7 +47033,7 @@ declare global {
               shouldThickenFog(): boolean;
 							/**
 							 * Sets whether this BossBar should thicken the fog around the player
-							 *
+							 * 
 							 *  @param fog whether to thicken the fog
 							 */
               setShouldThickenFog(fog: boolean): com.chattriggers.ctjs.api.world.BossBars$BossBar;
@@ -47050,14 +47050,14 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.world.BossBars$Color>;
               valueOf(value: string): com.chattriggers.ctjs.api.world.BossBars$Color;
             }
-            interface BossBars$Color extends kotlin.Enum<com.chattriggers.ctjs.api.world.BossBars$Color>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.BossEvent$BossBarColor> {
+            interface BossBars$Color extends kotlin.Enum<com.chattriggers.ctjs.api.world.BossBars$Color>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.BossEvent$BossBarColor> { 
             }
             const BossBars$Color$Companion: {
               fromMC(mcValue: net.minecraft.world.BossEvent$BossBarColor): com.chattriggers.ctjs.api.world.BossBars$Color;
               from(value: any): com.chattriggers.ctjs.api.world.BossBars$Color;
               new(): unknown;
             }
-            interface BossBars$Color$Companion {
+            interface BossBars$Color$Companion { 
               fromMC(mcValue: net.minecraft.world.BossEvent$BossBarColor): com.chattriggers.ctjs.api.world.BossBars$Color;
               from(value: any): com.chattriggers.ctjs.api.world.BossBars$Color;
               new(): unknown;
@@ -47072,7 +47072,7 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.world.BossBars$Style>;
               valueOf(value: string): com.chattriggers.ctjs.api.world.BossBars$Style;
             }
-            interface BossBars$Style extends kotlin.Enum<com.chattriggers.ctjs.api.world.BossBars$Style>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.BossEvent$BossBarOverlay> {
+            interface BossBars$Style extends kotlin.Enum<com.chattriggers.ctjs.api.world.BossBars$Style>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.BossEvent$BossBarOverlay> { 
               getSections(): number;
             }
             const BossBars$Style$Companion: {
@@ -47080,7 +47080,7 @@ declare global {
               from(value: any): com.chattriggers.ctjs.api.world.BossBars$Style;
               new(): unknown;
             }
-            interface BossBars$Style$Companion {
+            interface BossBars$Style$Companion { 
               fromMC(mcValue: net.minecraft.world.BossEvent$BossBarOverlay): com.chattriggers.ctjs.api.world.BossBars$Style;
               from(value: any): com.chattriggers.ctjs.api.world.BossBars$Style;
               new(): unknown;
@@ -47091,61 +47091,61 @@ declare global {
 							/**
 							 * Gets the current server's IP, or "localhost" if the player
 							 *  is in a single-player world.
-							 *
+							 * 
 							 *  @return The IP of the current server
 							 */
               getIP(): string;
 							/**
 							 * Gets the current server's name, or "SinglePlayer" if the player
 							 *  is in a single-player world.
-							 *
+							 * 
 							 *  @return The name of the current server
 							 */
               getName(): string;
 							/**
 							 * Gets the current server's MOTD, or "SinglePlayer" if the player
 							 *  is in a single-player world.
-							 *
+							 * 
 							 *  @return The MOTD of the current server
 							 */
               getMOTD(): string;
 							/**
 							 * Gets the ping to the current server, or 5 if the player
 							 *  is in a single-player world. Returns -1 if not in a world
-							 *
+							 * 
 							 *  @return The ping to the current server
 							 */
               getPing(): number;
               new(): com.chattriggers.ctjs.api.world.Server;
             }
-            interface Server {
+            interface Server { 
               toMC(): net.minecraft.client.multiplayer.ServerData | null | undefined;
               isSingleplayer(): boolean;
 							/**
 							 * Gets the current server's IP, or "localhost" if the player
 							 *  is in a single-player world.
-							 *
+							 * 
 							 *  @return The IP of the current server
 							 */
               getIP(): string;
 							/**
 							 * Gets the current server's name, or "SinglePlayer" if the player
 							 *  is in a single-player world.
-							 *
+							 * 
 							 *  @return The name of the current server
 							 */
               getName(): string;
 							/**
 							 * Gets the current server's MOTD, or "SinglePlayer" if the player
 							 *  is in a single-player world.
-							 *
+							 * 
 							 *  @return The MOTD of the current server
 							 */
               getMOTD(): string;
 							/**
 							 * Gets the ping to the current server, or 5 if the player
 							 *  is in a single-player world. Returns -1 if not in a world
-							 *
+							 * 
 							 *  @return The ping to the current server
 							 */
               getPing(): number;
@@ -47165,7 +47165,7 @@ declare global {
               getTime(): number;
 							/**
 							 * Gets the [Block] at a location in the world.
-							 *
+							 * 
 							 *  @param x the x position
 							 *  @param y the y position
 							 *  @param z the z position
@@ -47174,7 +47174,7 @@ declare global {
               getBlockAt(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.block.Block;
 							/**
 							 * Gets the [Block] at a location in the world.
-							 *
+							 * 
 							 *  @param pos The block position
 							 *  @return the [Block] at the location
 							 */
@@ -47183,14 +47183,14 @@ declare global {
               getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number, types: Array<com.chattriggers.ctjs.api.world.block.BlockType>): Array<com.chattriggers.ctjs.api.world.block.Block>;
 							/**
 							 * Gets the [BlockState] at a location in the world.
-							 *
+							 * 
 							 *  @param pos The block position
 							 *  @return the [BlockState] at the location
 							 */
               getBlockStateAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): net.minecraft.world.level.block.state.BlockState;
 							/**
 							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
-							 *
+							 * 
 							 *  @param x the x coordinate
 							 *  @param y the y coordinate
 							 *  @param z the z coordinate
@@ -47199,14 +47199,14 @@ declare global {
               getSkyLightLevel(x: number, y: number, z: number): number;
 							/**
 							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
-							 *
+							 * 
 							 *  @param pos The block position
 							 *  @return the skylight level at the location
 							 */
               getSkyLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
 							/**
 							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
-							 *
+							 * 
 							 *  @param x the x coordinate
 							 *  @param y the y coordinate
 							 *  @param z the z coordinate
@@ -47215,20 +47215,20 @@ declare global {
               getBlockLightLevel(x: number, y: number, z: number): number;
 							/**
 							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
-							 *
+							 * 
 							 *  @param pos The block position
 							 *  @return the block light level at the location
 							 */
               getBlockLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
 							/**
 							 * Gets all of the players in the world, and returns their wrapped versions.
-							 *
+							 * 
 							 *  @return the players
 							 */
               getAllPlayers(): Array<com.chattriggers.ctjs.api.entity.PlayerMP>;
 							/**
 							 * Gets a player by their username, must be in the currently loaded chunks!
-							 *
+							 * 
 							 *  @param name the username
 							 *  @return the player with said username, or null if they don't exist.
 							 */
@@ -47237,7 +47237,7 @@ declare global {
               getAllEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
 							/**
 							 * Gets every entity loaded in the world of a certain class
-							 *
+							 * 
 							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
 							 *  @return the entity list
 							 */
@@ -47246,14 +47246,14 @@ declare global {
               getAllBlockEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
 							/**
 							 * Returns the TPS of the current world.
-							 *
+							 * 
 							 *  On modern version (1.20.3+), this is variable. On earlier versions,
 							 *  it is always 20.
 							 */
               getTicksPerSecond(): number;
               new(): com.chattriggers.ctjs.api.world.World;
             }
-            interface World {
+            interface World { 
               spawn: com.chattriggers.ctjs.api.world.World$SpawnWrapper;
               particle: com.chattriggers.ctjs.api.world.World$ParticleWrapper;
               border: com.chattriggers.ctjs.api.world.World$BorderWrapper;
@@ -47264,7 +47264,7 @@ declare global {
               getTime(): number;
 							/**
 							 * Gets the [Block] at a location in the world.
-							 *
+							 * 
 							 *  @param x the x position
 							 *  @param y the y position
 							 *  @param z the z position
@@ -47273,7 +47273,7 @@ declare global {
               getBlockAt(x: number, y: number, z: number): com.chattriggers.ctjs.api.world.block.Block;
 							/**
 							 * Gets the [Block] at a location in the world.
-							 *
+							 * 
 							 *  @param pos The block position
 							 *  @return the [Block] at the location
 							 */
@@ -47282,14 +47282,14 @@ declare global {
               getBlocksInBox(minX: number, minY: number, minZ: number, maxX: number, maxY: number, maxZ: number, types: Array<com.chattriggers.ctjs.api.world.block.BlockType>): Array<com.chattriggers.ctjs.api.world.block.Block>;
 							/**
 							 * Gets the [BlockState] at a location in the world.
-							 *
+							 * 
 							 *  @param pos The block position
 							 *  @return the [BlockState] at the location
 							 */
               getBlockStateAt(pos: com.chattriggers.ctjs.api.world.block.BlockPos): net.minecraft.world.level.block.state.BlockState;
 							/**
 							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
-							 *
+							 * 
 							 *  @param x the x coordinate
 							 *  @param y the y coordinate
 							 *  @param z the z coordinate
@@ -47298,14 +47298,14 @@ declare global {
               getSkyLightLevel(x: number, y: number, z: number): number;
 							/**
 							 * Gets the skylight level at the given position. This is the value seen in the debug (F3) menu
-							 *
+							 * 
 							 *  @param pos The block position
 							 *  @return the skylight level at the location
 							 */
               getSkyLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
 							/**
 							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
-							 *
+							 * 
 							 *  @param x the x coordinate
 							 *  @param y the y coordinate
 							 *  @param z the z coordinate
@@ -47314,20 +47314,20 @@ declare global {
               getBlockLightLevel(x: number, y: number, z: number): number;
 							/**
 							 * Gets the block light level at the given position. This is the value seen in the debug (F3) menu
-							 *
+							 * 
 							 *  @param pos The block position
 							 *  @return the block light level at the location
 							 */
               getBlockLightLevel(pos: com.chattriggers.ctjs.api.world.block.BlockPos): number;
 							/**
 							 * Gets all of the players in the world, and returns their wrapped versions.
-							 *
+							 * 
 							 *  @return the players
 							 */
               getAllPlayers(): Array<com.chattriggers.ctjs.api.entity.PlayerMP>;
 							/**
 							 * Gets a player by their username, must be in the currently loaded chunks!
-							 *
+							 * 
 							 *  @param name the username
 							 *  @return the player with said username, or null if they don't exist.
 							 */
@@ -47336,7 +47336,7 @@ declare global {
               getAllEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
 							/**
 							 * Gets every entity loaded in the world of a certain class
-							 *
+							 * 
 							 *  @param clazz the class to filter for (Use `Java.type().class` to get this)
 							 *  @return the entity list
 							 */
@@ -47345,7 +47345,7 @@ declare global {
               getAllBlockEntitiesOfType(clazz: java.lang.Class<any>): Array<com.chattriggers.ctjs.api.entity.BlockEntity>;
 							/**
 							 * Returns the TPS of the current world.
-							 *
+							 * 
 							 *  On modern version (1.20.3+), this is variable. On earlier versions,
 							 *  it is always 20.
 							 */
@@ -47358,22 +47358,22 @@ declare global {
 							 */
               new(): com.chattriggers.ctjs.api.world.World$SpawnWrapper;
             }
-            interface World$SpawnWrapper {
+            interface World$SpawnWrapper { 
 							/**
 							 * Gets the spawn x location.
-							 *
+							 * 
 							 *  @return the spawn x location.
 							 */
               getX(): number;
 							/**
 							 * Gets the spawn y location.
-							 *
+							 * 
 							 *  @return the spawn y location.
 							 */
               getY(): number;
 							/**
 							 * Gets the spawn z location.
-							 *
+							 * 
 							 *  @return the spawn z location.
 							 */
               getZ(): number;
@@ -47381,18 +47381,18 @@ declare global {
             const World$ParticleWrapper: {
               new(): com.chattriggers.ctjs.api.world.World$ParticleWrapper;
             }
-            interface World$ParticleWrapper {
+            interface World$ParticleWrapper { 
 							/**
 							 * Gets an array of all the different particle names you can pass
 							 *  to [spawnParticle]
-							 *
+							 * 
 							 *  @return the array of name strings
 							 */
               getParticleNames(): Array<string>;
 							/**
 							 * Spawns a particle into the world with the given attributes,
 							 *  which can be configured further with the returned [com.chattriggers.ctjs.api.entity.Particle]
-							 *
+							 * 
 							 *  @param particle the name of the particle to spawn, see [getParticleNames]
 							 *  @param x the x coordinate to spawn the particle at
 							 *  @param y the y coordinate to spawn the particle at
@@ -47411,22 +47411,22 @@ declare global {
 							 */
               new(): com.chattriggers.ctjs.api.world.World$BorderWrapper;
             }
-            interface World$BorderWrapper {
+            interface World$BorderWrapper { 
 							/**
 							 * Gets the border center x location.
-							 *
+							 * 
 							 *  @return the border center x location
 							 */
               getCenterX(): number;
 							/**
 							 * Gets the border center z location.
-							 *
+							 * 
 							 *  @return the border center z location
 							 */
               getCenterZ(): number;
 							/**
 							 * Gets the border size.
-							 *
+							 * 
 							 *  @return the border size
 							 */
               getSize(): number;
@@ -47440,7 +47440,7 @@ declare global {
               shutdown(): void;
               new(): com.chattriggers.ctjs.api.world.StructureFinder;
             }
-            interface StructureFinder {
+            interface StructureFinder { 
               submitChunkScan(chunkX: number, chunkZ: number): void;
               submitBlockUpdate(blockX: number, blockY: number, blockZ: number): void;
               getRenderBlocksArray(): Array<number>;
@@ -47458,66 +47458,66 @@ declare global {
               getObjective(): net.minecraft.world.scores.Objective | null | undefined;
 							/**
 							 * Gets the tab list header as a [TextComponent]
-							 *
+							 * 
 							 *  @return the header
 							 */
               getHeaderComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
 							/**
 							 * Gets the tab list header as a formatted string.
-							 *
+							 * 
 							 *  @return the header
 							 */
               getHeader(): string | null | undefined;
 							/**
 							 * Sets the header text for the TabList.
 							 *  If [header] is null, it will remove the header entirely
-							 *
+							 * 
 							 *  @param header the header to set, or null to clear
 							 */
               setHeader(header: any | null | undefined): void;
               clearHeader(): void;
 							/**
 							 * Gets the tab list footer as a [TextComponent]
-							 *
+							 * 
 							 *  @return the footer
 							 */
               getFooterComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
 							/**
 							 * Gets the tab list footer as a string.
 							 *  Be aware that this can contain color codes.
-							 *
+							 * 
 							 *  @return the footer
 							 */
               getFooter(): string | null | undefined;
 							/**
 							 * Sets the footer text for the TabList.
 							 *  If [footer] is null, it will remove the footer entirely
-							 *
+							 * 
 							 *  @param footer the footer to set, or null to clear
 							 */
               setFooter(footer: any | null | undefined): void;
               clearFooter(): void;
 							/**
 							 * Gets names set in scoreboard objectives
-							 *
+							 * 
 							 *  @return The formatted names
 							 */
               getNamesByObjectives(): Array<string>;
 							/**
 							 * Get all names on the tab list
-							 *
+							 * 
 							 *  @return the list of names
 							 */
               getNames(): Array<com.chattriggers.ctjs.api.world.TabList$Name>;
 							/**
 							 * Gets all names in tabs without formatting
-							 *
+							 * 
 							 *  @return the unformatted names
 							 */
               getUnformattedNames(): Array<string>;
 							/**
 							 * Adds a new name to the tab list
-							 *
+							 * 
 							 *  @param name the formatted name to add
 							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
 							 *  If false, will use a random default skin (Steve, Alex, etc)
@@ -47525,7 +47525,7 @@ declare global {
               addName(name: com.chattriggers.ctjs.api.message.TextComponent): void;
 							/**
 							 * Adds a new name to the tab list
-							 *
+							 * 
 							 *  @param name the formatted name to add
 							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
 							 *  If false, will use a random default skin (Steve, Alex, etc)
@@ -47535,14 +47535,14 @@ declare global {
               addName(name: string, useExistingSkin: boolean): void;
 							/**
 							 * Removes all names from the tab list with a certain name
-							 *
+							 * 
 							 *  @param name the name of the entry to remove
 							 */
               removeNames(name: com.chattriggers.ctjs.api.message.TextComponent): void;
               removeNames(name: string): void;
               new(): com.chattriggers.ctjs.api.world.TabList;
             }
-            interface TabList {
+            interface TabList { 
               toMC(): net.minecraft.client.gui.components.PlayerTabOverlay | null | undefined;
 							/**
 							 * Gets the scoreboard objective corresponding to the tab list, or null if it doesn't exist
@@ -47550,66 +47550,66 @@ declare global {
               getObjective(): net.minecraft.world.scores.Objective | null | undefined;
 							/**
 							 * Gets the tab list header as a [TextComponent]
-							 *
+							 * 
 							 *  @return the header
 							 */
               getHeaderComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
 							/**
 							 * Gets the tab list header as a formatted string.
-							 *
+							 * 
 							 *  @return the header
 							 */
               getHeader(): string | null | undefined;
 							/**
 							 * Sets the header text for the TabList.
 							 *  If [header] is null, it will remove the header entirely
-							 *
+							 * 
 							 *  @param header the header to set, or null to clear
 							 */
               setHeader(header: any | null | undefined): void;
               clearHeader(): void;
 							/**
 							 * Gets the tab list footer as a [TextComponent]
-							 *
+							 * 
 							 *  @return the footer
 							 */
               getFooterComponent(): com.chattriggers.ctjs.api.message.TextComponent | null | undefined;
 							/**
 							 * Gets the tab list footer as a string.
 							 *  Be aware that this can contain color codes.
-							 *
+							 * 
 							 *  @return the footer
 							 */
               getFooter(): string | null | undefined;
 							/**
 							 * Sets the footer text for the TabList.
 							 *  If [footer] is null, it will remove the footer entirely
-							 *
+							 * 
 							 *  @param footer the footer to set, or null to clear
 							 */
               setFooter(footer: any | null | undefined): void;
               clearFooter(): void;
 							/**
 							 * Gets names set in scoreboard objectives
-							 *
+							 * 
 							 *  @return The formatted names
 							 */
               getNamesByObjectives(): Array<string>;
 							/**
 							 * Get all names on the tab list
-							 *
+							 * 
 							 *  @return the list of names
 							 */
               getNames(): Array<com.chattriggers.ctjs.api.world.TabList$Name>;
 							/**
 							 * Gets all names in tabs without formatting
-							 *
+							 * 
 							 *  @return the unformatted names
 							 */
               getUnformattedNames(): Array<string>;
 							/**
 							 * Adds a new name to the tab list
-							 *
+							 * 
 							 *  @param name the formatted name to add
 							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
 							 *  If false, will use a random default skin (Steve, Alex, etc)
@@ -47617,7 +47617,7 @@ declare global {
               addName(name: com.chattriggers.ctjs.api.message.TextComponent): void;
 							/**
 							 * Adds a new name to the tab list
-							 *
+							 * 
 							 *  @param name the formatted name to add
 							 *  @param useExistingSkin whether to use the skin of the associated Minecraft account using [name].
 							 *  If false, will use a random default skin (Steve, Alex, etc)
@@ -47627,7 +47627,7 @@ declare global {
               addName(name: string, useExistingSkin: boolean): void;
 							/**
 							 * Removes all names from the tab list with a certain name
-							 *
+							 * 
 							 *  @param name the name of the entry to remove
 							 */
               removeNames(name: com.chattriggers.ctjs.api.message.TextComponent): void;
@@ -47637,10 +47637,10 @@ declare global {
             const TabList$Name: {
               new(mcValue: net.minecraft.client.multiplayer.PlayerInfo): com.chattriggers.ctjs.api.world.TabList$Name;
             }
-            interface TabList$Name extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.multiplayer.PlayerInfo> {
+            interface TabList$Name extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.multiplayer.PlayerInfo> { 
 							/**
 							 * Gets the latency associated with this name
-							 *
+							 * 
 							 *  @return the latency
 							 */
               getLatency(): number;
@@ -47651,20 +47651,20 @@ declare global {
 							 *  - latency between 300 and 599 represents 3 bars
 							 *  - latency between 600 and 999 represents 2 bars
 							 *  - latency between 1000 and more represents 1 bar
-							 *
+							 * 
 							 *  @param latency the latency to set
 							 *  @return the name to allow for method chaining
 							 */
               setLatency(latency: number): com.chattriggers.ctjs.api.world.TabList$Name;
 							/**
 							 * Gets the team associated with this name, if it exists
-							 *
+							 * 
 							 *  @return the team, or null if it does not exist
 							 */
               getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
 							/**
 							 * Sets the team associated with this name
-							 *
+							 * 
 							 *  @param team the new team to set for this name. Custom teams can be created
 							 *  using [Scoreboard.createTeam]
 							 *  @return the score to allow for method chaining
@@ -47672,13 +47672,13 @@ declare global {
               setTeam(team: com.chattriggers.ctjs.api.entity.Team | null | undefined): com.chattriggers.ctjs.api.world.TabList$Name;
 							/**
 							 * Gets the display text of this name
-							 *
+							 * 
 							 *  @return the display name
 							 */
               getName(): com.chattriggers.ctjs.api.message.TextComponent;
 							/**
 							 * Sets the display name of this name
-							 *
+							 * 
 							 *  @param name the new name
 							 *  @return the name to allow for method chaining
 							 */
@@ -47695,13 +47695,13 @@ declare global {
 							/**
 							 * Gets the top-most string which is displayed on the scoreboard. (doesn't have a score on the side).
 							 *  Be aware that this can contain color codes.
-							 *
+							 * 
 							 *  @return the scoreboard title
 							 */
               getTitle(): com.chattriggers.ctjs.api.message.TextComponent;
 							/**
 							 * Sets the scoreboard title.
-							 *
+							 * 
 							 *  @param title the new title
 							 *  @return the scoreboard title
 							 */
@@ -47710,21 +47710,21 @@ declare global {
 							/**
 							 * Get all currently visible strings on the scoreboard. (excluding title)
 							 *  Be aware that this can contain color codes.
-							 *
+							 * 
 							 *  @return the list of lines
 							 */
               getLines(): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
 							/**
 							 * Get all currently visible strings on the scoreboard. (excluding title)
 							 *  Be aware that this can contain color codes.
-							 *
+							 * 
 							 *  @return the list of lines
 							 */
               getLines(descending: boolean): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
 							/**
 							 * Gets the line at the specified index (0 based)
 							 *  Equivalent to Scoreboard.getLines().get(index)
-							 *
+							 * 
 							 *  @param index the line index
 							 *  @return the score object at the index
 							 */
@@ -47732,14 +47732,14 @@ declare global {
 							/**
 							 * Gets a list of lines that have a certain score,
 							 *  i.e. the numbers shown on the right
-							 *
+							 * 
 							 *  @param score the score to look for
 							 *  @return a list of actual score objects
 							 */
               getLinesByScore(score: number): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
 							/**
 							 * Sets a line in the scoreboard to the specified name and score.
-							 *
+							 * 
 							 *  @param score the score value for this item
 							 *  @param line the [TextComponent] to display on said line
 							 *  @param override whether to remove old lines with the same score
@@ -47747,7 +47747,7 @@ declare global {
               setLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent): void;
 							/**
 							 * Sets a line in the scoreboard to the specified name and score.
-							 *
+							 * 
 							 *  @param score the score value for this item
 							 *  @param line the [TextComponent] to display on said line
 							 *  @param override whether to remove old lines with the same score
@@ -47757,7 +47757,7 @@ declare global {
               setLine(score: number, line: string, override: boolean): void;
 							/**
 							 * Adds a line to the scoreboard
-							 *
+							 * 
 							 *  @param score the score value for this item
 							 *  @param line the [TextComponent] to display on said line
 							 */
@@ -47765,19 +47765,19 @@ declare global {
               addLine(score: number, line: string): void;
 							/**
 							 * Removes all lines from the scoreboard matching with a certain score
-							 *
+							 * 
 							 *  @param score the score of the lines to remove
 							 */
               removeScores(score: number): void;
 							/**
 							 * Removes the line at a certain index
-							 *
+							 * 
 							 *  @param index the index of the line to remove
 							 */
               removeIndex(index: number): void;
 							/**
 							 * Removes the line at a certain index
-							 *
+							 * 
 							 *  @param index the index of the line to remove
 							 */
               removeIndex(index: number, descending: boolean): void;
@@ -47785,25 +47785,25 @@ declare global {
               getShouldRender(): boolean;
 							/**
 							 * Creates or gets a [Team] with a given name
-							 *
+							 * 
 							 *  @param name the name of the team
 							 */
               createTeam(name: string): com.chattriggers.ctjs.api.entity.Team;
               new(): com.chattriggers.ctjs.api.world.Scoreboard;
             }
-            interface Scoreboard {
+            interface Scoreboard { 
               toMC(): net.minecraft.world.scores.Scoreboard | null | undefined;
               getSidebar(): net.minecraft.world.scores.Objective | null | undefined;
 							/**
 							 * Gets the top-most string which is displayed on the scoreboard. (doesn't have a score on the side).
 							 *  Be aware that this can contain color codes.
-							 *
+							 * 
 							 *  @return the scoreboard title
 							 */
               getTitle(): com.chattriggers.ctjs.api.message.TextComponent;
 							/**
 							 * Sets the scoreboard title.
-							 *
+							 * 
 							 *  @param title the new title
 							 *  @return the scoreboard title
 							 */
@@ -47812,21 +47812,21 @@ declare global {
 							/**
 							 * Get all currently visible strings on the scoreboard. (excluding title)
 							 *  Be aware that this can contain color codes.
-							 *
+							 * 
 							 *  @return the list of lines
 							 */
               getLines(): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
 							/**
 							 * Get all currently visible strings on the scoreboard. (excluding title)
 							 *  Be aware that this can contain color codes.
-							 *
+							 * 
 							 *  @return the list of lines
 							 */
               getLines(descending: boolean): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
 							/**
 							 * Gets the line at the specified index (0 based)
 							 *  Equivalent to Scoreboard.getLines().get(index)
-							 *
+							 * 
 							 *  @param index the line index
 							 *  @return the score object at the index
 							 */
@@ -47834,14 +47834,14 @@ declare global {
 							/**
 							 * Gets a list of lines that have a certain score,
 							 *  i.e. the numbers shown on the right
-							 *
+							 * 
 							 *  @param score the score to look for
 							 *  @return a list of actual score objects
 							 */
               getLinesByScore(score: number): Array<com.chattriggers.ctjs.api.world.Scoreboard$Score>;
 							/**
 							 * Sets a line in the scoreboard to the specified name and score.
-							 *
+							 * 
 							 *  @param score the score value for this item
 							 *  @param line the [TextComponent] to display on said line
 							 *  @param override whether to remove old lines with the same score
@@ -47849,7 +47849,7 @@ declare global {
               setLine(score: number, line: com.chattriggers.ctjs.api.message.TextComponent): void;
 							/**
 							 * Sets a line in the scoreboard to the specified name and score.
-							 *
+							 * 
 							 *  @param score the score value for this item
 							 *  @param line the [TextComponent] to display on said line
 							 *  @param override whether to remove old lines with the same score
@@ -47859,7 +47859,7 @@ declare global {
               setLine(score: number, line: string, override: boolean): void;
 							/**
 							 * Adds a line to the scoreboard
-							 *
+							 * 
 							 *  @param score the score value for this item
 							 *  @param line the [TextComponent] to display on said line
 							 */
@@ -47867,19 +47867,19 @@ declare global {
               addLine(score: number, line: string): void;
 							/**
 							 * Removes all lines from the scoreboard matching with a certain score
-							 *
+							 * 
 							 *  @param score the score of the lines to remove
 							 */
               removeScores(score: number): void;
 							/**
 							 * Removes the line at a certain index
-							 *
+							 * 
 							 *  @param index the index of the line to remove
 							 */
               removeIndex(index: number): void;
 							/**
 							 * Removes the line at a certain index
-							 *
+							 * 
 							 *  @param index the index of the line to remove
 							 */
               removeIndex(index: number, descending: boolean): void;
@@ -47887,7 +47887,7 @@ declare global {
               getShouldRender(): boolean;
 							/**
 							 * Creates or gets a [Team] with a given name
-							 *
+							 * 
 							 *  @param name the name of the team
 							 */
               createTeam(name: string): com.chattriggers.ctjs.api.entity.Team;
@@ -47896,16 +47896,16 @@ declare global {
             const Scoreboard$Score: {
               new(mcValue: net.minecraft.world.scores.ScoreAccess): com.chattriggers.ctjs.api.world.Scoreboard$Score;
             }
-            interface Scoreboard$Score extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.ScoreAccess> {
+            interface Scoreboard$Score extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.ScoreAccess> { 
 							/**
 							 * Gets the team associated with this score, if it exists
-							 *
+							 * 
 							 *  @return the team, or null if it does not exist
 							 */
               getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
 							/**
 							 * Sets the team associated with this score
-							 *
+							 * 
 							 *  @param team the new team to set for this line. Custom teams can be created using [createTeam]
 							 *  @return the score to allow for method chaining
 							 */
@@ -47913,43 +47913,43 @@ declare global {
 							/**
 							 * Gets the score value for this score,
 							 *  i.e. the number on the right of the board
-							 *
+							 * 
 							 *  @return the actual point value
 							 */
               getScore(): number;
 							/**
 							 * Sets the score value for this score
-							 *
+							 * 
 							 *  @param score the new point value
 							 *  @return the score to allow for method chaining
 							 */
               setScore(score: number): com.chattriggers.ctjs.api.world.Scoreboard$Score;
 							/**
 							 * Gets the display text of this score
-							 *
+							 * 
 							 *  @return the display name
 							 */
               getName(): com.chattriggers.ctjs.api.message.TextComponent;
 							/**
 							 * Sets the name of this score
-							 *
+							 * 
 							 *  @param name the new name
 							 *  @return the score to allow for method chaining
 							 */
               setName(name: com.chattriggers.ctjs.api.message.TextComponent | null | undefined): com.chattriggers.ctjs.api.world.Scoreboard$Score;
 							/**
 							 * Gets the number format of this score
-							 *
+							 * 
 							 *  @return the number format
 							 */
               getNumberFormat(): net.minecraft.network.chat.numbers.NumberFormat | null | undefined;
 							/**
 							 * Sets the number format of this score
-							 *
+							 * 
 							 *  @param format either a formatting string, i.e. "&6", style in the form of an object, see [TextComponent], a
 							 *  [NumberFormat], or hex value
 							 *  @return the score to allow for method chaining
-							 *
+							 * 
 							 *  @see [TextComponent]
 							 */
               setNumberFormat(format: any | null | undefined): com.chattriggers.ctjs.api.world.Scoreboard$Score;
@@ -47966,7 +47966,7 @@ declare global {
               new(x: number, y: number): com.chattriggers.ctjs.api.vec.Vec3i;
               new(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3i;
             }
-            interface Vec3i {
+            interface Vec3i { 
               getX(): number;
               getY(): number;
               getZ(): number;
@@ -47989,7 +47989,7 @@ declare global {
               new(x: number, y: number): com.chattriggers.ctjs.api.vec.Vec3f;
               new(x: number, y: number, z: number): com.chattriggers.ctjs.api.vec.Vec3f;
             }
-            interface Vec3f {
+            interface Vec3f { 
               getX(): number;
               getY(): number;
               getZ(): number;
@@ -48015,7 +48015,7 @@ declare global {
               new(x: number): com.chattriggers.ctjs.api.vec.Vec2f;
               new(x: number, y: number): com.chattriggers.ctjs.api.vec.Vec2f;
             }
-            interface Vec2f {
+            interface Vec2f { 
               getX(): number;
               getY(): number;
               magnitudeSquared(): number;
@@ -48039,7 +48039,7 @@ declare global {
               DimensionType: typeof com.chattriggers.ctjs.api.entity.Entity$DimensionType;
               new(mcValue: net.minecraft.world.entity.Entity): com.chattriggers.ctjs.api.entity.Entity;
             }
-            interface Entity extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.entity.Entity> {
+            interface Entity extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.entity.Entity> { 
               getX(): number;
               getY(): number;
               getZ(): number;
@@ -48054,47 +48054,47 @@ declare global {
 							/**
 							 * Gets the pitch, the horizontal direction the entity is facing towards.
 							 *  This has a range of -180 to 180.
-							 *
+							 * 
 							 *  @return the entity's pitch
 							 */
               getPitch(): number;
 							/**
 							 * Gets the yaw, the vertical direction the entity is facing towards.
 							 *  This has a range of -180 to 180.
-							 *
+							 * 
 							 *  @return the entity's yaw
 							 */
               getYaw(): number;
 							/**
 							 * Gets the entity's x motion.
 							 *  This is the amount the entity will move in the x direction next tick.
-							 *
+							 * 
 							 *  @return the entity's x motion
 							 */
               getMotionX(): number;
 							/**
 							 * Gets the entity's y motion.
 							 *  This is the amount the entity will move in the y direction next tick.
-							 *
+							 * 
 							 *  @return the entity's y motion
 							 */
               getMotionY(): number;
 							/**
 							 * Gets the entity's z motion.
 							 *  This is the amount the entity will move in the z direction next tick.
-							 *
+							 * 
 							 *  @return the entity's z motion
 							 */
               getMotionZ(): number;
 							/**
 							 * Returns the entity this entity is riding, if one exists
-							 *
+							 * 
 							 *  @return an Entity or null
 							 */
               getRiding(): com.chattriggers.ctjs.api.entity.Entity | null | undefined;
 							/**
 							 * Returns a list of all entity riding this entity
-							 *
+							 * 
 							 *  @return List of entities, empty if there are no riders
 							 */
               getRiders(): Array<com.chattriggers.ctjs.api.entity.Entity>;
@@ -48102,19 +48102,19 @@ declare global {
 							 * Checks whether the entity is dead.
 							 *  This is a fairly loose term, dead for a particle could mean it has faded,
 							 *  while dead for an entity means it has no health.
-							 *
+							 * 
 							 *  @return whether an entity is dead
 							 */
               isDead(): boolean;
 							/**
 							 * Gets the entire width of the entity's hitbox
-							 *
+							 * 
 							 *  @return the entity's width
 							 */
               getWidth(): number;
 							/**
 							 * Gets the entire height of the entity's hitbox
-							 *
+							 * 
 							 *  @return the entity's height
 							 */
               getHeight(): number;
@@ -48122,44 +48122,44 @@ declare global {
 							 * Gets the height of the eyes on the entity,
 							 *  can be added to its Y coordinate to get the actual Y location of the eyes.
 							 *  This value defaults to 85% of an entity's height, however is different for some entities.
-							 *
+							 * 
 							 *  @return the height of the entity's eyes
 							 */
               getEyeHeight(): number;
 							/**
 							 * Gets the name of the entity, could be "Villager",
 							 *  or, if the entity has a custom name, it returns that.
-							 *
+							 * 
 							 *  @return the (custom) name of the entity as a String
 							 */
               getName(): string;
 							/**
 							 * Gets the name of the entity, could be "Villager",
 							 *  or, if the entity has a custom name, it returns that.
-							 *
+							 * 
 							 *  @return the (custom) name of the entity as a [TextComponent]
 							 */
               getNameComponent(): com.chattriggers.ctjs.api.message.TextComponent;
 							/**
 							 * Gets the Java class name of the entity, for example "EntityVillager"
-							 *
+							 * 
 							 *  @return the entity's class name
 							 */
               getClassName(): string;
 							/**
 							 * Gets the Java UUID object of this entity.
 							 *  Use of [UUID.toString] in conjunction is recommended.
-							 *
+							 * 
 							 *  @return the entity's uuid
 							 */
               getUUID(): java.util.UUID;
 							/**
 							 * Gets the entity's air level.
-							 *
+							 * 
 							 *  The returned value will be an integer. If the player is not taking damage, it
 							 *  will be between 300 (not in water) and 0. If the player is taking damage, it
 							 *  will be between -20 and 0, getting reset to 0 every time the player takes damage.
-							 *
+							 * 
 							 *  @return the entity's air level
 							 */
               getAir(): number;
@@ -48204,13 +48204,13 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.entity.Entity$DimensionType>;
               valueOf(value: string): com.chattriggers.ctjs.api.entity.Entity$DimensionType;
             }
-            interface Entity$DimensionType extends kotlin.Enum<com.chattriggers.ctjs.api.entity.Entity$DimensionType>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.resources.ResourceKey<net.minecraft.world.level.dimension.DimensionType>> {
+            interface Entity$DimensionType extends kotlin.Enum<com.chattriggers.ctjs.api.entity.Entity$DimensionType>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.resources.ResourceKey<net.minecraft.world.level.dimension.DimensionType>> { 
             }
             const Entity$Companion: {
               fromMC(entity: net.minecraft.world.entity.Entity): com.chattriggers.ctjs.api.entity.Entity;
               new(): com.chattriggers.ctjs.api.entity.Entity$Companion;
             }
-            interface Entity$Companion {
+            interface Entity$Companion { 
               fromMC(entity: net.minecraft.world.entity.Entity): com.chattriggers.ctjs.api.entity.Entity;
               new(): com.chattriggers.ctjs.api.entity.Entity$Companion;
             }
@@ -48220,54 +48220,54 @@ declare global {
               UseItem: typeof com.chattriggers.ctjs.api.entity.PlayerInteraction$UseItem;
               new(name: string, mainHand: boolean): com.chattriggers.ctjs.api.entity.PlayerInteraction;
             }
-            interface PlayerInteraction {
+            interface PlayerInteraction { 
               getName(): string;
               getMainHand(): boolean;
             }
             const PlayerInteraction$AttackBlock: {
               new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackBlock;
             }
-            interface PlayerInteraction$AttackBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction {
+            interface PlayerInteraction$AttackBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
               new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackBlock;
             }
             const PlayerInteraction$AttackEntity: {
               new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackEntity;
             }
-            interface PlayerInteraction$AttackEntity extends com.chattriggers.ctjs.api.entity.PlayerInteraction {
+            interface PlayerInteraction$AttackEntity extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
               new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$AttackEntity;
             }
             const PlayerInteraction$BreakBlock: {
               new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$BreakBlock;
             }
-            interface PlayerInteraction$BreakBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction {
+            interface PlayerInteraction$BreakBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
               new(): com.chattriggers.ctjs.api.entity.PlayerInteraction$BreakBlock;
             }
             const PlayerInteraction$UseBlock: {
               new(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.entity.PlayerInteraction$UseBlock;
             }
-            interface PlayerInteraction$UseBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction {
+            interface PlayerInteraction$UseBlock extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
             }
             const PlayerInteraction$UseEntity: {
               new(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.entity.PlayerInteraction$UseEntity;
             }
-            interface PlayerInteraction$UseEntity extends com.chattriggers.ctjs.api.entity.PlayerInteraction {
+            interface PlayerInteraction$UseEntity extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
             }
             const PlayerInteraction$UseItem: {
               new(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.entity.PlayerInteraction$UseItem;
             }
-            interface PlayerInteraction$UseItem extends com.chattriggers.ctjs.api.entity.PlayerInteraction {
+            interface PlayerInteraction$UseItem extends com.chattriggers.ctjs.api.entity.PlayerInteraction { 
             }
             const LivingEntity: {
               new(mcValue: net.minecraft.world.entity.LivingEntity): com.chattriggers.ctjs.api.entity.LivingEntity;
             }
-            interface LivingEntity extends com.chattriggers.ctjs.api.entity.Entity {
+            interface LivingEntity extends com.chattriggers.ctjs.api.entity.Entity { 
               getActivePotionEffects(): Array<com.chattriggers.ctjs.api.world.PotionEffect>;
               canSeeEntity(other: net.minecraft.world.entity.Entity): boolean;
               canSeeEntity(other: com.chattriggers.ctjs.api.entity.Entity): boolean;
 							/**
 							 * Gets the item currently in the entity's specified inventory slot.
 							 *  0 for main hand, 1 for offhand, 2-5 for armor
-							 *
+							 * 
 							 *  @param slot the slot to access
 							 *  @return the item in said slot
 							 */
@@ -48284,7 +48284,7 @@ declare global {
             const BlockEntity: {
               new(mcValue: net.minecraft.world.level.block.entity.BlockEntity): com.chattriggers.ctjs.api.entity.BlockEntity;
             }
-            interface BlockEntity extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.block.entity.BlockEntity> {
+            interface BlockEntity extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.level.block.entity.BlockEntity> { 
               getX(): number;
               getY(): number;
               getZ(): number;
@@ -48295,7 +48295,7 @@ declare global {
             const Particle: {
               new(mcValue: net.minecraft.client.particle.Particle): com.chattriggers.ctjs.api.entity.Particle;
             }
-            interface Particle extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.particle.Particle> {
+            interface Particle extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.particle.Particle> { 
               getX(): number;
               setX(value: number): void;
               getY(): number;
@@ -48324,7 +48324,7 @@ declare global {
               scale(scale: number): com.chattriggers.ctjs.api.entity.Particle;
 							/**
 							 * Sets the amount of ticks this particle will live for
-							 *
+							 * 
 							 *  @param maxAge the particle's max age (in ticks)
 							 */
               setMaxAge(maxAge: number): com.chattriggers.ctjs.api.entity.Particle;
@@ -48333,7 +48333,7 @@ declare global {
             const PlayerMP: {
               new(mcValue: net.minecraft.world.entity.player.Player): com.chattriggers.ctjs.api.entity.PlayerMP;
             }
-            interface PlayerMP extends com.chattriggers.ctjs.api.entity.LivingEntity {
+            interface PlayerMP extends com.chattriggers.ctjs.api.entity.LivingEntity { 
               isSpectator(): boolean;
               getPing(): number;
               getTeam(): com.chattriggers.ctjs.api.entity.Team | null | undefined;
@@ -48347,14 +48347,14 @@ declare global {
 							/**
 							 * Sets the name for this player shown above their head,
 							 *  in their name tag
-							 *
+							 * 
 							 *  @param textComponent the new name to display
 							 */
               setNametagName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
 							/**
 							 * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]
 							 *  minus `player`.
-							 *
+							 * 
 							 *  @see Renderer.drawPlayer
 							 */
               draw(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.entity.PlayerMP;
@@ -48363,7 +48363,7 @@ declare global {
               Visibility: typeof com.chattriggers.ctjs.api.entity.Team$Visibility;
               new(mcValue: net.minecraft.world.scores.PlayerTeam): com.chattriggers.ctjs.api.entity.Team;
             }
-            interface Team extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.PlayerTeam> {
+            interface Team extends com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.PlayerTeam> { 
 							/**
 							 * Gets the registered name of the team
 							 */
@@ -48453,19 +48453,19 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.entity.Team$Visibility>;
               valueOf(value: string): com.chattriggers.ctjs.api.entity.Team$Visibility;
             }
-            interface Team$Visibility extends kotlin.Enum<com.chattriggers.ctjs.api.entity.Team$Visibility>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.Team$Visibility> {
+            interface Team$Visibility extends kotlin.Enum<com.chattriggers.ctjs.api.entity.Team$Visibility>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.world.scores.Team$Visibility> { 
             }
             const Team$Visibility$Companion: {
               fromMC(mcValue: net.minecraft.world.scores.Team$Visibility): com.chattriggers.ctjs.api.entity.Team$Visibility;
               new(): unknown;
             }
-            interface Team$Visibility$Companion {
+            interface Team$Visibility$Companion { 
               fromMC(mcValue: net.minecraft.world.scores.Team$Visibility): com.chattriggers.ctjs.api.entity.Team$Visibility;
               new(): unknown;
             }
           }
           namespace commands {
-            interface RootCommand {
+            interface RootCommand { 
               register(): void;
             }
             const DynamicCommands: {
@@ -48489,7 +48489,7 @@ declare global {
 							/**
 							 * A helper method for getting Fabric's client CommandDispatcher root node. This allows user
 							 *  commands to be redirected to the root node in the same way that "/execute run ..." does.
-							 *
+							 * 
 							 *  As the result is a CommandNode, `.getChild(name)` can be used to access sub-command nodes
 							 *  to, for example, redirect to just `/advancement` instead of `/`.
 							 */
@@ -48694,15 +48694,15 @@ declare global {
 							/**
 							 * Allows easy creation of a custom ArgumentType without needing to use
 							 *  JavaAdapter. Example:
-							 *
+							 * 
 							 *  ```js
 							 *  const HEADS = 0;
 							 *  const TAILS = 1;
-							 *
+							 * 
 							 *  const coinFlipArgType = Commands.custom({
 							 *      parse(reader) {
 							 *          // `reader` is a com.mojang.brigadier.StringReader
-							 *
+							 * 
 							 *          const savedCursor = reader.getCursor();
 							 *          const str = reader.readString();
 							 *          if (str === 'heads')
@@ -48723,7 +48723,7 @@ declare global {
 							 *      }
 							 *  });
 							 *  ```
-							 *
+							 * 
 							 *  @see StringReader
 							 *  @see CommandContext
 							 *  @see SuggestionsBuilder
@@ -48740,13 +48740,13 @@ declare global {
 							/**
 							 * An alternative to the command register that allows full use of the
 							 *  functionality provided by Brigadier.
-							 *
+							 * 
 							 *  For more information about Brigadier, see
 							 *  <a href="https://github.com/Mojang/brigadier">their GitHub page.</a>
 							 *  Also see [CTCommand] for an example Brigadier command.
-							 *
+							 * 
 							 *  ## General
-							 *
+							 * 
 							 *  This API works similarly to Brigadier, however much of the annoyance
 							 *  of using the Brigadier API has been eliminated, mainly the excessive
 							 *  use of nested function calls. It works via a global context, so function
@@ -48754,29 +48754,29 @@ declare global {
 							 *  built at once. This means that commands should only ever be built on the
 							 *  main thread. If two commands are built at the same time, an error will be
 							 *  thrown.
-							 *
+							 * 
 							 *  ## Argument Types
-							 *
+							 * 
 							 *  The [ArgumentType] interface is a fundamental part of Brigadier, and
 							 *  most of the MC argument types have been exposed via helper function
 							 *  in this class. It is also possible to build new instances of
 							 *  [ArgumentType] via [custom].
-							 *
+							 * 
 							 *  When possible, the argument types returned from the helper function on
 							 *  this class resolve in a way that their Minecraft variants do. For example,
 							 *  the [message] type will replace selectors with their target entity, if
 							 *  possible.
-							 *
+							 * 
 							 *  ## Basic Example
-							 *
+							 * 
 							 *  Here is an example command that recreates the `/advancement` command
 							 *  (without any of the actual functionality, of course):
-							 *
+							 * 
 							 *  ```js
 							 *  // The `Commands` object supports destructuring, which makes assembling long
 							 *  // commands much nicer
 							 *  const { argument, choices, exec, greedyString, literal, registerCommand, resource, players } = Commands;
-							 *
+							 * 
 							 *  registerCommand('ctadvancement', () => {
 							 *      // Note the use of choices to avoid having to copy-paste two separate literal() trees
 							 *      argument('kind', choices('grant', 'revoke'), () => {
@@ -48789,7 +48789,7 @@ declare global {
 							 *                      ChatLib.chat(`${kind} everything from ${targets}`);
 							 *                  });
 							 *              });
-							 *
+							 * 
 							 *              literal('only', () => {
 							 *                  argument('advancement', resource(), () => {
 							 *                      argument('criterion', greedyString(), () => {
@@ -48799,7 +48799,7 @@ declare global {
 							 *                      });
 							 *                  });
 							 *              });
-							 *
+							 * 
 							 *              argument('subkind', choices('from', 'through', 'until'), () => {
 							 *                  argument('advancement', resource(), () => {
 							 *                      exec(({ kind, subkind, targets, advancement }) => {
@@ -48811,19 +48811,19 @@ declare global {
 							 *      });
 							 *  });
 							 *  ```
-							 *
+							 * 
 							 *  ## Redirect
-							 *
+							 * 
 							 *  Like Brigadier, this API supports assembling partial command nodes for use
 							 *  in redirection. To do this, use [buildCommand], which returns the command node
 							 *  (well, an internal representation of it). This object can then be passed to
 							 *  further calls to [redirect] inside of a [literal] or [argument] block.
-							 *
+							 * 
 							 *  Examples:
-							 *
+							 * 
 							 *  ```js
 							 *  // destructuring omitted
-							 *
+							 * 
 							 *  const testCmdNode = buildCommand('testcmd', () => {
 							 *      exec(({ arg }) => {
 							 *          if (arg) {
@@ -48833,10 +48833,10 @@ declare global {
 							 *          }
 							 *      });
 							 *  });
-							 *
+							 * 
 							 *  // Manually register it since we used buildCommand() instead of registerCommand()
 							 *  testCmdNode.register()
-							 *
+							 * 
 							 *  registerCommand('testcmd', () => {
 							 *      argument('arg', greedyString(), () => {
 							 *          redirect(testCmdNode);
@@ -48846,7 +48846,7 @@ declare global {
 							 */
               new(): com.chattriggers.ctjs.api.commands.DynamicCommands;
             }
-            interface DynamicCommands extends com.chattriggers.ctjs.internal.commands.CommandCollection {
+            interface DynamicCommands extends com.chattriggers.ctjs.internal.commands.CommandCollection { 
               registerCommand(name: string): com.chattriggers.ctjs.api.commands.RootCommand;
               registerCommand(name: string, builder: org.mozilla.javascript.Function | null | undefined): com.chattriggers.ctjs.api.commands.RootCommand;
               buildCommand(name: string): com.chattriggers.ctjs.api.commands.RootCommand;
@@ -48859,7 +48859,7 @@ declare global {
 							/**
 							 * A helper method for getting Fabric's client CommandDispatcher root node. This allows user
 							 *  commands to be redirected to the root node in the same way that "/execute run ..." does.
-							 *
+							 * 
 							 *  As the result is a CommandNode, `.getChild(name)` can be used to access sub-command nodes
 							 *  to, for example, redirect to just `/advancement` instead of `/`.
 							 */
@@ -49064,15 +49064,15 @@ declare global {
 							/**
 							 * Allows easy creation of a custom ArgumentType without needing to use
 							 *  JavaAdapter. Example:
-							 *
+							 * 
 							 *  ```js
 							 *  const HEADS = 0;
 							 *  const TAILS = 1;
-							 *
+							 * 
 							 *  const coinFlipArgType = Commands.custom({
 							 *      parse(reader) {
 							 *          // `reader` is a com.mojang.brigadier.StringReader
-							 *
+							 * 
 							 *          const savedCursor = reader.getCursor();
 							 *          const str = reader.readString();
 							 *          if (str === 'heads')
@@ -49093,7 +49093,7 @@ declare global {
 							 *      }
 							 *  });
 							 *  ```
-							 *
+							 * 
 							 *  @see StringReader
 							 *  @see CommandContext
 							 *  @see SuggestionsBuilder
@@ -49110,13 +49110,13 @@ declare global {
 							/**
 							 * An alternative to the command register that allows full use of the
 							 *  functionality provided by Brigadier.
-							 *
+							 * 
 							 *  For more information about Brigadier, see
 							 *  <a href="https://github.com/Mojang/brigadier">their GitHub page.</a>
 							 *  Also see [CTCommand] for an example Brigadier command.
-							 *
+							 * 
 							 *  ## General
-							 *
+							 * 
 							 *  This API works similarly to Brigadier, however much of the annoyance
 							 *  of using the Brigadier API has been eliminated, mainly the excessive
 							 *  use of nested function calls. It works via a global context, so function
@@ -49124,29 +49124,29 @@ declare global {
 							 *  built at once. This means that commands should only ever be built on the
 							 *  main thread. If two commands are built at the same time, an error will be
 							 *  thrown.
-							 *
+							 * 
 							 *  ## Argument Types
-							 *
+							 * 
 							 *  The [ArgumentType] interface is a fundamental part of Brigadier, and
 							 *  most of the MC argument types have been exposed via helper function
 							 *  in this class. It is also possible to build new instances of
 							 *  [ArgumentType] via [custom].
-							 *
+							 * 
 							 *  When possible, the argument types returned from the helper function on
 							 *  this class resolve in a way that their Minecraft variants do. For example,
 							 *  the [message] type will replace selectors with their target entity, if
 							 *  possible.
-							 *
+							 * 
 							 *  ## Basic Example
-							 *
+							 * 
 							 *  Here is an example command that recreates the `/advancement` command
 							 *  (without any of the actual functionality, of course):
-							 *
+							 * 
 							 *  ```js
 							 *  // The `Commands` object supports destructuring, which makes assembling long
 							 *  // commands much nicer
 							 *  const { argument, choices, exec, greedyString, literal, registerCommand, resource, players } = Commands;
-							 *
+							 * 
 							 *  registerCommand('ctadvancement', () => {
 							 *      // Note the use of choices to avoid having to copy-paste two separate literal() trees
 							 *      argument('kind', choices('grant', 'revoke'), () => {
@@ -49159,7 +49159,7 @@ declare global {
 							 *                      ChatLib.chat(`${kind} everything from ${targets}`);
 							 *                  });
 							 *              });
-							 *
+							 * 
 							 *              literal('only', () => {
 							 *                  argument('advancement', resource(), () => {
 							 *                      argument('criterion', greedyString(), () => {
@@ -49169,7 +49169,7 @@ declare global {
 							 *                      });
 							 *                  });
 							 *              });
-							 *
+							 * 
 							 *              argument('subkind', choices('from', 'through', 'until'), () => {
 							 *                  argument('advancement', resource(), () => {
 							 *                      exec(({ kind, subkind, targets, advancement }) => {
@@ -49181,19 +49181,19 @@ declare global {
 							 *      });
 							 *  });
 							 *  ```
-							 *
+							 * 
 							 *  ## Redirect
-							 *
+							 * 
 							 *  Like Brigadier, this API supports assembling partial command nodes for use
 							 *  in redirection. To do this, use [buildCommand], which returns the command node
 							 *  (well, an internal representation of it). This object can then be passed to
 							 *  further calls to [redirect] inside of a [literal] or [argument] block.
-							 *
+							 * 
 							 *  Examples:
-							 *
+							 * 
 							 *  ```js
 							 *  // destructuring omitted
-							 *
+							 * 
 							 *  const testCmdNode = buildCommand('testcmd', () => {
 							 *      exec(({ arg }) => {
 							 *          if (arg) {
@@ -49203,10 +49203,10 @@ declare global {
 							 *          }
 							 *      });
 							 *  });
-							 *
+							 * 
 							 *  // Manually register it since we used buildCommand() instead of registerCommand()
 							 *  testCmdNode.register()
-							 *
+							 * 
 							 *  registerCommand('testcmd', () => {
 							 *      argument('arg', greedyString(), () => {
 							 *          redirect(testCmdNode);
@@ -49219,7 +49219,7 @@ declare global {
             const DynamicCommands$AngleArgumentWrapper: {
               new(angle: net.minecraft.commands.arguments.AngleArgument$SingleAngle): com.chattriggers.ctjs.api.commands.DynamicCommands$AngleArgumentWrapper;
             }
-            interface DynamicCommands$AngleArgumentWrapper {
+            interface DynamicCommands$AngleArgumentWrapper { 
               getAngle(): net.minecraft.commands.arguments.AngleArgument$SingleAngle;
               getAngle(): number;
               getAngle(entity: com.chattriggers.ctjs.api.entity.Entity): number;
@@ -49229,7 +49229,7 @@ declare global {
             const DynamicCommands$PosArgumentWrapper: {
               new(impl: net.minecraft.commands.arguments.coordinates.Coordinates): com.chattriggers.ctjs.api.commands.DynamicCommands$PosArgumentWrapper;
             }
-            interface DynamicCommands$PosArgumentWrapper extends net.minecraft.commands.arguments.coordinates.Coordinates {
+            interface DynamicCommands$PosArgumentWrapper extends net.minecraft.commands.arguments.coordinates.Coordinates { 
               getImpl(): net.minecraft.commands.arguments.coordinates.Coordinates;
               toAbsolutePos(): net.minecraft.world.phys.Vec3;
               toAbsoluteBlockPos(): com.chattriggers.ctjs.api.world.block.BlockPos;
@@ -49240,7 +49240,7 @@ declare global {
             const DynamicCommands$BlockPredicateWrapper: {
               new(impl: net.minecraft.commands.arguments.blocks.BlockPredicateArgument$Result): com.chattriggers.ctjs.api.commands.DynamicCommands$BlockPredicateWrapper;
             }
-            interface DynamicCommands$BlockPredicateWrapper {
+            interface DynamicCommands$BlockPredicateWrapper { 
               getImpl(): net.minecraft.commands.arguments.blocks.BlockPredicateArgument$Result;
               test(blockPos: com.chattriggers.ctjs.api.world.block.BlockPos): boolean;
               component1(): net.minecraft.commands.arguments.blocks.BlockPredicateArgument$Result;
@@ -49249,7 +49249,7 @@ declare global {
             const DynamicCommands$BlockStateArgumentWrapper: {
               new(impl: net.minecraft.commands.arguments.blocks.BlockInput): com.chattriggers.ctjs.api.commands.DynamicCommands$BlockStateArgumentWrapper;
             }
-            interface DynamicCommands$BlockStateArgumentWrapper {
+            interface DynamicCommands$BlockStateArgumentWrapper { 
               getImpl(): net.minecraft.commands.arguments.blocks.BlockInput;
               test(blockPos: com.chattriggers.ctjs.api.world.block.BlockPos): boolean;
               component1(): net.minecraft.commands.arguments.blocks.BlockInput;
@@ -49258,7 +49258,7 @@ declare global {
             const DynamicCommands$EntitySelectorWrapper: {
               new(impl: net.minecraft.commands.arguments.selector.EntitySelector): com.chattriggers.ctjs.api.commands.DynamicCommands$EntitySelectorWrapper;
             }
-            interface DynamicCommands$EntitySelectorWrapper {
+            interface DynamicCommands$EntitySelectorWrapper { 
               getEntity(): com.chattriggers.ctjs.api.entity.Entity;
               getEntities(): Array<com.chattriggers.ctjs.api.entity.Entity>;
               getPlayers(): Array<com.chattriggers.ctjs.api.entity.PlayerMP>;
@@ -49266,7 +49266,7 @@ declare global {
             const DynamicCommands$ItemStackArgumentWrapper: {
               new(impl: net.minecraft.commands.arguments.item.ItemInput): com.chattriggers.ctjs.api.commands.DynamicCommands$ItemStackArgumentWrapper;
             }
-            interface DynamicCommands$ItemStackArgumentWrapper {
+            interface DynamicCommands$ItemStackArgumentWrapper { 
               getItemType(): com.chattriggers.ctjs.api.inventory.ItemType;
               test(type: com.chattriggers.ctjs.api.inventory.ItemType): boolean;
               component1(): net.minecraft.commands.arguments.item.ItemInput;
@@ -49275,7 +49275,7 @@ declare global {
             const DynamicCommands$MessageFormatArgumentWrapper: {
               new(impl: net.minecraft.commands.arguments.MessageArgument$Message): com.chattriggers.ctjs.api.commands.DynamicCommands$MessageFormatArgumentWrapper;
             }
-            interface DynamicCommands$MessageFormatArgumentWrapper {
+            interface DynamicCommands$MessageFormatArgumentWrapper { 
               getText(): string;
               setText(value: string): void;
               format(): com.chattriggers.ctjs.api.message.TextComponent;
@@ -49285,7 +49285,7 @@ declare global {
             const DynamicCommands$NbtPathWrapper: {
               new(impl: net.minecraft.commands.arguments.NbtPathArgument$NbtPath): com.chattriggers.ctjs.api.commands.DynamicCommands$NbtPathWrapper;
             }
-            interface DynamicCommands$NbtPathWrapper {
+            interface DynamicCommands$NbtPathWrapper { 
               get(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): Array<net.minecraft.nbt.Tag>;
               count(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase): number;
               getOrInit(nbt: com.chattriggers.ctjs.api.inventory.nbt.NBTBase, supplier: kotlin.Function0<com.chattriggers.ctjs.api.inventory.nbt.NBTBase>): Array<net.minecraft.nbt.Tag>;
@@ -49300,7 +49300,7 @@ declare global {
             const KeyBind: {
 							/**
 							 * Creates a new keybind, editable in the user's controls.
-							 *
+							 * 
 							 *  @param description what the keybind does
 							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
 							 *  @param category the keybind category the keybind will be in
@@ -49309,7 +49309,7 @@ declare global {
               new(description: string, keyCode: number): com.chattriggers.ctjs.api.client.KeyBind;
 							/**
 							 * Creates a new keybind, editable in the user's controls.
-							 *
+							 * 
 							 *  @param description what the keybind does
 							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
 							 *  @param category the keybind category the keybind will be in
@@ -49318,7 +49318,7 @@ declare global {
               new(description: string, keyCode: number, category: string): com.chattriggers.ctjs.api.client.KeyBind;
               new(keyBinding: net.minecraft.client.KeyMapping): com.chattriggers.ctjs.api.client.KeyBind;
             }
-            interface KeyBind {
+            interface KeyBind { 
               registerKeyPress(method: any): com.chattriggers.ctjs.api.client.KeyBind;
               registerKeyRelease(method: any): com.chattriggers.ctjs.api.client.KeyBind;
               registerKeyDown(method: any): com.chattriggers.ctjs.api.client.KeyBind;
@@ -49327,37 +49327,37 @@ declare global {
               unregisterKeyDown(): com.chattriggers.ctjs.api.client.KeyBind;
 							/**
 							 * Returns true if the key is pressed (used for continuous querying).
-							 *
+							 * 
 							 *  @return whether the key is pressed
 							 */
               isKeyDown(): boolean;
 							/**
 							 * Returns true on the initial key press. For continuous querying use [isKeyDown].
-							 *
+							 * 
 							 *  @return whether the key has just been pressed
 							 */
               isPressed(): boolean;
 							/**
 							 * Gets the description of the key.
-							 *
+							 * 
 							 *  @return the description
 							 */
               getDescription(): string;
 							/**
 							 * Gets the key code of the key.
-							 *
+							 * 
 							 *  @return the integer key code
 							 */
               getKeyCode(): number;
 							/**
 							 * Gets the category of the key.
-							 *
+							 * 
 							 *  @return the category
 							 */
               getCategory(): string;
 							/**
 							 * Sets the state of the key.
-							 *
+							 * 
 							 *  @param pressed True to press, False to release
 							 */
               setState(pressed: boolean): void;
@@ -49365,7 +49365,7 @@ declare global {
             const KeyBind$Companion: {
               new(): com.chattriggers.ctjs.api.client.KeyBind$Companion;
             }
-            interface KeyBind$Companion {
+            interface KeyBind$Companion { 
               new(): com.chattriggers.ctjs.api.client.KeyBind$Companion;
             }
             const ScreenHelper: {
@@ -49376,7 +49376,7 @@ declare global {
               argb(a: number, r: number, g: number, b: number): number;
               new(): com.chattriggers.ctjs.api.client.ScreenHelper;
             }
-            interface ScreenHelper {
+            interface ScreenHelper { 
               titleFont: com.chattriggers.ctjs.api.render.Font;
               smallerFont: com.chattriggers.ctjs.api.render.Font;
               drawMenuButton(label: string, x: number, y: number, width: number, height: number, hovered: boolean, textColorOverride: number | null | undefined): void;
@@ -49386,7 +49386,7 @@ declare global {
             const ScreenHelper$MenuButton: {
               new(label: string, x: number, y: number, width: number, height: number, onClick: kotlin.Function0<void>): com.chattriggers.ctjs.api.client.ScreenHelper$MenuButton;
             }
-            interface ScreenHelper$MenuButton {
+            interface ScreenHelper$MenuButton { 
               getLabel(): string;
               getX(): number;
               getY(): number;
@@ -49405,20 +49405,20 @@ declare global {
             const WelcomeScreen: {
               new(): com.chattriggers.ctjs.api.client.WelcomeScreen;
             }
-            interface WelcomeScreen extends net.minecraft.client.gui.screens.Screen {
+            interface WelcomeScreen extends net.minecraft.client.gui.screens.Screen { 
             }
             const WelcomeScreen$Companion: {
               open(): void;
               new(): com.chattriggers.ctjs.api.client.WelcomeScreen$Companion;
             }
-            interface WelcomeScreen$Companion {
+            interface WelcomeScreen$Companion { 
               open(): void;
               new(): com.chattriggers.ctjs.api.client.WelcomeScreen$Companion;
             }
             const FileLib: {
 							/**
 							 * Writes a file to folder in modules.
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @param toWrite string to write in file
@@ -49427,7 +49427,7 @@ declare global {
               write(importName: string, fileName: string, toWrite: string): void;
 							/**
 							 * Writes a file to folder in modules.
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @param toWrite string to write in file
@@ -49437,7 +49437,7 @@ declare global {
 							/**
 							 * Writes a file to anywhere on the system.
 							 *  Use "./" for the ".minecraft" folder.
-							 *
+							 * 
 							 *  @param fileLocation the location and file name
 							 *  @param toWrite string to write in file
 							 *  @param recursive whether to create folders to the file location if they don't exist
@@ -49446,7 +49446,7 @@ declare global {
 							/**
 							 * Writes a file to anywhere on the system.
 							 *  Use "./" for the ".minecraft" folder.
-							 *
+							 * 
 							 *  @param fileLocation the location and file name
 							 *  @param toWrite string to write in file
 							 *  @param recursive whether to create folders to the file location if they don't exist
@@ -49454,7 +49454,7 @@ declare global {
               write(fileLocation: string, toWrite: string, recursive: boolean): void;
 							/**
 							 * Writes a file to folder in modules.
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @param toAppend string to append in file
@@ -49463,7 +49463,7 @@ declare global {
 							/**
 							 * Writes a file to anywhere on the system.
 							 *  Use "./" for the ".minecraft" folder.
-							 *
+							 * 
 							 *  @param fileLocation the location and file name
 							 *  @param toAppend string to append in file
 							 */
@@ -49471,7 +49471,7 @@ declare global {
 							/**
 							 * Reads a file from folder in modules.
 							 *  Returns null if file is not found.
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @return the string in the file, or null if not found
@@ -49481,21 +49481,21 @@ declare global {
 							 * Reads a file from anywhere on the system.
 							 *  Use "./" for the ".minecraft" folder.
 							 *  Returns null if file is not found.
-							 *
+							 * 
 							 *  @param fileLocation the location and file name
 							 *  @return the string in the file, or null if not found
 							 */
               read(fileLocation: string): string | null | undefined;
 							/**
 							 * Reads a file from anywhere on the system using java.io.File.
-							 *
+							 * 
 							 *  @param file the java.io.File to read
 							 *  @return the string in the file, or null if not found
 							 */
               read(file: java.io.File): string | null | undefined;
 							/**
 							 * Determines if a file or directory exists at the specified location
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @return if the file exists
@@ -49503,14 +49503,14 @@ declare global {
               exists(importName: string, fileName: string): boolean;
 							/**
 							 * Determines if a file or directory exists at the specified location
-							 *
+							 * 
 							 *  @param fileLocation the path of the file
 							 *  @return if the file exists
 							 */
               exists(fileLocation: string): boolean;
 							/**
 							 * Determines if a file or directory exists at the specified location
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @return if the location is a directory
@@ -49518,14 +49518,14 @@ declare global {
               isDirectory(importName: string, fileName: string): boolean;
 							/**
 							 * Determines if a file or directory exists at the specified location
-							 *
+							 * 
 							 *  @param fileLocation the path of the file
 							 *  @return if the location is a directory
 							 */
               isDirectory(fileLocation: string): boolean;
 							/**
 							 * Gets the contents of a url as a string.
-							 *
+							 * 
 							 *  @param theUrl the url to get the data from
 							 *  @param userAgent the user agent to use in the connection
 							 *  @return the string stored in the url content
@@ -49533,7 +49533,7 @@ declare global {
               getUrlContent(theUrl: string): string;
 							/**
 							 * Gets the contents of a url as a string.
-							 *
+							 * 
 							 *  @param theUrl the url to get the data from
 							 *  @param userAgent the user agent to use in the connection
 							 *  @return the string stored in the url content
@@ -49541,14 +49541,14 @@ declare global {
               getUrlContent(theUrl: string, userAgent: string | null | undefined): string;
 							/**
 							 * Deletes a directory at the specified location
-							 *
+							 * 
 							 *  @param dir the directory to delete
 							 *  @return if the directory was deleted
 							 */
               deleteDirectory(dir: string): boolean;
 							/**
 							 * Deletes a directory at the specified location
-							 *
+							 * 
 							 *  @param dir the directory to delete
 							 *  @return if the directory was deleted
 							 */
@@ -49563,36 +49563,36 @@ declare global {
               unzip(zipFilePath: string, destDirectory: string): void;
 							/**
 							 * Encodes a string to a base64 string
-							 *
+							 * 
 							 *  @param toEncode string to encode
 							 *  @return base64 encoded string
 							 */
               encodeBase64(toEncode: string): string;
 							/**
 							 * Decodes a base64 string to a string
-							 *
+							 * 
 							 *  @param toDecode base64 encoded string to decode
 							 *  @return decoded string
 							 */
               decodeBase64(toDecode: string): string;
 							/**
 							 * Opens a url in the default browser
-							 *
+							 * 
 							 *  @param url the url to open
 							 */
               open(url: string): void;
 							/**
 							 * Opens a path in the file explorer
-							 *
+							 * 
 							 *  @param path the path to open
 							 */
               open(path: java.io.File): void;
               new(): com.chattriggers.ctjs.api.client.FileLib;
             }
-            interface FileLib {
+            interface FileLib { 
 							/**
 							 * Writes a file to folder in modules.
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @param toWrite string to write in file
@@ -49601,7 +49601,7 @@ declare global {
               write(importName: string, fileName: string, toWrite: string): void;
 							/**
 							 * Writes a file to folder in modules.
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @param toWrite string to write in file
@@ -49611,7 +49611,7 @@ declare global {
 							/**
 							 * Writes a file to anywhere on the system.
 							 *  Use "./" for the ".minecraft" folder.
-							 *
+							 * 
 							 *  @param fileLocation the location and file name
 							 *  @param toWrite string to write in file
 							 *  @param recursive whether to create folders to the file location if they don't exist
@@ -49620,7 +49620,7 @@ declare global {
 							/**
 							 * Writes a file to anywhere on the system.
 							 *  Use "./" for the ".minecraft" folder.
-							 *
+							 * 
 							 *  @param fileLocation the location and file name
 							 *  @param toWrite string to write in file
 							 *  @param recursive whether to create folders to the file location if they don't exist
@@ -49628,7 +49628,7 @@ declare global {
               write(fileLocation: string, toWrite: string, recursive: boolean): void;
 							/**
 							 * Writes a file to folder in modules.
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @param toAppend string to append in file
@@ -49637,7 +49637,7 @@ declare global {
 							/**
 							 * Writes a file to anywhere on the system.
 							 *  Use "./" for the ".minecraft" folder.
-							 *
+							 * 
 							 *  @param fileLocation the location and file name
 							 *  @param toAppend string to append in file
 							 */
@@ -49645,7 +49645,7 @@ declare global {
 							/**
 							 * Reads a file from folder in modules.
 							 *  Returns null if file is not found.
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @return the string in the file, or null if not found
@@ -49655,21 +49655,21 @@ declare global {
 							 * Reads a file from anywhere on the system.
 							 *  Use "./" for the ".minecraft" folder.
 							 *  Returns null if file is not found.
-							 *
+							 * 
 							 *  @param fileLocation the location and file name
 							 *  @return the string in the file, or null if not found
 							 */
               read(fileLocation: string): string | null | undefined;
 							/**
 							 * Reads a file from anywhere on the system using java.io.File.
-							 *
+							 * 
 							 *  @param file the java.io.File to read
 							 *  @return the string in the file, or null if not found
 							 */
               read(file: java.io.File): string | null | undefined;
 							/**
 							 * Determines if a file or directory exists at the specified location
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @return if the file exists
@@ -49677,14 +49677,14 @@ declare global {
               exists(importName: string, fileName: string): boolean;
 							/**
 							 * Determines if a file or directory exists at the specified location
-							 *
+							 * 
 							 *  @param fileLocation the path of the file
 							 *  @return if the file exists
 							 */
               exists(fileLocation: string): boolean;
 							/**
 							 * Determines if a file or directory exists at the specified location
-							 *
+							 * 
 							 *  @param importName name of the import
 							 *  @param fileName name of the file
 							 *  @return if the location is a directory
@@ -49692,14 +49692,14 @@ declare global {
               isDirectory(importName: string, fileName: string): boolean;
 							/**
 							 * Determines if a file or directory exists at the specified location
-							 *
+							 * 
 							 *  @param fileLocation the path of the file
 							 *  @return if the location is a directory
 							 */
               isDirectory(fileLocation: string): boolean;
 							/**
 							 * Gets the contents of a url as a string.
-							 *
+							 * 
 							 *  @param theUrl the url to get the data from
 							 *  @param userAgent the user agent to use in the connection
 							 *  @return the string stored in the url content
@@ -49707,7 +49707,7 @@ declare global {
               getUrlContent(theUrl: string): string;
 							/**
 							 * Gets the contents of a url as a string.
-							 *
+							 * 
 							 *  @param theUrl the url to get the data from
 							 *  @param userAgent the user agent to use in the connection
 							 *  @return the string stored in the url content
@@ -49715,14 +49715,14 @@ declare global {
               getUrlContent(theUrl: string, userAgent: string | null | undefined): string;
 							/**
 							 * Deletes a directory at the specified location
-							 *
+							 * 
 							 *  @param dir the directory to delete
 							 *  @return if the directory was deleted
 							 */
               deleteDirectory(dir: string): boolean;
 							/**
 							 * Deletes a directory at the specified location
-							 *
+							 * 
 							 *  @param dir the directory to delete
 							 *  @return if the directory was deleted
 							 */
@@ -49737,27 +49737,27 @@ declare global {
               unzip(zipFilePath: string, destDirectory: string): void;
 							/**
 							 * Encodes a string to a base64 string
-							 *
+							 * 
 							 *  @param toEncode string to encode
 							 *  @return base64 encoded string
 							 */
               encodeBase64(toEncode: string): string;
 							/**
 							 * Decodes a base64 string to a string
-							 *
+							 * 
 							 *  @param toDecode base64 encoded string to decode
 							 *  @return decoded string
 							 */
               decodeBase64(toDecode: string): string;
 							/**
 							 * Opens a url in the default browser
-							 *
+							 * 
 							 *  @param url the url to open
 							 */
               open(url: string): void;
 							/**
 							 * Opens a path in the file explorer
-							 *
+							 * 
 							 *  @param path the path to open
 							 */
               open(path: java.io.File): void;
@@ -49766,7 +49766,7 @@ declare global {
             const MathLib: {
 							/**
 							 * Maps a number from one range to another.
-							 *
+							 * 
 							 *  @param number the number to map
 							 *  @param in_min the original range min
 							 *  @param in_max the original range max
@@ -49777,7 +49777,7 @@ declare global {
               map(number: number, in_min: number, in_max: number, out_min: number, out_max: number): number;
 							/**
 							 * Clamps a floating number between two values.
-							 *
+							 * 
 							 *  @param number the number to clamp
 							 *  @param min the minimum
 							 *  @param max the maximum
@@ -49786,7 +49786,7 @@ declare global {
               clampFloat(number: number, min: number, max: number): number;
 							/**
 							 * Clamps an integer number between two values.
-							 *
+							 * 
 							 *  @param number the number to clamp
 							 *  @param min the minimum
 							 *  @param max the maximum
@@ -49795,10 +49795,10 @@ declare global {
               clamp(number: number, min: number, max: number): number;
               new(): com.chattriggers.ctjs.api.client.MathLib;
             }
-            interface MathLib {
+            interface MathLib { 
 							/**
 							 * Maps a number from one range to another.
-							 *
+							 * 
 							 *  @param number the number to map
 							 *  @param in_min the original range min
 							 *  @param in_max the original range max
@@ -49809,7 +49809,7 @@ declare global {
               map(number: number, in_min: number, in_max: number, out_min: number, out_max: number): number;
 							/**
 							 * Clamps a floating number between two values.
-							 *
+							 * 
 							 *  @param number the number to clamp
 							 *  @param min the minimum
 							 *  @param max the maximum
@@ -49818,7 +49818,7 @@ declare global {
               clampFloat(number: number, min: number, max: number): number;
 							/**
 							 * Clamps an integer number between two values.
-							 *
+							 * 
 							 *  @param number the number to clamp
 							 *  @param min the minimum
 							 *  @param max the maximum
@@ -49836,7 +49836,7 @@ declare global {
               getEnabledProxies(): Array<com.chattriggers.ctjs.api.client.Proxy>;
               new(): com.chattriggers.ctjs.api.client.ProxyInfo;
             }
-            interface ProxyInfo {
+            interface ProxyInfo { 
               getProxies(): Array<com.chattriggers.ctjs.api.client.Proxy>;
               addProxy(proxy: com.chattriggers.ctjs.api.client.Proxy): void;
               removeProxy(proxy: com.chattriggers.ctjs.api.client.Proxy): void;
@@ -49848,7 +49848,7 @@ declare global {
             const Proxy: {
               new(ip: string, port: number, name: string, username: string, password: string, isEnabled: boolean): com.chattriggers.ctjs.api.client.Proxy;
             }
-            interface Proxy {
+            interface Proxy { 
               getIp(): string;
               setIp(value: string): void;
               getPort(): number;
@@ -49877,7 +49877,7 @@ declare global {
               revertToIdle(): void;
               new(): com.chattriggers.ctjs.api.client.DiscordRPC;
             }
-            interface DiscordRPC {
+            interface DiscordRPC { 
               stayOn(): void;
               turnOff(): void;
               updatePresence(details: string, state: string): void;
@@ -49888,13 +49888,13 @@ declare global {
             const ProxyManagerScreen: {
               new(parent: net.minecraft.client.gui.screens.Screen): com.chattriggers.ctjs.api.client.ProxyManagerScreen;
             }
-            interface ProxyManagerScreen extends net.minecraft.client.gui.screens.Screen {
+            interface ProxyManagerScreen extends net.minecraft.client.gui.screens.Screen { 
               refreshList(): void;
             }
             const ProxyEditScreen: {
               new(parent: com.chattriggers.ctjs.api.client.ProxyManagerScreen, existingProxy: com.chattriggers.ctjs.api.client.Proxy | null | undefined): com.chattriggers.ctjs.api.client.ProxyEditScreen;
             }
-            interface ProxyEditScreen extends net.minecraft.client.gui.screens.Screen {
+            interface ProxyEditScreen extends net.minecraft.client.gui.screens.Screen { 
             }
             const Client: {
               RenderLimiter: typeof com.chattriggers.ctjs.api.client.Client$RenderLimiter;
@@ -49934,13 +49934,13 @@ declare global {
               processName(original: net.minecraft.network.chat.Component): net.minecraft.network.chat.Component;
 							/**
 							 * Gets Minecraft's Minecraft object
-							 *
+							 * 
 							 *  @return The Minecraft object
 							 */
               getMinecraft(): net.minecraft.client.Minecraft;
 							/**
 							 * Gets Minecraft's NetHandlerPlayClient object
-							 *
+							 * 
 							 *  @return The NetHandlerPlayClient object
 							 */
               getConnection(): net.minecraft.client.multiplayer.ClientPacketListener | null | undefined;
@@ -49975,7 +49975,7 @@ declare global {
               connect(ip: string, port: number): void;
 							/**
 							 * Gets the Minecraft ChatHud object for the chat gui
-							 *
+							 * 
 							 *  @return The GuiNewChat object for the chat gui
 							 */
               getChatGui(): net.minecraft.client.gui.components.ChatComponent | null | undefined;
@@ -49985,7 +49985,7 @@ declare global {
 							/**
 							 * Gets whether the Minecraft window is active
 							 *  and in the foreground of the user's screen.
-							 *
+							 * 
 							 *  @return true if the game is active, false otherwise
 							 */
               isTabbedIn(): boolean;
@@ -50000,13 +50000,13 @@ declare global {
               isInGui(): boolean;
 							/**
 							 * Gets the chat message currently typed into the chat gui.
-							 *
+							 * 
 							 *  @return A blank string if the gui isn't open, otherwise, the message
 							 */
               getCurrentChatMessage(): string;
 							/**
 							 * Sets the current chat message, if the chat gui is not open, one will be opened.
-							 *
+							 * 
 							 *  @param message the message to put in the chat text box.
 							 */
               setCurrentChatMessage(message: string): void;
@@ -50024,7 +50024,7 @@ declare global {
               sendSequencedPacket(packetFactory: kotlin.Function1<number, net.minecraft.network.protocol.Packet<any>>): void;
 							/**
 							 * Display a title.
-							 *
+							 * 
 							 *  @param title title text
 							 *  @param subtitle subtitle text
 							 *  @param fadeIn time to fade in
@@ -50034,13 +50034,13 @@ declare global {
               showTitle(title: string | null | undefined, subtitle: string | null | undefined, fadeIn: number, time: number, fadeOut: number): void;
 							/**
 							 * Copies a string to the clipboard
-							 *
+							 * 
 							 *  @param text The text to copy
 							 */
               copy(): void;
 							/**
 							 * Copies a string to the clipboard
-							 *
+							 * 
 							 *  @param text The text to copy
 							 */
               copy(text: string): void;
@@ -50050,7 +50050,7 @@ declare global {
               paste(): string;
 							/**
 							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, otherwise, returns null.
-							 *
+							 * 
 							 *  @param keyCode the keycode to search for, see Keyboard below. Ex. Keyboard.KEY_A
 							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or null if one doesn't exist
 							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
@@ -50058,7 +50058,7 @@ declare global {
               getKeyBindFromKey(keyCode: number): com.chattriggers.ctjs.api.client.KeyBind | null | undefined;
 							/**
 							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
-							 *
+							 * 
 							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
 							 *  @param description the description of the keybind
 							 *  @param category the keybind category the keybind will be in
@@ -50068,7 +50068,7 @@ declare global {
               getKeyBindFromKey(keyCode: number, description: string): com.chattriggers.ctjs.api.client.KeyBind;
 							/**
 							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
-							 *
+							 * 
 							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
 							 *  @param description the description of the keybind
 							 *  @param category the keybind category the keybind will be in
@@ -50079,14 +50079,14 @@ declare global {
 							/**
 							 * Get the [KeyBinding] from an already existing
 							 *  Minecraft KeyBinding, otherwise, returns null.
-							 *
+							 * 
 							 *  @param description the description of the keybind
 							 *  @return the [KeyBinding], or null if one doesn't exist
 							 */
               getKeyBindFromDescription(description: string): com.chattriggers.ctjs.api.client.KeyBind | null | undefined;
               new(): com.chattriggers.ctjs.api.client.Client;
             }
-            interface Client {
+            interface Client { 
               isFreecam(): boolean;
               setFreecam(value: boolean): void;
               isFreelook(): boolean;
@@ -50121,13 +50121,13 @@ declare global {
               processName(original: net.minecraft.network.chat.Component): net.minecraft.network.chat.Component;
 							/**
 							 * Gets Minecraft's Minecraft object
-							 *
+							 * 
 							 *  @return The Minecraft object
 							 */
               getMinecraft(): net.minecraft.client.Minecraft;
 							/**
 							 * Gets Minecraft's NetHandlerPlayClient object
-							 *
+							 * 
 							 *  @return The NetHandlerPlayClient object
 							 */
               getConnection(): net.minecraft.client.multiplayer.ClientPacketListener | null | undefined;
@@ -50162,7 +50162,7 @@ declare global {
               connect(ip: string, port: number): void;
 							/**
 							 * Gets the Minecraft ChatHud object for the chat gui
-							 *
+							 * 
 							 *  @return The GuiNewChat object for the chat gui
 							 */
               getChatGui(): net.minecraft.client.gui.components.ChatComponent | null | undefined;
@@ -50172,7 +50172,7 @@ declare global {
 							/**
 							 * Gets whether the Minecraft window is active
 							 *  and in the foreground of the user's screen.
-							 *
+							 * 
 							 *  @return true if the game is active, false otherwise
 							 */
               isTabbedIn(): boolean;
@@ -50187,13 +50187,13 @@ declare global {
               isInGui(): boolean;
 							/**
 							 * Gets the chat message currently typed into the chat gui.
-							 *
+							 * 
 							 *  @return A blank string if the gui isn't open, otherwise, the message
 							 */
               getCurrentChatMessage(): string;
 							/**
 							 * Sets the current chat message, if the chat gui is not open, one will be opened.
-							 *
+							 * 
 							 *  @param message the message to put in the chat text box.
 							 */
               setCurrentChatMessage(message: string): void;
@@ -50211,7 +50211,7 @@ declare global {
               sendSequencedPacket(packetFactory: kotlin.Function1<number, net.minecraft.network.protocol.Packet<any>>): void;
 							/**
 							 * Display a title.
-							 *
+							 * 
 							 *  @param title title text
 							 *  @param subtitle subtitle text
 							 *  @param fadeIn time to fade in
@@ -50221,13 +50221,13 @@ declare global {
               showTitle(title: string | null | undefined, subtitle: string | null | undefined, fadeIn: number, time: number, fadeOut: number): void;
 							/**
 							 * Copies a string to the clipboard
-							 *
+							 * 
 							 *  @param text The text to copy
 							 */
               copy(): void;
 							/**
 							 * Copies a string to the clipboard
-							 *
+							 * 
 							 *  @param text The text to copy
 							 */
               copy(text: string): void;
@@ -50237,7 +50237,7 @@ declare global {
               paste(): string;
 							/**
 							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, otherwise, returns null.
-							 *
+							 * 
 							 *  @param keyCode the keycode to search for, see Keyboard below. Ex. Keyboard.KEY_A
 							 *  @return the [KeyBinding] from a Minecraft KeyBinding, or null if one doesn't exist
 							 *  @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
@@ -50245,7 +50245,7 @@ declare global {
               getKeyBindFromKey(keyCode: number): com.chattriggers.ctjs.api.client.KeyBind | null | undefined;
 							/**
 							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
-							 *
+							 * 
 							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
 							 *  @param description the description of the keybind
 							 *  @param category the keybind category the keybind will be in
@@ -50255,7 +50255,7 @@ declare global {
               getKeyBindFromKey(keyCode: number, description: string): com.chattriggers.ctjs.api.client.KeyBind;
 							/**
 							 * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
-							 *
+							 * 
 							 *  @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
 							 *  @param description the description of the keybind
 							 *  @param category the keybind category the keybind will be in
@@ -50266,7 +50266,7 @@ declare global {
 							/**
 							 * Get the [KeyBinding] from an already existing
 							 *  Minecraft KeyBinding, otherwise, returns null.
-							 *
+							 * 
 							 *  @param description the description of the keybind
 							 *  @return the [KeyBinding], or null if one doesn't exist
 							 */
@@ -50281,28 +50281,28 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.client.Client$RenderLimiter>;
               valueOf(value: string): com.chattriggers.ctjs.api.client.Client$RenderLimiter;
             }
-            interface Client$RenderLimiter extends kotlin.Enum<com.chattriggers.ctjs.api.client.Client$RenderLimiter> {
+            interface Client$RenderLimiter extends kotlin.Enum<com.chattriggers.ctjs.api.client.Client$RenderLimiter> { 
             }
             const Client$CurrentGuiWrapper: {
               new(): com.chattriggers.ctjs.api.client.Client$CurrentGuiWrapper;
             }
-            interface Client$CurrentGuiWrapper {
+            interface Client$CurrentGuiWrapper { 
 							/**
 							 * Gets the Java class name of the currently open gui, for example, "GuiChest"
-							 *
+							 * 
 							 *  @return the class name of the current gui
 							 */
               getClassName(): string;
 							/**
 							 * Gets the Minecraft gui class that is currently open
-							 *
+							 * 
 							 *  @return the Minecraft gui
 							 */
               get(): net.minecraft.client.gui.screens.Screen | null | undefined;
               set(screen: net.minecraft.client.gui.screens.Screen | null | undefined): void;
 							/**
 							 * Gets the slot under the mouse in the current gui, if one exists.
-							 *
+							 * 
 							 *  @return the [Slot] under the mouse
 							 */
               getSlotUnderMouse(): com.chattriggers.ctjs.api.inventory.Slot | null | undefined;
@@ -50314,7 +50314,7 @@ declare global {
             const Client$CameraWrapper: {
               new(): com.chattriggers.ctjs.api.client.Client$CameraWrapper;
             }
-            interface Client$CameraWrapper {
+            interface Client$CameraWrapper { 
               getX(): number;
               getY(): number;
               getZ(): number;
@@ -50325,7 +50325,7 @@ declare global {
               toMC(): net.minecraft.client.player.LocalPlayer | null | undefined;
 							/**
 							 * Gets Minecraft's EntityPlayerSP object representing the user
-							 *
+							 * 
 							 *  @return The Minecraft EntityPlayerSP object representing the user
 							 */
               getPlayer(): net.minecraft.client.player.LocalPlayer | null | undefined;
@@ -50345,57 +50345,57 @@ declare global {
 							/**
 							 * Gets the player's x motion.
 							 *  This is the amount the player will move in the x direction next tick.
-							 *
+							 * 
 							 *  @return the player's x motion
 							 */
               getMotionX(): number;
 							/**
 							 * Gets the player's y motion.
 							 *  This is the amount the player will move in the y direction next tick.
-							 *
+							 * 
 							 *  @return the player's y motion
 							 */
               getMotionY(): number;
 							/**
 							 * Gets the player's z motion.
 							 *  This is the amount the player will move in the z direction next tick.
-							 *
+							 * 
 							 *  @return the player's z motion
 							 */
               getMotionZ(): number;
 							/**
 							 * Gets the player's camera pitch.
-							 *
+							 * 
 							 *  @return the player's camera pitch
 							 */
               getPitch(): number;
 							/**
 							 * Gets the player's camera yaw.
-							 *
+							 * 
 							 *  @return the player's camera yaw
 							 */
               getYaw(): number;
 							/**
 							 * Gets the player's username.
-							 *
+							 * 
 							 *  @return the player's username
 							 */
               getName(): string;
 							/**
 							 * Gets the Java UUID object of the player.
 							 *  Use of [UUID.toString] in conjunction is recommended.
-							 *
+							 * 
 							 *  @return the player's uuid
 							 */
               getUUID(): java.util.UUID;
               getHP(): number;
 							/**
 							 * Gets the player's air level.
-							 *
+							 * 
 							 *  The returned value will be an integer. If the player is not taking damage, it
 							 *  will be between 300 (not in water) and 0. If the player is taking damage, it
 							 *  will be between -20 and 0, getting reset to 0 every time the player takes damage.
-							 *
+							 * 
 							 *  @return the player's air level
 							 */
               getAirLevel(): number;
@@ -50405,7 +50405,7 @@ declare global {
               isSprinting(): boolean;
 							/**
 							 * Checks if player can be pushed by water.
-							 *
+							 * 
 							 *  @return true if the player is flying, false otherwise
 							 */
               isFlying(): boolean;
@@ -50413,14 +50413,14 @@ declare global {
 							/**
 							 * Gets the direction the player is facing.
 							 *  Example: "South West"
-							 *
+							 * 
 							 *  @return The direction the player is facing, one of the four cardinal directions
 							 */
               facing(): string;
 							/**
 							 * Gets the current active potion effects. Returns an empty list
 							 *  if the player has no active potion effects.
-							 *
+							 * 
 							 *  @return a list of the active [PotionEffect]s
 							 */
               getActivePotionEffects(): Array<com.chattriggers.ctjs.api.world.PotionEffect>;
@@ -50428,39 +50428,39 @@ declare global {
 							 * Gets the current object that the player is looking at,
 							 *  whether that be a block or an entity. Returns null when not looking
 							 *  at anything.
-							 *
+							 * 
 							 *  @return the [Block] or [Entity] being looked at, or null if air
 							 */
               lookingAt(): any | null | undefined;
 							/**
 							 * Gets the current item in the player's hand.
-							 *
+							 * 
 							 *  @param hand the hand of the item
 							 *  @return the current held [Item]
 							 */
               getHeldItem(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
 							/**
 							 * Gets the current item in the player's hand.
-							 *
+							 * 
 							 *  @param hand the hand of the item
 							 *  @return the current held [Item]
 							 */
               getHeldItem(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
 							/**
 							 * Sets the current held item based on the provided index.
-							 *
+							 * 
 							 *  @param index the new held item index
 							 */
               setHeldItemIndex(index: number): void;
 							/**
 							 * Gets the current index of the held item.
-							 *
+							 * 
 							 *  @return the current index
 							 */
               getHeldItemIndex(): number;
 							/**
 							 * Gets the inventory of the player, i.e. the inventory accessed by 'e'.
-							 *
+							 * 
 							 *  @return the player's inventory
 							 */
               getInventory(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
@@ -50472,38 +50472,38 @@ declare global {
               getDisplayName(): com.chattriggers.ctjs.api.message.TextComponent;
 							/**
 							 * Sets the name for this player shown in tab list
-							 *
+							 * 
 							 *  @param textComponent the new name to display
 							 */
               setTabDisplayName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
 							/**
 							 * Sets the name for this player shown above their head,
 							 *  in their name tag
-							 *
+							 * 
 							 *  @param textComponent the new name to display
 							 */
               setNametagName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
 							/**
 							 * Gets the container the user currently has open, i.e. a chest.
-							 *
+							 * 
 							 *  @return the currently opened container
 							 */
               getContainer(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
 							/**
 							 * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]
 							 *  minus `player`.
-							 *
+							 * 
 							 *  @see Renderer.drawPlayer
 							 */
               draw(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.client.Player;
               new(): com.chattriggers.ctjs.api.client.Player;
             }
-            interface Player {
+            interface Player { 
               armor: com.chattriggers.ctjs.api.client.Player$ArmorWrapper;
               toMC(): net.minecraft.client.player.LocalPlayer | null | undefined;
 							/**
 							 * Gets Minecraft's EntityPlayerSP object representing the user
-							 *
+							 * 
 							 *  @return The Minecraft EntityPlayerSP object representing the user
 							 */
               getPlayer(): net.minecraft.client.player.LocalPlayer | null | undefined;
@@ -50523,57 +50523,57 @@ declare global {
 							/**
 							 * Gets the player's x motion.
 							 *  This is the amount the player will move in the x direction next tick.
-							 *
+							 * 
 							 *  @return the player's x motion
 							 */
               getMotionX(): number;
 							/**
 							 * Gets the player's y motion.
 							 *  This is the amount the player will move in the y direction next tick.
-							 *
+							 * 
 							 *  @return the player's y motion
 							 */
               getMotionY(): number;
 							/**
 							 * Gets the player's z motion.
 							 *  This is the amount the player will move in the z direction next tick.
-							 *
+							 * 
 							 *  @return the player's z motion
 							 */
               getMotionZ(): number;
 							/**
 							 * Gets the player's camera pitch.
-							 *
+							 * 
 							 *  @return the player's camera pitch
 							 */
               getPitch(): number;
 							/**
 							 * Gets the player's camera yaw.
-							 *
+							 * 
 							 *  @return the player's camera yaw
 							 */
               getYaw(): number;
 							/**
 							 * Gets the player's username.
-							 *
+							 * 
 							 *  @return the player's username
 							 */
               getName(): string;
 							/**
 							 * Gets the Java UUID object of the player.
 							 *  Use of [UUID.toString] in conjunction is recommended.
-							 *
+							 * 
 							 *  @return the player's uuid
 							 */
               getUUID(): java.util.UUID;
               getHP(): number;
 							/**
 							 * Gets the player's air level.
-							 *
+							 * 
 							 *  The returned value will be an integer. If the player is not taking damage, it
 							 *  will be between 300 (not in water) and 0. If the player is taking damage, it
 							 *  will be between -20 and 0, getting reset to 0 every time the player takes damage.
-							 *
+							 * 
 							 *  @return the player's air level
 							 */
               getAirLevel(): number;
@@ -50583,7 +50583,7 @@ declare global {
               isSprinting(): boolean;
 							/**
 							 * Checks if player can be pushed by water.
-							 *
+							 * 
 							 *  @return true if the player is flying, false otherwise
 							 */
               isFlying(): boolean;
@@ -50591,14 +50591,14 @@ declare global {
 							/**
 							 * Gets the direction the player is facing.
 							 *  Example: "South West"
-							 *
+							 * 
 							 *  @return The direction the player is facing, one of the four cardinal directions
 							 */
               facing(): string;
 							/**
 							 * Gets the current active potion effects. Returns an empty list
 							 *  if the player has no active potion effects.
-							 *
+							 * 
 							 *  @return a list of the active [PotionEffect]s
 							 */
               getActivePotionEffects(): Array<com.chattriggers.ctjs.api.world.PotionEffect>;
@@ -50606,39 +50606,39 @@ declare global {
 							 * Gets the current object that the player is looking at,
 							 *  whether that be a block or an entity. Returns null when not looking
 							 *  at anything.
-							 *
+							 * 
 							 *  @return the [Block] or [Entity] being looked at, or null if air
 							 */
               lookingAt(): any | null | undefined;
 							/**
 							 * Gets the current item in the player's hand.
-							 *
+							 * 
 							 *  @param hand the hand of the item
 							 *  @return the current held [Item]
 							 */
               getHeldItem(): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
 							/**
 							 * Gets the current item in the player's hand.
-							 *
+							 * 
 							 *  @param hand the hand of the item
 							 *  @return the current held [Item]
 							 */
               getHeldItem(hand: net.minecraft.world.InteractionHand): com.chattriggers.ctjs.api.inventory.Item | null | undefined;
 							/**
 							 * Sets the current held item based on the provided index.
-							 *
+							 * 
 							 *  @param index the new held item index
 							 */
               setHeldItemIndex(index: number): void;
 							/**
 							 * Gets the current index of the held item.
-							 *
+							 * 
 							 *  @return the current index
 							 */
               getHeldItemIndex(): number;
 							/**
 							 * Gets the inventory of the player, i.e. the inventory accessed by 'e'.
-							 *
+							 * 
 							 *  @return the player's inventory
 							 */
               getInventory(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
@@ -50650,27 +50650,27 @@ declare global {
               getDisplayName(): com.chattriggers.ctjs.api.message.TextComponent;
 							/**
 							 * Sets the name for this player shown in tab list
-							 *
+							 * 
 							 *  @param textComponent the new name to display
 							 */
               setTabDisplayName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
 							/**
 							 * Sets the name for this player shown above their head,
 							 *  in their name tag
-							 *
+							 * 
 							 *  @param textComponent the new name to display
 							 */
               setNametagName(textComponent: com.chattriggers.ctjs.api.message.TextComponent): void;
 							/**
 							 * Gets the container the user currently has open, i.e. a chest.
-							 *
+							 * 
 							 *  @return the currently opened container
 							 */
               getContainer(): com.chattriggers.ctjs.api.inventory.Inventory | null | undefined;
 							/**
 							 * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]
 							 *  minus `player`.
-							 *
+							 * 
 							 *  @see Renderer.drawPlayer
 							 */
               draw(obj: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.client.Player;
@@ -50679,7 +50679,7 @@ declare global {
             const Player$ArmorWrapper: {
               new(): com.chattriggers.ctjs.api.client.Player$ArmorWrapper;
             }
-            interface Player$ArmorWrapper {
+            interface Player$ArmorWrapper { 
 							/**
 							 * @return the [Item] in the player's helmet slot or null if the slot is empty
 							 */
@@ -50702,29 +50702,29 @@ declare global {
               AttenuationType: typeof com.chattriggers.ctjs.api.client.Sound$AttenuationType;
               new(config: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.client.Sound;
             }
-            interface Sound {
+            interface Sound { 
               destroy(): void;
 							/**
 							 * Gets the category of this sound, making it respect the Player's sound volume sliders.
-							 *
+							 * 
 							 *  @return the category
 							 */
               getCategory(): com.chattriggers.ctjs.api.client.Sound$Category;
 							/**
 							 * Sets the category of this sound, making it respect the Player's sound volume sliders.
-							 *
+							 * 
 							 *  @param category the category
 							 */
               setCategory(category: com.chattriggers.ctjs.api.client.Sound$Category): com.chattriggers.ctjs.api.client.Sound;
 							/**
 							 * Gets this sound's volume.
-							 *
+							 * 
 							 *  @return A float value (0.0f - 1.0f).
 							 */
               getVolume(): number;
 							/**
 							 * Sets this sound's volume.
-							 *
+							 * 
 							 *  @param volume A float value (0.0f - 1.0f).
 							 */
               setVolume(volume: number): com.chattriggers.ctjs.api.client.Sound;
@@ -50738,25 +50738,25 @@ declare global {
               setPosition(x: number, y: number, z: number): com.chattriggers.ctjs.api.client.Sound;
 							/**
 							 * Gets this sound's pitch.
-							 *
+							 * 
 							 *  @return A float value (0.5f - 2.0f).
 							 */
               getPitch(): number;
 							/**
 							 * Sets this sound's pitch.
-							 *
+							 * 
 							 *  @param pitch A float value (0.5f - 2.0f).
 							 */
               setPitch(pitch: number): com.chattriggers.ctjs.api.client.Sound;
 							/**
 							 * Gets the attenuation type (fade out over space) of the sound
-							 *
+							 * 
 							 *  @return The type of Attenuation
 							 */
               getAttenuationType(): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
 							/**
 							 * Sets the attenuation type (fade out over space) of the sound
-							 *
+							 * 
 							 *  @param attenuationType The type of Attenuation
 							 */
               setAttenuationType(attenuationType: com.chattriggers.ctjs.api.client.Sound$AttenuationType): com.chattriggers.ctjs.api.client.Sound;
@@ -50820,14 +50820,14 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.client.Sound$Category>;
               valueOf(value: string): com.chattriggers.ctjs.api.client.Sound$Category;
             }
-            interface Sound$Category extends kotlin.Enum<com.chattriggers.ctjs.api.client.Sound$Category>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.sounds.SoundSource> {
+            interface Sound$Category extends kotlin.Enum<com.chattriggers.ctjs.api.client.Sound$Category>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.sounds.SoundSource> { 
             }
             const Sound$Category$Companion: {
               fromMC(mcValue: net.minecraft.sounds.SoundSource): com.chattriggers.ctjs.api.client.Sound$Category;
               from(value: any): com.chattriggers.ctjs.api.client.Sound$Category;
               new(): unknown;
             }
-            interface Sound$Category$Companion {
+            interface Sound$Category$Companion { 
               fromMC(mcValue: net.minecraft.sounds.SoundSource): com.chattriggers.ctjs.api.client.Sound$Category;
               from(value: any): com.chattriggers.ctjs.api.client.Sound$Category;
               new(): unknown;
@@ -50839,14 +50839,14 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.client.Sound$AttenuationType>;
               valueOf(value: string): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
             }
-            interface Sound$AttenuationType extends kotlin.Enum<com.chattriggers.ctjs.api.client.Sound$AttenuationType>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.resources.sounds.SoundInstance$Attenuation> {
+            interface Sound$AttenuationType extends kotlin.Enum<com.chattriggers.ctjs.api.client.Sound$AttenuationType>, com.chattriggers.ctjs.api.CTWrapper<net.minecraft.client.resources.sounds.SoundInstance$Attenuation> { 
             }
             const Sound$AttenuationType$Companion: {
               fromMC(mcValue: net.minecraft.client.resources.sounds.SoundInstance$Attenuation): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
               from(value: any): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
               new(): unknown;
             }
-            interface Sound$AttenuationType$Companion {
+            interface Sound$AttenuationType$Companion { 
               fromMC(mcValue: net.minecraft.client.resources.sounds.SoundInstance$Attenuation): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
               from(value: any): com.chattriggers.ctjs.api.client.Sound$AttenuationType;
               new(): unknown;
@@ -50857,7 +50857,7 @@ declare global {
               new(name: string, resourcePath: string): com.chattriggers.ctjs.api.render.Font;
               new(name: string, inputStream: java.io.InputStream): com.chattriggers.ctjs.api.render.Font;
             }
-            interface Font {
+            interface Font { 
               getName(): string;
               buffer(): java.nio.ByteBuffer;
             }
@@ -50867,18 +50867,18 @@ declare global {
               new(): com.chattriggers.ctjs.api.render.Display;
               new(config: org.mozilla.javascript.NativeObject | null | undefined): com.chattriggers.ctjs.api.render.Display;
             }
-            interface Display {
+            interface Display { 
               getTextColor(): number;
 							/**
 							 * Sets the color of the texts
-							 *
+							 * 
 							 *  Overrides the color of the individual texts
 							 */
               setTextColor(textColor: number): com.chattriggers.ctjs.api.render.Display;
               getAlign(): com.chattriggers.ctjs.api.render.Text$Align;
 							/**
 							 * Set the alignment of the texts in the display
-							 *
+							 * 
 							 *  Overrides alignment of the individual texts
 							 */
               setAlign(align: any): com.chattriggers.ctjs.api.render.Display;
@@ -50914,7 +50914,7 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.render.Text$Align>;
               valueOf(value: string): com.chattriggers.ctjs.api.render.Text$Align;
             }
-            interface Text$Align extends kotlin.Enum<com.chattriggers.ctjs.api.render.Text$Align> {
+            interface Text$Align extends kotlin.Enum<com.chattriggers.ctjs.api.render.Text$Align> { 
             }
             const Display$Order: {
               REVERSED: com.chattriggers.ctjs.api.render.Display$Order;
@@ -50923,7 +50923,7 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.render.Display$Order>;
               valueOf(value: string): com.chattriggers.ctjs.api.render.Display$Order;
             }
-            interface Display$Order extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Order> {
+            interface Display$Order extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Order> { 
             }
             const Display$Background: {
               NONE: com.chattriggers.ctjs.api.render.Display$Background;
@@ -50933,7 +50933,7 @@ declare global {
               values(): Array<com.chattriggers.ctjs.api.render.Display$Background>;
               valueOf(value: string): com.chattriggers.ctjs.api.render.Display$Background;
             }
-            interface Display$Background extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Background> {
+            interface Display$Background extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Background> { 
             }
             const Text: {
               Align: typeof com.chattriggers.ctjs.api.render.Text$Align;
@@ -50942,7 +50942,7 @@ declare global {
               new(string: string, x: number, y: number): com.chattriggers.ctjs.api.render.Text;
               new(string: string, config: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.render.Text;
             }
-            interface Text {
+            interface Text { 
               getString(): string;
               setString(string: string): com.chattriggers.ctjs.api.render.Text;
               getColor(): number;
@@ -50956,7 +50956,7 @@ declare global {
               getBackground(): boolean;
 							/**
 							 * Set the background
-							 *
+							 * 
 							 *  true: Background is enabled
 							 *  false: Background is disabled
 							 */
@@ -50970,7 +50970,7 @@ declare global {
 							/**
 							 * Gets the width of the text
 							 *  This is automatically updated when the text is drawn.
-							 *
+							 * 
 							 *  @return the width of the text
 							 */
               getWidth(): number;
@@ -50981,7 +50981,7 @@ declare global {
               setScale(scale: number): com.chattriggers.ctjs.api.render.Text;
 							/**
 							 * Sets the maximum width of the text, splitting it into multiple lines if necessary.
-							 *
+							 * 
 							 *  @param maxWidth the maximum width of the text
 							 *  @return the Text object for method chaining
 							 */
@@ -50997,7 +50997,7 @@ declare global {
               currentContext: net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined;
               new(): com.chattriggers.ctjs.api.render.DrawContextHolder;
             }
-            interface DrawContextHolder {
+            interface DrawContextHolder { 
               currentContext: net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined;
               new(): com.chattriggers.ctjs.api.render.DrawContextHolder;
               withContext<T>(context: net.minecraft.client.gui.GuiGraphicsExtractor, block: kotlin.Function0<T>): T;
@@ -51012,7 +51012,7 @@ declare global {
 							 */
               new(): com.chattriggers.ctjs.api.render.RenderPipelines;
             }
-            interface RenderPipelines {
+            interface RenderPipelines { 
               LINE_LIST: com.mojang.blaze3d.pipeline.RenderPipeline;
               TRIANGLE_STRIP: com.mojang.blaze3d.pipeline.RenderPipeline;
               LINE_LIST_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -51029,7 +51029,7 @@ declare global {
               TRIANGLE_STRIP_ESP: net.minecraft.client.renderer.rendertype.RenderType;
               new(): com.chattriggers.ctjs.api.render.RenderLayers;
             }
-            interface RenderLayers {
+            interface RenderLayers { 
               LINE_LIST: net.minecraft.client.renderer.rendertype.RenderType;
               LINE_LIST_ESP: net.minecraft.client.renderer.rendertype.RenderType;
               TRIANGLE_STRIP: net.minecraft.client.renderer.rendertype.RenderType;
@@ -51039,7 +51039,7 @@ declare global {
             const Rectangle: {
               new(color: number, x: number, y: number, width: number, height: number): com.chattriggers.ctjs.api.render.Rectangle;
             }
-            interface Rectangle {
+            interface Rectangle { 
               getColor(): number;
               setColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
               getX(): number;
@@ -51131,7 +51131,7 @@ declare global {
               drawImage(image: com.chattriggers.ctjs.api.render.Image, x: number, y: number, width: number, height: number): void;
 							/**
 							 * Draws a player entity to the screen, similar to the one displayed in the inventory screen.
-							 *
+							 * 
 							 *  Takes a parameter with the following options:
 							 *  - player: The player entity to draw. Can be a [PlayerMP] or [AbstractClientPlayerEntity].
 							 *            Defaults to Player.toMC()
@@ -51149,13 +51149,13 @@ declare global {
 							 *  - showElytra: Whether the player's Elytra should be rendered
 							 *  - showParrot: Whether a perched parrot should be rendered
 							 *  - showBeeStinger: Whether any stuck bee stingers should be rendered
-							 *
+							 * 
 							 *  @param obj An options bag
 							 */
               drawPlayer(obj: org.mozilla.javascript.NativeObject): void;
               new(): com.chattriggers.ctjs.api.render.Renderer;
             }
-            interface Renderer extends com.chattriggers.ctjs.api.render.GuiRendererBackend {
+            interface Renderer extends com.chattriggers.ctjs.api.render.GuiRendererBackend { 
               screen: com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
               getPartialTicks(): number;
               BLACK: number;
@@ -51215,7 +51215,7 @@ declare global {
               drawImage(image: com.chattriggers.ctjs.api.render.Image, x: number, y: number, width: number, height: number): void;
 							/**
 							 * Draws a player entity to the screen, similar to the one displayed in the inventory screen.
-							 *
+							 * 
 							 *  Takes a parameter with the following options:
 							 *  - player: The player entity to draw. Can be a [PlayerMP] or [AbstractClientPlayerEntity].
 							 *            Defaults to Player.toMC()
@@ -51233,7 +51233,7 @@ declare global {
 							 *  - showElytra: Whether the player's Elytra should be rendered
 							 *  - showParrot: Whether a perched parrot should be rendered
 							 *  - showBeeStinger: Whether any stuck bee stingers should be rendered
-							 *
+							 * 
 							 *  @param obj An options bag
 							 */
               drawPlayer(obj: org.mozilla.javascript.NativeObject): void;
@@ -51249,7 +51249,7 @@ declare global {
 							 */
               new(): com.chattriggers.ctjs.api.render.GuiRendererBackend;
             }
-            interface GuiRendererBackend {
+            interface GuiRendererBackend { 
               registerV5Render(runnable: java.lang.Runnable): void;
               unregisterV5Render(runnable: java.lang.Runnable): void;
               registerV5PreRender(runnable: java.lang.Runnable): void;
@@ -51295,7 +51295,7 @@ declare global {
               drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number): void;
               drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
               loadGif(path: string): com.chattriggers.ctjs.api.render.GuiRendererBackend$GifData | null | undefined;
-              unloadGif(path: string): void;
+              unloadGif(path: string): void | null | undefined;
               drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number): void;
               drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number): void;
               drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number, alpha: number): void;
@@ -51306,7 +51306,7 @@ declare global {
             const GuiRendererBackend$GifData: {
               new(width: number, height: number, frameCount: number, delays: Array<number>): com.chattriggers.ctjs.api.render.GuiRendererBackend$GifData;
             }
-            interface GuiRendererBackend$GifData {
+            interface GuiRendererBackend$GifData { 
               getWidth(): number;
               getHeight(): number;
               getFrameCount(): number;
@@ -51320,7 +51320,7 @@ declare global {
             const Renderer$ScreenWrapper: {
               new(): com.chattriggers.ctjs.api.render.Renderer$ScreenWrapper;
             }
-            interface Renderer$ScreenWrapper {
+            interface Renderer$ScreenWrapper { 
               getWidth(): number;
               getHeight(): number;
               getScale(): number;
@@ -51328,7 +51328,7 @@ declare global {
             const Image: {
               new(image: java.awt.image.BufferedImage | null | undefined): com.chattriggers.ctjs.api.render.Image;
             }
-            interface Image {
+            interface Image { 
               getImage(): java.awt.image.BufferedImage | null | undefined;
               setImage(value: java.awt.image.BufferedImage | null | undefined): void;
               getTextureWidth(): number;
@@ -51371,7 +51371,7 @@ declare global {
               fromUrl(url: string, cachedImageName: string | null | undefined): com.chattriggers.ctjs.api.render.Image;
               new(): com.chattriggers.ctjs.api.render.Image$Companion;
             }
-            interface Image$Companion {
+            interface Image$Companion { 
 							/**
 							 * Create an image object from a java.io.File object. Throws an exception
 							 *  if the file cannot be found.
@@ -51402,24 +51402,24 @@ declare global {
             const Book: {
               new(): com.chattriggers.ctjs.api.render.Book;
             }
-            interface Book {
+            interface Book { 
 							/**
 							 * Add a page to the book.
-							 *
+							 * 
 							 *  @param contents the entire message for what the page should be
 							 *  @return the current book to allow method chaining
 							 */
               addPage(contents: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Book;
 							/**
 							 * Overloaded method for adding a simple page to the book.
-							 *
+							 * 
 							 *  @param message a simple string to make the page
 							 *  @return the current book to allow method chaining
 							 */
               addPage(message: string): com.chattriggers.ctjs.api.render.Book;
 							/**
 							 * Inserts a page at the specified index of the book
-							 *
+							 * 
 							 *  @param pageIndex the index of the page to set
 							 *  @param message the message to set the page to
 							 *  @return the current book to allow method chaining
@@ -51428,7 +51428,7 @@ declare global {
               insertPage(pageIndex: number, message: string): com.chattriggers.ctjs.api.render.Book;
 							/**
 							 * Sets a page of the book to the specified message.
-							 *
+							 * 
 							 *  @param pageIndex the index of the page to set
 							 *  @param message the message to set the page to
 							 *  @return the current book to allow method chaining
@@ -51444,7 +51444,7 @@ declare global {
               new(): com.chattriggers.ctjs.api.render.Gui;
               new(title: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Gui;
             }
-            interface Gui extends gg.essential.universal.UScreen {
+            interface Gui extends gg.essential.universal.UScreen { 
               open(): void;
               isOpen(): boolean;
 							/**
@@ -51454,7 +51454,7 @@ declare global {
 							 *  - int mouseX
 							 *  - int mouseY
 							 *  - float partialTicks
-							 *
+							 * 
 							 *  @param method the method to run
 							 *  @return the trigger
 							 */
@@ -51466,7 +51466,7 @@ declare global {
 							 *  - int mouseX
 							 *  - int mouseY
 							 *  - int button
-							 *
+							 * 
 							 *  @param method the method to run
 							 *  @return the trigger
 							 */
@@ -51486,7 +51486,7 @@ declare global {
 							 *  Arguments passed through to method:
 							 *  - char typed character
 							 *  - int key code
-							 *
+							 * 
 							 *  @param method the method to run
 							 *  @return the trigger
 							 */
@@ -51499,7 +51499,7 @@ declare global {
 							 *  - int mouseY
 							 *  - int clickedMouseButton
 							 *  - long timeSinceLastClick
-							 *
+							 * 
 							 *  @param method the method to run
 							 *  @return the trigger
 							 */
@@ -51511,7 +51511,7 @@ declare global {
 							 *  - int mouseX
 							 *  - int mouseY
 							 *  - int button
-							 *
+							 * 
 							 *  @param method the method to run
 							 *  @return the trigger
 							 */
@@ -51521,7 +51521,7 @@ declare global {
 							 *  Registered method runs when an action is performed (clicking a button)
 							 *  Arguments passed through to method:
 							 *  - the button that is clicked
-							 *
+							 * 
 							 *  @param method the method to run
 							 *  @return the trigger
 							 */
@@ -51530,7 +51530,7 @@ declare global {
 							 * Registers a method to be run when the gui is opened.
 							 *  Arguments passed through to method:
 							 *  - the gui that is opened
-							 *
+							 * 
 							 *  @param method the method to run
 							 *  @return the trigger
 							 */
@@ -51539,7 +51539,7 @@ declare global {
 							 * Registers a method to be run when the gui is closed.
 							 *  Arguments passed through to method:
 							 *  - the gui that is closed
-							 *
+							 * 
 							 *  @param method the method to run
 							 *  @return the trigger
 							 */
@@ -51556,14 +51556,14 @@ declare global {
               setDoesPauseGame(doesPauseGame: boolean): com.chattriggers.ctjs.api.render.Gui;
 							/**
 							 * Add a base Minecraft button to the gui
-							 *
+							 * 
 							 *  @param button the button to add
 							 *  @return the button ID for use in actionPerformed
 							 */
               addButton(button: net.minecraft.client.gui.components.Button): number;
 							/**
 							 * Add a base Minecraft button to the gui
-							 *
+							 * 
 							 *  @param x the x position of the button
 							 *  @param y the y position of the button
 							 *  @param width the width of the button
@@ -51574,7 +51574,7 @@ declare global {
               addButton(x: number, y: number, buttonText: com.chattriggers.ctjs.api.message.TextComponent): number;
 							/**
 							 * Add a base Minecraft button to the gui
-							 *
+							 * 
 							 *  @param x the x position of the button
 							 *  @param y the y position of the button
 							 *  @param width the width of the button
@@ -51585,7 +51585,7 @@ declare global {
               addButton(x: number, y: number, width: number, buttonText: com.chattriggers.ctjs.api.message.TextComponent): number;
 							/**
 							 * Add a base Minecraft button to the gui
-							 *
+							 * 
 							 *  @param x the x position of the button
 							 *  @param y the y position of the button
 							 *  @param width the width of the button
@@ -51597,7 +51597,7 @@ declare global {
               addButton(x: number, y: number, width: number, height: number, buttonText: string): number;
 							/**
 							 * Removes a button from the gui with the given id
-							 *
+							 * 
 							 *  @param buttonId the id of the button to remove
 							 *  @return the Gui for method chaining
 							 */
@@ -51606,7 +51606,7 @@ declare global {
               getButtonVisibility(buttonId: number): boolean;
 							/**
 							 * Sets the visibility of a button
-							 *
+							 * 
 							 *  @param buttonId the id of the button to change
 							 *  @param visible the new visibility of the button
 							 *  @return the Gui for method chaining
@@ -51615,7 +51615,7 @@ declare global {
               getButtonEnabled(buttonId: number): boolean;
 							/**
 							 * Sets the enabled state of a button
-							 *
+							 * 
 							 *  @param buttonId the id of the button to set
 							 *  @param enabled the enabled state of the button
 							 *  @return the Gui for method chaining
@@ -51624,7 +51624,7 @@ declare global {
               getButtonWidth(buttonId: number): number;
 							/**
 							 * Sets the button's width. Button textures break if the width is greater than 200
-							 *
+							 * 
 							 *  @param buttonId id of the button
 							 *  @param width the new width
 							 *  @return the Gui for method chaining
@@ -51633,7 +51633,7 @@ declare global {
               getButtonHeight(buttonId: number): number;
 							/**
 							 * Sets the button's height. Button textures break if the height is not 20
-							 *
+							 * 
 							 *  @param buttonId id of the button
 							 *  @param height the new height
 							 *  @return the Gui for method chaining
@@ -51642,7 +51642,7 @@ declare global {
               getButtonX(buttonId: number): number;
 							/**
 							 * Sets the button's x position
-							 *
+							 * 
 							 *  @param buttonId id of the button
 							 *  @param x the new x position
 							 *  @return the Gui for method chaining
@@ -51651,7 +51651,7 @@ declare global {
               getButtonY(buttonId: number): number;
 							/**
 							 * Sets the button's y position
-							 *
+							 * 
 							 *  @param buttonId id of the button
 							 *  @param y the new y position
 							 *  @return the Gui for method chaining
@@ -51659,7 +51659,7 @@ declare global {
               setButtonY(buttonId: number, y: number): com.chattriggers.ctjs.api.render.Gui;
 							/**
 							 * Sets the button's position
-							 *
+							 * 
 							 *  @param buttonId id of the button
 							 *  @param x the new x position
 							 *  @param y the new y position
@@ -51668,14 +51668,14 @@ declare global {
               setButtonLoc(buttonId: number, x: number, y: number): com.chattriggers.ctjs.api.render.Gui;
 							/**
 							 * Sets the button's text
-							 *
+							 * 
 							 *  @param buttonId id of the button
 							 *  @param text the new text
 							 */
               setButtonText(buttonId: number, text: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Gui;
 							/**
 							 * Sets the button's text
-							 *
+							 * 
 							 *  @param buttonId id of the button
 							 *  @param text the new text
 							 */
@@ -51683,14 +51683,14 @@ declare global {
 							/**
 							 * Sets the gui's tooltip, this will be visible on top of the cursor
 							 *  when the gui is open.
-							 *
+							 * 
 							 *  @param text the contents of the tooltip
 							 */
               setTooltip(text: com.chattriggers.ctjs.api.message.TextComponent): com.chattriggers.ctjs.api.render.Gui;
 							/**
 							 * Sets the gui's tooltip, this will be visible on top of the cursor
 							 *  when the gui is open.
-							 *
+							 * 
 							 *  @param text the contents of the tooltip
 							 */
               setTooltip(text: string): com.chattriggers.ctjs.api.render.Gui;
@@ -51698,7 +51698,7 @@ declare global {
             const Toast: {
               new(config: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.render.Toast;
             }
-            interface Toast extends net.minecraft.client.gui.components.toasts.Toast {
+            interface Toast extends net.minecraft.client.gui.components.toasts.Toast { 
               getTitle(): any | null | undefined;
               setTitle(value: any | null | undefined): void;
               getDescription(): any | null | undefined;
@@ -51750,7 +51750,7 @@ declare global {
               drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean, translate: boolean): void;
               new(): com.chattriggers.ctjs.api.render.RenderUtils;
             }
-            interface RenderUtils {
+            interface RenderUtils { 
               drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
               drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.RenderUtils$Color, depth: boolean): void;
               drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.RenderUtils$Color): void;
@@ -51791,7 +51791,7 @@ declare global {
             const RenderUtils$Color: {
               new(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.RenderUtils$Color;
             }
-            interface RenderUtils$Color {
+            interface RenderUtils$Color { 
               getR(): number;
               getG(): number;
               getB(): number;
@@ -51811,7 +51811,7 @@ declare global {
           const Config$ConsoleSettings: {
             new(clearConsoleOnLoad: boolean, openConsoleOnError: boolean, consoleFiraCodeFont: boolean, consoleFontSize: number, customTheme: boolean, consoleTheme: number, consoleTextColor: java.awt.Color, consoleBackgroundColor: java.awt.Color, consoleErrorColor: java.awt.Color, consoleWarningColor: java.awt.Color): com.chattriggers.ctjs.api.Config$ConsoleSettings;
           }
-          interface Config$ConsoleSettings {
+          interface Config$ConsoleSettings { 
             getClearConsoleOnLoad(): boolean;
             setClearConsoleOnLoad(value: boolean): void;
             getOpenConsoleOnError(): boolean;
@@ -51847,11 +51847,11 @@ declare global {
           const Config$ConsoleSettings$Companion: {
             new(): unknown;
           }
-          interface Config$ConsoleSettings$Companion {
+          interface Config$ConsoleSettings$Companion { 
             new(): unknown;
             make(): com.chattriggers.ctjs.api.Config$ConsoleSettings;
           }
-          interface CTWrapper<MCClass> {
+          interface CTWrapper<MCClass> { 
             getMcValue(): MCClass;
             toMC(): MCClass;
           }
@@ -51891,7 +51891,7 @@ declare global {
             markWelcomeShown(): void;
             new(): com.chattriggers.ctjs.api.Config;
           }
-          interface Config extends gg.essential.vigilance.Vigilant {
+          interface Config extends gg.essential.vigilance.Vigilant { 
             getModuleImportHelp(): boolean;
             setModuleImportHelp(value: boolean): void;
             getModuleChangelog(): boolean;
@@ -51933,7 +51933,7 @@ declare global {
             shutDownHard(): java.lang.Void;
             new(): com.chattriggers.ctjs.api.V5Auth;
           }
-          interface V5Auth {
+          interface V5Auth { 
             getJwtToken(): string | null | undefined;
             getFreshJwtToken(): string | null | undefined;
             setJwtToken(token: string | null | undefined): void;
@@ -51961,7 +51961,7 @@ declare global {
 						 */
             new(): com.chattriggers.ctjs.api.Mappings;
           }
-          interface Mappings {
+          interface Mappings { 
 						/**
 						 * Gets a classes unmapped class name, or throws an error if it is not mapped
 						 */
@@ -51985,20 +51985,20 @@ declare global {
         }
         namespace internal {
           namespace launch {
-            interface IInjector {
+            interface IInjector { 
             }
           }
           namespace commands {
             const CommandCollection: {
               new(): com.chattriggers.ctjs.internal.commands.CommandCollection;
             }
-            interface CommandCollection {
+            interface CommandCollection { 
               register(command: com.chattriggers.ctjs.internal.commands.Command): void;
               unregister(command: com.chattriggers.ctjs.internal.commands.Command): void;
               unregisterAll(): void;
               onExecute<S, T>(block: kotlin.Function1<com.mojang.brigadier.context.CommandContext<S>, void>): T;
             }
-            interface Command {
+            interface Command { 
               getOverrideExisting(): boolean;
               getName(): string;
               registerImpl(dispatcher: com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.SharedSuggestionProvider>): void;
@@ -58155,10 +58155,10 @@ declare global {
                 new(p0: string, p1: boolean): org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
                 getCallInfoClassName(p0: org.objectweb.asm.Type): string;
               }
-              interface CallbackInfo extends org.spongepowered.asm.mixin.injection.callback.Cancellable {
+              interface CallbackInfo extends org.spongepowered.asm.mixin.injection.callback.Cancellable { 
                 getId(): string;
               }
-              interface Cancellable {
+              interface Cancellable { 
                 isCancellable(): boolean;
                 isCancelled(): boolean;
                 cancel(): void;
@@ -58211,7 +58211,7 @@ declare global {
           getArgumentCount(p0: string): number;
           getArgumentsAndReturnSizes(p0: string): number;
         }
-        interface Type {
+        interface Type { 
           getElementType(): org.objectweb.asm.Type;
           getArgumentTypes(): Array<org.objectweb.asm.Type>;
           getReturnType(): org.objectweb.asm.Type;
@@ -59345,7 +59345,7 @@ declare global {
             nbytes(p0: number): number;
             nflags(p0: number): number;
           }
-          interface FFICIF extends org.lwjgl.system.Struct<org.lwjgl.system.libffi.FFICIF>, org.lwjgl.system.NativeResource {
+          interface FFICIF extends org.lwjgl.system.Struct<org.lwjgl.system.libffi.FFICIF>, org.lwjgl.system.NativeResource { 
             abi(): number;
             nargs(): number;
             arg_types(): org.lwjgl.PointerBuffer;
@@ -59385,7 +59385,7 @@ declare global {
             nelements(p0: number, p1: number): org.lwjgl.PointerBuffer | null | undefined;
             nelements(p0: number, p1: org.lwjgl.PointerBuffer | null | undefined): void;
           }
-          interface FFIType extends org.lwjgl.system.Struct<org.lwjgl.system.libffi.FFIType>, org.lwjgl.system.NativeResource {
+          interface FFIType extends org.lwjgl.system.Struct<org.lwjgl.system.libffi.FFIType>, org.lwjgl.system.NativeResource { 
             size(): number;
             size(p0: number): org.lwjgl.system.libffi.FFIType;
             alignment(): number;
@@ -59401,7 +59401,7 @@ declare global {
             new(p0: java.nio.ByteBuffer): org.lwjgl.system.libffi.FFIType$Buffer;
             new(p0: number, p1: number): org.lwjgl.system.libffi.FFIType$Buffer;
           }
-          interface FFIType$Buffer extends org.lwjgl.system.StructBuffer<org.lwjgl.system.libffi.FFIType, org.lwjgl.system.libffi.FFIType$Buffer>, org.lwjgl.system.NativeResource {
+          interface FFIType$Buffer extends org.lwjgl.system.StructBuffer<org.lwjgl.system.libffi.FFIType, org.lwjgl.system.libffi.FFIType$Buffer>, org.lwjgl.system.NativeResource { 
             size(): number;
             size(p0: number): org.lwjgl.system.libffi.FFIType$Buffer;
             alignment(): number;
@@ -59415,7 +59415,7 @@ declare global {
             new(p0: java.nio.ByteBuffer): org.lwjgl.system.libffi.FFICIF$Buffer;
             new(p0: number, p1: number): org.lwjgl.system.libffi.FFICIF$Buffer;
           }
-          interface FFICIF$Buffer extends org.lwjgl.system.StructBuffer<org.lwjgl.system.libffi.FFICIF, org.lwjgl.system.libffi.FFICIF$Buffer>, org.lwjgl.system.NativeResource {
+          interface FFICIF$Buffer extends org.lwjgl.system.StructBuffer<org.lwjgl.system.libffi.FFICIF, org.lwjgl.system.libffi.FFICIF$Buffer>, org.lwjgl.system.NativeResource { 
             abi(): number;
             nargs(): number;
             arg_types(): org.lwjgl.PointerBuffer;
@@ -59428,13 +59428,13 @@ declare global {
           validate(p0: number, p1: number, p2: number, p3: org.lwjgl.system.Struct$StructValidation): void;
           validate(p0: number, p1: number, p2: number, p3: org.lwjgl.system.Struct$StructValidation): void;
         }
-        interface Struct<SELF> extends org.lwjgl.system.Pointer$Default {
+        interface Struct<SELF> extends org.lwjgl.system.Pointer$Default { 
           sizeof(): number;
           clear(): void;
           free(): void;
           isNull(p0: number): boolean;
         }
-        interface Pointer$Default extends org.lwjgl.system.Pointer {
+        interface Pointer$Default extends org.lwjgl.system.Pointer { 
         }
         const Pointer: {
           Default: typeof org.lwjgl.system.Pointer$Default;
@@ -59445,10 +59445,10 @@ declare global {
           BITS32: boolean;
           BITS64: boolean;
         }
-        interface Pointer {
+        interface Pointer { 
           address(): number;
         }
-        interface StructBuffer<T, SELF> extends org.lwjgl.system.CustomBuffer<SELF>, kotlin.collections.MutableIterable<T> {
+        interface StructBuffer<T, SELF> extends org.lwjgl.system.CustomBuffer<SELF>, kotlin.collections.MutableIterable<T> { 
           get(): T;
           get(p0: T): SELF;
           get(p0: number): T;
@@ -59460,7 +59460,7 @@ declare global {
           stream(): java.util.stream.Stream<T>;
           parallelStream(): java.util.stream.Stream<T>;
         }
-        interface CustomBuffer<SELF> extends org.lwjgl.system.Pointer$Default {
+        interface CustomBuffer<SELF> extends org.lwjgl.system.Pointer$Default { 
           mark(): SELF;
           position(): number;
           position(p0: number): SELF;
@@ -59483,11 +59483,11 @@ declare global {
           put(p0: SELF): SELF;
           compact(): SELF;
         }
-        interface Struct$StructValidation {
+        interface Struct$StructValidation { 
           validate(p0: number): void;
           (p0: number): void;
         }
-        interface NativeResource extends java.lang.AutoCloseable {
+        interface NativeResource extends java.lang.AutoCloseable { 
           free(): void;
         }
         const Callback: {
@@ -59496,12 +59496,12 @@ declare global {
           get<T>(p0: number): T;
           getSafe<T>(p0: number): T;
         }
-        interface Callback extends org.lwjgl.system.Pointer, org.lwjgl.system.NativeResource {
+        interface Callback extends org.lwjgl.system.Pointer, org.lwjgl.system.NativeResource { 
         }
         const Callback$Descriptor: {
           new(p0: java.lang.invoke.MethodHandles$Lookup, p1: org.lwjgl.system.libffi.FFICIF): org.lwjgl.system.Callback$Descriptor;
         }
-        interface Callback$Descriptor {
+        interface Callback$Descriptor { 
         }
         const MemoryStack: {
           create(): org.lwjgl.system.MemoryStack;
@@ -59588,7 +59588,7 @@ declare global {
           stackUTF16Safe(p0: kotlin.CharSequence | null | undefined): java.nio.ByteBuffer | null | undefined;
           stackUTF16Safe(p0: kotlin.CharSequence | null | undefined, p1: boolean): java.nio.ByteBuffer | null | undefined;
         }
-        interface MemoryStack extends org.lwjgl.system.Pointer$Default, java.lang.AutoCloseable {
+        interface MemoryStack extends org.lwjgl.system.Pointer$Default, java.lang.AutoCloseable { 
           push(): org.lwjgl.system.MemoryStack;
           pop(): org.lwjgl.system.MemoryStack;
           getAddress(): number;
@@ -59698,7 +59698,7 @@ declare global {
           UTF16Safe(p0: kotlin.CharSequence | null | undefined, p1: boolean): java.nio.ByteBuffer | null | undefined;
           nUTF16Safe(p0: kotlin.CharSequence | null | undefined, p1: boolean): number;
         }
-        interface CallbackI extends org.lwjgl.system.Pointer {
+        interface CallbackI extends org.lwjgl.system.Pointer { 
           getDescriptor(): org.lwjgl.system.Callback$Descriptor;
           callback(p0: number, p1: number): void;
         }
