@@ -9,6 +9,8 @@ import com.chattriggers.ctjs.api.commands.DynamicCommands
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Image
 import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.skia.SkijaPIP
+import com.chattriggers.ctjs.api.render.skia.SkijaPrePIP
 import com.chattriggers.ctjs.api.triggers.TriggerType
 import com.chattriggers.ctjs.api.world.Scoreboard
 import com.chattriggers.ctjs.api.world.World
@@ -22,6 +24,7 @@ import kotlinx.serialization.json.Json
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
+import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.gui.screens.TitleScreen
 import java.io.File
@@ -31,6 +34,8 @@ import kotlin.concurrent.thread
 
 class CTJS : ClientModInitializer {
     override fun onInitializeClient() {
+        PictureInPictureRendererRegistry.register { SkijaPIP(it.bufferSource()) }
+        PictureInPictureRendererRegistry.register { SkijaPrePIP(it.bufferSource()) }
         Client.referenceSystemTime = System.nanoTime()
         Initializer.initializers.forEach(Initializer::init)
         Config.loadData()

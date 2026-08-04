@@ -1,7 +1,7 @@
 [versions]
 # Library versions
 minecraft = "26.1.2"
-lwjgl = "3.4.1"
+skija = "0.143.11"
 
 loader = "0.19.3"
 fabric-api = "0.153.0+26.1.2"
@@ -32,7 +32,8 @@ fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version.ref = 
 sponge-mixin = { module = "net.fabricmc:sponge-mixin", version.ref = "sponge-mixin" }
 mixinextras = { module = "io.github.llamalad7:mixinextras-fabric", version.ref = "mixinextras" }
 
-lwjgl-nanovg = { module = "org.lwjgl:lwjgl-nanovg", version.ref = "lwjgl" }
+skija-shared = { module = "io.github.humbleui:skija-shared", version.ref = "skija" }
+skija-types = { module = "io.github.humbleui:types", version = "0.1.1" }
 
 rhino = { module = "com.github.ChatTriggers:rhino", version.ref = "rhino" }
 koffee = { module = "com.github.ChatTriggers:koffee", version.ref = "koffee" }

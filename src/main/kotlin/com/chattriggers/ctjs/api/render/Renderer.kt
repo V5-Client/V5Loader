@@ -181,12 +181,14 @@ object Renderer : GuiRendererBackend() {
     @JvmStatic
     @JvmOverloads
     fun translate(x: Float, y: Float, z: Float = 0.0F) = apply {
+        if (translateSkija(x, y)) return@apply
         DrawContextHolder.currentContext?.pose()?.translate(x, y) ?: matrixStack.translate(x, y, z)
     }
 
     @JvmStatic
     @JvmOverloads
     fun scale(scaleX: Float, scaleY: Float = scaleX, scaleZ: Float = 1f) = apply {
+        if (scaleSkija(scaleX, scaleY)) return@apply
         DrawContextHolder.currentContext?.pose()?.scale(scaleX, scaleY) ?: matrixStack.scale(scaleX, scaleY, scaleZ)
     }
 
@@ -194,6 +196,7 @@ object Renderer : GuiRendererBackend() {
     @JvmOverloads
     fun rotate(angle: Float, x: Float = 0f, y: Float = 0f, z: Float = 1f) = apply {
         if (x == 0f && y == 0f && z != 0f) {
+            if (rotateSkija(angle * z)) return@apply
             DrawContextHolder.currentContext?.pose()?.rotate(Math.toRadians((angle * z).toDouble()).toFloat())
                 ?: matrixStack.rotate(angle, x, y, z)
         } else matrixStack.rotate(angle, x, y, z)

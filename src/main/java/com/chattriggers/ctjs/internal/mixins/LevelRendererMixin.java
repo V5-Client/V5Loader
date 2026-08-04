@@ -71,8 +71,11 @@ public abstract class LevelRendererMixin {
         ctjs$tickDelta = tickCounter.getGameTimeDeltaTicks();
     }
 
-    @Inject(method = "lambda$addMainPass$0", at = @At("RETURN"))
-    private void afterRender(GpuBufferSlice gpuBufferSlice, LevelRenderState worldRenderState, ProfilerFiller profiler, ChunkSectionsToRender chunkSectionsToRender, ResourceHandle handle, ResourceHandle handle2, ResourceHandle handle3, ResourceHandle handle4, ResourceHandle handle5, boolean bl, Matrix4fc matrix4f, CallbackInfo ci) {
+    @Inject(
+        method = "lambda$addMainPass$0",
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;finalizeGizmoCollection()V")
+    )
+    private void beforeGizmos(GpuBufferSlice gpuBufferSlice, LevelRenderState worldRenderState, ProfilerFiller profiler, ChunkSectionsToRender chunkSectionsToRender, ResourceHandle handle, ResourceHandle handle2, ResourceHandle handle3, ResourceHandle handle4, ResourceHandle handle5, boolean bl, Matrix4fc matrix4f, CallbackInfo ci) {
         WorldListener.INSTANCE.triggerRenderLast();
     }
 }

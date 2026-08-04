@@ -50,13 +50,8 @@ dependencies {
     implementation("meteordevelopment:discord-ipc:1.1")
     include("meteordevelopment:discord-ipc:1.1")
 
-    // CPU-only NanoSVG rasterization (no NanoVG renderer or GL backend)
-    implementation(libs.lwjgl.nanovg) { include(this) }
-    listOf("windows", "linux", "macos", "macos-arm64").forEach {
-        implementation(variantOf(libs.lwjgl.nanovg) { classifier("natives-$it") }) {
-            include(this)
-        }
-    }
+    implementation(libs.skija.shared) { include(this) }
+    implementation(libs.skija.types) { include(this) }
 
     // Mixin Extras
     implementation(libs.mixinextras) { include(this) }

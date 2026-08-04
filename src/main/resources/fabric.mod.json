@@ -16,6 +16,7 @@
     "environment": "client",
     "entrypoints": {
         "preLaunch": [
+            "com.chattriggers.ctjs.api.render.skia.SkijaBootstrap",
             {
                 "value": "com.v5.loader.V5PreLaunch",
                 "adapter": "kotlin"
