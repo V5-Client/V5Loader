@@ -9,8 +9,7 @@ inline bool Runtime::moveTraverse(const Int3& current, const int dx, const int d
 
   out.pos = {destX, current.y, destZ};
   out.cost = ActionCosts::SPRINT_ONE_BLOCK_TIME +
-    pathPenalty(destX, current.y, destZ) +
-    fluidPenalty(destX, current.y, destZ);
+    pathPenalty(destX, current.y, destZ);
   return true;
 }
 
@@ -26,8 +25,7 @@ inline bool Runtime::moveDiagonal(const Int3& current, const int dx, const int d
 
   out.pos = {destX, current.y, destZ};
   out.cost = ActionCosts::SPRINT_DIAGONAL_TIME +
-    pathPenalty(destX, current.y, destZ) +
-    fluidPenalty(destX, current.y, destZ);
+    pathPenalty(destX, current.y, destZ);
   return true;
 }
 
@@ -58,8 +56,7 @@ inline bool Runtime::moveAscend(const Int3& current, const int dx, const int dz,
   }
 
   out.cost = baseCost +
-    pathPenalty(destX, current.y + 1, destZ) +
-    fluidPenalty(destX, current.y + 1, destZ);
+    pathPenalty(destX, current.y + 1, destZ);
   return true;
 }
 
@@ -92,7 +89,7 @@ inline bool Runtime::moveDescend(const Int3& current, const int dx, const int dz
       totalCost += static_cast<double>(excess * excess) * 2.0;
     }
 
-    totalCost += pathPenalty(destX, destY, destZ) + fluidPenalty(destX, destY, destZ);
+    totalCost += pathPenalty(destX, destY, destZ);
 
     out.pos = {destX, destY, destZ};
     out.cost = totalCost;

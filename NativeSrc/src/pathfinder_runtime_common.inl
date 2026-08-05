@@ -12,7 +12,6 @@ inline Runtime::Runtime(const WorldSnapshot& world, const SearchParams& params)
     voxelCursor_(world),
     cache_(runtimeCache()) {
   cache_.begin(world);
-  avoidPenaltyCacheEnabled_ = params_.avoidZones.size() >= 3;
 
   flyMinY_ = world_.minY;
   flyMaxY_ = world_.maxY - 2;
@@ -36,28 +35,6 @@ inline double Runtime::heuristic(const int x, const int y, const int z) const {
 }
 
 inline double Runtime::transientAvoidPenalty(const int x, const int y, const int z) const {
-  if (params_.avoidZones.empty()) return 0.0;
-
-  if (!avoidPenaltyCacheEnabled_) {
-    double penalty = 0.0;
-    for (const auto& zone : params_.avoidZones) {
-      if (std::abs(y - zone.y) > zone.maxYDiff) continue;
-
-      const int dx = x - zone.x;
-      const int dz = z - zone.z;
-      const long long distSq = static_cast<long long>(dx) * dx + static_cast<long long>(dz) * dz;
-      if (distSq > zone.radiusSq) continue;
-
-      const double normalized = zone.radiusSq <= 1 ? 0.0 : static_cast<double>(distSq) / static_cast<double>(zone.radiusSq);
-      const double falloff = std::max(0.2, 1.0 - normalized);
-      penalty += zone.penalty * falloff;
-    }
-    return penalty;
-  }
-
-  auto& cached = cache_.avoidPenalties.at(x, y, z);
-  if (cached.generation == cache_.searchGeneration) return cached.value;
-
   double penalty = 0.0;
   for (const auto& zone : params_.avoidZones) {
     if (std::abs(y - zone.y) > zone.maxYDiff) continue;
@@ -71,7 +48,6 @@ inline double Runtime::transientAvoidPenalty(const int x, const int y, const int
     const double falloff = std::max(0.2, 1.0 - normalized);
     penalty += zone.penalty * falloff;
   }
-  cached = {cache_.searchGeneration, penalty};
   return penalty;
 }
 
@@ -107,6 +83,17 @@ inline uint16_t Runtime::flagsAt(const int x, const int y, const int z) const {
   return voxelCursor_.getFlags(x, y, z);
 }
 
+inline uint32_t Runtime::cacheGenerationAt(const int x, const int z) const {
+  const int chunkX = x >> 4;
+  const int chunkZ = z >> 4;
+  const uint32_t hash = static_cast<uint32_t>(chunkX) ^ (static_cast<uint32_t>(chunkZ) << 1);
+  auto& cursor = chunkGenerationCursors_[static_cast<size_t>(hash & 3u)];
+  if (cursor.chunkX != chunkX || cursor.chunkZ != chunkZ) {
+    cursor = {chunkX, chunkZ, world_.cacheGenerationForChunk(chunkX, chunkZ)};
+  }
+  return cursor.generation;
+}
+
 inline bool Runtime::isPassable(const int x, const int y, const int z) const {
   return isPassableFlags(flagsAt(x, y, z));
 }
@@ -118,7 +105,8 @@ inline bool Runtime::isPassableForFlying(const int x, const int y, const int z) 
 inline bool Runtime::isSafe(const int x, const int y, const int z) {
   constexpr uint8_t bit = 1u << 0;
   auto& cached = cache_.classifications.at(x, y, z);
-  if (cached.generation != cache_.worldGeneration) cached = {cache_.worldGeneration, {}};
+  const uint32_t generation = cacheGenerationAt(x, z);
+  if (cached.generation != generation) cached = {generation, {}};
   if ((cached.value.computed & bit) != 0) return (cached.value.values & bit) != 0;
 
   const bool safe = hasFlag(flagsAt(x, y - 1, z), VF_SOLID) &&
@@ -132,7 +120,8 @@ inline bool Runtime::isSafe(const int x, const int y, const int z) {
 inline bool Runtime::isFlyColumnClear(const int x, const int y, const int z) {
   constexpr uint8_t bit = 1u << 3;
   auto& cached = cache_.classifications.at(x, y, z);
-  if (cached.generation != cache_.worldGeneration) cached = {cache_.worldGeneration, {}};
+  const uint32_t generation = cacheGenerationAt(x, z);
+  if (cached.generation != generation) cached = {generation, {}};
   if ((cached.value.computed & bit) != 0) return (cached.value.values & bit) != 0;
 
   const uint16_t feet = flagsAt(x, y, z);
@@ -143,13 +132,6 @@ inline bool Runtime::isFlyColumnClear(const int x, const int y, const int z) {
   cached.value.computed |= bit;
   if (clear) cached.value.values |= bit;
   return clear;
-}
-
-inline double Runtime::fluidPenalty(const int x, const int y, const int z) const {
-  double penalty = 0.0;
-  if (hasFlag(flagsAt(x, y, z), VF_FLUID)) penalty += 20.0;
-  if (hasFlag(flagsAt(x, y + 1, z), VF_FLUID)) penalty += 20.0;
-  return penalty;
 }
 
 inline double Runtime::walkHeuristic(const int x, const int y, const int z) const {
@@ -223,7 +205,8 @@ inline bool Runtime::isStepDirection(const int x, const int y, const int z, cons
 inline bool Runtime::isEdge(const int x, const int y, const int z) {
   constexpr uint8_t bit = 1u << 1;
   auto& cached = cache_.classifications.at(x, y, z);
-  if (cached.generation != cache_.worldGeneration) cached = {cache_.worldGeneration, {}};
+  const uint32_t generation = cacheGenerationAt(x, z);
+  if (cached.generation != generation) cached = {generation, {}};
   if ((cached.value.computed & bit) != 0) return (cached.value.values & bit) != 0;
 
   const bool edge = !hasFlag(flagsAt(x, y, z), VF_SOLID) &&
@@ -237,7 +220,8 @@ inline bool Runtime::isEdge(const int x, const int y, const int z) {
 inline bool Runtime::isWall(const int x, const int y, const int z) {
   constexpr uint8_t bit = 1u << 2;
   auto& cached = cache_.classifications.at(x, y, z);
-  if (cached.generation != cache_.worldGeneration) cached = {cache_.worldGeneration, {}};
+  const uint32_t generation = cacheGenerationAt(x, z);
+  if (cached.generation != generation) cached = {generation, {}};
   if ((cached.value.computed & bit) != 0) return (cached.value.values & bit) != 0;
 
   const uint16_t head = flagsAt(x, y + 1, z);
@@ -255,48 +239,33 @@ inline bool Runtime::isWall(const int x, const int y, const int z) {
   return wall;
 }
 
-inline int Runtime::scanForEdge(const int x, const int y, const int z, const int dx, const int dz) {
-  int cx = x + dx;
-  int cz = z + dz;
-  for (int d = 1; d <= MAX_DIST; d++) {
-    if (isEdge(cx, y, cz)) return d - 1;
-    cx += dx;
-    cz += dz;
-  }
-  return MAX_DIST;
-}
-
-inline int Runtime::scanForWall(const int x, const int y, const int z, const int dx, const int dz) {
-  int cx = x + dx;
-  int cz = z + dz;
-  for (int d = 1; d <= MAX_DIST; d++) {
-    if (isWall(cx, y, cz)) return d - 1;
-    cx += dx;
-    cz += dz;
-  }
-  return MAX_DIST;
-}
-
-inline int Runtime::edgeDistanceWithMask(const int x, const int y, const int z, const int mask) {
-  int dist = MAX_DIST;
+inline void Runtime::directionalDistances(
+  const int x,
+  const int y,
+  const int z,
+  const int mask,
+  int& edgeDist,
+  int& wallDist
+) {
+  edgeDist = MAX_DIST;
+  wallDist = MAX_DIST;
   for (int dir = 0; dir < 8; dir++) {
     if ((mask & (1 << dir)) == 0) continue;
-    const int d = scanForEdge(x, y, z, DX[static_cast<size_t>(dir)], DZ[static_cast<size_t>(dir)]);
-    if (d < dist) dist = d;
-    if (dist == 0) break;
-  }
-  return dist;
-}
 
-inline int Runtime::wallDistanceWithMask(const int x, const int y, const int z, const int mask) {
-  int dist = MAX_DIST;
-  for (int dir = 0; dir < 8; dir++) {
-    if ((mask & (1 << dir)) == 0) continue;
-    const int d = scanForWall(x, y, z, DX[static_cast<size_t>(dir)], DZ[static_cast<size_t>(dir)]);
-    if (d < dist) dist = d;
-    if (dist == 0) break;
+    int rayEdge = MAX_DIST;
+    int rayWall = MAX_DIST;
+    int cx = x;
+    int cz = z;
+    for (int d = 1; d <= MAX_DIST && (rayEdge == MAX_DIST || rayWall == MAX_DIST); d++) {
+      cx += DX[static_cast<size_t>(dir)];
+      cz += DZ[static_cast<size_t>(dir)];
+      if (rayEdge == MAX_DIST && isEdge(cx, y, cz)) rayEdge = d - 1;
+      if (rayWall == MAX_DIST && isWall(cx, y, cz)) rayWall = d - 1;
+    }
+    edgeDist = std::min(edgeDist, rayEdge);
+    wallDist = std::min(wallDist, rayWall);
+    if (edgeDist == 0 && wallDist == 0) break;
   }
-  return dist;
 }
 
 inline double Runtime::combinedPenalty(const int edgeDist, const int wallDist) const {
@@ -307,13 +276,17 @@ inline double Runtime::combinedPenalty(const int edgeDist, const int wallDist) c
 
 inline double Runtime::pathPenalty(const int x, const int y, const int z) {
   auto& cached = cache_.penalties.at(x, y, z);
-  if (cached.generation == cache_.worldGeneration) return cached.value;
+  const uint32_t generation = cacheGenerationAt(x, z);
+  if (cached.generation == generation) return cached.value;
 
   const int mask = directionMask(x, y, z);
-  const int edgeDist = edgeDistanceWithMask(x, y, z, mask);
-  const int wallDist = wallDistanceWithMask(x, y, z, mask);
-  const double value = combinedPenalty(edgeDist, wallDist);
-  cached = {cache_.worldGeneration, value};
+  int edgeDist;
+  int wallDist;
+  directionalDistances(x, y, z, mask, edgeDist, wallDist);
+  double value = combinedPenalty(edgeDist, wallDist);
+  if (hasFlag(flagsAt(x, y, z), VF_FLUID)) value += 20.0;
+  if (hasFlag(flagsAt(x, y + 1, z), VF_FLUID)) value += 20.0;
+  cached = {generation, value};
   return value;
 }
 

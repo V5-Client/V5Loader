@@ -48,7 +48,9 @@ struct SearchWorkspace {
   std::vector<int> nodeY;
   std::vector<int> nodeZ;
   std::vector<double> nodeG;
+  std::vector<double> nodeH;
   std::vector<double> nodeF;
+  std::vector<double> nodeAvoidPenalty;
   std::vector<int> nodeParent;
   std::vector<int> nodeStartIndex;
   std::vector<int> nodeHeapPos;
@@ -56,7 +58,7 @@ struct SearchWorkspace {
   detail::Heap heap;
 
   SearchWorkspace()
-    : heap(nodeF, nodeHeapPos) {
+    : heap(nodeF, nodeH, nodeG, nodeHeapPos) {
   }
 
   void reset(const size_t reserveSize, const int heapCapacity) {
@@ -64,7 +66,9 @@ struct SearchWorkspace {
     nodeY.clear();
     nodeZ.clear();
     nodeG.clear();
+    nodeH.clear();
     nodeF.clear();
+    nodeAvoidPenalty.clear();
     nodeParent.clear();
     nodeStartIndex.clear();
     nodeHeapPos.clear();
@@ -75,7 +79,9 @@ struct SearchWorkspace {
     nodeY.reserve(reserveSize);
     nodeZ.reserve(reserveSize);
     nodeG.reserve(reserveSize);
+    nodeH.reserve(reserveSize);
     nodeF.reserve(reserveSize);
+    nodeAvoidPenalty.reserve(reserveSize);
     nodeParent.reserve(reserveSize);
     nodeStartIndex.reserve(reserveSize);
     nodeHeapPos.reserve(reserveSize);
@@ -120,7 +126,9 @@ std::optional<SearchResult> findPath(
   auto& nodeY = workspace.nodeY;
   auto& nodeZ = workspace.nodeZ;
   auto& nodeG = workspace.nodeG;
+  auto& nodeH = workspace.nodeH;
   auto& nodeF = workspace.nodeF;
+  auto& nodeAvoidPenalty = workspace.nodeAvoidPenalty;
   auto& nodeParent = workspace.nodeParent;
   auto& nodeStartIndex = workspace.nodeStartIndex;
   auto& nodeHeapPos = workspace.nodeHeapPos;
@@ -141,7 +149,9 @@ std::optional<SearchResult> findPath(
     nodeY.push_back(y);
     nodeZ.push_back(z);
     nodeG.push_back(std::numeric_limits<double>::infinity());
-    nodeF.push_back(runtime.heuristic(x, y, z) * weight);
+    nodeH.push_back(runtime.heuristic(x, y, z) * weight);
+    nodeF.push_back(nodeH.back());
+    nodeAvoidPenalty.push_back(runtime.transientAvoidPenalty(x, y, z));
     nodeParent.push_back(-1);
     nodeStartIndex.push_back(-1);
     nodeHeapPos.push_back(-1);
@@ -150,9 +160,8 @@ std::optional<SearchResult> findPath(
 
   auto setNodeCost = [&](const int nodeIdx, const double cost) {
     const size_t idx = static_cast<size_t>(nodeIdx);
-    const double weightedHeuristic = std::isfinite(nodeG[idx]) ? nodeF[idx] - nodeG[idx] : nodeF[idx];
     nodeG[idx] = cost;
-    nodeF[idx] = cost + weightedHeuristic;
+    nodeF[idx] = cost + nodeH[idx];
   };
 
   std::array<Int3, 16> walkMovesOrdered = detail::WALK_MOVES;
@@ -241,8 +250,8 @@ std::optional<SearchResult> findPath(
         if (!runtime.flyMove(curr, move, currFlyProgress, out)) continue;
         if (out.cost >= ActionCosts::INF_COST) continue;
 
-        const double newCost = currCost + out.cost + runtime.transientAvoidPenalty(out.pos.x, out.pos.y, out.pos.z);
         const auto [nIdx, inserted] = getOrCreateNode(out.pos.x, out.pos.y, out.pos.z);
+        const double newCost = currCost + out.cost + nodeAvoidPenalty[static_cast<size_t>(nIdx)];
         if (inserted) {
           nodeParent[static_cast<size_t>(nIdx)] = currIdx;
           nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;
@@ -270,8 +279,8 @@ std::optional<SearchResult> findPath(
       if (!runtime.walkMove(curr, move, out)) continue;
       if (out.cost >= ActionCosts::INF_COST) continue;
 
-      const double newCost = currCost + out.cost + runtime.transientAvoidPenalty(out.pos.x, out.pos.y, out.pos.z);
       const auto [nIdx, inserted] = getOrCreateNode(out.pos.x, out.pos.y, out.pos.z);
+      const double newCost = currCost + out.cost + nodeAvoidPenalty[static_cast<size_t>(nIdx)];
       if (inserted) {
         nodeParent[static_cast<size_t>(nIdx)] = currIdx;
         nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;

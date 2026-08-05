@@ -73,7 +73,6 @@ struct FlyEnvironment {
   double groundCost = 0.0;
   double horizontalCost = 0.0;
   double enclosureCost = 0.0;
-  bool confined = false;
   uint8_t computed = 0;
 };
 
@@ -89,32 +88,22 @@ struct VoxelClassifications {
 };
 
 struct RuntimeCache {
-  std::shared_ptr<const WorldData> snapshotData;
+  std::shared_ptr<const WorldIdentity> worldIdentity;
   int snapshotMinY = 0;
   int snapshotMaxY = 0;
-  uint32_t worldGeneration = 0;
-  uint32_t searchGeneration = 0;
   LazySectionArray<StampedValue<VoxelClassifications>> classifications;
   LazySectionArray<StampedValue<double>> penalties;
   LazySectionArray<StampedValue<FlyEnvironment>> flyEnvironments;
-  LazySectionArray<StampedValue<double>> avoidPenalties;
 
   void begin(const WorldSnapshot& world) {
-    if (++searchGeneration == 0) {
-      avoidPenalties.clear();
-      searchGeneration = 1;
-    }
-
-    if (snapshotData == world.data && snapshotMinY == world.minY && snapshotMaxY == world.maxY) return;
-    snapshotData = world.data;
+    const auto identity = world.data != nullptr ? world.data->identity : nullptr;
+    if (worldIdentity == identity && snapshotMinY == world.minY && snapshotMaxY == world.maxY) return;
+    worldIdentity = identity;
     snapshotMinY = world.minY;
     snapshotMaxY = world.maxY;
-    if (++worldGeneration == 0) {
-      classifications.clear();
-      penalties.clear();
-      flyEnvironments.clear();
-      worldGeneration = 1;
-    }
+    classifications.clear();
+    penalties.clear();
+    flyEnvironments.clear();
   }
 };
 
@@ -142,20 +131,17 @@ class Runtime {
   mutable WorldVoxelCursor voxelCursor_;
   RuntimeCache& cache_;
 
-  bool avoidPenaltyCacheEnabled_ = false;
-
   Int3 startFly_{0, 0, 0};
   int flyMinY_ = 0;
   int flyMaxY_ = 0;
 
   [[nodiscard]] uint16_t flagsAt(int x, int y, int z) const;
+  [[nodiscard]] uint32_t cacheGenerationAt(int x, int z) const;
   [[nodiscard]] bool isPassable(int x, int y, int z) const;
   [[nodiscard]] bool isPassableForFlying(int x, int y, int z) const;
 
   [[nodiscard]] bool isSafe(int x, int y, int z);
   [[nodiscard]] bool isFlyColumnClear(int x, int y, int z);
-  [[nodiscard]] double fluidPenalty(int x, int y, int z) const;
-
   [[nodiscard]] double walkHeuristic(int x, int y, int z) const;
   [[nodiscard]] double flyHeuristic(int x, int y, int z) const;
   [[nodiscard]] const Int3& closestFlyGoal(int x, int y, int z) const;
@@ -166,11 +152,7 @@ class Runtime {
 
   [[nodiscard]] bool isEdge(int x, int y, int z);
   [[nodiscard]] bool isWall(int x, int y, int z);
-  [[nodiscard]] int scanForEdge(int x, int y, int z, int dx, int dz);
-  [[nodiscard]] int scanForWall(int x, int y, int z, int dx, int dz);
-
-  [[nodiscard]] int edgeDistanceWithMask(int x, int y, int z, int mask);
-  [[nodiscard]] int wallDistanceWithMask(int x, int y, int z, int mask);
+  void directionalDistances(int x, int y, int z, int mask, int& edgeDist, int& wallDist);
   [[nodiscard]] double combinedPenalty(int edgeDist, int wallDist) const;
   [[nodiscard]] double pathPenalty(int x, int y, int z);
 
@@ -181,6 +163,13 @@ class Runtime {
 
   [[nodiscard]] bool moveFly(const Int3& current, int dx, int dy, int dz, double progress, MoveOut& out);
   void populateFlyEnvironment(int x, int y, int z, uint8_t needed, FlyEnvironment& environment);
+
+  struct ChunkGenerationCursor {
+    int chunkX = std::numeric_limits<int>::min();
+    int chunkZ = std::numeric_limits<int>::min();
+    uint32_t generation = 0;
+  };
+  mutable std::array<ChunkGenerationCursor, 4> chunkGenerationCursors_{};
 };
 
 } // namespace v5pf::detail

@@ -104,7 +104,7 @@ struct SimplifiedEtherwarpPath {
 
 struct SharedState {
   explicit SharedState(const int reserveTarget)
-    : heap(nodeF, nodeHeapPos) {
+    : heap(nodeF, nodeH, nodeG, nodeHeapPos) {
     nodeX.reserve(static_cast<size_t>(reserveTarget));
     nodeY.reserve(static_cast<size_t>(reserveTarget));
     nodeZ.reserve(static_cast<size_t>(reserveTarget));

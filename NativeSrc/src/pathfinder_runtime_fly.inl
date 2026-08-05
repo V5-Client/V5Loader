@@ -5,9 +5,8 @@
 namespace v5pf::detail {
 
 constexpr uint8_t FLY_ENV_GROUND = 1u << 0;
-constexpr uint8_t FLY_ENV_CONFINED = 1u << 1;
-constexpr uint8_t FLY_ENV_HORIZONTAL = 1u << 2;
-constexpr uint8_t FLY_ENV_ENCLOSURE = 1u << 3;
+constexpr uint8_t FLY_ENV_HORIZONTAL = 1u << 1;
+constexpr uint8_t FLY_ENV_ENCLOSURE = 1u << 2;
 
 constexpr double groundClearanceCost(const int distance) {
   return static_cast<double>(6 - distance) * 2.0;
@@ -90,12 +89,12 @@ inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, co
   double cost = baseDistances[static_cast<size_t>(axisCount)] * ActionCosts::FLY_ONE_BLOCK_TIME;
 
   auto& cachedEnvironment = cache_.flyEnvironments.at(destX, destY, destZ);
-  if (cachedEnvironment.generation != cache_.worldGeneration) {
-    cachedEnvironment = {cache_.worldGeneration, {}};
+  const uint32_t generation = cacheGenerationAt(destX, destZ);
+  if (cachedEnvironment.generation != generation) {
+    cachedEnvironment = {generation, {}};
   }
   auto& environment = cachedEnvironment.value;
   uint8_t needed = FLY_ENV_GROUND;
-  if (progress <= 0.92) needed |= FLY_ENV_CONFINED;
   if (progress <= 0.88) needed |= FLY_ENV_HORIZONTAL;
   if (progress <= 0.94) needed |= FLY_ENV_ENCLOSURE;
   populateFlyEnvironment(destX, destY, destZ, needed, environment);
@@ -141,16 +140,12 @@ inline void Runtime::populateFlyEnvironment(
     environment.computed |= FLY_ENV_GROUND;
   }
 
-  const bool needConfined = (missing & FLY_ENV_CONFINED) != 0;
   const bool needHorizontal = (missing & FLY_ENV_HORIZONTAL) != 0;
   const bool needEnclosure = (missing & FLY_ENV_ENCLOSURE) != 0;
-  if (!needConfined && !needHorizontal && !needEnclosure) return;
+  if (!needHorizontal && !needEnclosure) return;
 
-  const bool ceilingClear = isPassableForFlying(x, y + 2, z);
-  const bool scanExtended = needHorizontal || (needConfined && ceilingClear);
-  const int scanDistance = scanExtended ? 5 : 1;
+  const int scanDistance = needHorizontal ? 5 : 1;
   int minClearance = 5;
-  int blockedCardinals = 0;
   int blockedImmediate = 0;
   for (int i = 0; i < 4; i++) {
     int nx = x;
@@ -160,18 +155,10 @@ inline void Runtime::populateFlyEnvironment(
       nz += DZ[static_cast<size_t>(i)];
       if (!isFlyColumnClear(nx, y, nz)) {
         minClearance = std::min(minClearance, d - 1);
-        blockedCardinals++;
         if (d == 1) blockedImmediate++;
         break;
       }
     }
-  }
-
-  if (needConfined) {
-    environment.confined = !ceilingClear ||
-      blockedCardinals >= 3 ||
-      (blockedCardinals >= 2 && minClearance <= 1);
-    environment.computed |= FLY_ENV_CONFINED;
   }
 
   if (needHorizontal) {
@@ -196,6 +183,7 @@ inline void Runtime::populateFlyEnvironment(
   }
 
   if (needEnclosure) {
+    const bool ceilingClear = isPassableForFlying(x, y + 2, z);
     if (!ceilingClear) {
       environment.enclosureCost = 10.0;
     } else if (!isPassableForFlying(x, y + 3, z)) {
