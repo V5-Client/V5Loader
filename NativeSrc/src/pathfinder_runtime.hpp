@@ -1,10 +1,10 @@
 #pragma once
 
+#include "lazy_section_array.hpp"
 #include "pathfinder.hpp"
 #include "world_voxel_cursor.hpp"
 
 #include <array>
-#include <unordered_map>
 
 namespace v5pf::detail {
 
@@ -56,6 +56,14 @@ inline bool hasFlag(const uint16_t flags, const uint16_t bit) {
   return (flags & bit) != 0;
 }
 
+inline bool isPassableFlags(const uint16_t flags) {
+  return hasFlag(flags, VF_PASSABLE) || hasFlag(flags, VF_CARPET_LIKE);
+}
+
+inline bool isFlyPassableFlags(const uint16_t flags) {
+  return isPassableFlags(flags) || hasFlag(flags, VF_PASSABLE_FLY);
+}
+
 struct MoveOut {
   Int3 pos{};
   double cost = ActionCosts::INF_COST;
@@ -68,6 +76,52 @@ struct FlyEnvironment {
   bool confined = false;
   uint8_t computed = 0;
 };
+
+template<typename T>
+struct StampedValue {
+  uint32_t generation = 0;
+  T value{};
+};
+
+struct VoxelClassifications {
+  uint8_t computed = 0;
+  uint8_t values = 0;
+};
+
+struct RuntimeCache {
+  std::shared_ptr<const WorldData> snapshotData;
+  int snapshotMinY = 0;
+  int snapshotMaxY = 0;
+  uint32_t worldGeneration = 0;
+  uint32_t searchGeneration = 0;
+  LazySectionArray<StampedValue<VoxelClassifications>> classifications;
+  LazySectionArray<StampedValue<double>> penalties;
+  LazySectionArray<StampedValue<FlyEnvironment>> flyEnvironments;
+  LazySectionArray<StampedValue<double>> avoidPenalties;
+
+  void begin(const WorldSnapshot& world) {
+    if (++searchGeneration == 0) {
+      avoidPenalties.clear();
+      searchGeneration = 1;
+    }
+
+    if (snapshotData == world.data && snapshotMinY == world.minY && snapshotMaxY == world.maxY) return;
+    snapshotData = world.data;
+    snapshotMinY = world.minY;
+    snapshotMaxY = world.maxY;
+    if (++worldGeneration == 0) {
+      classifications.clear();
+      penalties.clear();
+      flyEnvironments.clear();
+      worldGeneration = 1;
+    }
+  }
+};
+
+inline RuntimeCache& runtimeCache() {
+  static thread_local RuntimeCache cache;
+  return cache;
+}
 
 class Runtime {
  public:
@@ -85,34 +139,18 @@ class Runtime {
  private:
   const WorldSnapshot& world_;
   const SearchParams& params_;
-  ActionCosts costs_{};
   mutable WorldVoxelCursor voxelCursor_;
-
-  std::unordered_map<uint64_t, uint8_t> safeCache_;
-  std::unordered_map<uint64_t, uint8_t> flyClearCache_;
-  std::unordered_map<uint64_t, FlyEnvironment> flyEnvironmentCache_;
-  std::unordered_map<uint64_t, double> penaltyCache_;
-  mutable std::unordered_map<uint64_t, double> avoidPenaltyCache_;
+  RuntimeCache& cache_;
 
   bool avoidPenaltyCacheEnabled_ = false;
-
-  int walkStartX_ = 0;
-  int walkStartZ_ = 0;
 
   Int3 startFly_{0, 0, 0};
   int flyMinY_ = 0;
   int flyMaxY_ = 0;
 
   [[nodiscard]] uint16_t flagsAt(int x, int y, int z) const;
-  [[nodiscard]] bool isSolid(int x, int y, int z) const;
   [[nodiscard]] bool isPassable(int x, int y, int z) const;
   [[nodiscard]] bool isPassableForFlying(int x, int y, int z) const;
-  [[nodiscard]] bool isBottomSlab(int x, int y, int z) const;
-  [[nodiscard]] bool isTopSlab(int x, int y, int z) const;
-  [[nodiscard]] bool isFenceLike(int x, int y, int z) const;
-  [[nodiscard]] bool isStairsBottom(int x, int y, int z) const;
-  [[nodiscard]] bool isBlockingWall(int x, int y, int z) const;
-  [[nodiscard]] bool isFluid(int x, int y, int z) const;
 
   [[nodiscard]] bool isSafe(int x, int y, int z);
   [[nodiscard]] bool isFlyColumnClear(int x, int y, int z);
@@ -125,15 +163,12 @@ class Runtime {
 
   [[nodiscard]] int directionMask(int x, int y, int z);
   [[nodiscard]] bool isStepDirection(int x, int y, int z, int dx, int dz);
-  [[nodiscard]] bool isStepSurface(int x, int y, int z);
 
   [[nodiscard]] bool isEdge(int x, int y, int z);
   [[nodiscard]] bool isWall(int x, int y, int z);
   [[nodiscard]] int scanForEdge(int x, int y, int z, int dx, int dz);
   [[nodiscard]] int scanForWall(int x, int y, int z, int dx, int dz);
 
-  [[nodiscard]] int edgeDistance(int x, int y, int z);
-  [[nodiscard]] int wallDistance(int x, int y, int z);
   [[nodiscard]] int edgeDistanceWithMask(int x, int y, int z, int mask);
   [[nodiscard]] int wallDistanceWithMask(int x, int y, int z, int mask);
   [[nodiscard]] double combinedPenalty(int edgeDist, int wallDist) const;

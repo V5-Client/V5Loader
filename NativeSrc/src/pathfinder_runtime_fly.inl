@@ -89,8 +89,11 @@ inline bool Runtime::moveFly(const Int3& current, const int dx, const int dy, co
   static constexpr std::array<double, 4> baseDistances = {0.0, 1.0, 1.4142135623730951, 1.7320508075688772};
   double cost = baseDistances[static_cast<size_t>(axisCount)] * ActionCosts::FLY_ONE_BLOCK_TIME;
 
-  auto environmentIt = flyEnvironmentCache_.try_emplace(coordKey(destX, destY, destZ)).first;
-  auto& environment = environmentIt->second;
+  auto& cachedEnvironment = cache_.flyEnvironments.at(destX, destY, destZ);
+  if (cachedEnvironment.generation != cache_.worldGeneration) {
+    cachedEnvironment = {cache_.worldGeneration, {}};
+  }
+  auto& environment = cachedEnvironment.value;
   uint8_t needed = FLY_ENV_GROUND;
   if (progress <= 0.92) needed |= FLY_ENV_CONFINED;
   if (progress <= 0.88) needed |= FLY_ENV_HORIZONTAL;

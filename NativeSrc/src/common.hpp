@@ -49,6 +49,23 @@ inline uint64_t chunkKey(const int x, const int z) {
   return (px << 32) | pz;
 }
 
+constexpr std::array<double, 257> makeFallTimes() {
+  std::array<double, 257> fallTimes{};
+  double currentDistance = 0.0;
+  int tick = 0;
+  double velocity = 0.0;
+
+  for (int targetDistance = 1; targetDistance <= 256; targetDistance++) {
+    while (currentDistance < targetDistance) {
+      velocity = (velocity - 0.08) * 0.98;
+      currentDistance -= velocity;
+      tick++;
+    }
+    fallTimes[static_cast<size_t>(targetDistance)] = static_cast<double>(tick);
+  }
+  return fallTimes;
+}
+
 struct ActionCosts {
   static constexpr double INF_COST = 1e6;
   static constexpr double FLY_ONE_BLOCK_TIME = 1.0 / 0.7;
@@ -62,27 +79,12 @@ struct ActionCosts {
   static constexpr double LAND_RECOVERY_TIME = 2.0;
   static constexpr double JUMP_UP_ONE_BLOCK_TIME = 28.0 + MOMENTUM_LOSS_PENALTY + SPRINT_ONE_BLOCK_TIME;
 
-  std::array<double, 257> fallTimes{};
+  inline static constexpr auto FALL_TIMES = makeFallTimes();
 
-  ActionCosts() {
-    double currentDistance = 0.0;
-    int tick = 0;
-    double velocity = 0.0;
-
-    for (int targetDistance = 1; targetDistance <= 256; targetDistance++) {
-      while (currentDistance < targetDistance) {
-        velocity = (velocity - 0.08) * 0.98;
-        currentDistance -= velocity;
-        tick++;
-      }
-      fallTimes[static_cast<size_t>(targetDistance)] = static_cast<double>(tick);
-    }
-  }
-
-  [[nodiscard]] double getFallTime(const int blocks) const {
+  [[nodiscard]] static double getFallTime(const int blocks) {
     if (blocks <= 0) return 0.0;
-    if (blocks >= static_cast<int>(fallTimes.size())) return INF_COST;
-    return fallTimes[static_cast<size_t>(blocks)] + LAND_RECOVERY_TIME;
+    if (blocks >= static_cast<int>(FALL_TIMES.size())) return INF_COST;
+    return FALL_TIMES[static_cast<size_t>(blocks)] + LAND_RECOVERY_TIME;
   }
 };
 

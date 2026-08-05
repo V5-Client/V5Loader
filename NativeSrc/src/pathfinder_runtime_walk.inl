@@ -18,12 +18,11 @@ inline bool Runtime::moveDiagonal(const Int3& current, const int dx, const int d
   const int destX = current.x + dx;
   const int destZ = current.z + dz;
 
-  if (!isSafe(destX, current.y, destZ)) return false;
-
   if (!isPassable(destX, current.y, current.z)) return false;
   if (!isPassable(current.x, current.y, destZ)) return false;
   if (!isPassable(destX, current.y + 1, current.z)) return false;
   if (!isPassable(current.x, current.y + 1, destZ)) return false;
+  if (!isSafe(destX, current.y, destZ)) return false;
 
   out.pos = {destX, current.y, destZ};
   out.cost = ActionCosts::SPRINT_DIAGONAL_TIME +
@@ -36,21 +35,21 @@ inline bool Runtime::moveAscend(const Int3& current, const int dx, const int dz,
   const int destX = current.x + dx;
   const int destZ = current.z + dz;
 
-  if (!isPassable(current.x, current.y + 2, current.z)) return false;
+  if (!isPassableFlags(flagsAt(current.x, current.y + 2, current.z))) return false;
 
-  if (!isSolid(destX, current.y, destZ)) return false;
-  if (isFenceLike(destX, current.y, destZ)) return false;
+  const uint16_t destSupport = flagsAt(destX, current.y, destZ);
+  if (!hasFlag(destSupport, VF_SOLID) || hasFlag(destSupport, VF_FENCE_LIKE)) return false;
+  if (!isPassableFlags(flagsAt(destX, current.y + 1, destZ))) return false;
+  if (!isPassableFlags(flagsAt(destX, current.y + 2, destZ))) return false;
 
-  if (!isPassable(destX, current.y + 1, destZ)) return false;
-  if (!isPassable(destX, current.y + 2, destZ)) return false;
-
-  const bool srcBottom = isBottomSlab(current.x, current.y - 1, current.z);
-  const bool destBottom = isBottomSlab(destX, current.y, destZ);
+  const uint16_t srcSupport = flagsAt(current.x, current.y - 1, current.z);
+  const bool srcBottom = hasFlag(srcSupport, VF_SLAB_BOTTOM);
+  const bool destBottom = hasFlag(destSupport, VF_SLAB_BOTTOM);
 
   if (srcBottom && !destBottom) return false;
 
-  const bool srcStair = isStairsBottom(current.x, current.y - 1, current.z);
-  const bool destStair = isStairsBottom(destX, current.y, destZ);
+  const bool srcStair = hasFlag(srcSupport, VF_STAIRS_BOTTOM);
+  const bool destStair = hasFlag(destSupport, VF_STAIRS_BOTTOM);
 
   out.pos = {destX, current.y + 1, destZ};
   double baseCost = ActionCosts::JUMP_UP_ONE_BLOCK_TIME;
@@ -77,19 +76,17 @@ inline bool Runtime::moveDescend(const Int3& current, const int dx, const int dz
   for (int dropBlocks = 1; dropBlocks <= maxFallHeight; dropBlocks++) {
     const int floorY = current.y - dropBlocks - 1;
 
-    if (isPassable(destX, floorY, destZ)) {
+    const uint16_t floorFlags = flagsAt(destX, floorY, destZ);
+    if (isPassableFlags(floorFlags)) {
       continue;
     }
 
-    if (!isSolid(destX, floorY, destZ)) {
+    if (!hasFlag(floorFlags, VF_SOLID)) {
       return false;
     }
 
     const int destY = floorY + 1;
-    if (!isPassable(destX, destY, destZ)) return false;
-    if (!isPassable(destX, destY + 1, destZ)) return false;
-
-    double totalCost = ActionCosts::WALK_OFF_EDGE_TIME + costs_.getFallTime(dropBlocks);
+    double totalCost = ActionCosts::WALK_OFF_EDGE_TIME + ActionCosts::getFallTime(dropBlocks);
     if (dropBlocks > 3) {
       const int excess = dropBlocks - 3;
       totalCost += static_cast<double>(excess * excess) * 2.0;

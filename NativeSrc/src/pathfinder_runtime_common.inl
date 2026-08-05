@@ -10,22 +10,9 @@ inline Runtime::Runtime(const WorldSnapshot& world, const SearchParams& params)
   : world_(world),
     params_(params),
     voxelCursor_(world),
-    walkStartX_(params.starts.empty() ? 0 : params.starts.front().x),
-    walkStartZ_(params.starts.empty() ? 0 : params.starts.front().z) {
-  const int reserveTarget = std::clamp(params_.maxIterations / 2, 4096, 262144);
-  const size_t cacheReserve = static_cast<size_t>(reserveTarget);
+    cache_(runtimeCache()) {
+  cache_.begin(world);
   avoidPenaltyCacheEnabled_ = params_.avoidZones.size() >= 3;
-
-  if (params_.isFly) {
-    flyClearCache_.reserve(cacheReserve);
-    flyEnvironmentCache_.reserve(cacheReserve);
-  } else {
-    safeCache_.reserve(cacheReserve);
-    penaltyCache_.reserve(cacheReserve);
-  }
-  if (avoidPenaltyCacheEnabled_) {
-    avoidPenaltyCache_.reserve(cacheReserve);
-  }
 
   flyMinY_ = world_.minY;
   flyMaxY_ = world_.maxY - 2;
@@ -68,11 +55,8 @@ inline double Runtime::transientAvoidPenalty(const int x, const int y, const int
     return penalty;
   }
 
-  const uint64_t key = coordKey(x, y, z);
-  const auto cached = avoidPenaltyCache_.find(key);
-  if (cached != avoidPenaltyCache_.end()) {
-    return cached->second;
-  }
+  auto& cached = cache_.avoidPenalties.at(x, y, z);
+  if (cached.generation == cache_.searchGeneration) return cached.value;
 
   double penalty = 0.0;
   for (const auto& zone : params_.avoidZones) {
@@ -87,7 +71,7 @@ inline double Runtime::transientAvoidPenalty(const int x, const int y, const int
     const double falloff = std::max(0.2, 1.0 - normalized);
     penalty += zone.penalty * falloff;
   }
-  avoidPenaltyCache_.emplace(key, penalty);
+  cached = {cache_.searchGeneration, penalty};
   return penalty;
 }
 
@@ -123,78 +107,48 @@ inline uint16_t Runtime::flagsAt(const int x, const int y, const int z) const {
   return voxelCursor_.getFlags(x, y, z);
 }
 
-inline bool Runtime::isSolid(const int x, const int y, const int z) const {
-  return hasFlag(flagsAt(x, y, z), VF_SOLID);
-}
-
 inline bool Runtime::isPassable(const int x, const int y, const int z) const {
-  const uint16_t flags = flagsAt(x, y, z);
-  return hasFlag(flags, VF_PASSABLE) || hasFlag(flags, VF_CARPET_LIKE);
+  return isPassableFlags(flagsAt(x, y, z));
 }
 
 inline bool Runtime::isPassableForFlying(const int x, const int y, const int z) const {
-  const uint16_t flags = flagsAt(x, y, z);
-  return hasFlag(flags, VF_PASSABLE) || hasFlag(flags, VF_PASSABLE_FLY) || hasFlag(flags, VF_CARPET_LIKE);
-}
-
-inline bool Runtime::isBottomSlab(const int x, const int y, const int z) const {
-  return hasFlag(flagsAt(x, y, z), VF_SLAB_BOTTOM);
-}
-
-inline bool Runtime::isTopSlab(const int x, const int y, const int z) const {
-  return hasFlag(flagsAt(x, y, z), VF_SLAB_TOP);
-}
-
-inline bool Runtime::isFenceLike(const int x, const int y, const int z) const {
-  return hasFlag(flagsAt(x, y, z), VF_FENCE_LIKE);
-}
-
-inline bool Runtime::isStairsBottom(const int x, const int y, const int z) const {
-  return hasFlag(flagsAt(x, y, z), VF_STAIRS_BOTTOM);
-}
-
-inline bool Runtime::isBlockingWall(const int x, const int y, const int z) const {
-  return hasFlag(flagsAt(x, y, z), VF_BLOCKING_WALL);
-}
-
-inline bool Runtime::isFluid(const int x, const int y, const int z) const {
-  return hasFlag(flagsAt(x, y, z), VF_FLUID);
+  return isFlyPassableFlags(flagsAt(x, y, z));
 }
 
 inline bool Runtime::isSafe(const int x, const int y, const int z) {
-  const uint64_t key = coordKey(x, y, z);
-  const auto it = safeCache_.find(key);
-  if (it != safeCache_.end()) {
-    return it->second == 1;
-  }
+  constexpr uint8_t bit = 1u << 0;
+  auto& cached = cache_.classifications.at(x, y, z);
+  if (cached.generation != cache_.worldGeneration) cached = {cache_.worldGeneration, {}};
+  if ((cached.value.computed & bit) != 0) return (cached.value.values & bit) != 0;
 
-  const bool safe = isSolid(x, y - 1, z) &&
-    isPassable(x, y, z) &&
-    isPassable(x, y + 1, z);
-
-  safeCache_[key] = safe ? 1 : 0;
+  const bool safe = hasFlag(flagsAt(x, y - 1, z), VF_SOLID) &&
+    isPassableFlags(flagsAt(x, y, z)) &&
+    isPassableFlags(flagsAt(x, y + 1, z));
+  cached.value.computed |= bit;
+  if (safe) cached.value.values |= bit;
   return safe;
 }
 
 inline bool Runtime::isFlyColumnClear(const int x, const int y, const int z) {
-  const uint64_t key = coordKey(x, y, z);
-  const auto it = flyClearCache_.find(key);
-  if (it != flyClearCache_.end()) {
-    return it->second == 1;
-  }
+  constexpr uint8_t bit = 1u << 3;
+  auto& cached = cache_.classifications.at(x, y, z);
+  if (cached.generation != cache_.worldGeneration) cached = {cache_.worldGeneration, {}};
+  if ((cached.value.computed & bit) != 0) return (cached.value.values & bit) != 0;
 
-  const bool clear = isPassableForFlying(x, y, z) &&
-    !isTopSlab(x, y + 1, z) &&
-    isPassableForFlying(x, y + 1, z);
-
-  flyClearCache_[key] = clear ? 1 : 0;
+  const uint16_t feet = flagsAt(x, y, z);
+  const uint16_t head = flagsAt(x, y + 1, z);
+  const bool clear = isFlyPassableFlags(feet) &&
+    !hasFlag(head, VF_SLAB_TOP) &&
+    isFlyPassableFlags(head);
+  cached.value.computed |= bit;
+  if (clear) cached.value.values |= bit;
   return clear;
 }
 
 inline double Runtime::fluidPenalty(const int x, const int y, const int z) const {
   double penalty = 0.0;
-  if (isFluid(x, y, z)) penalty += 20.0;
-  if (isFluid(x, y + 1, z)) penalty += 20.0;
+  if (hasFlag(flagsAt(x, y, z), VF_FLUID)) penalty += 20.0;
+  if (hasFlag(flagsAt(x, y + 1, z), VF_FLUID)) penalty += 20.0;
   return penalty;
 }
 
@@ -203,7 +157,7 @@ inline double Runtime::walkHeuristic(const int x, const int y, const int z) cons
 
   const double sprintCost = ActionCosts::SPRINT_ONE_BLOCK_TIME;
   const double diagonalCost = ActionCosts::SPRINT_DIAGONAL_TIME;
-  const double fallCostPerBlock = costs_.getFallTime(2) * 0.5;
+  const double fallCostPerBlock = ActionCosts::getFallTime(2) * 0.5;
   const double jumpCostPerBlock = ActionCosts::JUMP_UP_ONE_BLOCK_TIME;
   const double verticalReluctance = sprintCost * 0.35;
 
@@ -247,38 +201,58 @@ inline bool Runtime::isStepDirection(const int x, const int y, const int z, cons
   const int nx = x + dx;
   const int nz = z + dz;
 
-  if (isStepSurface(nx, y, nz) && isSolid(nx, y, nz) && isPassable(nx, y + 1, nz) && isPassable(nx, y + 2, nz)) {
+  const uint16_t upperSurface = flagsAt(nx, y, nz);
+  if ((hasFlag(upperSurface, VF_STAIRS_BOTTOM) || hasFlag(upperSurface, VF_SLAB_BOTTOM)) &&
+      hasFlag(upperSurface, VF_SOLID) &&
+      isPassableFlags(flagsAt(nx, y + 1, nz)) &&
+      isPassableFlags(flagsAt(nx, y + 2, nz))) {
     return true;
   }
 
-  if (isStepSurface(nx, y - 2, nz) && isSolid(nx, y - 2, nz) && isPassable(nx, y - 1, nz) && isPassable(nx, y, nz)) {
+  const uint16_t lowerSurface = flagsAt(nx, y - 2, nz);
+  if ((hasFlag(lowerSurface, VF_STAIRS_BOTTOM) || hasFlag(lowerSurface, VF_SLAB_BOTTOM)) &&
+      hasFlag(lowerSurface, VF_SOLID) &&
+      isPassableFlags(flagsAt(nx, y - 1, nz)) &&
+      isPassableFlags(upperSurface)) {
     return true;
   }
 
   return false;
 }
 
-inline bool Runtime::isStepSurface(const int x, const int y, const int z) {
-  return isStairsBottom(x, y, z) || isBottomSlab(x, y, z);
-}
-
 inline bool Runtime::isEdge(const int x, const int y, const int z) {
-  if (isSolid(x, y, z)) return false;
-  if (isSolid(x, y - 1, z)) return false;
-  if (isSolid(x, y - 2, z)) return false;
-  return true;
+  constexpr uint8_t bit = 1u << 1;
+  auto& cached = cache_.classifications.at(x, y, z);
+  if (cached.generation != cache_.worldGeneration) cached = {cache_.worldGeneration, {}};
+  if ((cached.value.computed & bit) != 0) return (cached.value.values & bit) != 0;
+
+  const bool edge = !hasFlag(flagsAt(x, y, z), VF_SOLID) &&
+    !hasFlag(flagsAt(x, y - 1, z), VF_SOLID) &&
+    !hasFlag(flagsAt(x, y - 2, z), VF_SOLID);
+  cached.value.computed |= bit;
+  if (edge) cached.value.values |= bit;
+  return edge;
 }
 
 inline bool Runtime::isWall(const int x, const int y, const int z) {
-  if (isBlockingWall(x, y + 1, z)) return true;
+  constexpr uint8_t bit = 1u << 2;
+  auto& cached = cache_.classifications.at(x, y, z);
+  if (cached.generation != cache_.worldGeneration) cached = {cache_.worldGeneration, {}};
+  if ((cached.value.computed & bit) != 0) return (cached.value.values & bit) != 0;
 
-  if (isSolid(x, y + 1, z)) {
-    if (isTopSlab(x, y + 1, z)) return true;
-    if (isBottomSlab(x, y, z) || isStairsBottom(x, y, z)) return false;
-    return true;
+  const uint16_t head = flagsAt(x, y + 1, z);
+  bool wall = hasFlag(head, VF_BLOCKING_WALL);
+  if (!wall && hasFlag(head, VF_SOLID)) {
+    const uint16_t feet = flagsAt(x, y, z);
+    wall = hasFlag(head, VF_SLAB_TOP) ||
+      (!hasFlag(feet, VF_SLAB_BOTTOM) && !hasFlag(feet, VF_STAIRS_BOTTOM));
+  } else if (!wall) {
+    wall = hasFlag(flagsAt(x, y, z), VF_BLOCKING_WALL);
   }
 
-  return isBlockingWall(x, y, z);
+  cached.value.computed |= bit;
+  if (wall) cached.value.values |= bit;
+  return wall;
 }
 
 inline int Runtime::scanForEdge(const int x, const int y, const int z, const int dx, const int dz) {
@@ -325,14 +299,6 @@ inline int Runtime::wallDistanceWithMask(const int x, const int y, const int z, 
   return dist;
 }
 
-inline int Runtime::edgeDistance(const int x, const int y, const int z) {
-  return edgeDistanceWithMask(x, y, z, directionMask(x, y, z));
-}
-
-inline int Runtime::wallDistance(const int x, const int y, const int z) {
-  return wallDistanceWithMask(x, y, z, directionMask(x, y, z));
-}
-
 inline double Runtime::combinedPenalty(const int edgeDist, const int wallDist) const {
   const int edgeIdx = std::clamp(edgeDist, 0, OPEN_SPACE_SOFT_CAP);
   const int wallIdx = std::clamp(wallDist, 0, OPEN_SPACE_SOFT_CAP);
@@ -340,17 +306,14 @@ inline double Runtime::combinedPenalty(const int edgeDist, const int wallDist) c
 }
 
 inline double Runtime::pathPenalty(const int x, const int y, const int z) {
-  const uint64_t key = coordKey(x, y, z);
-  const auto cached = penaltyCache_.find(key);
-  if (cached != penaltyCache_.end()) {
-    return cached->second;
-  }
+  auto& cached = cache_.penalties.at(x, y, z);
+  if (cached.generation == cache_.worldGeneration) return cached.value;
 
   const int mask = directionMask(x, y, z);
   const int edgeDist = edgeDistanceWithMask(x, y, z, mask);
   const int wallDist = wallDistanceWithMask(x, y, z, mask);
   const double value = combinedPenalty(edgeDist, wallDist);
-  penaltyCache_[key] = value;
+  cached = {cache_.worldGeneration, value};
   return value;
 }
 

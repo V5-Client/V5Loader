@@ -15,6 +15,10 @@ class Heap {
     return size_ == 0;
   }
 
+  void clear() {
+    size_ = 0;
+  }
+
   void reserve(const int capacity) {
     if (capacity <= 0) return;
     const size_t needed = static_cast<size_t>(capacity + 1);
