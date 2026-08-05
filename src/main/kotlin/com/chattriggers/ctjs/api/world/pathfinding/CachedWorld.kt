@@ -101,6 +101,7 @@ object CachedWorld {
     val key = chunkKey(pos.x shr 4, pos.z shr 4)
     val chunk = chunks[key]?.takeIf { it.ready } ?: return
     val flags = NativeStateEncoder.flagsForState(state).toShort()
+    if (chunk.getFlags(pos.x and 15, pos.y, pos.z and 15) == flags) return
     chunk.setFlags(pos.x and 15, pos.y, pos.z and 15, flags)
     queueNativeUpdate(pos.x, pos.y, pos.z, flags.toInt() and 0xFFFF)
     if (cacheKey == key) {
