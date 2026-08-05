@@ -47,7 +47,7 @@ internal class SkijaSurface : AutoCloseable {
             directContext.resetGLAll()
             val skijaSurface = surface(width, height, colorTexture.glId(), directContext)
             draw(skijaSurface.canvas)
-            directContext.flushAndSubmit(skijaSurface, true)
+            directContext.flushAndSubmit(skijaSurface, false)
         } finally {
             context?.resetGLAll()
             state.restore()

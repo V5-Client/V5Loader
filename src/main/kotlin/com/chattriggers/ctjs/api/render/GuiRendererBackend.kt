@@ -39,6 +39,7 @@ open class GuiRendererBackend {
     private val alphaStack = ArrayDeque<Float>()
     private val scissorDepths = ArrayDeque<Int>()
     private var canvas: Canvas? = null
+    private var checkerImage: SkijaImage? = null
     private var alpha = 1f
     private var saveDepth = 0
 
@@ -59,9 +60,9 @@ open class GuiRendererBackend {
     private data class FontKey(val font: Font, val size: Float)
     private enum class Gradient { LEFT_TO_RIGHT, TOP_TO_BOTTOM, TL_TO_BR, BL_TO_TR }
 
-    fun registerV5Render(callback: Runnable) { callbacks += callback }
+    fun registerV5Render(callback: Runnable) = callback.also(callbacks::add)
     fun unregisterV5Render(callback: Runnable) { callbacks -= callback }
-    fun registerV5PreRender(callback: Runnable) { preCallbacks += callback }
+    fun registerV5PreRender(callback: Runnable) = callback.also(preCallbacks::add)
     fun unregisterV5PreRender(callback: Runnable) { preCallbacks -= callback }
     fun clearCallbacks() { callbacks.clear(); preCallbacks.clear() }
 
@@ -200,19 +201,18 @@ open class GuiRendererBackend {
     @JvmOverloads
     fun drawCheckerboard(x: Float, y: Float, width: Float, height: Float, radius: Float, size: Float = 4f) {
         val active = canvas ?: return
+        val step = size.coerceAtLeast(0.1f)
         active.save()
         active.clipRRect(RRect.makeXYWH(x, y, width, height, radius), true)
-        val step = size.coerceAtLeast(0.1f)
-        var row = 0
-        var py = y
-        while (py < y + height) {
-            var column = 0
-            var px = x
-            while (px < x + width) {
-                drawRect(px, py, step, step, if ((row + column) % 2 == 0) 0xff404040.toInt() else 0xff737373.toInt())
-                px += step; column++
+        checkerImage().makeShader(
+            FilterTileMode.REPEAT,
+            FilterTileMode.REPEAT,
+            SamplingMode.DEFAULT,
+            Matrix33.makeScale(step),
+        ).use { shader ->
+            Paint().setShader(shader).setAlphaf(alpha).use {
+                active.drawRect(Rect.makeXYWH(x, y, width, height), it)
             }
-            py += step; row++
         }
         active.restore()
     }
@@ -317,6 +317,7 @@ open class GuiRendererBackend {
 
     fun destroy() {
         clearImageCache()
+        checkerImage?.close(); checkerImage = null
         fonts.values.forEach(io.github.humbleui.skija.Font::close); fonts.clear()
         typefaces.values.forEach(Typeface::close); typefaces.clear()
     }
@@ -324,14 +325,27 @@ open class GuiRendererBackend {
     private fun drawImage(image: SkijaImage, x: Float, y: Float, width: Float, height: Float, radius: Float, imageAlpha: Float) {
         Paint().setAntiAlias(true).setAlphaf(alpha * imageAlpha.coerceIn(0f, 1f)).use { paint ->
             val active = canvas ?: return
-            active.save()
-            active.clipRRect(RRect.makeXYWH(x, y, width, height, radius), true)
+            if (radius > 0f) {
+                active.save()
+                active.clipRRect(RRect.makeXYWH(x, y, width, height, radius), true)
+            }
             active.drawImageRect(
                 image, Rect.makeWH(image.width.toFloat(), image.height.toFloat()), Rect.makeXYWH(x, y, width, height),
-                SamplingMode.MITCHELL, paint, true,
+                SamplingMode.LINEAR, paint, true,
             )
-            active.restore()
+            if (radius > 0f) active.restore()
         }
+    }
+
+    private fun checkerImage() = checkerImage ?: Surface.makeRaster(
+        ImageInfo(2, 2, ColorType.N32, ColorAlphaType.PREMUL, ColorSpace.getSRGB()),
+    ).use { surface ->
+        Paint().setColor(0xff404040.toInt()).use { surface.canvas.drawRect(Rect.makeWH(2f, 2f), it) }
+        Paint().setColor(0xff737373.toInt()).use {
+            surface.canvas.drawRect(Rect.makeXYWH(1f, 0f, 1f, 1f), it)
+            surface.canvas.drawRect(Rect.makeXYWH(0f, 1f, 1f, 1f), it)
+        }
+        surface.makeImageSnapshot().also { checkerImage = it }
     }
 
     private fun processDownloads() {
