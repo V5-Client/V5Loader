@@ -434,7 +434,23 @@ inline std::optional<EtherwarpRayDirection> resolveStableAimDirection(
   const double rayLength,
   const std::optional<EtherwarpRayDirection>& fallback = std::nullopt
 ) {
+  const auto centerDirection = makeAimDirection(world, originX, originY, originZ, to);
+  if (!centerDirection.has_value() ||
+      !hitsExactEtherwarpTarget(world, to, rayLength, *centerDirection, originX, originY, originZ)) {
+    return std::nullopt;
+  }
+
   const uint16_t toSupportFlags = flagsAt(world, to.x, to.y, to.z);
+  // ---------------------------------------------------------------------
+  // TODO: figure out a way to fix the self-intersection issue:
+  // where you're standing on a snow layer and even though your LOS ray is clear,
+  // the game treats the layer as a full block for some reason so if your LOS intersects the fake fullblock,
+  // you're tped into the block you're already on
+  //
+  // snow intersection was fixed, and yet the self-intersection issue still persists...
+  // at least, i think intersection as a general issue was fixed. it seems to have been but idk.
+  // either way, it needs fixing but i don't know how to fix it yet
+  // ---------------------------------------------------------------------
 
   const double landingY = etherwarpLandingYOffset(toSupportFlags);
   const double verticalOffsets[] = {landingY, landingY - 0.2, landingY - 0.35, landingY - 0.5};

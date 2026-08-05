@@ -17,7 +17,7 @@ import kotlin.collections.iterator
 object WorldSerializer {
 
   private const val MAGIC = 0x5CAFEBAB
-  private const val VERSION = 4
+  private const val VERSION = 5
   private const val LEGACY_STATE_ID_VERSION = 3
   private val CACHE_DIR = File("pathfinder_cache")
 

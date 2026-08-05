@@ -213,6 +213,10 @@ object NativeStateEncoder {
       flags = flags or NativeVoxelFlags.ETHER_FEET_BLOCKER
     }
 
+    if (block is SnowLayerBlock) {
+      flags = flags or NativeVoxelFlags.ETHER_FAKE_FULL_BLOCKER
+    }
+
     return flags
   }
 }
