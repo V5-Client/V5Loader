@@ -11,9 +11,21 @@ import org.mozilla.javascript.Undefined;
 
 public final class V5MixinStorage {
     private static final String METHOD_PREFIX = "method_";
-    private static final Map<String, Object> STORAGE = new HashMap<>();
+    private static final Map<String, Object> STORAGE = getSharedStorage();
 
     private V5MixinStorage() {}
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> getSharedStorage() {
+        Object existing = System.getProperties().get("V5Mixin.storage");
+        if (existing instanceof Map<?, ?>) {
+            return (Map<String, Object>) existing;
+        }
+
+        Map<String, Object> storage = new HashMap<>();
+        System.getProperties().put("V5Mixin.storage", storage);
+        return storage;
+    }
 
     public static Object get(String key, Object defaultValue) {
         return STORAGE.getOrDefault(key, defaultValue);

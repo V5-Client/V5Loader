@@ -15,12 +15,12 @@
         "FramerateLimitTrackerMixin",
         "FrustumMixin",
         "GameRendererMixin",
+        "GuiGraphicsExtractorMixin",
         "ItemInHandRendererMixin",
         "KeyboardHandlerMixin",
         "MinecraftMixin",
         "MouseHandlerMixin",
         "JoinMultiplayerScreenMixin",
-        "PlayerTabOverlayMixin",
         "LevelRendererMixin",
         "VisGraphMixin",
         "YggdrasilServicesKeyInfoMixin"
