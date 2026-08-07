@@ -344,7 +344,7 @@ JNIEXPORT jobject JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_Nativ
             avoidMetaFlat[base + 2],
             avoidMetaFlat[base + 3],
             avoidMetaFlat[base + 4],
-            avoidPenaltyFlat[i],
+            static_cast<float>(avoidPenaltyFlat[i]),
           });
         }
       }
@@ -355,8 +355,8 @@ JNIEXPORT jobject JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_Nativ
     params.goals = goals;
     params.isFly = isFly == JNI_TRUE;
     params.maxIterations = static_cast<int>(maxIterations);
-    params.heuristicWeight = static_cast<double>(heuristicWeight);
-    params.nonPrimaryStartPenalty = static_cast<double>(nonPrimaryStartPenalty);
+    params.heuristicWeight = static_cast<float>(heuristicWeight);
+    params.nonPrimaryStartPenalty = static_cast<float>(nonPrimaryStartPenalty);
     params.moveOrderOffset = static_cast<int>(moveOrderOffset);
     params.avoidZones = std::move(avoidZones);
 

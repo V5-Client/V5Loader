@@ -135,7 +135,7 @@ struct SharedState {
   std::vector<float> nodePitch;
   std::vector<int> nodeHeapPos;
   std::unordered_map<uint64_t, int> coordToNode;
-  detail::Heap heap;
+  detail::Heap<double> heap;
 
   int iterations = 0;
   int activeExpanders = 0;

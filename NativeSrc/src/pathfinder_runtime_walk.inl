@@ -50,7 +50,7 @@ inline bool Runtime::moveAscend(const Int3& current, const int dx, const int dz,
   const bool destStair = hasFlag(destSupport, VF_STAIRS_BOTTOM);
 
   out.pos = {destX, current.y + 1, destZ};
-  double baseCost = ActionCosts::JUMP_UP_ONE_BLOCK_TIME;
+  float baseCost = ActionCosts::JUMP_UP_ONE_BLOCK_TIME;
   if (destBottom || srcStair || destStair) {
     baseCost = ActionCosts::SLAB_ASCENT_TIME;
   }
@@ -83,10 +83,10 @@ inline bool Runtime::moveDescend(const Int3& current, const int dx, const int dz
     }
 
     const int destY = floorY + 1;
-    double totalCost = ActionCosts::WALK_OFF_EDGE_TIME + ActionCosts::getFallTime(dropBlocks);
+    float totalCost = ActionCosts::WALK_OFF_EDGE_TIME + ActionCosts::getFallTime(dropBlocks);
     if (dropBlocks > 3) {
       const int excess = dropBlocks - 3;
-      totalCost += static_cast<double>(excess * excess) * 2.0;
+      totalCost += static_cast<float>(excess * excess) * 2.0f;
     }
 
     totalCost += pathPenalty(destX, destY, destZ);

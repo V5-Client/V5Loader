@@ -11,7 +11,7 @@ namespace v5pf::detail {
 constexpr int MAX_DIST = 6;
 constexpr int OPEN_SPACE_SOFT_CAP = MAX_DIST;
 
-inline constexpr std::array<double, 7> EDGE_PENALTIES = {
+inline constexpr std::array<float, 7> EDGE_PENALTIES = {
   24.0,
   19.5,
   16.0,
@@ -21,7 +21,7 @@ inline constexpr std::array<double, 7> EDGE_PENALTIES = {
   0.5,
 };
 
-inline constexpr std::array<double, 7> WALL_PENALTIES = {
+inline constexpr std::array<float, 7> WALL_PENALTIES = {
   17.0,
   13.5,
   11.0,
@@ -66,13 +66,13 @@ inline bool isFlyPassableFlags(const uint16_t flags) {
 
 struct MoveOut {
   Int3 pos{};
-  double cost = ActionCosts::INF_COST;
+  float cost = ActionCosts::INF_COST;
 };
 
 struct FlyEnvironment {
-  double groundCost = 0.0;
-  double horizontalCost = 0.0;
-  double enclosureCost = 0.0;
+  float groundCost = 0.0f;
+  float horizontalCost = 0.0f;
+  float enclosureCost = 0.0f;
   uint8_t computed = 0;
 };
 
@@ -92,7 +92,7 @@ struct RuntimeCache {
   int snapshotMinY = 0;
   int snapshotMaxY = 0;
   LazySectionArray<StampedValue<VoxelClassifications>> classifications;
-  LazySectionArray<StampedValue<double>> penalties;
+  LazySectionArray<StampedValue<float>> penalties;
   LazySectionArray<StampedValue<FlyEnvironment>> flyEnvironments;
 
   void begin(const WorldSnapshot& world) {
@@ -117,13 +117,13 @@ class Runtime {
   Runtime(const WorldSnapshot& world, const SearchParams& params);
 
   [[nodiscard]] bool isAtGoal(int x, int y, int z) const;
-  [[nodiscard]] double heuristic(int x, int y, int z) const;
-  [[nodiscard]] double transientAvoidPenalty(int x, int y, int z) const;
-  [[nodiscard]] double flyHorizontalProgress(int x, int y, int z) const;
+  [[nodiscard]] float heuristic(int x, int y, int z) const;
+  [[nodiscard]] float transientAvoidPenalty(int x, int y, int z) const;
+  [[nodiscard]] float flyHorizontalProgress(int x, int y, int z) const;
 
   [[nodiscard]] bool walkMove(const Int3& current, const Int3& delta, MoveOut& out);
   [[nodiscard]] bool flyMove(const Int3& current, const Int3& delta, MoveOut& out);
-  [[nodiscard]] bool flyMove(const Int3& current, const Int3& delta, double progress, MoveOut& out);
+  [[nodiscard]] bool flyMove(const Int3& current, const Int3& delta, float progress, MoveOut& out);
 
  private:
   const WorldSnapshot& world_;
@@ -142,10 +142,10 @@ class Runtime {
 
   [[nodiscard]] bool isSafe(int x, int y, int z);
   [[nodiscard]] bool isFlyColumnClear(int x, int y, int z);
-  [[nodiscard]] double walkHeuristic(int x, int y, int z) const;
-  [[nodiscard]] double flyHeuristic(int x, int y, int z) const;
+  [[nodiscard]] float walkHeuristic(int x, int y, int z) const;
+  [[nodiscard]] float flyHeuristic(int x, int y, int z) const;
   [[nodiscard]] const Int3& closestFlyGoal(int x, int y, int z) const;
-  [[nodiscard]] double calculateProgress(int x, int z, const Int3& goal) const;
+  [[nodiscard]] float calculateProgress(int x, int z, const Int3& goal) const;
 
   [[nodiscard]] int directionMask(int x, int y, int z);
   [[nodiscard]] bool isStepDirection(int x, int y, int z, int dx, int dz);
@@ -153,15 +153,15 @@ class Runtime {
   [[nodiscard]] bool isEdge(int x, int y, int z);
   [[nodiscard]] bool isWall(int x, int y, int z);
   void directionalDistances(int x, int y, int z, int mask, int& edgeDist, int& wallDist);
-  [[nodiscard]] double combinedPenalty(int edgeDist, int wallDist) const;
-  [[nodiscard]] double pathPenalty(int x, int y, int z);
+  [[nodiscard]] float combinedPenalty(int edgeDist, int wallDist) const;
+  [[nodiscard]] float pathPenalty(int x, int y, int z);
 
   [[nodiscard]] bool moveTraverse(const Int3& current, int dx, int dz, MoveOut& out);
   [[nodiscard]] bool moveDiagonal(const Int3& current, int dx, int dz, MoveOut& out);
   [[nodiscard]] bool moveAscend(const Int3& current, int dx, int dz, MoveOut& out);
   [[nodiscard]] bool moveDescend(const Int3& current, int dx, int dz, MoveOut& out);
 
-  [[nodiscard]] bool moveFly(const Int3& current, int dx, int dy, int dz, double progress, MoveOut& out);
+  [[nodiscard]] bool moveFly(const Int3& current, int dx, int dy, int dz, float progress, MoveOut& out);
   void populateFlyEnvironment(int x, int y, int z, uint8_t needed, FlyEnvironment& environment);
 
   struct ChunkGenerationCursor {

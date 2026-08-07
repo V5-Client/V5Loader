@@ -47,15 +47,15 @@ struct SearchWorkspace {
   std::vector<int> nodeX;
   std::vector<int> nodeY;
   std::vector<int> nodeZ;
-  std::vector<double> nodeG;
-  std::vector<double> nodeH;
-  std::vector<double> nodeF;
-  std::vector<double> nodeAvoidPenalty;
+  std::vector<float> nodeG;
+  std::vector<float> nodeH;
+  std::vector<float> nodeF;
+  std::vector<float> nodeAvoidPenalty;
   std::vector<int> nodeParent;
   std::vector<int> nodeStartIndex;
   std::vector<int> nodeHeapPos;
   NodeIndexTable coordToNode;
-  detail::Heap heap;
+  detail::Heap<float> heap;
 
   SearchWorkspace()
     : heap(nodeF, nodeH, nodeG, nodeHeapPos) {
@@ -135,9 +135,9 @@ std::optional<SearchResult> findPath(
   auto& coordToNode = workspace.coordToNode;
   auto& heap = workspace.heap;
 
-  const double weight = (std::isfinite(params.heuristicWeight) && params.heuristicWeight > 0.0)
+  const float weight = (std::isfinite(params.heuristicWeight) && params.heuristicWeight > 0.0f)
     ? params.heuristicWeight
-    : 1.0;
+    : 1.0f;
   const bool isFly = params.isFly;
 
   auto getOrCreateNode = [&](const int x, const int y, const int z) {
@@ -148,7 +148,7 @@ std::optional<SearchResult> findPath(
     nodeX.push_back(x);
     nodeY.push_back(y);
     nodeZ.push_back(z);
-    nodeG.push_back(std::numeric_limits<double>::infinity());
+    nodeG.push_back(std::numeric_limits<float>::infinity());
     nodeH.push_back(runtime.heuristic(x, y, z) * weight);
     nodeF.push_back(nodeH.back());
     nodeAvoidPenalty.push_back(runtime.transientAvoidPenalty(x, y, z));
@@ -158,7 +158,7 @@ std::optional<SearchResult> findPath(
     return std::pair{idx, true};
   };
 
-  auto setNodeCost = [&](const int nodeIdx, const double cost) {
+  auto setNodeCost = [&](const int nodeIdx, const float cost) {
     const size_t idx = static_cast<size_t>(nodeIdx);
     nodeG[idx] = cost;
     nodeF[idx] = cost + nodeH[idx];
@@ -175,7 +175,7 @@ std::optional<SearchResult> findPath(
 
   for (size_t i = 0; i < params.starts.size(); i++) {
     const auto& start = params.starts[i];
-    const double startPenalty = i == 0 ? 0.0 : std::max(0.0, params.nonPrimaryStartPenalty);
+    const float startPenalty = i == 0 ? 0.0f : std::max(0.0f, params.nonPrimaryStartPenalty);
 
     const int nodeIdx = getOrCreateNode(start.x, start.y, start.z).first;
 
@@ -239,19 +239,19 @@ std::optional<SearchResult> findPath(
       return result;
     }
 
-    const double currCost = nodeG[static_cast<size_t>(currIdx)];
+    const float currCost = nodeG[static_cast<size_t>(currIdx)];
 
     const int currStartIdx = nodeStartIndex[static_cast<size_t>(currIdx)];
 
     if (isFly) {
-      const double currFlyProgress = runtime.flyHorizontalProgress(curr.x, curr.y, curr.z);
+      const float currFlyProgress = runtime.flyHorizontalProgress(curr.x, curr.y, curr.z);
       for (const auto& move : detail::FLY_MOVES) {
         detail::MoveOut out;
         if (!runtime.flyMove(curr, move, currFlyProgress, out)) continue;
         if (out.cost >= ActionCosts::INF_COST) continue;
 
         const auto [nIdx, inserted] = getOrCreateNode(out.pos.x, out.pos.y, out.pos.z);
-        const double newCost = currCost + out.cost + nodeAvoidPenalty[static_cast<size_t>(nIdx)];
+        const float newCost = currCost + out.cost + nodeAvoidPenalty[static_cast<size_t>(nIdx)];
         if (inserted) {
           nodeParent[static_cast<size_t>(nIdx)] = currIdx;
           nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;
@@ -280,7 +280,7 @@ std::optional<SearchResult> findPath(
       if (out.cost >= ActionCosts::INF_COST) continue;
 
       const auto [nIdx, inserted] = getOrCreateNode(out.pos.x, out.pos.y, out.pos.z);
-      const double newCost = currCost + out.cost + nodeAvoidPenalty[static_cast<size_t>(nIdx)];
+      const float newCost = currCost + out.cost + nodeAvoidPenalty[static_cast<size_t>(nIdx)];
       if (inserted) {
         nodeParent[static_cast<size_t>(nIdx)] = currIdx;
         nodeStartIndex[static_cast<size_t>(nIdx)] = currStartIdx;

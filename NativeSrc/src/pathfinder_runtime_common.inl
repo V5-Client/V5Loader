@@ -30,12 +30,12 @@ inline bool Runtime::isAtGoal(const int x, const int y, const int z) const {
   return false;
 }
 
-inline double Runtime::heuristic(const int x, const int y, const int z) const {
+inline float Runtime::heuristic(const int x, const int y, const int z) const {
   return params_.isFly ? flyHeuristic(x, y, z) : walkHeuristic(x, y, z);
 }
 
-inline double Runtime::transientAvoidPenalty(const int x, const int y, const int z) const {
-  double penalty = 0.0;
+inline float Runtime::transientAvoidPenalty(const int x, const int y, const int z) const {
+  float penalty = 0.0f;
   for (const auto& zone : params_.avoidZones) {
     if (std::abs(y - zone.y) > zone.maxYDiff) continue;
 
@@ -44,14 +44,14 @@ inline double Runtime::transientAvoidPenalty(const int x, const int y, const int
     const long long distSq = static_cast<long long>(dx) * dx + static_cast<long long>(dz) * dz;
     if (distSq > zone.radiusSq) continue;
 
-    const double normalized = zone.radiusSq <= 1 ? 0.0 : static_cast<double>(distSq) / static_cast<double>(zone.radiusSq);
-    const double falloff = std::max(0.2, 1.0 - normalized);
+    const float normalized = zone.radiusSq <= 1 ? 0.0f : static_cast<float>(distSq) / static_cast<float>(zone.radiusSq);
+    const float falloff = std::max(0.2f, 1.0f - normalized);
     penalty += zone.penalty * falloff;
   }
   return penalty;
 }
 
-inline double Runtime::flyHorizontalProgress(const int x, const int y, const int z) const {
+inline float Runtime::flyHorizontalProgress(const int x, const int y, const int z) const {
   return calculateProgress(x, z, closestFlyGoal(x, y, z));
 }
 
@@ -75,7 +75,7 @@ inline bool Runtime::flyMove(const Int3& current, const Int3& delta, MoveOut& ou
   return moveFly(current, delta.x, delta.y, delta.z, calculateProgress(current.x, current.z, goal), out);
 }
 
-inline bool Runtime::flyMove(const Int3& current, const Int3& delta, const double progress, MoveOut& out) {
+inline bool Runtime::flyMove(const Int3& current, const Int3& delta, const float progress, MoveOut& out) {
   return moveFly(current, delta.x, delta.y, delta.z, progress, out);
 }
 
@@ -134,16 +134,16 @@ inline bool Runtime::isFlyColumnClear(const int x, const int y, const int z) {
   return clear;
 }
 
-inline double Runtime::walkHeuristic(const int x, const int y, const int z) const {
-  if (params_.goals.empty()) return 0.0;
+inline float Runtime::walkHeuristic(const int x, const int y, const int z) const {
+  if (params_.goals.empty()) return 0.0f;
 
-  const double sprintCost = ActionCosts::SPRINT_ONE_BLOCK_TIME;
-  const double diagonalCost = ActionCosts::SPRINT_DIAGONAL_TIME;
-  const double fallCostPerBlock = ActionCosts::getFallTime(2) * 0.5;
-  const double jumpCostPerBlock = ActionCosts::JUMP_UP_ONE_BLOCK_TIME;
-  const double verticalReluctance = sprintCost * 0.35;
+  const float sprintCost = ActionCosts::SPRINT_ONE_BLOCK_TIME;
+  const float diagonalCost = ActionCosts::SPRINT_DIAGONAL_TIME;
+  const float fallCostPerBlock = ActionCosts::getFallTime(2) * 0.5f;
+  const float jumpCostPerBlock = ActionCosts::JUMP_UP_ONE_BLOCK_TIME;
+  const float verticalReluctance = sprintCost * 0.35f;
 
-  double best = std::numeric_limits<double>::infinity();
+  float best = std::numeric_limits<float>::infinity();
   for (const auto& goal : params_.goals) {
     const long long dx = std::llabs(static_cast<long long>(x) - goal.x);
     const long long dz = std::llabs(static_cast<long long>(z) - goal.z);
@@ -152,12 +152,12 @@ inline double Runtime::walkHeuristic(const int x, const int y, const int z) cons
     const long long minHoriz = std::min(dx, dz);
     const long long maxHoriz = std::max(dx, dz);
 
-    double horizontal = static_cast<double>(minHoriz) * diagonalCost +
-      static_cast<double>(maxHoriz - minHoriz) * sprintCost;
+    float horizontal = static_cast<float>(minHoriz) * diagonalCost +
+      static_cast<float>(maxHoriz - minHoriz) * sprintCost;
 
     if (dy != 0) {
-      const double absDy = static_cast<double>(std::llabs(dy));
-      horizontal += (dy > 0 ? static_cast<double>(dy) * fallCostPerBlock : absDy * jumpCostPerBlock);
+      const float absDy = static_cast<float>(std::llabs(dy));
+      horizontal += (dy > 0 ? static_cast<float>(dy) * fallCostPerBlock : absDy * jumpCostPerBlock);
       horizontal += absDy * verticalReluctance;
     }
 
@@ -166,7 +166,7 @@ inline double Runtime::walkHeuristic(const int x, const int y, const int z) cons
     }
   }
 
-  return std::isfinite(best) ? best : 0.0;
+  return std::isfinite(best) ? best : 0.0f;
 }
 
 inline int Runtime::directionMask(const int x, const int y, const int z) {
@@ -268,13 +268,13 @@ inline void Runtime::directionalDistances(
   }
 }
 
-inline double Runtime::combinedPenalty(const int edgeDist, const int wallDist) const {
+inline float Runtime::combinedPenalty(const int edgeDist, const int wallDist) const {
   const int edgeIdx = std::clamp(edgeDist, 0, OPEN_SPACE_SOFT_CAP);
   const int wallIdx = std::clamp(wallDist, 0, OPEN_SPACE_SOFT_CAP);
   return EDGE_PENALTIES[static_cast<size_t>(edgeIdx)] + WALL_PENALTIES[static_cast<size_t>(wallIdx)];
 }
 
-inline double Runtime::pathPenalty(const int x, const int y, const int z) {
+inline float Runtime::pathPenalty(const int x, const int y, const int z) {
   auto& cached = cache_.penalties.at(x, y, z);
   const uint32_t generation = cacheGenerationAt(x, z);
   if (cached.generation == generation) return cached.value;
@@ -283,9 +283,9 @@ inline double Runtime::pathPenalty(const int x, const int y, const int z) {
   int edgeDist;
   int wallDist;
   directionalDistances(x, y, z, mask, edgeDist, wallDist);
-  double value = combinedPenalty(edgeDist, wallDist);
-  if (hasFlag(flagsAt(x, y, z), VF_FLUID)) value += 20.0;
-  if (hasFlag(flagsAt(x, y + 1, z), VF_FLUID)) value += 20.0;
+  float value = combinedPenalty(edgeDist, wallDist);
+  if (hasFlag(flagsAt(x, y, z), VF_FLUID)) value += 20.0f;
+  if (hasFlag(flagsAt(x, y + 1, z), VF_FLUID)) value += 20.0f;
   cached = {generation, value};
   return value;
 }

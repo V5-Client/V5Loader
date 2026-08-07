@@ -5,12 +5,13 @@
 
 namespace v5pf::detail {
 
+template<typename Cost>
 class Heap {
  public:
   explicit Heap(
-    const std::vector<double>& fCost,
-    const std::vector<double>& hCost,
-    const std::vector<double>& gCost,
+    const std::vector<Cost>& fCost,
+    const std::vector<Cost>& hCost,
+    const std::vector<Cost>& gCost,
     std::vector<int>& heapPos
   ) : fCost_(fCost), hCost_(hCost), gCost_(gCost), heapPos_(heapPos) {
     items_.resize(1);
@@ -74,9 +75,9 @@ class Heap {
   std::vector<int> items_;
   int size_ = 0;
 
-  const std::vector<double>& fCost_;
-  const std::vector<double>& hCost_;
-  const std::vector<double>& gCost_;
+  const std::vector<Cost>& fCost_;
+  const std::vector<Cost>& hCost_;
+  const std::vector<Cost>& gCost_;
   std::vector<int>& heapPos_;
 
   [[nodiscard]] bool less(const int left, const int right) const {
