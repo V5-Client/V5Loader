@@ -1,7 +1,7 @@
 package com.chattriggers.ctjs.api.message
 
 import com.chattriggers.ctjs.api.client.Client
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.internal.listeners.ClientListener
 import com.chattriggers.ctjs.internal.mixins.ChatComponentAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
@@ -110,7 +110,7 @@ object ChatLib {
     @JvmOverloads
     fun getChatBreak(separator: String = "-"): String {
         if (separator.isEmpty()) return ""
-        val len = Renderer.getStringWidth(separator)
+        val len = Render2D.getStringWidth(separator)
         val times = getChatWidth() / len
         return separator.repeat(times)
     }
@@ -155,14 +155,14 @@ object ChatLib {
      */
     @JvmStatic
     fun getCenteredText(text: String): String {
-        val textWidth = Renderer.getStringWidth(addColor(text))
+        val textWidth = Render2D.getStringWidth(addColor(text))
         val chatWidth = getChatWidth()
 
         if (textWidth >= chatWidth)
             return text
 
         val spaceWidth = (chatWidth - textWidth) / 2f
-        return " ".repeat((spaceWidth / Renderer.getStringWidth(" ")).roundToInt()) + text
+        return " ".repeat((spaceWidth / Render2D.getStringWidth(" ")).roundToInt()) + text
     }
 
     /**

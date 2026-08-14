@@ -58,7 +58,7 @@ class Text {
 
     fun getColor(): Long = color
 
-    fun setColor(color: Long) = apply { this.color = Renderer.fixAlpha(color) }
+    fun setColor(color: Long) = apply { this.color = Render2D.fixAlpha(color) }
 
     fun getFormatted(): Boolean = formatted
 
@@ -152,7 +152,7 @@ class Text {
             ctx.pose().pushMatrix()
             ctx.pose().scale(scale, scale)
 
-            var longestLine = lines.maxOf { Renderer.getStringWidth(it) * scale }
+            var longestLine = lines.maxOf { Render2D.getStringWidth(it) * scale }
             if (maxWidth != 0)
                 longestLine = longestLine.coerceAtMost(maxWidth.toFloat())
             width = longestLine.toInt()
@@ -178,7 +178,7 @@ class Text {
             }
 
             for (i in 0 until minOf(maxLines, lines.size)) {
-                ctx.text(Renderer.getFontRenderer(), lines[i], xHolder, yHolder, color.toInt(), shadow)
+                ctx.text(Render2D.getFontRenderer(), lines[i], xHolder, yHolder, color.toInt(), shadow)
                 yHolder += 10
             }
             ctx.pose().popMatrix()
@@ -194,7 +194,7 @@ class Text {
         string.split("\n").forEach { line ->
             if (maxWidth > 0) {
                 lines.addAll(
-                    Renderer.getFontRenderer().splitter.splitLines(line, maxWidth, Style.EMPTY).map { it.string }
+                    Render2D.getFontRenderer().splitter.splitLines(line, maxWidth, Style.EMPTY).map { it.string }
                 )
             } else {
                 lines.add(line)

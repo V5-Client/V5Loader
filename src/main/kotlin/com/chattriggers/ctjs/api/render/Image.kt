@@ -80,7 +80,7 @@ class Image(var image: BufferedImage?) {
         }
 
         if (texture != null)
-            Renderer.drawImage(this, x, y, drawWidth, drawHeight)
+            Render2D.drawImage(this, x, y, drawWidth, drawHeight)
     }
 
     private data class Texture(val texture: DynamicTexture, val buffer: ByteBuffer)

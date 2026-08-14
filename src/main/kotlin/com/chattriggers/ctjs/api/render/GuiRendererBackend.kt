@@ -24,7 +24,7 @@ import javax.imageio.metadata.IIOMetadataNode
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-/** Skija-backed 2D renderer used by the JavaScript-facing [Renderer] API. */
+/** Skija-backed 2D renderer used by the JavaScript-facing [Render2D] API. */
 open class GuiRendererBackend {
     private val callbacks = CopyOnWriteArrayList<Runnable>()
     private val preCallbacks = CopyOnWriteArrayList<Runnable>()

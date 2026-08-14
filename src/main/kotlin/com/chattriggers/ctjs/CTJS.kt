@@ -8,7 +8,7 @@ import com.chattriggers.ctjs.api.client.WelcomeScreen
 import com.chattriggers.ctjs.api.commands.DynamicCommands
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Image
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.api.render.skia.SkijaPIP
 import com.chattriggers.ctjs.api.render.skia.SkijaPrePIP
 import com.chattriggers.ctjs.api.triggers.TriggerType
@@ -49,7 +49,7 @@ class CTJS : ClientModInitializer {
             autoOpenTriggered = true
             WelcomeScreen.open()
         }
-        ClientLifecycleEvents.CLIENT_STOPPING.register { _ -> Renderer.destroy() }
+        ClientLifecycleEvents.CLIENT_STOPPING.register { _ -> Render2D.destroy() }
 
         SecureLoader.onInitialize()
 
@@ -103,13 +103,13 @@ class CTJS : ClientModInitializer {
             Register.clearCustomTriggers()
             StaticCommand.unregisterAll()
             DynamicCommands.unregisterAll()
-            Renderer.clearCallbacks()
+            Render2D.clearCallbacks()
 
             if (Config.clearConsoleOnLoad)
                 Console.clear()
 
             Client.scheduleTask {
-                Renderer.destroy()
+                Render2D.destroy()
                 images.forEach(Image::destroy)
                 sounds.forEach(Sound::destroy)
 

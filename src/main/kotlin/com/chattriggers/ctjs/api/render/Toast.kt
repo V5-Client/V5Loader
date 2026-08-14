@@ -110,7 +110,7 @@ class Toast(config: NativeObject) : MCToast {
         val render = customRenderFunction
         if (render != null) {
             DrawContextHolder.withContext(context) {
-                Renderer.withMatrix(UMatrixStack(context.pose()).toMC()) {
+                Render2D.withMatrix(UMatrixStack(context.pose()).toMC()) {
                     try {
                         JSLoader.invoke(render, emptyArray(), thisObj = requireNotNull(jsReceiver))
                     } catch (e: Throwable) {

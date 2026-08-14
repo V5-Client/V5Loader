@@ -1,7 +1,7 @@
 package com.chattriggers.ctjs.api.client
 
 import com.chattriggers.ctjs.api.render.Font
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import net.minecraft.util.ARGB
 
 object ScreenHelper {
@@ -39,17 +39,17 @@ object ScreenHelper {
         val defaultTextColor = if (hovered) argb(255, 255, 255, 255) else argb(252, 224, 232, 242)
         val textColor = textColorOverride ?: defaultTextColor
 
-        Renderer.drawDropShadow(x, y, width, height, 5f, 14f, 1.3f, argb(60, 0, 10, 28))
-        Renderer.drawRoundedRect(x, y, width, height, 5f, bg)
-        Renderer.drawHollowRect(x, y, width, height, 0.65f, border, 5f)
-        Renderer.text(
+        Render2D.drawDropShadow(x, y, width, height, 5f, 14f, 1.3f, argb(60, 0, 10, 28))
+        Render2D.drawRoundedRect(x, y, width, height, 5f, bg)
+        Render2D.drawHollowRect(x, y, width, height, 0.65f, border, 5f)
+        Render2D.text(
             label,
             x + width / 2f,
             y + height / 2f,
             8.7f,
             textColor,
             smallerFont,
-            Renderer.ALIGN_CENTER or Renderer.ALIGN_MIDDLE
+            Render2D.ALIGN_CENTER or Render2D.ALIGN_MIDDLE
         )
     }
 
