@@ -16,4 +16,5 @@ object NativeVoxelFlags {
   const val ETHER_TELEPORT_CLEAR = 1 shl 11
   // Etherwarp can ray through these voxels, but the player's body cannot occupy them after landing.
   const val ETHER_FEET_BLOCKER = 1 shl 12
+  const val ETHER_FAKE_FULL_BLOCKER = 1 shl 13
 }

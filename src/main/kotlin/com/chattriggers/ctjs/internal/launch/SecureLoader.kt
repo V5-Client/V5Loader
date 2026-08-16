@@ -33,6 +33,7 @@ internal object SecureLoader {
     private const val DISK_MODULE_NAME = "V5"
     private const val LOADER_USER_AGENT = "V5Loader/1.1"
     private const val TOKEN_EXPIRY_SKEW_SECONDS = 60L
+    private const val CTJS_ERROR_REPORT_INTERVAL_MS = 15 * 60 * 1000L
     private const val SESSION_DIR_NAME = ".v5"
     private const val SESSION_FILE_NAME = "session.json"
 
@@ -46,6 +47,7 @@ internal object SecureLoader {
     @Volatile private var isLoaded = false
     @Volatile private var internalToken: String? = null
     @Volatile private var didConsumeInitialLoaderToken = false
+    private var lastCtjsErrorReportAt = 0L
 
     @JvmStatic
     fun getJwtToken(): String? {
@@ -91,6 +93,14 @@ internal object SecureLoader {
         lineOffset: Int? = null,
         stack: String? = null,
     ) {
+        if (isDevMode) return
+
+        synchronized(this) {
+            val now = System.currentTimeMillis()
+            if (now - lastCtjsErrorReportAt < CTJS_ERROR_REPORT_INTERVAL_MS) return
+            lastCtjsErrorReportAt = now
+        }
+
         val body = buildJsonObject {
             put("kind", kind)
             message?.let { put("message", it.take(1000)) }

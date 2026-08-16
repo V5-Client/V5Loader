@@ -69,13 +69,6 @@ std::optional<Int3> raymarchEtherwarp(
   WorldVoxelCursor cursor(world);
   uint16_t cellFlags = cursor.getFlags(cellX, cellY, cellZ);
 
-  if (!isEtherPassableFlags(cellFlags)) {
-    if (isLandingBlockAt(cursor, cellX, cellY, cellZ, cellFlags, world)) {
-      return Int3{cellX, cellY, cellZ};
-    }
-    return std::nullopt;
-  }
-
   const int stepX = dirX > 0.0 ? 1 : (dirX < 0.0 ? -1 : 0);
   const int stepY = dirY > 0.0 ? 1 : (dirY < 0.0 ? -1 : 0);
   const int stepZ = dirZ > 0.0 ? 1 : (dirZ < 0.0 ? -1 : 0);
@@ -87,6 +80,14 @@ std::optional<Int3> raymarchEtherwarp(
   double nextX = boundaryDistance(originX, stepX) * invAbsX;
   double nextY = boundaryDistance(originY, stepY) * invAbsY;
   double nextZ = boundaryDistance(originZ, stepZ) * invAbsZ;
+
+  if (isEtherwarpFakeFullBlockerFlags(cellFlags)) return std::nullopt;
+  if (!isEtherPassableFlags(cellFlags)) {
+    if (isLandingBlockAt(cursor, cellX, cellY, cellZ, cellFlags, world)) {
+      return Int3{cellX, cellY, cellZ};
+    }
+    return std::nullopt;
+  }
 
   double distance = 0.0;
   int traversedCells = 0;
@@ -128,6 +129,7 @@ std::optional<Int3> raymarchEtherwarp(
     }
 
     cellFlags = cursor.getFlags(cellX, cellY, cellZ);
+    if (isEtherwarpFakeFullBlockerFlags(cellFlags)) return std::nullopt;
     if (!isEtherPassableFlags(cellFlags)) {
       if (isLandingBlockAt(cursor, cellX, cellY, cellZ, cellFlags, world)) {
         return Int3{cellX, cellY, cellZ};

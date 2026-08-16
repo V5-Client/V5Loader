@@ -21,6 +21,10 @@ inline bool isEtherwarpStandableFlags(const uint16_t flags) {
   return hasVoxelFlag(flags, VF_SOLID);
 }
 
+inline bool isEtherwarpFakeFullBlockerFlags(const uint16_t flags) {
+  return hasVoxelFlag(flags, VF_ETHER_FAKE_FULL_BLOCKER);
+}
+
 inline int etherwarpStandOffset(const uint16_t supportFlags) {
   return hasVoxelFlag(supportFlags, VF_FENCE_LIKE) ? 2 : 1;
 }
