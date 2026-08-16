@@ -23,7 +23,7 @@ import kotlin.math.atan
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-object Renderer : GuiRendererBackend() {
+object Render2D : GuiRendererBackend() {
     private val NEWLINE_REGEX = """\n|\r\n?""".toRegex()
 
     // The currently-active matrix stack
@@ -453,8 +453,8 @@ object Renderer : GuiRendererBackend() {
         matrixStack.pop()
     }
 
-    internal fun withMatrix(stack: PoseStack?, partialTicks: Float = Renderer.partialTicks, block: () -> Unit) {
-        Renderer.partialTicks = partialTicks
+    internal fun withMatrix(stack: PoseStack?, partialTicks: Float = Render2D.partialTicks, block: () -> Unit) {
+        Render2D.partialTicks = partialTicks
         matrixPushCounter = 0
 
         try {
@@ -468,9 +468,9 @@ object Renderer : GuiRendererBackend() {
         }
 
         if (matrixPushCounter > 0) {
-            "Warning: Render function missing a call to Renderer.popMatrix()".printToConsole(LogType.WARN)
+            "Warning: Render function missing a call to Render2D.popMatrix()".printToConsole(LogType.WARN)
         } else if (matrixPushCounter < 0) {
-            "Warning: Render function has too many calls to Renderer.popMatrix()".printToConsole(LogType.WARN)
+            "Warning: Render function has too many calls to Render2D.popMatrix()".printToConsole(LogType.WARN)
         }
     }
 

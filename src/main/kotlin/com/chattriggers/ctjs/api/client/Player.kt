@@ -6,7 +6,7 @@ import com.chattriggers.ctjs.api.entity.Team
 import com.chattriggers.ctjs.api.inventory.Inventory
 import com.chattriggers.ctjs.api.inventory.Item
 import com.chattriggers.ctjs.api.message.TextComponent
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.api.world.PotionEffect
 import com.chattriggers.ctjs.api.world.Scoreboard
 import com.chattriggers.ctjs.api.world.World
@@ -69,13 +69,13 @@ object Player {
     fun getLastZ(): Double = toMC()?.zOld ?: 0.0
 
     @JvmStatic
-    fun getRenderX(): Double = getLastX() + (getX() - getLastX()) * Renderer.partialTicks
+    fun getRenderX(): Double = getLastX() + (getX() - getLastX()) * Render2D.partialTicks
 
     @JvmStatic
-    fun getRenderY(): Double = getLastY() + (getY() - getLastY()) * Renderer.partialTicks
+    fun getRenderY(): Double = getLastY() + (getY() - getLastY()) * Render2D.partialTicks
 
     @JvmStatic
-    fun getRenderZ(): Double = getLastZ() + (getZ() - getLastZ()) * Renderer.partialTicks
+    fun getRenderZ(): Double = getLastZ() + (getZ() - getLastZ()) * Render2D.partialTicks
 
     /**
      * Gets the player's x motion.
@@ -310,15 +310,15 @@ object Player {
     fun getContainer(): Inventory? = (Client.getMinecraft().screen as? AbstractContainerScreen<*>)?.let(::Inventory)
 
     /**
-     * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]
+     * Draws the player in the GUI. Takes the same parameters as [Render2D.drawPlayer]
      * minus `player`.
      *
-     * @see Renderer.drawPlayer
+     * @see Render2D.drawPlayer
      */
     @JvmStatic
     fun draw(obj: NativeObject) = apply {
         obj["player"] = this
-        Renderer.drawPlayer(obj)
+        Render2D.drawPlayer(obj)
     }
 
     class ArmorWrapper {

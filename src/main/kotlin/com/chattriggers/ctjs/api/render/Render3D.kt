@@ -9,7 +9,7 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 
-object RenderUtils {
+object Render3D {
     private val client = Minecraft.getInstance()
 
     data class Color(val r: Int, val g: Int, val b: Int, val a: Int) {

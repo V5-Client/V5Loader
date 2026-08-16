@@ -15,7 +15,7 @@ class Rectangle(
 
     fun getColor(): Long = color
 
-    fun setColor(color: Long) = apply { this.color = Renderer.fixAlpha(color) }
+    fun setColor(color: Long) = apply { this.color = Render2D.fixAlpha(color) }
 
     fun getX(): Float = x
 
@@ -82,7 +82,7 @@ class Rectangle(
     fun draw() = apply {
         shadow.draw()
         outline.draw()
-        Renderer.drawRect(x, y, width, height, color.toInt())
+        Render2D.drawRect(x, y, width, height, color.toInt())
     }
 
     private class Shadow(
@@ -93,8 +93,8 @@ class Rectangle(
     ) {
         fun draw() {
             if (!on) return
-            Renderer.drawRect(rect.x + offset.x, rect.y + rect.height, rect.width, offset.y, color.toInt())
-            Renderer.drawRect(rect.x + rect.width, rect.y + offset.y, offset.x, rect.height - offset.y, color.toInt())
+            Render2D.drawRect(rect.x + offset.x, rect.y + rect.height, rect.width, offset.y, color.toInt())
+            Render2D.drawRect(rect.x + rect.width, rect.y + offset.y, offset.x, rect.height - offset.y, color.toInt())
         }
     }
 
@@ -106,7 +106,7 @@ class Rectangle(
     ) {
         fun draw() {
             if (!on) return
-            Renderer.drawRect(
+            Render2D.drawRect(
                 rect.x - thickness,
                 rect.y - thickness,
                 rect.width + thickness * 2,

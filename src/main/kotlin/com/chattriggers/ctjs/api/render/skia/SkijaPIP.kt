@@ -1,6 +1,6 @@
 package com.chattriggers.ctjs.api.render.skia
 
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.gui.GuiGraphicsExtractor
@@ -22,11 +22,11 @@ internal open class SkijaPIP(bufferSource: MultiBufferSource.BufferSource) : Pic
         surface.render(color.getWidth(0), color.getHeight(0), color.texture()) { canvas ->
             canvas.resetMatrix()
             canvas.scale(state.guiScale, state.guiScale)
-            Renderer.beginSkijaFrame(canvas)
+            Render2D.beginSkijaFrame(canvas)
             try {
                 state.callback.run()
             } finally {
-                Renderer.endSkijaFrame()
+                Render2D.endSkijaFrame()
             }
         }
     }

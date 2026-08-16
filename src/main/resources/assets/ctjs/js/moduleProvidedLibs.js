@@ -38,7 +38,7 @@
 
     global.Priority = Java.class("com.chattriggers.ctjs.api.triggers.Trigger").Priority;
     global.Console = Java.type("com.chattriggers.ctjs.engine.Console").INSTANCE;
-    global.Renderer = Java.class("com.chattriggers.ctjs.api.render.Renderer").INSTANCE;
+    global.Render2D = Java.class("com.chattriggers.ctjs.api.render.Render2D").INSTANCE;
     const JSErrorReporter = Java.type("com.chattriggers.ctjs.internal.engine.JSErrorReporter").INSTANCE;
     global.cancel = event => {
         if (event instanceof CancellableEvent) {
@@ -79,7 +79,7 @@
         return easeOut(this, to, speed, jump);
     };
 
-    global.easeColor = (start, finish, speed, jump) => Renderer.getColor(
+    global.easeColor = (start, finish, speed, jump) => Render2D.getColor(
         easeOut((start >> 16) & 0xFF, (finish >> 16) & 0xFF, speed, jump),
         easeOut((start >> 8) & 0xFF, (finish >> 8) & 0xFF, speed, jump),
         easeOut(start & 0xFF, finish & 0xFF, speed, jump),
