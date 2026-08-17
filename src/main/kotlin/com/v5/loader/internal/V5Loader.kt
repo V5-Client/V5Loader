@@ -22,7 +22,6 @@ import kotlin.io.path.writeText
 internal object V5Loader {
     private const val MOD_ID = "ctjs"
     private const val DEVELOPER_JAR_NAME = "V5-Loader-DEV.jar"
-    private val legacyModLoaderName = Regex("V5ModLoader.*\\.jar", RegexOption.IGNORE_CASE)
     private val secretLock = Any()
     private var initialized = false
     private var sessionToken = ""
@@ -34,7 +33,6 @@ internal object V5Loader {
 
         val fabricLoader = FabricLoader.getInstance()
         val gameDirPath = fabricLoader.gameDir.toAbsolutePath().toString()
-        System.setProperty("v5.game_dir", gameDirPath)
         System.setProperty("v5.minecraft_version", fabricLoader.rawGameVersion)
         val sessionFilePath = buildSessionFilePath(gameDirPath)
         val minecraftVersion = resolveMinecraftVersion()
@@ -72,9 +70,6 @@ internal object V5Loader {
             println("[V5] Developer jar detected; skipping integrity check.")
             return
         }
-        val legacyModLoaders = File(gameDir, "mods").listFiles()
-            ?.filter { it.isFile && legacyModLoaderName.matches(it.name) }
-            .orEmpty()
         val hash = V5Crypto.calculateFileSha256(activeJar.absolutePath)
         if (hash.isEmpty()) throw IllegalStateException("[V5] Failed to hash active loader jar: ${activeJar.absolutePath}")
 
@@ -83,12 +78,8 @@ internal object V5Loader {
             ?: throw IllegalStateException("[V5] Loader integrity check failed.")
 
         when (integrity) {
-            "valid" -> if (legacyModLoaders.isEmpty()) {
-                println("[V5] V5-Loader integrity verified.")
-            } else {
-                stageSelfUpdate(token, minecraftVersion, gameDir, activeJar, legacyModLoaders)
-            }
-            "outdated" -> stageSelfUpdate(token, minecraftVersion, gameDir, activeJar, legacyModLoaders)
+            "valid" -> println("[V5] V5-Loader integrity verified.")
+            "outdated" -> stageSelfUpdate(token, minecraftVersion, gameDir, activeJar)
             "invalid" -> throw IllegalStateException("[V5] V5-Loader integrity is invalid; refusing to run a modified jar.")
             else -> throw IllegalStateException("[V5] Unknown V5-Loader integrity state: $integrity")
         }
@@ -98,8 +89,7 @@ internal object V5Loader {
         token: String,
         minecraftVersion: String,
         gameDir: File,
-        activeJar: File,
-        legacyModLoaders: List<File>
+        activeJar: File
     ): Nothing {
         val bytes = V5Http.httpsGetBytes(
             V5Http.BACKEND_HOST,
@@ -108,7 +98,7 @@ internal object V5Loader {
         ) ?: throw IllegalStateException("[V5] Failed to download updated V5-Loader.jar.")
 
         try {
-            ModLoaderUpdater.stageUpdateAndRelaunch(gameDir, bytes, listOf(activeJar) + legacyModLoaders)
+            ModLoaderUpdater.stageUpdateAndRelaunch(gameDir, bytes, listOf(activeJar))
             println("[V5] V5-Loader update staged. Closing Minecraft now so the helper can swap jars.")
         } finally {
             bytes.fill(0)
