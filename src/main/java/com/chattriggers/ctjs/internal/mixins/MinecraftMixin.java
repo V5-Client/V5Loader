@@ -173,19 +173,6 @@ public abstract class MinecraftMixin {
         }
     }
 
-    @Inject(method = "setScreen", at = @At("HEAD"))
-    private void injectScreenOpened(Screen screen, CallbackInfo ci) {
-        if (screen != null) {
-            Client.automatedAttackHeld = false;
-            TriggerType.GUI_OPENED.triggerAll(screen, ci);
-        }
-    }
-
-    @Inject(method = "setOverlay", at = @At("HEAD"))
-    private void injectOverlayOpened(Overlay overlay, CallbackInfo ci) {
-        if (overlay != null)
-            Client.unpressKeys();
-    }
 
     @Inject(method = "run", at = @At("HEAD"))
     private void injectRun(CallbackInfo ci) {

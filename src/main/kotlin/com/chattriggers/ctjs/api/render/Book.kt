@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.api.client.Client
+import com.chattriggers.ctjs.api.client.setScreenCompat
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.internal.mixins.BookViewScreenAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
@@ -71,7 +72,7 @@ class Book {
         val newScreen = BookViewScreen(customContents)
         screen = newScreen
         Client.scheduleTask {
-            Client.getMinecraft().setScreen(newScreen)
+            Client.getMinecraft().setScreenCompat(newScreen)
             newScreen.setPage(pageIndex)
         }
     }

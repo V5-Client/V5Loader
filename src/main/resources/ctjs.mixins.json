@@ -34,7 +34,7 @@
       "OptionsMixin",
       "AbstractContainerScreenAccessor",
       "AbstractContainerScreenMixin",
-      "GuiMixin",
+      "@version_mixins@",
       "GuiGraphicsExtractorMixin",
       "GuiRendererMixin",
       "ItemInHandRendererMixin",
@@ -51,7 +51,6 @@
       "PlayerTabOverlayAccessor",
       "PlayerTabOverlayMixin",
         "RenderTickCounterMixin",
-      "LevelRendererMixin",
       "VisGraphMixin",
       "YggdrasilServicesKeyInfoMixin",
       "commands.ClientSuggestionProviderMixin",
@@ -81,7 +80,6 @@
         "commands.CommandContextAccessor",
         "commands.CommandDispatcherMixin",
         "commands.CommandNodeAccessor",
-        "commands.EntitySelectorAccessor",
         "stdio.BootstrapMixin",
       "stdio.LoggedPrintStreamMixin"
     ]

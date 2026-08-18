@@ -1,7 +1,9 @@
-package com.chattriggers.ctjs.internal.mixins;
+//? if <26.2 {
+/*package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.api.client.Client;
 import com.chattriggers.ctjs.internal.listeners.WorldListener;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
@@ -10,7 +12,6 @@ import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.BlockOutlineRenderState;
@@ -24,7 +25,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
@@ -48,10 +48,9 @@ public abstract class LevelRendererMixin {
             value = "FIELD",
             target = "Lnet/minecraft/client/renderer/state/level/CameraRenderState;pos:Lnet/minecraft/world/phys/Vec3;"
         ),
-        cancellable = true,
-        locals = LocalCapture.CAPTURE_FAILSOFT
+        cancellable = true
     )
-    private void onDrawBlockOutline(MultiBufferSource.BufferSource immediate, PoseStack matrices, boolean renderBlockOutline, LevelRenderState renderStates, CallbackInfo ci, BlockOutlineRenderState outlineRenderState) {
+    private void onDrawBlockOutline(CallbackInfo ci, @Local BlockOutlineRenderState outlineRenderState) {
         if (WorldListener.INSTANCE.triggerBlockOutline(outlineRenderState.pos()))
             ci.cancel();
     }
@@ -79,3 +78,4 @@ public abstract class LevelRendererMixin {
         WorldListener.INSTANCE.triggerRenderLast();
     }
 }
+*///?}

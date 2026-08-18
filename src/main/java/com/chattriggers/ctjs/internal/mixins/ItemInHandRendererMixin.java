@@ -33,7 +33,7 @@ public class ItemInHandRendererMixin {
     }
 
     @Redirect(
-            method = "renderHandsWithItems",
+            method = {"renderHandsWithItems", "submitHandsWithItems"},
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/player/LocalPlayer;getAttackAnim(F)F"))
@@ -43,7 +43,7 @@ public class ItemInHandRendererMixin {
     }
 
     @Redirect(
-            method = "renderHandsWithItems",
+            method = {"renderHandsWithItems", "submitHandsWithItems"},
             at = @At(
                     value = "FIELD",
                     target = "Lnet/minecraft/client/player/LocalPlayer;swingingArm:Lnet/minecraft/world/InteractionHand;"))

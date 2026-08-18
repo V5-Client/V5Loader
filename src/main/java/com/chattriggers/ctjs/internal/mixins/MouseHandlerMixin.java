@@ -34,7 +34,8 @@ public class MouseHandlerMixin {
     @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
     private void v5$cancelFreecamClick(long window, MouseButtonInfo button, int action, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
-        if (action == GLFW.GLFW_PRESS && client.screen != null) {
+        MouseListener.onRawMouseInput(button.button(), action);
+        if (action == GLFW.GLFW_PRESS && Client.getCurrentScreen() != null) {
             v5$guiMouseButton = button.button();
         } else if (action == GLFW.GLFW_RELEASE) {
             if (button.button() == v5$guiMouseButton) {
@@ -45,7 +46,7 @@ public class MouseHandlerMixin {
         }
 
         if (v5$cameraLookEnabled()
-            && client.screen == null
+            && Client.getCurrentScreen() == null
             && (button.button() == 0 || button.button() == 1)) {
             ci.cancel();
         }
@@ -95,7 +96,7 @@ public class MouseHandlerMixin {
     @Inject(method = "onScroll(JDD)V", at = @At("HEAD"), cancellable = true)
     private void v5$onMouseScroll(long window, double horizontalScroll, double verticalScroll, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
-        if (Client.isFreelook() && client.screen == null) {
+        if (Client.isFreelook() && Client.getCurrentScreen() == null) {
             Client.setFreelookDistance(Client.getFreelookDistance() - verticalScroll);
             ci.cancel();
             return;
@@ -105,22 +106,11 @@ public class MouseHandlerMixin {
             return;
         }
 
-        if (client.screen == null) {
+        if (Client.getCurrentScreen() == null) {
             ci.cancel();
         }
     }
 
-    @Inject(
-        method = "onButton",
-        at = @At(
-            value = "FIELD",
-            target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;",
-            opcode = Opcodes.GETFIELD
-        )
-    )
-    private void injectOnMouseButton(long window, MouseButtonInfo input, int action, CallbackInfo ci) {
-        MouseListener.onRawMouseInput(input.button(), action);
-    }
 
     @Inject(
         method = "onScroll",

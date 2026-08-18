@@ -1,5 +1,6 @@
 package com.chattriggers.ctjs.api.render
 
+import com.chattriggers.ctjs.api.client.screenCompat
 import com.chattriggers.ctjs.api.render.skia.SkijaPIP
 import io.github.humbleui.skija.*
 import io.github.humbleui.skija.Image as SkijaImage
@@ -72,7 +73,7 @@ open class GuiRendererBackend {
 
     fun runDrawables(context: GuiGraphicsExtractor) {
         if (callbacks.isEmpty()) return
-        if (Minecraft.getInstance().screen is Gui) context.blurBeforeThisStratum()
+        if (Minecraft.getInstance().screenCompat is Gui) context.blurBeforeThisStratum()
         SkijaPIP.draw(context, Runnable { runCallbacks(callbacks) })
     }
 

@@ -2,6 +2,7 @@ package com.chattriggers.ctjs
 
 import com.chattriggers.ctjs.api.Config
 import com.chattriggers.ctjs.api.client.Client
+import com.chattriggers.ctjs.api.client.screenCompat
 import com.chattriggers.ctjs.api.client.KeyBind
 import com.chattriggers.ctjs.api.client.Sound
 import com.chattriggers.ctjs.api.client.WelcomeScreen
@@ -9,8 +10,7 @@ import com.chattriggers.ctjs.api.commands.DynamicCommands
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Image
 import com.chattriggers.ctjs.api.render.Render2D
-import com.chattriggers.ctjs.api.render.skia.SkijaPIP
-import com.chattriggers.ctjs.api.render.skia.SkijaPrePIP
+import com.chattriggers.ctjs.api.render.skia.createSkijaPIP
 import com.chattriggers.ctjs.api.triggers.TriggerType
 import com.chattriggers.ctjs.api.world.Scoreboard
 import com.chattriggers.ctjs.api.world.World
@@ -34,15 +34,15 @@ import kotlin.concurrent.thread
 
 class CTJS : ClientModInitializer {
     override fun onInitializeClient() {
-        PictureInPictureRendererRegistry.register { SkijaPIP(it.bufferSource()) }
-        PictureInPictureRendererRegistry.register { SkijaPrePIP(it.bufferSource()) }
+        PictureInPictureRendererRegistry.register { input -> createSkijaPIP(input, pre = false) }
+        PictureInPictureRendererRegistry.register { input -> createSkijaPIP(input, pre = true) }
         Client.referenceSystemTime = System.nanoTime()
         Initializer.initializers.forEach(Initializer::init)
         Config.loadData()
 
         var autoOpenTriggered = false
         ClientTickEvents.END_CLIENT_TICK.register { client ->
-            val currentScreen = client.screen ?: return@register
+            val currentScreen = client.screenCompat ?: return@register
             val isMenuScreen = currentScreen is TitleScreen
 
             if (autoOpenTriggered || Config.wasWelcomeShown() || !isMenuScreen) return@register

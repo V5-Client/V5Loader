@@ -1,4 +1,5 @@
 package com.chattriggers.ctjs.api.render
+import com.chattriggers.ctjs.api.client.MinecraftCompat
 
 import net.minecraft.client.Minecraft
 import net.minecraft.gizmos.GizmoStyle
@@ -83,7 +84,7 @@ object Render3D {
     @JvmStatic
     @JvmOverloads
     fun drawTracer(targetPos: Vec3, color: Color, thickness: Float = 2f, depth: Boolean = false) {
-        val camera = client.gameRenderer.mainCamera
+        val camera = MinecraftCompat.mainCamera(client.gameRenderer)
         val start = camera.position().add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()).scale(0.1))
         drawLine(start, targetPos, color, thickness, depth)
     }
@@ -91,9 +92,10 @@ object Render3D {
     @JvmStatic
     @JvmOverloads
     fun drawText(text: String, pos: Vec3, scale: Float = 1f, backgroundBox: Boolean = false, increase: Boolean = false, seeThrough: Boolean = false, translate: Boolean = true) {
-        val distanceScale = if (increase) (pos.distanceTo(client.gameRenderer.mainCamera.position()).toFloat() / 120f).coerceAtLeast(0.01f) else 1f
+        val camera = MinecraftCompat.mainCamera(client.gameRenderer)
+        val distanceScale = if (increase) (pos.distanceTo(camera.position()).toFloat() / 120f).coerceAtLeast(0.01f) else 1f
         val style = TextGizmo.Style.whiteAndCentered().withScale(TextGizmo.Style.DEFAULT_SCALE * scale * distanceScale)
-        Gizmos.billboardText(text, if (translate) pos else client.gameRenderer.mainCamera.position(), style).apply {
+        Gizmos.billboardText(text, if (translate) pos else camera.position(), style).apply {
             if (seeThrough) setAlwaysOnTop()
         }
     }

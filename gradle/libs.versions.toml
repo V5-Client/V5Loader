@@ -1,10 +1,8 @@
 [versions]
 # Library versions
-minecraft = "26.1.2"
 skija = "0.143.11"
 
 loader = "0.19.3"
-fabric-api = "0.153.0+26.1.2"
 fabric-kotlin = "1.13.9+kotlin.2.3.10"
 sponge-mixin = "0.17.3+mixin.0.8.7"
 mixinextras = "0.5.4"
@@ -24,10 +22,7 @@ loom = "1.17-SNAPSHOT"
 ksp = "2.3.9"
 
 [libraries]
-minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
-
 fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "loader" }
-fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
 fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version.ref = "fabric-kotlin" }
 sponge-mixin = { module = "net.fabricmc:sponge-mixin", version.ref = "sponge-mixin" }
 mixinextras = { module = "io.github.llamalad7:mixinextras-fabric", version.ref = "mixinextras" }

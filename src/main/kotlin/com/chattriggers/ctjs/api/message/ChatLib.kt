@@ -1,5 +1,8 @@
 package com.chattriggers.ctjs.api.message
 
+import com.chattriggers.ctjs.api.client.MinecraftCompat
+import com.chattriggers.ctjs.api.client.chatCompat
+
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.internal.listeners.ClientListener
@@ -85,7 +88,11 @@ object ChatLib {
     @JvmStatic
     @JvmOverloads
     fun command(text: String, clientSide: Boolean = false) {
-        if (clientSide) ClientCommandInternals.executeCommand(text)
+        if (clientSide) {
+            val method = ClientCommandInternals::class.java.methods.first { it.name == "executeCommand" }
+            if (method.parameterCount == 1) method.invoke(null, text)
+            else method.invoke(null, text, Client.getMinecraft().connection?.suggestionsProvider ?: return, null)
+        }
         else Client.scheduleTask { Client.getMinecraft().connection?.sendCommand(text) }
     }
 
@@ -245,7 +252,7 @@ object ChatLib {
 
     private fun editLines(replacements: Array<out Any>, matcher: (GuiMessage) -> Boolean) {
         val mc = Client.getMinecraft()
-        val indicator = if (mc.isSingleplayer) GuiMessageTag.systemSinglePlayer() else GuiMessageTag.system()
+        val indicator = if (MinecraftCompat.isSingleplayer(mc)) GuiMessageTag.systemSinglePlayer() else GuiMessageTag.system()
         var edited = false
         val accessor = chatHudAccessor ?: return
         val it = accessor.allMessages.listIterator()
@@ -371,9 +378,9 @@ object ChatLib {
     @JvmOverloads
     fun addToSentMessageHistory(index: Int = -1, message: String) {
         if (index == -1) {
-            Client.getMinecraft().gui.chat.addRecentChat(message)
+            Client.getMinecraft().gui.chatCompat.addRecentChat(message)
         } else {
-            Client.getMinecraft().gui.chat.recentChat.add(index, message)
+            Client.getMinecraft().gui.chatCompat.recentChat.add(index, message)
         }
     }
 

@@ -1,5 +1,7 @@
 package com.chattriggers.ctjs.api.world
 
+import com.chattriggers.ctjs.api.client.MinecraftCompat
+
 import com.chattriggers.ctjs.api.CTWrapper
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.message.ChatLib
@@ -16,7 +18,7 @@ import java.util.UUID
 
 object BossBars {
     @JvmStatic
-    fun toMC() = Client.getMinecraft().gui.bossOverlay
+    fun toMC() = MinecraftCompat.bossOverlay(Client.getMinecraft().gui)
 
     /**
      * Gets the list of currently shown [BossBar]s

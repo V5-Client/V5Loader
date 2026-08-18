@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.api.client.Client
+import com.chattriggers.ctjs.api.client.MinecraftCompat
 import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.entity.PlayerMP
 import com.chattriggers.ctjs.api.message.ChatLib
@@ -249,25 +250,6 @@ object Render2D : GuiRendererBackend() {
             }
             return
         }
-
-        val immediate = Client.getMinecraft().renderBuffers().bufferSource()
-        splitText(text).lines.forEach {
-            fr.drawInBatch(
-                it,
-                x,
-                newY,
-                color.toInt(),
-                shadow,
-                matrixStack.toMC().last().pose(),
-                immediate,
-                Font.DisplayMode.NORMAL,
-                0,
-                0xf000f0,
-            )
-
-            newY += fr.lineHeight
-        }
-        immediate.endBatch()
     }
 
     @JvmStatic
@@ -398,8 +380,6 @@ object Render2D : GuiRendererBackend() {
             entityRenderDispatcher.camera?.rotation()?.set(pitchModelRotation)
         }
 
-        // entityRenderDispatcher.setRenderShadows(false)
-        val vertexConsumers = Client.getMinecraft().renderBuffers().bufferSource()
 
         // val light = 0xf000f0
 
@@ -431,13 +411,12 @@ object Render2D : GuiRendererBackend() {
         entityRenderer.submit(
             playerEntityRenderState,
             matrixStack.toMC(),
-            Client.getMinecraft().gameRenderer.submitNodeStorage,
-            Client.getMinecraft().gameRenderer.gameRenderState.levelRenderState.cameraRenderState
+            MinecraftCompat.submitNodeStorage(Client.getMinecraft().gameRenderer),
+            MinecraftCompat.gameRenderState(Client.getMinecraft().gameRenderer).levelRenderState.cameraRenderState,
         )
 
         matrixStack.pop()
 
-        vertexConsumers.endBatch()
         // entityRenderDispatcher.setRenderShadows(true)
         matrixStack.pop()
         // TODO: find out a way to get Diffuse instance and call setType

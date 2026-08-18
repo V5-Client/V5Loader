@@ -21,7 +21,7 @@ public class KeyboardHandlerMixin {
         }
 
         Minecraft client = Minecraft.getInstance();
-        if (!Client.isFreecam() || client.screen != null) {
+        if (!Client.isFreecam() || Client.getCurrentScreen() != null) {
             return;
         }
 

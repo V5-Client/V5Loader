@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.api.client.Client
+import com.chattriggers.ctjs.api.client.screenCompat
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.triggers.RegularTrigger
 import com.chattriggers.ctjs.api.triggers.TriggerType
@@ -42,7 +43,7 @@ class Gui @JvmOverloads constructor(
 
     }
 
-    fun isOpen(): Boolean = Client.getMinecraft().screen === this
+    fun isOpen(): Boolean = Client.getMinecraft().screenCompat === this
 
     /**
      * Registers a method to be run while gui is open.

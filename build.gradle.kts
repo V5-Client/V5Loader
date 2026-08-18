@@ -1,5 +1,6 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
     alias(libs.plugins.kotlin)
@@ -25,16 +26,19 @@ repositories {
     maven("https://repo.hypixel.net/repository/Hypixel/")
     maven("https://api.modrinth.com/maven")
 }
+val minecraftVersion = sc.current.version
+val fabricApiVersion: String = sc.properties["deps.fabric_api"]
+val universalcraftMinecraftVersion = if (minecraftVersion == "26.1.2") "26.1" else minecraftVersion
 
 dependencies {
-    // To change the versions see the gradle/libs.versions.toml
-    minecraft(libs.minecraft)
+    // Minecraft-specific versions live in stonecutter.properties.toml.
+    minecraft("com.mojang:minecraft:$minecraftVersion")
     implementation(libs.fabric.loader)
-    implementation(libs.fabric.api)
+    implementation("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
     implementation(libs.fabric.kotlin)
 
     implementation(libs.bundles.included) { include(this) }
-    implementation(libs.universalcraft) {
+    implementation("gg.essential:universalcraft-$universalcraftMinecraftVersion-fabric:${libs.versions.universalcraft.get()}") {
         include(this)
         exclude("gg.essential", "universalcraft-1.18.1-fabric")
     }
@@ -67,7 +71,7 @@ dependencies {
 }
 
 loom {
-    accessWidenerPath.set(file("src/main/resources/ctjs.accesswidener"))
+    accessWidenerPath.set(rootProject.file("src/main/resources/ctjs.accesswidener"))
 }
 
 base {
@@ -86,12 +90,12 @@ java {
 
 tasks {
     processResources {
-        val mcVersion = libs.versions.minecraft.get()
+        val mcVersion = minecraftVersion
         val flkVersion = libs.versions.fabric.kotlin.get()
-        val fapiVersion = libs.versions.fabric.api.get()
+        val fapiVersion = fabricApiVersion
         val loaderVersion = libs.versions.loader.get()
 
-        from("typing-generator/src/main/resources") {
+        from(rootProject.file("typing-generator/src/main/resources")) {
             include("provided-types.properties")
         }
 
@@ -110,6 +114,17 @@ tasks {
                 "loader_version" to loaderVersion
             )
         }
+
+        filesMatching("ctjs.mixins.json") {
+            val versionMixins = if (minecraftVersion == "26.1.2") {
+                listOf("GuiMixin", "MinecraftScreenMixin", "LevelRendererMixin")
+            } else {
+                listOf("GuiHudMixin", "GameRenderer262Accessor", "GuiScreenMixin", "LevelRenderer262Mixin")
+            }
+            filter<ReplaceTokens>("tokens" to mapOf(
+                "version_mixins" to versionMixins.joinToString("\",\n      \"")
+            ))
+        }
     }
 
     withType<JavaCompile>().configureEach {
@@ -125,7 +140,7 @@ tasks {
     }
 
     jar {
-        archiveFileName.set(if (providers.gradleProperty("releaseBuild").isPresent) "V5-Loader-26.1.2.jar" else "V5-Loader-DEV.jar")
+        archiveFileName.set(if (providers.gradleProperty("releaseBuild").isPresent) "V5-Loader-$minecraftVersion.jar" else "V5-Loader-DEV-$minecraftVersion.jar")
         exclude("typings.d.ts")
     }
 
@@ -136,6 +151,6 @@ tasks {
         from(layout.buildDirectory.dir("generated/ksp/main/resources")) {
             include("typings.d.ts")
         }
-        into(layout.projectDirectory.dir("typing-generator/src/main/resources"))
+        into(rootProject.layout.projectDirectory.dir("typing-generator/src/main/resources"))
     }
 }

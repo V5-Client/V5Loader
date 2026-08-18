@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.api.client.ProxyManagerScreen;
+import com.chattriggers.ctjs.api.client.Client;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
@@ -26,7 +27,7 @@ public abstract class JoinMultiplayerScreenMixin extends Screen {
     private void init(CallbackInfo ci) {
         this.v5_proxyButton = Button.builder(Component.literal("V5 Proxies"), b -> {
                     if (this.minecraft != null) {
-                        this.minecraft.setScreen(new ProxyManagerScreen(this));
+                        Client.setCurrentScreen(new ProxyManagerScreen(this));
                     }
                 })
                 .bounds(0, 5, 80, 20)
