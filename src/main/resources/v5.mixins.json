@@ -21,6 +21,7 @@
         "MinecraftMixin",
         "MouseHandlerMixin",
         "JoinMultiplayerScreenMixin",
+        "ChunkSectionsToRenderMixin",
         "LevelRendererMixin",
         "VisGraphMixin",
         "YggdrasilServicesKeyInfoMixin"

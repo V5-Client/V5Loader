@@ -2,7 +2,7 @@ package com.chattriggers.ctjs.internal.mixins.commands;
 
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;

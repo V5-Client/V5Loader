@@ -94,7 +94,7 @@ class Toast(config: NativeObject) : MCToast {
 
     fun show() = apply {
         startTime = null
-        Client.getMinecraft().toastManager.addToast(this)
+        Client.getMinecraft().gui.toastManager().addToast(this)
     }
 
     override fun getWantedVisibility(): MCToast.Visibility = visibility

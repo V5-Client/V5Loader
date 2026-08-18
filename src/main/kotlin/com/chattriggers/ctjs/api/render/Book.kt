@@ -71,7 +71,7 @@ class Book {
         val newScreen = BookViewScreen(customContents)
         screen = newScreen
         Client.scheduleTask {
-            Client.getMinecraft().setScreen(newScreen)
+            Client.getMinecraft().gui.setScreen(newScreen)
             newScreen.setPage(pageIndex)
         }
     }

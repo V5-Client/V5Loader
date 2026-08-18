@@ -5,9 +5,9 @@ import com.chattriggers.ctjs.api.vec.Vec3f
 import com.chattriggers.ctjs.internal.utils.get
 import com.mojang.blaze3d.systems.RenderSystem
 import gg.essential.universal.UGraphics
+import com.chattriggers.ctjs.internal.listeners.WorldListener
 import net.minecraft.client.gui.Font
-import net.minecraft.util.LightCoordsUtil
-import com.mojang.blaze3d.vertex.Tesselator
+import net.minecraft.util.FormattedCharSequence
 import org.joml.Vector3f
 import org.mozilla.javascript.NativeObject
 
@@ -15,7 +15,7 @@ object Renderer3d {
     private var firstVertex = true
     private var began = false
 
-    private val tessellator = Tesselator.getInstance()
+    // private val tessellator = Tesselator.getInstance()
     private val worldRenderer = UGraphics.getFromTessellator()
 
     /**
@@ -36,7 +36,7 @@ object Renderer3d {
         Renderer.pushMatrix()
             .enableBlend()
             .disableCull()
-        worldRenderer.beginRenderLayer(LegacyPipelineBuilder.begin(drawMode, vertexFormat, snippet).layer())
+        worldRenderer.beginWithDefaultShader(drawMode.toUC(), vertexFormat.toMC())
 
         firstVertex = true
         began = true
@@ -56,7 +56,7 @@ object Renderer3d {
             begin()
         if (!firstVertex)
             worldRenderer.endVertex()
-        val camera = Client.getMinecraft().gameRenderer.mainCamera.position()
+        val camera = Client.getMinecraft().gameRenderer.mainCamera().position()
         worldRenderer.pos(Renderer.matrixStack, x.toDouble() - camera.x, y.toDouble() - camera.y, z.toDouble() - camera.z)
         firstVertex = false
     }
@@ -205,7 +205,7 @@ object Renderer3d {
         val (lines, width, height) = Renderer.splitText(text)
 
         val fontRenderer = Renderer.getFontRenderer()
-        val camera = Client.getMinecraft().gameRenderer.mainCamera
+        val camera = Client.getMinecraft().gameRenderer.mainCamera()
         val renderPos = Vec3f(
             x - camera.position().x.toFloat(),
             y - camera.position().y.toFloat(),
@@ -228,9 +228,9 @@ object Renderer3d {
         val xShift = -width / 2
         val yShift = -height / 2
 
-        val vertexConsumers = Client.getMinecraft().renderBuffers().bufferSource()
-        var yOffset = 0
         val textLayer = if (renderThroughBlocks) Font.DisplayMode.SEE_THROUGH else Font.DisplayMode.NORMAL
+        val collector = WorldListener.submitNodeCollector
+        var yOffset = 0
 
         for (line in lines) {
             val centerShift = if (centered) {
@@ -238,37 +238,24 @@ object Renderer3d {
             } else 0f
 
             Renderer.pushMatrix()
-            val matrix = Renderer.matrixStack.toMC().last().pose()
+            val y = yShift + yOffset
 
-            if (renderBlackBox) {
-                fontRenderer.drawInBatch(
-                    line,
-                    xShift - centerShift,
-                    yShift + yOffset,
-                    0x20FFFFFF,
+            if (collector != null) {
+                val formatted = FormattedCharSequence.forward(line, net.minecraft.network.chat.Style.EMPTY)
+                collector.submitText(
+                    Renderer.matrixStack.toMC(),
+                    centerShift,
+                    y,
+                    formatted,
                     false,
-                    matrix,
-                    vertexConsumers,
                     textLayer,
-                    opacity,
-                    LightCoordsUtil.FULL_BRIGHT
+                    15728880,
+                    color.toInt(),
+                    if (renderBlackBox) opacity else 0,
+                    0,
                 )
-                Renderer.translate(0f, 0f, -0.03f)
             }
 
-            fontRenderer.drawInBatch(
-                line,
-                xShift - centerShift,
-                yShift + yOffset,
-                color.toInt(),
-                false,
-                matrix,
-                vertexConsumers,
-                textLayer,
-                0,
-                LightCoordsUtil.FULL_BRIGHT
-            )
-            vertexConsumers.endBatch()
             Renderer.popMatrix()
 
             yOffset += fontRenderer.lineHeight + 1

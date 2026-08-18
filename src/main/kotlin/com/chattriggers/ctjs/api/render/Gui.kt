@@ -29,6 +29,8 @@ class Gui @JvmOverloads constructor(
     private var mouseX = 0
     private var mouseY = 0
 
+    private var tooltip: TextComponent? = null
+
     private val buttons = mutableMapOf<Int, Button>()
     private var nextButtonId = 0
     private var doesPauseGame = false
@@ -42,7 +44,7 @@ class Gui @JvmOverloads constructor(
 
     }
 
-    fun isOpen(): Boolean = Client.getMinecraft().screen === this
+    fun isOpen(): Boolean = Client.getMinecraft().gui.screen() === this
 
     /**
      * Registers a method to be run while gui is open.
@@ -285,6 +287,15 @@ class Gui @JvmOverloads constructor(
         this.mouseY = mouseY
         onDraw?.trigger(arrayOf<Any?>(mouseX, mouseY, partialTicks))
 
+        tooltip?.let { tip ->
+            drawContexts.lastOrNull()?.setTooltipForNextFrame(
+                Client.getMinecraft().font,
+                tip,
+                mouseX,
+                mouseY,
+            )
+        }
+
         Renderer.popMatrix()
     }
 
@@ -487,9 +498,7 @@ class Gui @JvmOverloads constructor(
      * @param text the contents of the tooltip
      */
     fun setTooltip(text: TextComponent) = apply {
-        // TODO: find a way to implement this properly since
-        //  mc removed the Screen#setTooltip
-        // setTooltip(Tooltip.wrapLines(Client.getMinecraft(), text))
+        tooltip = text
     }
 
     /**

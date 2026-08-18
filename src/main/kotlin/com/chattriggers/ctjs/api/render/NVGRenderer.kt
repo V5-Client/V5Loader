@@ -85,6 +85,11 @@ object NVGRenderer {
             .getDeclaredMethod("directStateAccess")
             .apply { isAccessible = true }
     }
+    private val frameBufferCacheMethod by lazy {
+        Class.forName("com.mojang.blaze3d.opengl.GlDevice")
+            .getDeclaredMethod("frameBufferCache")
+            .apply { isAccessible = true }
+    }
 
     data class GifData(
         val width: Int,
@@ -174,12 +179,19 @@ object NVGRenderer {
     }
 
     private fun mainFramebufferId(): Int {
-        val target = mc.mainRenderTarget
+        val target = mc.gameRenderer.mainRenderTarget()
         val colorTexture = target.colorTexture as? GlTexture ?: return GL33C.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING)
         return try {
             val backend = gpuBackendField.get(RenderSystem.getDevice())
             val directStateAccess = directStateAccessMethod.invoke(backend) as DirectStateAccess
-            colorTexture.getFbo(directStateAccess, target.depthTexture)
+            val cache = frameBufferCacheMethod.invoke(backend)
+            val getFbo = cache.javaClass.getMethod(
+                "getFbo",
+                DirectStateAccess::class.java,
+                MutableList::class.java,
+                Class.forName("com.mojang.blaze3d.opengl.FrameBufferAttachment"),
+            )
+            getFbo.invoke(cache, directStateAccess, listOf(colorTexture), target.depthTexture) as Int
         } catch (e: Exception) {
             if (!framebufferWarningPrinted) {
                 framebufferWarningPrinted = true
@@ -195,7 +207,7 @@ object NVGRenderer {
         ensureInitialized()
         if (drawing) return
 
-        val framebuffer = mc.mainRenderTarget
+        val framebuffer = mc.gameRenderer.mainRenderTarget()
         val prevFramebuffer = GL33C.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING)
         val prevViewport = IntArray(4)
         GL33C.glGetIntegerv(GL33C.GL_VIEWPORT, prevViewport)
@@ -229,7 +241,7 @@ object NVGRenderer {
         GL33C.glBindSampler(0, 0)
         GlStateManager._disableCull()
         GlStateManager._disableDepthTest()
-        GlStateManager._enableBlend()
+        GlStateManager._enableBlend(0)
         GlStateManager._blendFuncSeparate(770, 771, 1, 0)
         GlStateManager._glUseProgram(savedProgram)
 

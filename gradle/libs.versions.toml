@@ -1,10 +1,10 @@
 [versions]
 # Library versions
-minecraft = "26.1.2"
+minecraft = "26.2"
 lwjgl = "3.4.1"
 
 loader = "0.19.3"
-fabric-api = "0.153.0+26.1.2"
+fabric-api = "0.156.0+26.2"
 fabric-kotlin = "1.13.9+kotlin.2.3.10"
 sponge-mixin = "0.17.3+mixin.0.8.7"
 mixinextras = "0.5.4"
@@ -12,7 +12,7 @@ mixinextras = "0.5.4"
 rhino = "7c7c509668"
 koffee = "315bc11234"
 
-universalcraft = "505"
+universalcraft = "511"
 elementa = "745"
 vigilance = "314"
 hypixel-mod-api = "1.0.2"
@@ -37,7 +37,7 @@ lwjgl-nanovg = { module = "org.lwjgl:lwjgl-nanovg", version.ref = "lwjgl" }
 rhino = { module = "com.github.ChatTriggers:rhino", version.ref = "rhino" }
 koffee = { module = "com.github.ChatTriggers:koffee", version.ref = "koffee" }
 
-universalcraft = { module = "gg.essential:universalcraft-26.1-fabric", version.ref = "universalcraft" }
+universalcraft = { module = "gg.essential:universalcraft-26.2-fabric", version.ref = "universalcraft" }
 elementa = { module = "gg.essential:elementa", version.ref = "elementa" }
 vigilance = { module = "gg.essential:vigilance", version.ref = "vigilance" }
 hypixel-mod-api = { module = "net.hypixel:mod-api", version.ref = "hypixel-mod-api" }

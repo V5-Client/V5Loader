@@ -33,7 +33,7 @@ class WelcomeScreen : Screen(Component.literal("Welcome Screen")) {
         @JvmStatic
         fun open() {
             val client = Minecraft.getInstance()
-            client.execute { client.setScreen(WelcomeScreen()) }
+            client.execute { client.gui.setScreen(WelcomeScreen()) }
         }
     }
 
@@ -197,9 +197,9 @@ class WelcomeScreen : Screen(Component.literal("Welcome Screen")) {
         (x - width / 2.0) / forcedMultiplier to y / forcedMultiplier
 
     private fun confirmOpenUrl(url: String) {
-        minecraft.setScreen(ConfirmLinkScreen({ confirmed ->
+        minecraft.gui.setScreen(ConfirmLinkScreen({ confirmed ->
             if (confirmed) Util.getPlatform().openUri(url)
-            minecraft.setScreen(this)
+            minecraft.gui.setScreen(this)
         }, url, true))
     }
 

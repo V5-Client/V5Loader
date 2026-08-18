@@ -26,7 +26,7 @@ public abstract class JoinMultiplayerScreenMixin extends Screen {
     private void init(CallbackInfo ci) {
         this.v5_proxyButton = Button.builder(Component.literal("V5 Proxies"), b -> {
                     if (this.minecraft != null) {
-                        this.minecraft.setScreen(new ProxyManagerScreen(this));
+                        this.minecraft.gui.setScreen(new ProxyManagerScreen(this));
                     }
                 })
                 .bounds(0, 5, 80, 20)

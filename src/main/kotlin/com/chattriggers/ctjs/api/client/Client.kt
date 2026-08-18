@@ -83,7 +83,7 @@ object Client {
         scheduleTask {
             World.toMC()?.disconnect(Component.empty())
 
-            getMinecraft().setScreen(
+            getMinecraft().gui.setScreen(
                 when {
                     getMinecraft().isLocalServer -> TitleScreen()
                     getMinecraft().currentServer?.isRealm == true -> RealmsMainScreen(TitleScreen())
@@ -118,13 +118,13 @@ object Client {
      * @return The GuiNewChat object for the chat gui
      */
     @JvmStatic
-    fun getChatGui(): ChatComponent? = getMinecraft().gui.chat
+    fun getChatGui(): ChatComponent? = getMinecraft().gui.hud.chat
 
     @JvmStatic
-    fun isInChat(): Boolean = getMinecraft().screen is ChatScreen
+    fun isInChat(): Boolean = getMinecraft().gui.screen() is ChatScreen
 
     @JvmStatic
-    fun getTabGui(): PlayerTabOverlay? = getMinecraft().gui.tabList
+    fun getTabGui(): PlayerTabOverlay? = getMinecraft().gui.hud.tabList
 
     @JvmStatic
     fun isInTab(): Boolean = getMinecraft().options.keyPlayerList.isDown
@@ -179,7 +179,7 @@ object Client {
     @JvmStatic
     fun getCurrentChatMessage(): String {
         return if (isInChat()) {
-            val chatGui = getMinecraft().screen as ChatScreen
+            val chatGui = getMinecraft().gui.screen() as ChatScreen
             chatGui.asMixin<ChatScreenAccessor>().input.value
         } else ""
     }
@@ -192,14 +192,14 @@ object Client {
     @JvmStatic
     fun setCurrentChatMessage(message: String) {
         if (isInChat()) {
-            val chatGui = getMinecraft().screen as ChatScreen
+            val chatGui = getMinecraft().gui.screen() as ChatScreen
             chatGui.asMixin<ChatScreenAccessor>().input.value = message
         } else currentGui.set(ChatScreen(message, false))
     }
 
     @JvmStatic
     fun setSignLine(line: Int, text: String) {
-        val messages = (getMinecraft().screen as? AbstractSignEditScreen)
+        val messages = (getMinecraft().gui.screen() as? AbstractSignEditScreen)
             ?.asMixin<AbstractSignEditScreenAccessor>()
             ?.messages ?: return
         if (line in messages.indices) messages[line] = text
@@ -221,8 +221,8 @@ object Client {
     private fun canAutomateInput(minecraft: Minecraft) =
         minecraft.level != null &&
             minecraft.player != null &&
-            minecraft.screen == null &&
-            minecraft.overlay == null
+            minecraft.gui.screen() == null &&
+            minecraft.gui.overlay() == null
 
     private fun mutateInput(action: (Minecraft) -> Unit) = getMinecraft().let { it.execute { action(it) } }
 
@@ -323,7 +323,7 @@ object Client {
      */
     @JvmStatic
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int) {
-        getMinecraft().gui.apply {
+        getMinecraft().gui.hud.apply {
             setTimes(fadeIn, time, fadeOut)
             if (title != null)
                 setTitle(TextComponent(title))
@@ -408,11 +408,11 @@ object Client {
          *
          * @return the Minecraft gui
          */
-        fun get(): Screen? = getMinecraft().screen
+        fun get(): Screen? = getMinecraft().gui.screen()
 
         fun set(screen: Screen?) {
             scheduleTask {
-                getMinecraft().setScreen(screen)
+                getMinecraft().gui.setScreen(screen)
             }
         }
 
@@ -437,10 +437,10 @@ object Client {
     }
 
     class CameraWrapper {
-        fun getX(): Double = getMinecraft().gameRenderer.mainCamera.position().x
+        fun getX(): Double = getMinecraft().gameRenderer.mainCamera().position().x
 
-        fun getY(): Double = getMinecraft().gameRenderer.mainCamera.position().y
+        fun getY(): Double = getMinecraft().gameRenderer.mainCamera().position().y
 
-        fun getZ(): Double = getMinecraft().gameRenderer.mainCamera.position().z
+        fun getZ(): Double = getMinecraft().gameRenderer.mainCamera().position().z
     }
 }

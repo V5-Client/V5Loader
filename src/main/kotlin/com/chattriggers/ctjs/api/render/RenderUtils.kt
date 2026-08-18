@@ -1,13 +1,13 @@
 package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.internal.engine.CTEvents
+import com.chattriggers.ctjs.internal.listeners.WorldListener
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.rendertype.RenderType
-import com.mojang.blaze3d.vertex.VertexConsumer
-import net.minecraft.client.renderer.MultiBufferSource
-import com.mojang.blaze3d.vertex.ByteBufferBuilder
 import com.mojang.blaze3d.vertex.PoseStack
+import com.mojang.blaze3d.vertex.VertexConsumer
+import net.minecraft.client.gui.Font
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.AABB
 import net.minecraft.util.ARGB
@@ -18,7 +18,6 @@ import kotlin.math.min
 
 object RenderUtils {
     private val client = Minecraft.getInstance()
-    private val bufferSource = MultiBufferSource.immediate(ByteBufferBuilder(2 * 1024 * 1024))
     private val boxes = mutableListOf<BoxCommand>()
     private val lines = mutableListOf<LineCommand>()
     private val texts = mutableListOf<TextCommand>()
@@ -51,22 +50,24 @@ object RenderUtils {
     private fun render(matrices: PoseStack) {
         if (boxes.isEmpty() && lines.isEmpty() && texts.isEmpty()) return
 
+        val collector = WorldListener.submitNodeCollector ?: return
+
         val pendingBoxes = boxes.toList().also { boxes.clear() }
         val pendingLines = lines.toList().also { lines.clear() }
         val pendingTexts = texts.toList().also { texts.clear() }
-        val camera = client.gameRenderer.mainCamera
+        if (pendingBoxes.isEmpty() && pendingLines.isEmpty() && pendingTexts.isEmpty()) return
+
+        val camera = client.gameRenderer.mainCamera()
 
         matrices.pushPose()
         matrices.translate(-camera.position().x, -camera.position().y, -camera.position().z)
-        renderBoxes(matrices, pendingBoxes)
-        renderLines(matrices, pendingLines)
+        renderBoxes(collector, matrices, pendingBoxes)
+        renderLines(collector, matrices, pendingLines)
         matrices.popPose()
-        renderTexts(matrices, pendingTexts, camera.position(), camera.rotation())
-
-        bufferSource.endBatch()
+        renderTexts(collector, matrices, pendingTexts, camera.position(), camera.rotation())
     }
 
-    private fun renderBoxes(matrices: PoseStack, commands: List<BoxCommand>) {
+    private fun renderBoxes(collector: SubmitNodeCollector, matrices: PoseStack, commands: List<BoxCommand>) {
         val batches = commands.groupBy { command ->
             val layer = when {
                 command.filled && command.depth -> RenderLayers.TRIANGLE_STRIP
@@ -78,31 +79,30 @@ object RenderUtils {
         }
 
         for ((key, batch) in batches) {
-            val buffer = bufferSource.getBuffer(key.layer)
-
-            for ((box, color, filled) in batch) {
-                if (filled) {
-                    writeFilledBox(matrices.last(), buffer, box, color.packed)
-                } else {
-                    writeBox(matrices.last(), buffer, box, color.packed, key.thickness ?: 1f)
+            collector.submitCustomGeometry(matrices, key.layer) { entry, buffer ->
+                for ((box, color, filled) in batch) {
+                    if (filled) {
+                        writeFilledBox(entry, buffer, box, color.packed)
+                    } else {
+                        writeBox(entry, buffer, box, color.packed, key.thickness ?: 1f)
+                    }
                 }
             }
-            bufferSource.endBatch()
         }
     }
 
-    private fun renderLines(matrices: PoseStack, commands: List<LineCommand>) {
+    private fun renderLines(collector: SubmitNodeCollector, matrices: PoseStack, commands: List<LineCommand>) {
         val batches = commands.groupBy { command ->
             val layer = if (command.depth) RenderLayers.LINE_LIST else RenderLayers.LINE_LIST_ESP
             BatchKey(layer, command.thickness.coerceAtLeast(0.1f))
         }
 
         for ((key, batch) in batches) {
-            val buffer = bufferSource.getBuffer(key.layer)
-            for ((start, end, color) in batch) {
-                writeLine(matrices.last(), buffer, start, end, color.packed, requireNotNull(key.thickness))
+            collector.submitCustomGeometry(matrices, key.layer) { entry, buffer ->
+                for ((start, end, color) in batch) {
+                    writeLine(entry, buffer, start, end, color.packed, requireNotNull(key.thickness))
+                }
             }
-            bufferSource.endBatch()
         }
     }
 
@@ -155,11 +155,24 @@ object RenderUtils {
     private fun writeLine(entry: PoseStack.Pose, buffer: VertexConsumer, start: Vec3, end: Vec3, argb: Int, lineWidth: Float) {
         val normal = end.subtract(start).normalize()
 
-        buffer.addVertex(entry, start.x.toFloat(), start.y.toFloat(), start.z.toFloat()).setColor(argb).setNormal(entry, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).setLineWidth(lineWidth)
-        buffer.addVertex(entry, end.x.toFloat(), end.y.toFloat(), end.z.toFloat()).setColor(argb).setNormal(entry, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).setLineWidth(lineWidth)
+        buffer.addVertex(entry, start.x.toFloat(), start.y.toFloat(), start.z.toFloat())
+            .setColor(argb)
+            .setNormal(entry, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat())
+            .setLineWidth(lineWidth)
+        buffer.addVertex(entry, end.x.toFloat(), end.y.toFloat(), end.z.toFloat())
+            .setColor(argb)
+            .setNormal(entry, normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat())
+            .setLineWidth(lineWidth)
     }
 
-    private fun renderTexts(matrices: PoseStack, commands: List<TextCommand>, cameraPos: Vec3, cameraRotation: Quaternionf) {
+    private fun renderTexts(
+        collector: SubmitNodeCollector,
+        matrices: PoseStack,
+        commands: List<TextCommand>,
+        cameraPos: Vec3,
+        cameraRotation: Quaternionf,
+    ) {
+        val font = client.font
         for ((text, pos, scale, backgroundBox, increase, seeThrough, translate) in commands) {
             val relative = pos.subtract(cameraPos)
             matrices.pushPose()
@@ -173,18 +186,32 @@ object RenderUtils {
             }
             matrices.scale(renderScale, -renderScale, renderScale)
 
-            client.font.drawInBatch(
-                text,
-                -client.font.width(text) / 2f,
-                0f,
-                -1,
-                backgroundBox,
-                matrices.last().pose(),
-                bufferSource,
-                if (seeThrough) Font.DisplayMode.SEE_THROUGH else Font.DisplayMode.NORMAL,
-                0,
-                15728880,
-            )
+            val lines = text.split('\n')
+            val lineHeight = font.lineHeight + 1
+            val maxWidth = lines.maxOfOrNull { font.width(it) } ?: 0
+            val textLayer = if (seeThrough) Font.DisplayMode.SEE_THROUGH else Font.DisplayMode.NORMAL
+            val backgroundColor = if (backgroundBox) {
+                (client.options.getBackgroundOpacity(0.25f) * 255).toInt() shl 24
+            } else {
+                0
+            }
+
+            lines.forEachIndexed { index, line ->
+                val formatted = net.minecraft.util.FormattedCharSequence.forward(line, net.minecraft.network.chat.Style.EMPTY)
+                collector.submitText(
+                    matrices,
+                    -maxWidth / 2f,
+                    index * lineHeight.toFloat(),
+                    formatted,
+                    false,
+                    textLayer,
+                    15728880,
+                    -1,
+                    backgroundColor,
+                    0,
+                )
+            }
+
             matrices.popPose()
         }
     }
@@ -247,7 +274,7 @@ object RenderUtils {
     @JvmStatic
     @JvmOverloads
     fun drawTracer(targetPos: Vec3, color: Color, thickness: Float = 2f, depth: Boolean = false) {
-        val camera = client.gameRenderer.mainCamera
+        val camera = client.gameRenderer.mainCamera()
         val start = camera.position().add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()).scale(0.1))
         drawLine(start, targetPos, color, thickness, depth)
     }

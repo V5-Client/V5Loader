@@ -27,7 +27,7 @@ public class MouseHandlerMixin {
     @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
     private void v5$cancelFreecamClick(long window, MouseButtonInfo button, int action, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
-        if (action == GLFW.GLFW_PRESS && client.screen != null) {
+        if (action == GLFW.GLFW_PRESS && client.gui.screen() != null) {
             v5$guiMouseButton = button.button();
         } else if (action == GLFW.GLFW_RELEASE) {
             if (button.button() == v5$guiMouseButton) {
@@ -38,7 +38,7 @@ public class MouseHandlerMixin {
         }
 
         if (v5$cameraLookEnabled()
-                && client.screen == null
+                && client.gui.screen() == null
                 && (button.button() == 0 || button.button() == 1)) {
             ci.cancel();
         }
@@ -88,7 +88,7 @@ public class MouseHandlerMixin {
     @Inject(method = "onScroll(JDD)V", at = @At("HEAD"), cancellable = true)
     private void v5$onMouseScroll(long window, double horizontalScroll, double verticalScroll, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
-        if (V5MixinStorage.getBoolean("freelookEnabled", false) && client.screen == null) {
+        if (V5MixinStorage.getBoolean("freelookEnabled", false) && client.gui.screen() == null) {
             Object storedDistance = V5MixinStorage.get("freelookCameraDistance", 4.0);
             double distance = storedDistance instanceof Number number ? number.doubleValue() : 4.0;
             V5MixinStorage.set("freelookCameraDistance", Mth.clamp(distance - verticalScroll, 1.0, 12.0));
@@ -100,7 +100,7 @@ public class MouseHandlerMixin {
             return;
         }
 
-        if (client != null && client.screen == null) {
+        if (client != null && client.gui.screen() == null) {
             ci.cancel();
         }
     }

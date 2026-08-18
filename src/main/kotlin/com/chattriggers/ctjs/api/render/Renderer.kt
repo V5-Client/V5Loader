@@ -6,17 +6,20 @@ import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.entity.PlayerMP
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.vec.Vec3f
+import net.minecraft.client.gui.Font
 import com.chattriggers.ctjs.engine.LogType
 import com.chattriggers.ctjs.engine.printToConsole
+import com.chattriggers.ctjs.internal.mixins.GameRendererAccessor
+import com.chattriggers.ctjs.internal.utils.asMixin
 import com.chattriggers.ctjs.internal.utils.getOrDefault
 import com.chattriggers.ctjs.internal.utils.toRadians
 import com.mojang.blaze3d.opengl.GlStateManager
 import com.mojang.blaze3d.opengl.GlTexture
+import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.pipeline.RenderPipeline.Snippet
 import gg.essential.universal.UGraphics
 import gg.essential.universal.UMatrixStack
-import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.client.renderer.RenderPipelines as MinecraftRenderPipelines
 import net.minecraft.client.player.AbstractClientPlayer
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import net.minecraft.client.renderer.entity.EntityRendererProvider
@@ -286,7 +289,7 @@ object Renderer {
     @JvmStatic
     @JvmOverloads
     fun pos(x: Float, y: Float, z: Float = 0f) = apply {
-        val camera = Client.getMinecraft().gameRenderer.mainCamera.position()
+        val camera = Client.getMinecraft().gameRenderer.mainCamera().position()
         Renderer3d.pos(x + camera.x.toFloat(), y + camera.y.toFloat(), z + camera.z.toFloat())
     }
 
@@ -495,24 +498,7 @@ object Renderer {
             return
         }
 
-        val immediate = Client.getMinecraft().renderBuffers().bufferSource()
-        splitText(text).lines.forEach {
-            fr.drawInBatch(
-                it,
-                x,
-                newY,
-                color.toInt(),
-                shadow,
-                matrixStack.toMC().last().pose(),
-                immediate,
-                Font.DisplayMode.NORMAL,
-                0,
-                0xf000f0,
-            )
-
-            newY += fr.lineHeight
-        }
-        immediate.endBatch()
+        "Renderer.drawString called without an active DrawContext; open a GUI or use Renderer3d.drawString for world text".printToConsole(LogType.WARN)
     }
 
     @JvmStatic
@@ -535,8 +521,7 @@ object Renderer {
     fun drawImage(image: Image, x: Float, y: Float, width: Float, height: Float) {
         scale(1f, 1f, 50f)
 
-        // FIXME: icba to do this
-//        RenderSystem.setShaderTexture(0, image.getTexture()?.glTextureView)
+        bindTexture(image)
 
         begin(DrawMode.QUADS, VertexFormat.POSITION_TEXTURE_COLOR, snippet = RenderSnippet.POSITION_TEX_COLOR_SNIPPET)
         pos(x, y + height, 0f).tex(0f, 1f).color(WHITE)
@@ -648,7 +633,7 @@ object Renderer {
         }
 
         // entityRenderDispatcher.setRenderShadows(false)
-        val vertexConsumers = Client.getMinecraft().renderBuffers().bufferSource()
+        // val vertexConsumers = Client.getMinecraft().renderBuffers().bufferSource()
 
         // val light = 0xf000f0
 
@@ -680,13 +665,13 @@ object Renderer {
         entityRenderer.submit(
             playerEntityRenderState,
             matrixStack.toMC(),
-            Client.getMinecraft().gameRenderer.submitNodeStorage,
-            Client.getMinecraft().gameRenderer.gameRenderState.levelRenderState.cameraRenderState
+            Client.getMinecraft().gameRenderer.asMixin<GameRendererAccessor>().submitNodeStorage,
+            Client.getMinecraft().gameRenderer.gameRenderState().levelRenderState.cameraRenderState
         )
 
         matrixStack.pop()
 
-        vertexConsumers.endBatch()
+        // vertexConsumers.endBatch()
         // entityRenderDispatcher.setRenderShadows(true)
         matrixStack.pop()
         // TODO: find out a way to get Diffuse instance and call setType
@@ -758,21 +743,21 @@ object Renderer {
         }
     }
 
-    enum class RenderSnippet(val mcSnippet: Snippet) {
-        TERRAIN_SNIPPET(RenderPipelines.TERRAIN_SNIPPET),
-        ENTITY_SNIPPET(RenderPipelines.ENTITY_SNIPPET),
-        RENDERTYPE_BEACON_BEAM_SNIPPET(RenderPipelines.BEACON_BEAM_SNIPPET),
-        TEXT_SNIPPET(RenderPipelines.TEXT_SNIPPET),
-        RENDERTYPE_END_PORTAL_SNIPPET(RenderPipelines.END_PORTAL_SNIPPET),
-        RENDERTYPE_CLOUDS_SNIPPET(RenderPipelines.CLOUDS_SNIPPET),
-        RENDERTYPE_LINES_SNIPPET(RenderPipelines.LINES_SNIPPET),
-        POSITION_COLOR_SNIPPET(RenderPipelines.DEBUG_FILLED_SNIPPET),
-        PARTICLE_SNIPPET(RenderPipelines.PARTICLE_SNIPPET),
-        WEATHER_SNIPPET(RenderPipelines.WEATHER_SNIPPET),
-        GUI_SNIPPET(RenderPipelines.GUI_SNIPPET),
-        POSITION_TEX_COLOR_SNIPPET(RenderPipelines.GUI_TEXTURED_SNIPPET),
-        RENDERTYPE_OUTLINE_SNIPPET(RenderPipelines.OUTLINE_SNIPPET),
-        POST_EFFECT_PROCESSOR_SNIPPET(RenderPipelines.POST_PROCESSING_SNIPPET),
+    enum class RenderSnippet(val mcSnippet: Snippet, val pipeline: RenderPipeline? = null) {
+        TERRAIN_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.SOLID_TERRAIN),
+        ENTITY_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.ENTITY_SOLID),
+        RENDERTYPE_BEACON_BEAM_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.BEACON_BEAM_OPAQUE),
+        TEXT_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.TEXT),
+        RENDERTYPE_END_PORTAL_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.END_PORTAL),
+        RENDERTYPE_CLOUDS_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.CLOUDS),
+        RENDERTYPE_LINES_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.LINES),
+        POSITION_COLOR_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.DEBUG_QUADS),
+        PARTICLE_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.OPAQUE_PARTICLE),
+        WEATHER_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.WEATHER_DEPTH_WRITE),
+        GUI_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.GUI),
+        POSITION_TEX_COLOR_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.ITEM_TRANSLUCENT),
+        RENDERTYPE_OUTLINE_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET, MinecraftRenderPipelines.ENTITY_OUTLINE_BLIT),
+        POST_EFFECT_PROCESSOR_SNIPPET(MinecraftRenderPipelines.POST_PROCESSING_SNIPPET),
     }
 
     class ScreenWrapper {

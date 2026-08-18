@@ -35,6 +35,6 @@ object Chat {
             finalMessage.append(partText)
         }
 
-        mc.gui.chat.addClientSystemMessage(finalMessage)
+        mc.gui.hud.chat.addClientSystemMessage(finalMessage)
     }
 }

@@ -36,7 +36,7 @@ class CTJS : ClientModInitializer {
 
         var autoOpenTriggered = false
         ClientTickEvents.END_CLIENT_TICK.register { client ->
-            val currentScreen = client.screen ?: return@register
+            val currentScreen = client.gui.screen() ?: return@register
             val isMenuScreen = currentScreen is TitleScreen
 
             if (autoOpenTriggered || Config.wasWelcomeShown() || !isMenuScreen) return@register

@@ -1,12 +1,13 @@
 package com.chattriggers.ctjs.api.render
 
+import com.mojang.blaze3d.PrimitiveTopology
 import com.mojang.blaze3d.pipeline.ColorTargetState
 import com.mojang.blaze3d.pipeline.BlendFunction
 import com.mojang.blaze3d.pipeline.DepthStencilState
 import com.mojang.blaze3d.pipeline.RenderPipeline
+import com.mojang.blaze3d.platform.BlendFactor
 import com.mojang.blaze3d.platform.CompareOp
-import com.mojang.blaze3d.platform.DestFactor
-import com.mojang.blaze3d.platform.SourceFactor
+import net.minecraft.client.renderer.rendertype.RenderSetup
 import net.minecraft.client.renderer.rendertype.RenderType
 
 object LegacyPipelineBuilder {
@@ -55,10 +56,25 @@ object LegacyPipelineBuilder {
     fun build(): RenderPipeline {
         val key = state()
         return pipelineList.getOrPut(key) {
-            val basePipeline = RenderPipeline.builder(snippet.mcSnippet)
+            if (snippet.pipeline != null) {
+                return@getOrPut snippet.pipeline!!
+            }
+
+            val basePipeline = RenderPipeline.builder(requireNotNull(snippet.mcSnippet))
                 .withLocation("ctjs/custom/pipeline${hashCode()}")
-                .withVertexFormat(vertexFormat.toMC(), drawMode.toUC().mcMode)
-            if (blend == true) basePipeline.withColorTargetState(ColorTargetState(BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO)))
+                .withPrimitiveTopology(drawMode.toTopology())
+            if (blend == true) {
+                basePipeline.withColorTargetState(
+                    ColorTargetState(
+                        BlendFunction(
+                            BlendFactor.SRC_ALPHA,
+                            BlendFactor.ONE_MINUS_SRC_ALPHA,
+                            BlendFactor.ONE,
+                            BlendFactor.ZERO,
+                        )
+                    )
+                )
+            }
 
             cull?.let(basePipeline::withCull)
 
@@ -76,7 +92,9 @@ object LegacyPipelineBuilder {
     }
 
     fun layer(): RenderType {
-        throw Error("LegacyPipelineBuilder#layer currently not supported")
+        val pipeline = build()
+        val setup = RenderSetup.builder(pipeline).createRenderSetup()
+        return RenderType.create("ctjs/${pipeline.hashCode()}", setup)
     }
 
     fun state(): String {
@@ -88,5 +106,14 @@ object LegacyPipelineBuilder {
                 "vertexFormat=${vertexFormat.name}, " +
                 "snippet=${snippet.name}" +
                 "]"
+    }
+
+    private fun Renderer.DrawMode.toTopology(): PrimitiveTopology = when (this) {
+        Renderer.DrawMode.LINES -> PrimitiveTopology.LINES
+        Renderer.DrawMode.LINE_STRIP -> PrimitiveTopology.DEBUG_LINE_STRIP
+        Renderer.DrawMode.TRIANGLES -> PrimitiveTopology.TRIANGLES
+        Renderer.DrawMode.TRIANGLE_STRIP -> PrimitiveTopology.TRIANGLE_STRIP
+        Renderer.DrawMode.TRIANGLE_FAN -> PrimitiveTopology.TRIANGLE_FAN
+        Renderer.DrawMode.QUADS -> PrimitiveTopology.QUADS
     }
 }

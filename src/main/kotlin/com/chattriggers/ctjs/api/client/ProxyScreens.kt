@@ -32,19 +32,19 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal(
         val buttonY = height - 28
         addButton = addRenderableWidget(
             Button.builder(Component.literal("Add Proxy")) {
-                minecraft.setScreen(ProxyEditScreen(this, null))
+                minecraft.gui.setScreen(ProxyEditScreen(this, null))
             }.bounds(width / 2 - 102, buttonY, 100, 20).build()
         )
         backButton = addRenderableWidget(
             Button.builder(Component.literal("Back")) {
-                minecraft.setScreen(parent)
+                minecraft.gui.setScreen(parent)
             }.bounds(width / 2 + 2, buttonY, 100, 20).build()
         )
         syncRowButtons()
     }
 
     override fun onClose() {
-        minecraft.setScreen(parent)
+        minecraft.gui.setScreen(parent)
     }
 
     override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
@@ -157,7 +157,7 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal(
             )
             val edit = addRenderableWidget(
                 Button.builder(Component.literal("Edit")) {
-                    minecraft.setScreen(ProxyEditScreen(this, proxy))
+                    minecraft.gui.setScreen(ProxyEditScreen(this, proxy))
                 }.bounds(0, 0, 40, 20).build()
             )
             val delete = addRenderableWidget(
@@ -303,13 +303,13 @@ class ProxyEditScreen(
         )
         cancelButton = addRenderableWidget(
             Button.builder(Component.literal("Cancel")) {
-                minecraft.setScreen(parent)
+                minecraft.gui.setScreen(parent)
             }.bounds(centerX + 5, height - 40, 100, 20).build()
         )
     }
 
     override fun onClose() {
-        minecraft.setScreen(parent)
+        minecraft.gui.setScreen(parent)
     }
 
     private fun createField(centerX: Int, y: Int, placeholder: String, value: String?): EditBox {
@@ -339,7 +339,7 @@ class ProxyEditScreen(
         }
 
         parent.refreshList()
-        minecraft.setScreen(parent)
+        minecraft.gui.setScreen(parent)
     }
 
     override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {

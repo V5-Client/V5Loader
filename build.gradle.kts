@@ -130,7 +130,7 @@ tasks {
     }
 
     jar {
-        archiveFileName.set(if (providers.gradleProperty("releaseBuild").isPresent) "V5-Loader-26.1.2.jar" else "V5-Loader-DEV.jar")
+        archiveFileName.set(if (providers.gradleProperty("releaseBuild").isPresent) "V5-Loader-26.2.jar" else "V5-Loader-DEV.jar")
         exclude("typings.d.ts")
     }
 

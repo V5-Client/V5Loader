@@ -22,7 +22,7 @@ public class KeyboardHandlerMixin {
         }
 
         Minecraft client = Minecraft.getInstance();
-        if (!V5MixinStorage.getBoolean("freecamEnabled", false) || client.screen != null) {
+        if (!V5MixinStorage.getBoolean("freecamEnabled", false) || client.gui.screen() != null) {
             return;
         }
 

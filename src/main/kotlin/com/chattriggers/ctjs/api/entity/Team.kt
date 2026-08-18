@@ -5,7 +5,9 @@ import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.MCTeam
 import com.chattriggers.ctjs.api.message.ChatLib
 import net.minecraft.world.scores.Team
+import net.minecraft.world.scores.TeamColor
 import net.minecraft.ChatFormatting
+import java.util.Optional
 
 class Team(override val mcValue: MCTeam) : CTWrapper<MCTeam> {
     /**
@@ -81,7 +83,9 @@ class Team(override val mcValue: MCTeam) : CTWrapper<MCTeam> {
      */
     fun setSuffix(suffix: String) = setSuffix(TextComponent(suffix))
 
-    fun getColor() = mcValue.color.toString()
+    fun getColor(): String? = mcValue.color.map { teamColor ->
+        ChatFormatting.entries.find { it.name.equals(teamColor.name, ignoreCase = true) }?.toString()
+    }.orElse(null)
 
     /**
      * Sets the team color
@@ -89,14 +93,16 @@ class Team(override val mcValue: MCTeam) : CTWrapper<MCTeam> {
      * @return the team for method chaining
      */
     fun setColor(color: Any?) = apply {
-        mcValue.color = when (color) {
-            is Number -> ChatFormatting.getById(color.toInt()) ?: ChatFormatting.RESET
-            is CharSequence -> ChatFormatting.entries.find {
-                it.toString() == ChatLib.addColor(color.toString())
-            } ?: ChatFormatting.RESET
-            null -> ChatFormatting.RESET
-            else -> throw IllegalArgumentException("Could not convert type ${color::class.simpleName} to a Formatting")
-        }
+        mcValue.color = Optional.ofNullable(
+            when (color) {
+                is Number -> ChatFormatting.getByCode(color.toInt().toChar())?.name?.let { TeamColor.byName(it) }
+                is CharSequence -> ChatFormatting.entries.find {
+                    it.toString() == ChatLib.addColor(color.toString())
+                }?.name?.let { TeamColor.byName(it) }
+                null -> null
+                else -> throw IllegalArgumentException("Could not convert type ${color::class.simpleName} to a Formatting")
+            }
+        )
     }
 
     /**

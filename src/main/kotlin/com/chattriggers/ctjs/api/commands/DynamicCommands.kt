@@ -37,6 +37,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
@@ -46,7 +47,8 @@ import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.commands.SharedSuggestionProvider
 import net.minecraft.commands.arguments.AngleArgument
-import net.minecraft.commands.arguments.ColorArgument
+import net.minecraft.commands.arguments.TeamColorArgument
+import net.minecraft.commands.arguments.HexColorArgument
 import net.minecraft.commands.arguments.CompoundTagArgument
 import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.commands.arguments.GameModeArgument
@@ -373,7 +375,29 @@ object DynamicCommands : CommandCollection() {
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:color">minecraft:color</a>
      */
     @JvmStatic
-    fun color() = ColorArgument.color()
+    fun color(): ArgumentType<Any> {
+        val named = TeamColorArgument.teamColor()
+        val hex = HexColorArgument.hexColor()
+        return object : ArgumentType<Any> {
+            override fun parse(reader: StringReader): Any {
+                val cursor = reader.cursor
+                return try {
+                    named.parse(reader)
+                } catch (_: CommandSyntaxException) {
+                    reader.cursor = cursor
+                    hex.parse(reader)
+                }
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            override fun <S> listSuggestions(
+                context: CommandContext<S>,
+                builder: SuggestionsBuilder,
+            ) = (named as ArgumentType<Any>).listSuggestions(context, builder)
+
+            override fun getExamples() = named.examples
+        }
+    }
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:column_pos">minecraft:column_pos</a>
