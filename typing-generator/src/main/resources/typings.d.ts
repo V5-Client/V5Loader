@@ -4399,6 +4399,82 @@ declare global {
           isDirectory(): boolean;
         }
       }
+      namespace regex {
+        const Pattern: {
+          UNIX_LINES: number;
+          CASE_INSENSITIVE: number;
+          COMMENTS: number;
+          MULTILINE: number;
+          LITERAL: number;
+          DOTALL: number;
+          UNICODE_CASE: number;
+          CANON_EQ: number;
+          UNICODE_CHARACTER_CLASS: number;
+          compile(p0: string): java.util.regex.Pattern;
+          compile(p0: string, p1: number): java.util.regex.Pattern;
+          matches(p0: string, p1: kotlin.CharSequence): boolean;
+          quote(p0: string): string;
+        }
+        interface Pattern extends java.io.Serializable { 
+          pattern(): string;
+          flags(): number;
+          namedGroups(): Map<string, number>;
+          matcher(p0: kotlin.CharSequence): java.util.regex.Matcher;
+          split(p0: kotlin.CharSequence, p1: number): Array<string>;
+          split(p0: kotlin.CharSequence): Array<string>;
+          splitWithDelimiters(p0: kotlin.CharSequence, p1: number): Array<string>;
+          next(): number;
+          asPredicate(): unknown;
+          asMatchPredicate(): unknown;
+          splitAsStream(p0: kotlin.CharSequence): java.util.stream.Stream<string>;
+        }
+        const Matcher: {
+          quoteReplacement(p0: string): string;
+        }
+        interface Matcher extends java.util.regex.MatchResult { 
+          hitEnd(): boolean;
+          requireEnd(): boolean;
+          pattern(): java.util.regex.Pattern;
+          toMatchResult(): java.util.regex.MatchResult;
+          usePattern(p0: java.util.regex.Pattern): java.util.regex.Matcher;
+          reset(): java.util.regex.Matcher;
+          reset(p0: kotlin.CharSequence): java.util.regex.Matcher;
+          matches(): boolean;
+          find(): boolean;
+          find(p0: number): boolean;
+          lookingAt(): boolean;
+          appendReplacement(p0: java.lang.StringBuffer, p1: string): java.util.regex.Matcher;
+          appendReplacement(p0: java.lang.StringBuilder, p1: string): java.util.regex.Matcher;
+          appendTail(p0: java.lang.StringBuffer): java.lang.StringBuffer;
+          appendTail(p0: java.lang.StringBuilder): java.lang.StringBuilder;
+          replaceAll(p0: string): string;
+          replaceAll(p0: unknown): string;
+          results(): java.util.stream.Stream<java.util.regex.MatchResult>;
+          replaceFirst(p0: string): string;
+          replaceFirst(p0: unknown): string;
+          region(p0: number, p1: number): java.util.regex.Matcher;
+          regionStart(): number;
+          regionEnd(): number;
+          hasTransparentBounds(): boolean;
+          useTransparentBounds(p0: boolean): java.util.regex.Matcher;
+          hasAnchoringBounds(): boolean;
+          useAnchoringBounds(p0: boolean): java.util.regex.Matcher;
+        }
+        interface MatchResult { 
+          start(): number;
+          start(p0: number): number;
+          start(p0: string): number;
+          end(): number;
+          end(p0: number): number;
+          end(p0: string): number;
+          group(): string;
+          group(p0: number): string;
+          group(p0: string): string;
+          groupCount(): number;
+          namedGroups(): Map<string, number>;
+          hasMatch(): boolean;
+        }
+      }
       const ArrayList: {
         new<E>(p0: number): java.util.ArrayList<any>;
         new<E>(): java.util.ArrayList<any>;
@@ -37033,13 +37109,6 @@ declare global {
             name(): string;
             signature(): net.minecraft.network.chat.MessageSignature;
           }
-          const ColorArgument: {
-            ERROR_INVALID_VALUE: com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-            color(): net.minecraft.commands.arguments.ColorArgument;
-            getColor(context: com.mojang.brigadier.context.CommandContext<net.minecraft.commands.CommandSourceStack>, name: string): net.minecraft.ChatFormatting;
-          }
-          interface ColorArgument extends com.mojang.brigadier.arguments.ArgumentType<net.minecraft.ChatFormatting> { 
-          }
           const RangeArgument$Floats: {
             new(): net.minecraft.commands.arguments.RangeArgument$Floats;
             getRange(context: com.mojang.brigadier.context.CommandContext<net.minecraft.commands.CommandSourceStack>, name: string): net.minecraft.advancements.criterion.MinMaxBounds$Doubles;
@@ -46397,6 +46466,7 @@ declare global {
                 getETHER_PASSABLE(): number;
                 getETHER_TELEPORT_CLEAR(): number;
                 getETHER_FEET_BLOCKER(): number;
+                getETHER_FAKE_FULL_BLOCKER(): number;
               }
               const WorldSerializer: {
                 new(): com.chattriggers.ctjs.api.world.pathfinding.WorldSerializer;
@@ -48422,9 +48492,7 @@ declare global {
               setSuffix(suffix: string): com.chattriggers.ctjs.api.entity.Team;
               getColor(): string;
 							/**
-							 * Sets the team color
-							 *  @param color a string format of a [Formatting], or a hex value
-							 *  @return the team for method chaining
+							 * Sets the team color using the legacy ChatFormatting name or numeric id.
 							 */
               setColor(color: any | null | undefined): com.chattriggers.ctjs.api.entity.Team;
 							/**
@@ -48577,7 +48645,7 @@ declare global {
 							/**
 							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:color">minecraft:color</a>
 							 */
-              color(): net.minecraft.commands.arguments.ColorArgument;
+              color(): com.mojang.brigadier.arguments.ArgumentType<net.minecraft.ChatFormatting>;
 							/**
 							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:column_pos">minecraft:column_pos</a>
 							 */
@@ -48947,7 +49015,7 @@ declare global {
 							/**
 							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:color">minecraft:color</a>
 							 */
-              color(): net.minecraft.commands.arguments.ColorArgument;
+              color(): com.mojang.brigadier.arguments.ArgumentType<net.minecraft.ChatFormatting>;
 							/**
 							 * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:column_pos">minecraft:column_pos</a>
 							 */
@@ -49973,6 +50041,10 @@ declare global {
 							 *  @param ip The ip to connect to
 							 */
               connect(ip: string, port: number): void;
+              getCurrentScreen(): net.minecraft.client.gui.screens.Screen | null | undefined;
+              setCurrentScreen(screen: net.minecraft.client.gui.screens.Screen | null | undefined): void;
+              getMainRenderTarget(): com.mojang.blaze3d.pipeline.RenderTarget;
+              reloadWorldRenderer(): void;
 							/**
 							 * Gets the Minecraft ChatHud object for the chat gui
 							 * 
@@ -50160,6 +50232,10 @@ declare global {
 							 *  @param ip The ip to connect to
 							 */
               connect(ip: string, port: number): void;
+              getCurrentScreen(): net.minecraft.client.gui.screens.Screen | null | undefined;
+              setCurrentScreen(screen: net.minecraft.client.gui.screens.Screen | null | undefined): void;
+              getMainRenderTarget(): com.mojang.blaze3d.pipeline.RenderTarget;
+              reloadWorldRenderer(): void;
 							/**
 							 * Gets the Minecraft ChatHud object for the chat gui
 							 * 
@@ -50853,6 +50929,13 @@ declare global {
             }
           }
           namespace render {
+            namespace skia {
+              const SkijaBootstrap: {
+                new(): com.chattriggers.ctjs.api.render.skia.SkijaBootstrap;
+              }
+              interface SkijaBootstrap extends net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint { 
+              }
+            }
             const Font: {
               new(name: string, resourcePath: string): com.chattriggers.ctjs.api.render.Font;
               new(name: string, inputStream: java.io.InputStream): com.chattriggers.ctjs.api.render.Font;
@@ -50860,215 +50943,6 @@ declare global {
             interface Font { 
               getName(): string;
               buffer(): java.nio.ByteBuffer;
-            }
-            const Display: {
-              Background: typeof com.chattriggers.ctjs.api.render.Display$Background;
-              Order: typeof com.chattriggers.ctjs.api.render.Display$Order;
-              new(): com.chattriggers.ctjs.api.render.Display;
-              new(config: org.mozilla.javascript.NativeObject | null | undefined): com.chattriggers.ctjs.api.render.Display;
-            }
-            interface Display { 
-              getTextColor(): number;
-							/**
-							 * Sets the color of the texts
-							 * 
-							 *  Overrides the color of the individual texts
-							 */
-              setTextColor(textColor: number): com.chattriggers.ctjs.api.render.Display;
-              getAlign(): com.chattriggers.ctjs.api.render.Text$Align;
-							/**
-							 * Set the alignment of the texts in the display
-							 * 
-							 *  Overrides alignment of the individual texts
-							 */
-              setAlign(align: any): com.chattriggers.ctjs.api.render.Display;
-              getOrder(): com.chattriggers.ctjs.api.render.Display$Order;
-              setOrder(order: any): com.chattriggers.ctjs.api.render.Display;
-              getBackground(): com.chattriggers.ctjs.api.render.Display$Background;
-              setBackground(background: any): com.chattriggers.ctjs.api.render.Display;
-              getBackgroundColor(): number;
-              setBackgroundColor(backgroundColor: number): com.chattriggers.ctjs.api.render.Display;
-              setLine(index: number, line: any): com.chattriggers.ctjs.api.render.Display;
-              getLine(index: number): com.chattriggers.ctjs.api.render.Text;
-              getLines(): Array<com.chattriggers.ctjs.api.render.Text>;
-              setLines(lines: Array<com.chattriggers.ctjs.api.render.Text>): com.chattriggers.ctjs.api.render.Display;
-              addLine(line: any): com.chattriggers.ctjs.api.render.Display;
-              addLines(lines: any): com.chattriggers.ctjs.api.render.Display;
-              removeLine(index: number): com.chattriggers.ctjs.api.render.Display;
-              clearLines(): com.chattriggers.ctjs.api.render.Display;
-              getX(): number;
-              setX(x: number): com.chattriggers.ctjs.api.render.Display;
-              getY(): number;
-              setY(y: number): com.chattriggers.ctjs.api.render.Display;
-              getWidth(): number;
-              getHeight(): number;
-              getMinWidth(): number;
-              setMinWidth(minWidth: number): com.chattriggers.ctjs.api.render.Display;
-              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor): void;
-            }
-            const Text$Align: {
-              LEFT: com.chattriggers.ctjs.api.render.Text$Align;
-              CENTER: com.chattriggers.ctjs.api.render.Text$Align;
-              RIGHT: com.chattriggers.ctjs.api.render.Text$Align;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Text$Align>;
-              values(): Array<com.chattriggers.ctjs.api.render.Text$Align>;
-              valueOf(value: string): com.chattriggers.ctjs.api.render.Text$Align;
-            }
-            interface Text$Align extends kotlin.Enum<com.chattriggers.ctjs.api.render.Text$Align> { 
-            }
-            const Display$Order: {
-              REVERSED: com.chattriggers.ctjs.api.render.Display$Order;
-              NORMAL: com.chattriggers.ctjs.api.render.Display$Order;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Display$Order>;
-              values(): Array<com.chattriggers.ctjs.api.render.Display$Order>;
-              valueOf(value: string): com.chattriggers.ctjs.api.render.Display$Order;
-            }
-            interface Display$Order extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Order> { 
-            }
-            const Display$Background: {
-              NONE: com.chattriggers.ctjs.api.render.Display$Background;
-              FULL: com.chattriggers.ctjs.api.render.Display$Background;
-              PER_LINE: com.chattriggers.ctjs.api.render.Display$Background;
-              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Display$Background>;
-              values(): Array<com.chattriggers.ctjs.api.render.Display$Background>;
-              valueOf(value: string): com.chattriggers.ctjs.api.render.Display$Background;
-            }
-            interface Display$Background extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Background> { 
-            }
-            const Text: {
-              Align: typeof com.chattriggers.ctjs.api.render.Text$Align;
-              new(string: string): com.chattriggers.ctjs.api.render.Text;
-              new(string: string, x: number): com.chattriggers.ctjs.api.render.Text;
-              new(string: string, x: number, y: number): com.chattriggers.ctjs.api.render.Text;
-              new(string: string, config: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.render.Text;
-            }
-            interface Text { 
-              getString(): string;
-              setString(string: string): com.chattriggers.ctjs.api.render.Text;
-              getColor(): number;
-              setColor(color: number): com.chattriggers.ctjs.api.render.Text;
-              getFormatted(): boolean;
-              setFormatted(formatted: boolean): com.chattriggers.ctjs.api.render.Text;
-              getShadow(): boolean;
-              setShadow(shadow: boolean): com.chattriggers.ctjs.api.render.Text;
-              getAlign(): com.chattriggers.ctjs.api.render.Text$Align;
-              setAlign(align: any): com.chattriggers.ctjs.api.render.Text;
-              getBackground(): boolean;
-							/**
-							 * Set the background
-							 * 
-							 *  true: Background is enabled
-							 *  false: Background is disabled
-							 */
-              setBackground(background: boolean): com.chattriggers.ctjs.api.render.Text;
-              getBackgroundColor(): number;
-              setBackgroundColor(backgroundColor: number): com.chattriggers.ctjs.api.render.Text;
-              getX(): number;
-              setX(x: number): com.chattriggers.ctjs.api.render.Text;
-              getY(): number;
-              setY(y: number): com.chattriggers.ctjs.api.render.Text;
-							/**
-							 * Gets the width of the text
-							 *  This is automatically updated when the text is drawn.
-							 * 
-							 *  @return the width of the text
-							 */
-              getWidth(): number;
-              getLines(): Array<string>;
-              getMaxLines(): number;
-              setMaxLines(maxLines: number): com.chattriggers.ctjs.api.render.Text;
-              getScale(): number;
-              setScale(scale: number): com.chattriggers.ctjs.api.render.Text;
-							/**
-							 * Sets the maximum width of the text, splitting it into multiple lines if necessary.
-							 * 
-							 *  @param maxWidth the maximum width of the text
-							 *  @return the Text object for method chaining
-							 */
-              setMaxWidth(maxWidth: number): com.chattriggers.ctjs.api.render.Text;
-              getMaxWidth(): number;
-              getHeight(): number;
-              exceedsMaxLines(): boolean;
-              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor): com.chattriggers.ctjs.api.render.Text;
-              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor, x: number | null | undefined): com.chattriggers.ctjs.api.render.Text;
-              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor, x: number | null | undefined, y: number | null | undefined): com.chattriggers.ctjs.api.render.Text;
-            }
-            const DrawContextHolder: {
-              currentContext: net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined;
-              new(): com.chattriggers.ctjs.api.render.DrawContextHolder;
-            }
-            interface DrawContextHolder { 
-              currentContext: net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined;
-              new(): com.chattriggers.ctjs.api.render.DrawContextHolder;
-              withContext<T>(context: net.minecraft.client.gui.GuiGraphicsExtractor, block: kotlin.Function0<T>): T;
-            }
-            const RenderPipelines: {
-              LINE_LIST: com.mojang.blaze3d.pipeline.RenderPipeline;
-              TRIANGLE_STRIP: com.mojang.blaze3d.pipeline.RenderPipeline;
-              LINE_LIST_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
-              TRIANGLE_STRIP_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
-							/**
-							 * The only custom world pipelines are the two states vanilla does not expose: no-depth ESP.
-							 */
-              new(): com.chattriggers.ctjs.api.render.RenderPipelines;
-            }
-            interface RenderPipelines { 
-              LINE_LIST: com.mojang.blaze3d.pipeline.RenderPipeline;
-              TRIANGLE_STRIP: com.mojang.blaze3d.pipeline.RenderPipeline;
-              LINE_LIST_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
-              TRIANGLE_STRIP_ESP: com.mojang.blaze3d.pipeline.RenderPipeline;
-							/**
-							 * The only custom world pipelines are the two states vanilla does not expose: no-depth ESP.
-							 */
-              new(): com.chattriggers.ctjs.api.render.RenderPipelines;
-            }
-            const RenderLayers: {
-              LINE_LIST: net.minecraft.client.renderer.rendertype.RenderType;
-              LINE_LIST_ESP: net.minecraft.client.renderer.rendertype.RenderType;
-              TRIANGLE_STRIP: net.minecraft.client.renderer.rendertype.RenderType;
-              TRIANGLE_STRIP_ESP: net.minecraft.client.renderer.rendertype.RenderType;
-              new(): com.chattriggers.ctjs.api.render.RenderLayers;
-            }
-            interface RenderLayers { 
-              LINE_LIST: net.minecraft.client.renderer.rendertype.RenderType;
-              LINE_LIST_ESP: net.minecraft.client.renderer.rendertype.RenderType;
-              TRIANGLE_STRIP: net.minecraft.client.renderer.rendertype.RenderType;
-              TRIANGLE_STRIP_ESP: net.minecraft.client.renderer.rendertype.RenderType;
-              new(): com.chattriggers.ctjs.api.render.RenderLayers;
-            }
-            const Rectangle: {
-              new(color: number, x: number, y: number, width: number, height: number): com.chattriggers.ctjs.api.render.Rectangle;
-            }
-            interface Rectangle { 
-              getColor(): number;
-              setColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getX(): number;
-              setX(x: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getY(): number;
-              setY(y: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getWidth(): number;
-              setWidth(width: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getHeight(): number;
-              setHeight(height: number): com.chattriggers.ctjs.api.render.Rectangle;
-              isShadow(): boolean;
-              setShadow(shadow: boolean): com.chattriggers.ctjs.api.render.Rectangle;
-              setShadow(color: number, x: number, y: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getShadowOffset(): com.chattriggers.ctjs.api.vec.Vec2f;
-              getShadowOffsetX(): number;
-              getShadowOffsetY(): number;
-              setShadowOffset(x: number, y: number): com.chattriggers.ctjs.api.render.Rectangle;
-              setShadowOffsetX(x: number): com.chattriggers.ctjs.api.render.Rectangle;
-              setShadowOffsetY(y: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getShadowColor(): number;
-              setShadowColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getOutline(): boolean;
-              setOutline(outline: boolean): com.chattriggers.ctjs.api.render.Rectangle;
-              setOutline(color: number, thickness: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getOutlineColor(): number;
-              setOutlineColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
-              getThickness(): number;
-              setThickness(thickness: number): com.chattriggers.ctjs.api.render.Rectangle;
-              draw(): com.chattriggers.ctjs.api.render.Rectangle;
             }
             const Render2D: {
               ScreenWrapper: typeof com.chattriggers.ctjs.api.render.Render2D$ScreenWrapper;
@@ -51245,15 +51119,15 @@ declare global {
               ALIGN_CENTER: number;
               ALIGN_MIDDLE: number;
 							/**
-							 * Minecraft GUI extraction and GPU resource implementation for [Render2D].
+							 * Skija-backed 2D renderer used by the JavaScript-facing [Render2D] API.
 							 */
               new(): com.chattriggers.ctjs.api.render.GuiRendererBackend;
             }
             interface GuiRendererBackend { 
-              registerV5Render(runnable: java.lang.Runnable): void;
-              unregisterV5Render(runnable: java.lang.Runnable): void;
-              registerV5PreRender(runnable: java.lang.Runnable): void;
-              unregisterV5PreRender(runnable: java.lang.Runnable): void;
+              registerV5Render(callback: java.lang.Runnable): java.lang.Runnable;
+              unregisterV5Render(callback: java.lang.Runnable): void;
+              registerV5PreRender(callback: java.lang.Runnable): java.lang.Runnable;
+              unregisterV5PreRender(callback: java.lang.Runnable): void;
               clearCallbacks(): void;
               runPreDrawables(context: net.minecraft.client.gui.GuiGraphicsExtractor): void;
               runDrawables(context: net.minecraft.client.gui.GuiGraphicsExtractor): void;
@@ -51261,25 +51135,25 @@ declare global {
               save(): void;
               restore(): void;
               globalAlpha(value: number): void;
-              scissor(x: number, y: number, w: number, h: number): void;
+              scissor(x: number, y: number, width: number, height: number): void;
               resetScissor(): void;
-              pushScissor(x: number, y: number, w: number, h: number): void;
+              pushScissor(x: number, y: number, width: number, height: number): void;
               popScissor(): void;
-              drawRect(x: number, y: number, w: number, h: number, color: number): void;
-              drawRoundedRect(x: number, y: number, w: number, h: number, radius: number, color: number): void;
-              drawRoundedRectVaried(x: number, y: number, w: number, h: number, color: number, tl: number, tr: number, br: number, bl: number): void;
+              drawRect(x: number, y: number, width: number, height: number, color: number): void;
+              drawRoundedRect(x: number, y: number, width: number, height: number, radius: number, color: number): void;
+              drawRoundedRectVaried(x: number, y: number, width: number, height: number, color: number, tl: number, tr: number, br: number, bl: number): void;
               drawCircle(x: number, y: number, radius: number, color: number): void;
-              drawHollowRect(x: number, y: number, w: number, h: number, thickness: number, color: number): void;
-              drawHollowRect(x: number, y: number, w: number, h: number, thickness: number, color: number, radius: number): void;
+              drawHollowRect(x: number, y: number, width: number, height: number, thickness: number, color: number): void;
+              drawHollowRect(x: number, y: number, width: number, height: number, thickness: number, color: number, radius: number): void;
               drawLine(x1: number, y1: number, x2: number, y2: number, thickness: number, color: number): void;
-              drawDropShadow(x: number, y: number, w: number, h: number, radius: number, blur: number, spread: number, color: number): void;
-              drawGradientRect(x: number, y: number, w: number, h: number, color1: number, color2: number, direction: any): void;
-              drawGradientRect(x: number, y: number, w: number, h: number, color1: number, color2: number, direction: any, radius: number): void;
-              drawHollowGradientRect(x: number, y: number, w: number, h: number, thickness: number, color1: number, color2: number, direction: any): void;
-              drawHollowGradientRect(x: number, y: number, w: number, h: number, thickness: number, color1: number, color2: number, direction: any, radius: number): void;
-              drawCheckerboard(x: number, y: number, w: number, h: number, radius: number): void;
-              drawCheckerboard(x: number, y: number, w: number, h: number, radius: number, size: number): void;
-              drawHueBar(x: number, y: number, w: number, h: number, radius: number): void;
+              drawDropShadow(x: number, y: number, width: number, height: number, radius: number, blur: number, spread: number, color: number): void;
+              drawGradientRect(x: number, y: number, width: number, height: number, color1: number, color2: number, direction: any): void;
+              drawGradientRect(x: number, y: number, width: number, height: number, color1: number, color2: number, direction: any, radius: number): void;
+              drawHollowGradientRect(x: number, y: number, width: number, height: number, thickness: number, color1: number, color2: number, direction: any): void;
+              drawHollowGradientRect(x: number, y: number, width: number, height: number, thickness: number, color1: number, color2: number, direction: any, radius: number): void;
+              drawCheckerboard(x: number, y: number, width: number, height: number, radius: number): void;
+              drawCheckerboard(x: number, y: number, width: number, height: number, radius: number, size: number): void;
+              drawHueBar(x: number, y: number, width: number, height: number, radius: number): void;
               getDefaultFont(): com.chattriggers.ctjs.api.render.Font;
               text(text: string, x: number, y: number, size: number, color: number, align: number): void;
               text(text: string, x: number, y: number, size: number, color: number, font: com.chattriggers.ctjs.api.render.Font | null | undefined, align: number): void;
@@ -51288,17 +51162,17 @@ declare global {
               loadImage(path: string): string;
               unloadImage(path: string): void | null | undefined;
               isImageLoaded(path: string): boolean;
-              drawImage(path: string, x: number, y: number, w: number, h: number): void;
-              drawImage(path: string, x: number, y: number, w: number, h: number, radius: number): void;
-              drawImage(path: string, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
-              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number): void;
-              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number): void;
-              drawImageFromUrl(url: string, x: number, y: number, w: number, h: number, radius: number, alpha: number): void;
+              drawImage(path: string, x: number, y: number, width: number, height: number): void;
+              drawImage(path: string, x: number, y: number, width: number, height: number, radius: number): void;
+              drawImage(path: string, x: number, y: number, width: number, height: number, radius: number, imageAlpha: number): void;
+              drawImageFromUrl(url: string, x: number, y: number, width: number, height: number): void;
+              drawImageFromUrl(url: string, x: number, y: number, width: number, height: number, radius: number): void;
+              drawImageFromUrl(url: string, x: number, y: number, width: number, height: number, radius: number, imageAlpha: number): void;
               loadGif(path: string): com.chattriggers.ctjs.api.render.GuiRendererBackend$GifData | null | undefined;
               unloadGif(path: string): void | null | undefined;
-              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number): void;
-              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number): void;
-              drawGif(path: string, x: number, y: number, w: number, h: number, frameIndex: number, radius: number, alpha: number): void;
+              drawGif(path: string, x: number, y: number, width: number, height: number, frameIndex: number): void;
+              drawGif(path: string, x: number, y: number, width: number, height: number, frameIndex: number, radius: number): void;
+              drawGif(path: string, x: number, y: number, width: number, height: number, frameIndex: number, radius: number, imageAlpha: number): void;
               clearImageCache(): void;
               getCacheStats(): string;
               destroy(): void;
@@ -51399,6 +51273,181 @@ declare global {
               fromUrl(url: string, cachedImageName: string | null | undefined): com.chattriggers.ctjs.api.render.Image;
               new(): com.chattriggers.ctjs.api.render.Image$Companion;
             }
+            const Display: {
+              Background: typeof com.chattriggers.ctjs.api.render.Display$Background;
+              Order: typeof com.chattriggers.ctjs.api.render.Display$Order;
+              new(): com.chattriggers.ctjs.api.render.Display;
+              new(config: org.mozilla.javascript.NativeObject | null | undefined): com.chattriggers.ctjs.api.render.Display;
+            }
+            interface Display { 
+              getTextColor(): number;
+							/**
+							 * Sets the color of the texts
+							 * 
+							 *  Overrides the color of the individual texts
+							 */
+              setTextColor(textColor: number): com.chattriggers.ctjs.api.render.Display;
+              getAlign(): com.chattriggers.ctjs.api.render.Text$Align;
+							/**
+							 * Set the alignment of the texts in the display
+							 * 
+							 *  Overrides alignment of the individual texts
+							 */
+              setAlign(align: any): com.chattriggers.ctjs.api.render.Display;
+              getOrder(): com.chattriggers.ctjs.api.render.Display$Order;
+              setOrder(order: any): com.chattriggers.ctjs.api.render.Display;
+              getBackground(): com.chattriggers.ctjs.api.render.Display$Background;
+              setBackground(background: any): com.chattriggers.ctjs.api.render.Display;
+              getBackgroundColor(): number;
+              setBackgroundColor(backgroundColor: number): com.chattriggers.ctjs.api.render.Display;
+              setLine(index: number, line: any): com.chattriggers.ctjs.api.render.Display;
+              getLine(index: number): com.chattriggers.ctjs.api.render.Text;
+              getLines(): Array<com.chattriggers.ctjs.api.render.Text>;
+              setLines(lines: Array<com.chattriggers.ctjs.api.render.Text>): com.chattriggers.ctjs.api.render.Display;
+              addLine(line: any): com.chattriggers.ctjs.api.render.Display;
+              addLines(lines: any): com.chattriggers.ctjs.api.render.Display;
+              removeLine(index: number): com.chattriggers.ctjs.api.render.Display;
+              clearLines(): com.chattriggers.ctjs.api.render.Display;
+              getX(): number;
+              setX(x: number): com.chattriggers.ctjs.api.render.Display;
+              getY(): number;
+              setY(y: number): com.chattriggers.ctjs.api.render.Display;
+              getWidth(): number;
+              getHeight(): number;
+              getMinWidth(): number;
+              setMinWidth(minWidth: number): com.chattriggers.ctjs.api.render.Display;
+              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor): void;
+            }
+            const Text$Align: {
+              LEFT: com.chattriggers.ctjs.api.render.Text$Align;
+              CENTER: com.chattriggers.ctjs.api.render.Text$Align;
+              RIGHT: com.chattriggers.ctjs.api.render.Text$Align;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Text$Align>;
+              values(): Array<com.chattriggers.ctjs.api.render.Text$Align>;
+              valueOf(value: string): com.chattriggers.ctjs.api.render.Text$Align;
+            }
+            interface Text$Align extends kotlin.Enum<com.chattriggers.ctjs.api.render.Text$Align> { 
+            }
+            const Display$Order: {
+              REVERSED: com.chattriggers.ctjs.api.render.Display$Order;
+              NORMAL: com.chattriggers.ctjs.api.render.Display$Order;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Display$Order>;
+              values(): Array<com.chattriggers.ctjs.api.render.Display$Order>;
+              valueOf(value: string): com.chattriggers.ctjs.api.render.Display$Order;
+            }
+            interface Display$Order extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Order> { 
+            }
+            const Display$Background: {
+              NONE: com.chattriggers.ctjs.api.render.Display$Background;
+              FULL: com.chattriggers.ctjs.api.render.Display$Background;
+              PER_LINE: com.chattriggers.ctjs.api.render.Display$Background;
+              getEntries(): kotlin.enums.EnumEntries<com.chattriggers.ctjs.api.render.Display$Background>;
+              values(): Array<com.chattriggers.ctjs.api.render.Display$Background>;
+              valueOf(value: string): com.chattriggers.ctjs.api.render.Display$Background;
+            }
+            interface Display$Background extends kotlin.Enum<com.chattriggers.ctjs.api.render.Display$Background> { 
+            }
+            const Text: {
+              Align: typeof com.chattriggers.ctjs.api.render.Text$Align;
+              new(string: string): com.chattriggers.ctjs.api.render.Text;
+              new(string: string, x: number): com.chattriggers.ctjs.api.render.Text;
+              new(string: string, x: number, y: number): com.chattriggers.ctjs.api.render.Text;
+              new(string: string, config: org.mozilla.javascript.NativeObject): com.chattriggers.ctjs.api.render.Text;
+            }
+            interface Text { 
+              getString(): string;
+              setString(string: string): com.chattriggers.ctjs.api.render.Text;
+              getColor(): number;
+              setColor(color: number): com.chattriggers.ctjs.api.render.Text;
+              getFormatted(): boolean;
+              setFormatted(formatted: boolean): com.chattriggers.ctjs.api.render.Text;
+              getShadow(): boolean;
+              setShadow(shadow: boolean): com.chattriggers.ctjs.api.render.Text;
+              getAlign(): com.chattriggers.ctjs.api.render.Text$Align;
+              setAlign(align: any): com.chattriggers.ctjs.api.render.Text;
+              getBackground(): boolean;
+							/**
+							 * Set the background
+							 * 
+							 *  true: Background is enabled
+							 *  false: Background is disabled
+							 */
+              setBackground(background: boolean): com.chattriggers.ctjs.api.render.Text;
+              getBackgroundColor(): number;
+              setBackgroundColor(backgroundColor: number): com.chattriggers.ctjs.api.render.Text;
+              getX(): number;
+              setX(x: number): com.chattriggers.ctjs.api.render.Text;
+              getY(): number;
+              setY(y: number): com.chattriggers.ctjs.api.render.Text;
+							/**
+							 * Gets the width of the text
+							 *  This is automatically updated when the text is drawn.
+							 * 
+							 *  @return the width of the text
+							 */
+              getWidth(): number;
+              getLines(): Array<string>;
+              getMaxLines(): number;
+              setMaxLines(maxLines: number): com.chattriggers.ctjs.api.render.Text;
+              getScale(): number;
+              setScale(scale: number): com.chattriggers.ctjs.api.render.Text;
+							/**
+							 * Sets the maximum width of the text, splitting it into multiple lines if necessary.
+							 * 
+							 *  @param maxWidth the maximum width of the text
+							 *  @return the Text object for method chaining
+							 */
+              setMaxWidth(maxWidth: number): com.chattriggers.ctjs.api.render.Text;
+              getMaxWidth(): number;
+              getHeight(): number;
+              exceedsMaxLines(): boolean;
+              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor): com.chattriggers.ctjs.api.render.Text;
+              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor, x: number | null | undefined): com.chattriggers.ctjs.api.render.Text;
+              draw(ctx: net.minecraft.client.gui.GuiGraphicsExtractor, x: number | null | undefined, y: number | null | undefined): com.chattriggers.ctjs.api.render.Text;
+            }
+            const DrawContextHolder: {
+              currentContext: net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined;
+              new(): com.chattriggers.ctjs.api.render.DrawContextHolder;
+            }
+            interface DrawContextHolder { 
+              currentContext: net.minecraft.client.gui.GuiGraphicsExtractor | null | undefined;
+              new(): com.chattriggers.ctjs.api.render.DrawContextHolder;
+              withContext<T>(context: net.minecraft.client.gui.GuiGraphicsExtractor, block: kotlin.Function0<T>): T;
+            }
+            const Rectangle: {
+              new(color: number, x: number, y: number, width: number, height: number): com.chattriggers.ctjs.api.render.Rectangle;
+            }
+            interface Rectangle { 
+              getColor(): number;
+              setColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getX(): number;
+              setX(x: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getY(): number;
+              setY(y: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getWidth(): number;
+              setWidth(width: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getHeight(): number;
+              setHeight(height: number): com.chattriggers.ctjs.api.render.Rectangle;
+              isShadow(): boolean;
+              setShadow(shadow: boolean): com.chattriggers.ctjs.api.render.Rectangle;
+              setShadow(color: number, x: number, y: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getShadowOffset(): com.chattriggers.ctjs.api.vec.Vec2f;
+              getShadowOffsetX(): number;
+              getShadowOffsetY(): number;
+              setShadowOffset(x: number, y: number): com.chattriggers.ctjs.api.render.Rectangle;
+              setShadowOffsetX(x: number): com.chattriggers.ctjs.api.render.Rectangle;
+              setShadowOffsetY(y: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getShadowColor(): number;
+              setShadowColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getOutline(): boolean;
+              setOutline(outline: boolean): com.chattriggers.ctjs.api.render.Rectangle;
+              setOutline(color: number, thickness: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getOutlineColor(): number;
+              setOutlineColor(color: number): com.chattriggers.ctjs.api.render.Rectangle;
+              getThickness(): number;
+              setThickness(thickness: number): com.chattriggers.ctjs.api.render.Rectangle;
+              draw(): com.chattriggers.ctjs.api.render.Rectangle;
+            }
             const Book: {
               new(): com.chattriggers.ctjs.api.render.Book;
             }
@@ -51439,6 +51488,102 @@ declare global {
               display(pageIndex: number): void;
               isOpen(): boolean;
               getCurrentPage(): number;
+            }
+            const Render3D: {
+              Color: typeof com.chattriggers.ctjs.api.render.Render3D$Color;
+              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, depth: boolean): void;
+              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, depth: boolean): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color, wireThickness: number): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color, wireThickness: number, depth: boolean): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean, thickness: number): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean, thickness: number, depth: boolean): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean, translate: boolean): void;
+              new(): com.chattriggers.ctjs.api.render.Render3D;
+            }
+            interface Render3D { 
+              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, depth: boolean): void;
+              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, depth: boolean): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color, wireThickness: number): void;
+              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color, wireThickness: number, depth: boolean): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean, thickness: number): void;
+              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean, thickness: number, depth: boolean): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
+              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean): void;
+              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean, translate: boolean): void;
+              new(): com.chattriggers.ctjs.api.render.Render3D;
+            }
+            const Render3D$Color: {
+              new(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Render3D$Color;
+            }
+            interface Render3D$Color { 
+              getR(): number;
+              getG(): number;
+              getB(): number;
+              getA(): number;
+              getRf(): number;
+              getGf(): number;
+              getBf(): number;
+              getAf(): number;
+              getPacked(): number;
+              component1(): number;
+              component2(): number;
+              component3(): number;
+              component4(): number;
+              copy(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Render3D$Color;
             }
             const Gui: {
               new(): com.chattriggers.ctjs.api.render.Gui;
@@ -51710,102 +51855,6 @@ declare global {
               getDisplayTime(): number;
               setDisplayTime(value: number): void;
               show(): com.chattriggers.ctjs.api.render.Toast;
-            }
-            const Render3D: {
-              Color: typeof com.chattriggers.ctjs.api.render.Render3D$Color;
-              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, depth: boolean): void;
-              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, depth: boolean): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color, wireThickness: number): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color, wireThickness: number, depth: boolean): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean, thickness: number): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean, thickness: number, depth: boolean): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean, translate: boolean): void;
-              new(): com.chattriggers.ctjs.api.render.Render3D;
-            }
-            interface Render3D { 
-              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawFilledBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, depth: boolean): void;
-              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawFilledBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, depth: boolean): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawWireFrameBox(pos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawWireFrameBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawBox(box: net.minecraft.world.phys.AABB, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color, wireThickness: number): void;
-              drawStyledBox(pos: net.minecraft.world.phys.Vec3, color1: com.chattriggers.ctjs.api.render.Render3D$Color, color2: com.chattriggers.ctjs.api.render.Render3D$Color, wireThickness: number, depth: boolean): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean, thickness: number): void;
-              drawSizedBox(pos: net.minecraft.world.phys.Vec3, width: number, height: number, length: number, color: com.chattriggers.ctjs.api.render.Render3D$Color, filled: boolean, thickness: number, depth: boolean): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawHitbox(entity: net.minecraft.world.entity.Entity, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawLine(start: net.minecraft.world.phys.Vec3, end: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number): void;
-              drawTracer(targetPos: net.minecraft.world.phys.Vec3, color: com.chattriggers.ctjs.api.render.Render3D$Color, thickness: number, depth: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean): void;
-              drawText(text: string, pos: net.minecraft.world.phys.Vec3, scale: number, backgroundBox: boolean, increase: boolean, seeThrough: boolean, translate: boolean): void;
-              new(): com.chattriggers.ctjs.api.render.Render3D;
-            }
-            const Render3D$Color: {
-              new(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Render3D$Color;
-            }
-            interface Render3D$Color { 
-              getR(): number;
-              getG(): number;
-              getB(): number;
-              getA(): number;
-              getRf(): number;
-              getGf(): number;
-              getBf(): number;
-              getAf(): number;
-              getPacked(): number;
-              component1(): number;
-              component2(): number;
-              component3(): number;
-              component4(): number;
-              copy(r: number, g: number, b: number, a: number): com.chattriggers.ctjs.api.render.Render3D$Color;
             }
           }
           const Config$ConsoleSettings: {
@@ -61226,6 +61275,3008 @@ declare global {
         interface IoOps { 
         }
         interface IoEvent { 
+        }
+      }
+    }
+    namespace github {
+      namespace humbleui {
+        namespace skija {
+          namespace impl {
+            const Managed: {
+              CleanerThunk: typeof io.github.humbleui.skija.impl.Managed$CleanerThunk;
+              new(p0: number, p1: number): io.github.humbleui.skija.impl.Managed;
+              new(p0: number, p1: number, p2: boolean): io.github.humbleui.skija.impl.Managed;
+              _nInvokeFinalizer(p0: number, p1: number): void;
+            }
+            interface Managed extends io.github.humbleui.skija.impl.Native, java.lang.AutoCloseable { 
+              _cleanable: io.github.humbleui.skija.impl.Cleanable;
+              isClosed(): boolean;
+            }
+            const Native: {
+              new(p0: number): io.github.humbleui.skija.impl.Native;
+              getPtr(p0: io.github.humbleui.skija.impl.Native): number;
+            }
+            interface Native { 
+              _ptr: number;
+              _nativeEquals(p0: io.github.humbleui.skija.impl.Native): boolean;
+            }
+            const Cleanable: {
+              register(p0: any, p1: java.lang.Runnable): io.github.humbleui.skija.impl.Cleanable;
+            }
+            interface Cleanable { 
+              clean(): void;
+            }
+            const Managed$CleanerThunk: {
+              new(p0: string, p1: number, p2: number): io.github.humbleui.skija.impl.Managed$CleanerThunk;
+            }
+            interface Managed$CleanerThunk extends java.lang.Runnable { 
+              _className: string;
+              _ptr: number;
+              _finalizerPtr: number;
+            }
+            const RefCnt: {
+              _FinalizerHolder: typeof io.github.humbleui.skija.impl.RefCnt$_FinalizerHolder;
+              _nGetFinalizer(): number;
+              _nGetRefCount(p0: number): number;
+            }
+            interface RefCnt extends io.github.humbleui.skija.impl.Managed { 
+              getRefCount(): number;
+            }
+            const RefCnt$_FinalizerHolder: {
+              PTR: number;
+              new(): io.github.humbleui.skija.impl.RefCnt$_FinalizerHolder;
+            }
+            interface RefCnt$_FinalizerHolder { 
+            }
+          }
+          namespace shaper {
+            const ShapingOptions: {
+              DEFAULT: io.github.humbleui.skija.shaper.ShapingOptions;
+              new(p0: io.github.humbleui.skija.FontMgr | null | undefined, p1: Array<unknown>, p2: boolean, p3: boolean, p4: boolean): io.github.humbleui.skija.shaper.ShapingOptions;
+            }
+            interface ShapingOptions { 
+              _fontMgr: io.github.humbleui.skija.FontMgr | null | undefined;
+              _features: Array<unknown>;
+              _leftToRight: boolean;
+              _approximateSpaces: boolean;
+              _approximatePunctuation: boolean;
+              withFeatures(p0: Array<unknown>): io.github.humbleui.skija.shaper.ShapingOptions;
+              withFeatures(p0: string | null | undefined): io.github.humbleui.skija.shaper.ShapingOptions;
+              getFontMgr(): io.github.humbleui.skija.FontMgr | null | undefined;
+              getFeatures(): Array<unknown>;
+              isLeftToRight(): boolean;
+              isApproximateSpaces(): boolean;
+              isApproximatePunctuation(): boolean;
+              withFontMgr(p0: io.github.humbleui.skija.FontMgr | null | undefined): io.github.humbleui.skija.shaper.ShapingOptions;
+              withLeftToRight(p0: boolean): io.github.humbleui.skija.shaper.ShapingOptions;
+              withApproximateSpaces(p0: boolean): io.github.humbleui.skija.shaper.ShapingOptions;
+              withApproximatePunctuation(p0: boolean): io.github.humbleui.skija.shaper.ShapingOptions;
+            }
+          }
+          const Canvas: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.Canvas$_FinalizerHolder;
+            new(p0: number, p1: boolean, p2: any): io.github.humbleui.skija.Canvas;
+            new(p0: io.github.humbleui.skija.Bitmap): io.github.humbleui.skija.Canvas;
+            new(p0: io.github.humbleui.skija.Bitmap, p1: io.github.humbleui.skija.SurfaceProps): io.github.humbleui.skija.Canvas;
+            _nGetFinalizer(): number;
+            _nMakeFromBitmap(p0: number, p1: number, p2: number): number;
+            _nGetBaseProps(p0: number): io.github.humbleui.skija.SurfaceProps;
+            _nGetTopProps(p0: number): io.github.humbleui.skija.SurfaceProps;
+            _nGetSurface(p0: number): number;
+            _nDrawPoint(p0: number, p1: number, p2: number, p3: number): void;
+            _nDrawPoints(p0: number, p1: number, p2: kotlin.FloatArray, p3: number): void;
+            _nDrawLine(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): void;
+            _nDrawArc(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: boolean, p8: number): void;
+            _nDrawRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): void;
+            _nDrawOval(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): void;
+            _nDrawRRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: kotlin.FloatArray, p6: number): void;
+            _nQuickReject(p0: number, p1: number, p2: number, p3: number, p4: number): boolean;
+            _nQuickRejectPath(p0: number, p1: number): boolean;
+            _nDrawDRRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: kotlin.FloatArray, p6: number, p7: number, p8: number, p9: number, p10: kotlin.FloatArray, p11: number): void;
+            _nDrawPath(p0: number, p1: number, p2: number): void;
+            _nDrawImageRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number, p11: number, p12: boolean): void;
+            _nDrawImageNine(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number, p11: number): void;
+            _nDrawRegion(p0: number, p1: number, p2: number): void;
+            _nDrawString(p0: number, p1: string, p2: number, p3: number, p4: number, p5: number): void;
+            _nDrawTextBlob(p0: number, p1: number, p2: number, p3: number, p4: number): void;
+            _nDrawPicture(p0: number, p1: number, p2: kotlin.FloatArray, p3: number): void;
+            _nDrawVertices(p0: number, p1: number, p2: kotlin.FloatArray, p3: Array<number>, p4: kotlin.FloatArray, p5: Array<number>, p6: number, p7: number): void;
+            _nDrawPatch(p0: number, p1: kotlin.FloatArray, p2: Array<number>, p3: kotlin.FloatArray, p4: number, p5: number): void;
+            _nDrawDrawable(p0: number, p1: number, p2: kotlin.FloatArray): void;
+            _nDrawColor(p0: number, p1: number, p2: number): void;
+            _nDrawColor4f(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): void;
+            _nClear(p0: number, p1: number): void;
+            _nDrawPaint(p0: number, p1: number): void;
+            _nSetMatrix(p0: number, p1: kotlin.FloatArray): void;
+            _nSetMatrix44(p0: number, p1: kotlin.FloatArray): void;
+            _nGetLocalToDevice(p0: number): kotlin.FloatArray;
+            _nResetMatrix(p0: number): void;
+            _nClipRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: boolean): void;
+            _nClipRRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: kotlin.FloatArray, p6: number, p7: boolean): void;
+            _nClipPath(p0: number, p1: number, p2: number, p3: boolean): void;
+            _nClipRegion(p0: number, p1: number, p2: number): void;
+            _nConcat(p0: number, p1: kotlin.FloatArray): void;
+            _nConcat44(p0: number, p1: kotlin.FloatArray): void;
+            _nReadPixels(p0: number, p1: number, p2: number, p3: number): boolean;
+            _nWritePixels(p0: number, p1: number, p2: number, p3: number): boolean;
+            _nSave(p0: number): number;
+            _nSaveLayer(p0: number, p1: number): number;
+            _nSaveLayerRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nSaveLayerAlpha(p0: number, p1: number): number;
+            _nSaveLayerAlphaRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nSaveLayerRec(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nSaveLayerRecRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number): number;
+            _nGetSaveCount(p0: number): number;
+            _nRestore(p0: number): void;
+            _nRestoreToCount(p0: number, p1: number): void;
+          }
+          interface Canvas extends io.github.humbleui.skija.impl.Managed { 
+            _owner: any;
+            getBaseProps(): io.github.humbleui.skija.SurfaceProps;
+            getTopProps(): io.github.humbleui.skija.SurfaceProps;
+            getSurface(): io.github.humbleui.skija.Surface | null | undefined;
+            drawPoint(p0: number, p1: number, p2: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawPoints(p0: Array<io.github.humbleui.types.Point>, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawPoints(p0: kotlin.FloatArray, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawLines(p0: Array<io.github.humbleui.types.Point>, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawLines(p0: kotlin.FloatArray, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawPolygon(p0: Array<io.github.humbleui.types.Point>, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawPolygon(p0: kotlin.FloatArray, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawLine(p0: number, p1: number, p2: number, p3: number, p4: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawArc(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: boolean, p7: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawRect(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawOval(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawCircle(p0: number, p1: number, p2: number, p3: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawRRect(p0: io.github.humbleui.types.RRect, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            quickReject(p0: io.github.humbleui.types.Rect): boolean;
+            quickReject(p0: io.github.humbleui.skija.Path): boolean;
+            drawDRRect(p0: io.github.humbleui.types.RRect, p1: io.github.humbleui.types.RRect, p2: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawRectShadow(p0: io.github.humbleui.types.Rect, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.skija.Canvas;
+            drawRectShadow(p0: io.github.humbleui.types.Rect, p1: number, p2: number, p3: number, p4: number, p5: number): io.github.humbleui.skija.Canvas;
+            drawRectShadowNoclip(p0: io.github.humbleui.types.Rect, p1: number, p2: number, p3: number, p4: number, p5: number): io.github.humbleui.skija.Canvas;
+            drawPath(p0: io.github.humbleui.skija.Path, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawPathOnce(p0: io.github.humbleui.skija.Path, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawImage(p0: io.github.humbleui.skija.Image, p1: number, p2: number): io.github.humbleui.skija.Canvas;
+            drawImage(p0: io.github.humbleui.skija.Image, p1: number, p2: number, p3: io.github.humbleui.skija.Paint | null | undefined): io.github.humbleui.skija.Canvas;
+            drawImageRect(p0: io.github.humbleui.skija.Image, p1: io.github.humbleui.types.Rect): io.github.humbleui.skija.Canvas;
+            drawImageRect(p0: io.github.humbleui.skija.Image, p1: io.github.humbleui.types.Rect, p2: io.github.humbleui.skija.Paint | null | undefined): io.github.humbleui.skija.Canvas;
+            drawImageRect(p0: io.github.humbleui.skija.Image, p1: io.github.humbleui.types.Rect, p2: io.github.humbleui.types.Rect): io.github.humbleui.skija.Canvas;
+            drawImageRect(p0: io.github.humbleui.skija.Image, p1: io.github.humbleui.types.Rect, p2: io.github.humbleui.types.Rect, p3: io.github.humbleui.skija.Paint | null | undefined): io.github.humbleui.skija.Canvas;
+            drawImageRect(p0: io.github.humbleui.skija.Image, p1: io.github.humbleui.types.Rect, p2: io.github.humbleui.types.Rect, p3: io.github.humbleui.skija.Paint | null | undefined, p4: boolean): io.github.humbleui.skija.Canvas;
+            drawImageRect(p0: io.github.humbleui.skija.Image, p1: io.github.humbleui.types.Rect, p2: io.github.humbleui.types.Rect, p3: io.github.humbleui.skija.SamplingMode, p4: io.github.humbleui.skija.Paint | null | undefined, p5: boolean): io.github.humbleui.skija.Canvas;
+            drawImageNine(p0: io.github.humbleui.skija.Image, p1: io.github.humbleui.types.IRect, p2: io.github.humbleui.types.Rect, p3: io.github.humbleui.skija.FilterMode, p4: io.github.humbleui.skija.Paint | null | undefined): io.github.humbleui.skija.Canvas;
+            drawRegion(p0: io.github.humbleui.skija.Region, p1: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawString(p0: string, p1: number, p2: number, p3: io.github.humbleui.skija.Font, p4: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawTextBlob(p0: io.github.humbleui.skija.TextBlob, p1: number, p2: number, p3: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawTextLine(p0: io.github.humbleui.skija.TextLine, p1: number, p2: number, p3: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawPicture(p0: io.github.humbleui.skija.Picture): io.github.humbleui.skija.Canvas;
+            drawPicture(p0: io.github.humbleui.skija.Picture, p1: io.github.humbleui.skija.Matrix33 | null | undefined, p2: io.github.humbleui.skija.Paint | null | undefined): io.github.humbleui.skija.Canvas;
+            drawTriangles(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawTriangles(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: Array<io.github.humbleui.types.Point | null | undefined>, p3: Array<number>, p4: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawTriangles(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: Array<io.github.humbleui.types.Point | null | undefined>, p3: Array<number>, p4: io.github.humbleui.skija.BlendMode, p5: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawTriangleStrip(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawTriangleStrip(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: Array<io.github.humbleui.types.Point | null | undefined>, p3: Array<number>, p4: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawTriangleStrip(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: Array<io.github.humbleui.types.Point | null | undefined>, p3: Array<number>, p4: io.github.humbleui.skija.BlendMode, p5: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawTriangleFan(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawTriangleFan(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: Array<io.github.humbleui.types.Point | null | undefined>, p3: Array<number>, p4: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawTriangleFan(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: Array<io.github.humbleui.types.Point | null | undefined>, p3: Array<number>, p4: io.github.humbleui.skija.BlendMode, p5: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawPatch(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawPatch(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: Array<io.github.humbleui.types.Point | null | undefined>, p3: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawPatch(p0: Array<io.github.humbleui.types.Point>, p1: Array<number>, p2: Array<io.github.humbleui.types.Point | null | undefined>, p3: io.github.humbleui.skija.BlendMode, p4: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            drawDrawable(p0: io.github.humbleui.skija.Drawable): io.github.humbleui.skija.Canvas;
+            drawDrawable(p0: io.github.humbleui.skija.Drawable, p1: number, p2: number): io.github.humbleui.skija.Canvas;
+            drawDrawable(p0: io.github.humbleui.skija.Drawable, p1: io.github.humbleui.skija.Matrix33 | null | undefined): io.github.humbleui.skija.Canvas;
+            drawColor(p0: number): io.github.humbleui.skija.Canvas;
+            drawColor(p0: number, p1: io.github.humbleui.skija.BlendMode): io.github.humbleui.skija.Canvas;
+            drawColor(p0: io.github.humbleui.skija.Color4f): io.github.humbleui.skija.Canvas;
+            drawColor(p0: io.github.humbleui.skija.Color4f, p1: io.github.humbleui.skija.BlendMode): io.github.humbleui.skija.Canvas;
+            clear(p0: number): io.github.humbleui.skija.Canvas;
+            drawPaint(p0: io.github.humbleui.skija.Paint): io.github.humbleui.skija.Canvas;
+            setMatrix(p0: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.Canvas;
+            setMatrix(p0: io.github.humbleui.skija.Matrix44): io.github.humbleui.skija.Canvas;
+            resetMatrix(): io.github.humbleui.skija.Canvas;
+            getLocalToDevice(): io.github.humbleui.skija.Matrix44;
+            getLocalToDeviceAsMatrix33(): io.github.humbleui.skija.Matrix33;
+            clipRect(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.ClipMode, p2: boolean): io.github.humbleui.skija.Canvas;
+            clipRect(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.ClipMode): io.github.humbleui.skija.Canvas;
+            clipRect(p0: io.github.humbleui.types.Rect, p1: boolean): io.github.humbleui.skija.Canvas;
+            clipRect(p0: io.github.humbleui.types.Rect): io.github.humbleui.skija.Canvas;
+            clipRRect(p0: io.github.humbleui.types.RRect, p1: io.github.humbleui.skija.ClipMode, p2: boolean): io.github.humbleui.skija.Canvas;
+            clipRRect(p0: io.github.humbleui.types.RRect, p1: io.github.humbleui.skija.ClipMode): io.github.humbleui.skija.Canvas;
+            clipRRect(p0: io.github.humbleui.types.RRect, p1: boolean): io.github.humbleui.skija.Canvas;
+            clipRRect(p0: io.github.humbleui.types.RRect): io.github.humbleui.skija.Canvas;
+            clipPath(p0: io.github.humbleui.skija.Path, p1: io.github.humbleui.skija.ClipMode, p2: boolean): io.github.humbleui.skija.Canvas;
+            clipPath(p0: io.github.humbleui.skija.Path, p1: io.github.humbleui.skija.ClipMode): io.github.humbleui.skija.Canvas;
+            clipPath(p0: io.github.humbleui.skija.Path, p1: boolean): io.github.humbleui.skija.Canvas;
+            clipPath(p0: io.github.humbleui.skija.Path): io.github.humbleui.skija.Canvas;
+            clipRegion(p0: io.github.humbleui.skija.Region, p1: io.github.humbleui.skija.ClipMode): io.github.humbleui.skija.Canvas;
+            clipRegion(p0: io.github.humbleui.skija.Region): io.github.humbleui.skija.Canvas;
+            translate(p0: number, p1: number): io.github.humbleui.skija.Canvas;
+            scale(p0: number, p1: number): io.github.humbleui.skija.Canvas;
+            rotate(p0: number): io.github.humbleui.skija.Canvas;
+            skew(p0: number, p1: number): io.github.humbleui.skija.Canvas;
+            concat(p0: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.Canvas;
+            concat(p0: io.github.humbleui.skija.Matrix44): io.github.humbleui.skija.Canvas;
+            readPixels(p0: io.github.humbleui.skija.Bitmap, p1: number, p2: number): boolean;
+            writePixels(p0: io.github.humbleui.skija.Bitmap, p1: number, p2: number): boolean;
+            save(): number;
+            saveLayer(p0: number, p1: number, p2: number, p3: number, p4: io.github.humbleui.skija.Paint | null | undefined): number;
+            saveLayer(p0: io.github.humbleui.types.Rect | null | undefined, p1: io.github.humbleui.skija.Paint | null | undefined): number;
+            saveLayer(p0: io.github.humbleui.skija.SaveLayerRec): number;
+            saveLayerAlpha(p0: io.github.humbleui.types.Rect | null | undefined, p1: number): number;
+            getSaveCount(): number;
+            restore(): io.github.humbleui.skija.Canvas;
+            restoreToCount(p0: number): io.github.humbleui.skija.Canvas;
+            invalidate(): void;
+          }
+          const SurfaceProps: {
+            new(p0: boolean, p1: number): io.github.humbleui.skija.SurfaceProps;
+            new(): io.github.humbleui.skija.SurfaceProps;
+            new(p0: io.github.humbleui.skija.PixelGeometry): io.github.humbleui.skija.SurfaceProps;
+            new(p0: boolean, p1: io.github.humbleui.skija.PixelGeometry): io.github.humbleui.skija.SurfaceProps;
+          }
+          interface SurfaceProps { 
+            _deviceIndependentFonts: boolean;
+            _pixelGeometry: io.github.humbleui.skija.PixelGeometry;
+            _getFlags(): number;
+            _getPixelGeometryOrdinal(): number;
+            isDeviceIndependentFonts(): boolean;
+            getPixelGeometry(): io.github.humbleui.skija.PixelGeometry;
+            withDeviceIndependentFonts(p0: boolean): io.github.humbleui.skija.SurfaceProps;
+            withPixelGeometry(p0: io.github.humbleui.skija.PixelGeometry): io.github.humbleui.skija.SurfaceProps;
+          }
+          const PixelGeometry: {
+            UNKNOWN: io.github.humbleui.skija.PixelGeometry;
+            RGB_H: io.github.humbleui.skija.PixelGeometry;
+            BGR_H: io.github.humbleui.skija.PixelGeometry;
+            RGB_V: io.github.humbleui.skija.PixelGeometry;
+            BGR_V: io.github.humbleui.skija.PixelGeometry;
+            _values: Array<io.github.humbleui.skija.PixelGeometry>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.PixelGeometry>;
+            values(): Array<io.github.humbleui.skija.PixelGeometry>;
+            valueOf(value: string): io.github.humbleui.skija.PixelGeometry;
+          }
+          interface PixelGeometry extends kotlin.Enum<io.github.humbleui.skija.PixelGeometry> { 
+          }
+          const Surface: {
+            new(p0: number): io.github.humbleui.skija.Surface;
+            new(p0: number, p1: io.github.humbleui.skija.DirectContext): io.github.humbleui.skija.Surface;
+            new(p0: number, p1: io.github.humbleui.skija.DirectContext, p2: io.github.humbleui.skija.BackendRenderTarget): io.github.humbleui.skija.Surface;
+            makeRasterDirect(p0: io.github.humbleui.skija.ImageInfo, p1: number, p2: number): io.github.humbleui.skija.Surface;
+            makeRasterDirect(p0: io.github.humbleui.skija.ImageInfo, p1: number, p2: number, p3: io.github.humbleui.skija.SurfaceProps | null | undefined): io.github.humbleui.skija.Surface;
+            makeRasterDirect(p0: io.github.humbleui.skija.Pixmap): io.github.humbleui.skija.Surface;
+            makeRasterDirect(p0: io.github.humbleui.skija.Pixmap, p1: io.github.humbleui.skija.SurfaceProps | null | undefined): io.github.humbleui.skija.Surface;
+            wrapPixels(p0: io.github.humbleui.skija.ImageInfo, p1: number, p2: number): io.github.humbleui.skija.Surface;
+            wrapPixels(p0: io.github.humbleui.skija.ImageInfo, p1: number, p2: number, p3: io.github.humbleui.skija.SurfaceProps | null | undefined): io.github.humbleui.skija.Surface;
+            wrapPixels(p0: io.github.humbleui.skija.Pixmap): io.github.humbleui.skija.Surface;
+            wrapPixels(p0: io.github.humbleui.skija.Pixmap, p1: io.github.humbleui.skija.SurfaceProps | null | undefined): io.github.humbleui.skija.Surface;
+            makeRaster(p0: io.github.humbleui.skija.ImageInfo): io.github.humbleui.skija.Surface;
+            makeRaster(p0: io.github.humbleui.skija.ImageInfo, p1: number): io.github.humbleui.skija.Surface;
+            makeRaster(p0: io.github.humbleui.skija.ImageInfo, p1: number, p2: io.github.humbleui.skija.SurfaceProps | null | undefined): io.github.humbleui.skija.Surface;
+            makeFromBackendRenderTarget(p0: io.github.humbleui.skija.DirectContext, p1: io.github.humbleui.skija.BackendRenderTarget, p2: io.github.humbleui.skija.SurfaceOrigin, p3: io.github.humbleui.skija.ColorType, p4: io.github.humbleui.skija.ColorSpace): io.github.humbleui.skija.Surface;
+            makeFromBackendRenderTarget(p0: io.github.humbleui.skija.DirectContext, p1: io.github.humbleui.skija.BackendRenderTarget, p2: io.github.humbleui.skija.SurfaceOrigin, p3: io.github.humbleui.skija.ColorType, p4: io.github.humbleui.skija.ColorSpace, p5: io.github.humbleui.skija.SurfaceProps): io.github.humbleui.skija.Surface;
+            wrapBackendRenderTarget(p0: io.github.humbleui.skija.DirectContext, p1: io.github.humbleui.skija.BackendRenderTarget, p2: io.github.humbleui.skija.SurfaceOrigin, p3: io.github.humbleui.skija.ColorType, p4: io.github.humbleui.skija.ColorSpace | null | undefined): io.github.humbleui.skija.Surface;
+            wrapBackendRenderTarget(p0: io.github.humbleui.skija.DirectContext, p1: io.github.humbleui.skija.BackendRenderTarget, p2: io.github.humbleui.skija.SurfaceOrigin, p3: io.github.humbleui.skija.ColorType, p4: io.github.humbleui.skija.ColorSpace | null | undefined, p5: io.github.humbleui.skija.SurfaceProps | null | undefined): io.github.humbleui.skija.Surface;
+            makeFromMTKView(p0: io.github.humbleui.skija.DirectContext, p1: number, p2: io.github.humbleui.skija.SurfaceOrigin, p3: number, p4: io.github.humbleui.skija.ColorType, p5: io.github.humbleui.skija.ColorSpace | null | undefined, p6: io.github.humbleui.skija.SurfaceProps | null | undefined): io.github.humbleui.skija.Surface;
+            wrapMTKView(p0: io.github.humbleui.skija.DirectContext, p1: number, p2: io.github.humbleui.skija.SurfaceOrigin, p3: number, p4: io.github.humbleui.skija.ColorType, p5: io.github.humbleui.skija.ColorSpace | null | undefined, p6: io.github.humbleui.skija.SurfaceProps | null | undefined): io.github.humbleui.skija.Surface;
+            makeRasterN32Premul(p0: number, p1: number): io.github.humbleui.skija.Surface;
+            makeRenderTarget(p0: io.github.humbleui.skija.DirectContext, p1: boolean, p2: io.github.humbleui.skija.ImageInfo): io.github.humbleui.skija.Surface;
+            makeRenderTarget(p0: io.github.humbleui.skija.DirectContext, p1: boolean, p2: io.github.humbleui.skija.ImageInfo, p3: number, p4: io.github.humbleui.skija.SurfaceProps | null | undefined): io.github.humbleui.skija.Surface;
+            makeRenderTarget(p0: io.github.humbleui.skija.DirectContext, p1: boolean, p2: io.github.humbleui.skija.ImageInfo, p3: number, p4: io.github.humbleui.skija.SurfaceOrigin, p5: io.github.humbleui.skija.SurfaceProps | null | undefined): io.github.humbleui.skija.Surface;
+            makeRenderTarget(p0: io.github.humbleui.skija.DirectContext, p1: boolean, p2: io.github.humbleui.skija.ImageInfo, p3: number, p4: io.github.humbleui.skija.SurfaceOrigin, p5: io.github.humbleui.skija.SurfaceProps | null | undefined, p6: boolean): io.github.humbleui.skija.Surface;
+            makeNull(p0: number, p1: number): io.github.humbleui.skija.Surface;
+            _nWrapPixels(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.skija.SurfaceProps): number;
+            _nWrapPixelsPixmap(p0: number, p1: io.github.humbleui.skija.SurfaceProps): number;
+            _nMakeRaster(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: io.github.humbleui.skija.SurfaceProps): number;
+            _nWrapBackendRenderTarget(p0: number, p1: number, p2: number, p3: number, p4: number, p5: io.github.humbleui.skija.SurfaceProps): number;
+            _nWrapMTKView(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: io.github.humbleui.skija.SurfaceProps): number;
+            _nMakeRenderTarget(p0: number, p1: boolean, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: io.github.humbleui.skija.SurfaceProps, p10: boolean): number;
+            _nMakeNull(p0: number, p1: number): number;
+            _nGetWidth(p0: number): number;
+            _nGetHeight(p0: number): number;
+            _nGetImageInfo(p0: number): io.github.humbleui.skija.ImageInfo;
+            _nGenerationId(p0: number): number;
+            _nNotifyContentWillChange(p0: number, p1: number): void;
+            _nGetRecordingContext(p0: number): number;
+            _nGetCanvas(p0: number): number;
+            _nMakeSurfaceI(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nMakeSurface(p0: number, p1: number, p2: number): number;
+            _nMakeImageSnapshot(p0: number): number;
+            _nMakeImageSnapshotR(p0: number, p1: number, p2: number, p3: number, p4: number): number;
+            _nDraw(p0: number, p1: number, p2: number, p3: number, p4: number): void;
+            _nPeekPixels(p0: number, p1: number): boolean;
+            _nReadPixelsToPixmap(p0: number, p1: number, p2: number, p3: number): boolean;
+            _nReadPixels(p0: number, p1: number, p2: number, p3: number): boolean;
+            _nWritePixelsFromPixmap(p0: number, p1: number, p2: number, p3: number): void;
+            _nWritePixels(p0: number, p1: number, p2: number, p3: number): void;
+            _nUnique(p0: number): boolean;
+          }
+          interface Surface extends io.github.humbleui.skija.impl.RefCnt { 
+            _canvas: io.github.humbleui.skija.Canvas;
+            _context: io.github.humbleui.skija.DirectContext;
+            _renderTarget: io.github.humbleui.skija.BackendRenderTarget;
+            getWidth(): number;
+            getHeight(): number;
+            getImageInfo(): io.github.humbleui.skija.ImageInfo;
+            getGenerationId(): number;
+            notifyContentWillChange(p0: io.github.humbleui.skija.ContentChangeMode): void;
+            getRecordingContext(): io.github.humbleui.skija.DirectContext | null | undefined;
+            getCanvas(): io.github.humbleui.skija.Canvas;
+            makeSurface(p0: io.github.humbleui.skija.ImageInfo): io.github.humbleui.skija.Surface | null | undefined;
+            makeSurface(p0: number, p1: number): io.github.humbleui.skija.Surface | null | undefined;
+            makeImageSnapshot(): io.github.humbleui.skija.Image;
+            makeImageSnapshot(p0: io.github.humbleui.types.IRect): io.github.humbleui.skija.Image | null | undefined;
+            draw(p0: io.github.humbleui.skija.Canvas, p1: number, p2: number, p3: io.github.humbleui.skija.Paint): void;
+            peekPixels(p0: io.github.humbleui.skija.Pixmap): boolean;
+            readPixels(p0: io.github.humbleui.skija.Pixmap, p1: number, p2: number): boolean;
+            readPixels(p0: io.github.humbleui.skija.Bitmap, p1: number, p2: number): boolean;
+            writePixels(p0: io.github.humbleui.skija.Pixmap, p1: number, p2: number): void;
+            writePixels(p0: io.github.humbleui.skija.Bitmap, p1: number, p2: number): void;
+            isUnique(): boolean;
+          }
+          const DirectContext: {
+            new(p0: number): io.github.humbleui.skija.DirectContext;
+            makeGL(): io.github.humbleui.skija.DirectContext;
+            makeMetal(p0: number, p1: number): io.github.humbleui.skija.DirectContext;
+            makeDirect3D(p0: number, p1: number, p2: number): io.github.humbleui.skija.DirectContext;
+            makeVulkan(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): io.github.humbleui.skija.DirectContext;
+            _nMakeGL(): number;
+            _nMakeMetal(p0: number, p1: number): number;
+            _nMakeDirect3D(p0: number, p1: number, p2: number): number;
+            _nMakeVulkan(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): number;
+            _nFlush(p0: number): void;
+            _nSubmit(p0: number, p1: boolean): boolean;
+            _nFlushAndSubmit(p0: number, p1: boolean): void;
+            _nFlushSurface(p0: number, p1: number): void;
+            _nFlushAndSubmitSurface(p0: number, p1: number, p2: boolean): void;
+            _nReset(p0: number, p1: number): void;
+            _nAbandon(p0: number): void;
+          }
+          interface DirectContext extends io.github.humbleui.skija.impl.RefCnt { 
+            flush(): io.github.humbleui.skija.DirectContext;
+            flush(p0: io.github.humbleui.skija.Surface): io.github.humbleui.skija.DirectContext;
+            submit(): boolean;
+            submit(p0: boolean): boolean;
+            flushAndSubmit(p0: boolean): io.github.humbleui.skija.DirectContext;
+            flushAndSubmit(p0: io.github.humbleui.skija.Surface): io.github.humbleui.skija.DirectContext;
+            flushAndSubmit(p0: io.github.humbleui.skija.Surface, p1: boolean): io.github.humbleui.skija.DirectContext;
+            resetAll(): io.github.humbleui.skija.DirectContext;
+            resetGLAll(): io.github.humbleui.skija.DirectContext;
+            reset(p0: io.github.humbleui.skija.BackendState): io.github.humbleui.skija.DirectContext;
+            abandon(): void;
+          }
+          const BackendState: {
+            GL_RENDER_TARGET: io.github.humbleui.skija.BackendState;
+            GL_TEXTURE_BINDING: io.github.humbleui.skija.BackendState;
+            GL_VIEW: io.github.humbleui.skija.BackendState;
+            GL_BLEND: io.github.humbleui.skija.BackendState;
+            GL_MSAA_ENABLE: io.github.humbleui.skija.BackendState;
+            GL_VERTEX: io.github.humbleui.skija.BackendState;
+            GL_STENCIL: io.github.humbleui.skija.BackendState;
+            GL_PIXEL_STORE: io.github.humbleui.skija.BackendState;
+            GL_PROGRAM: io.github.humbleui.skija.BackendState;
+            GL_FIXED_FUNCTION: io.github.humbleui.skija.BackendState;
+            GL_MISC: io.github.humbleui.skija.BackendState;
+            GL_ALL: io.github.humbleui.skija.BackendState;
+            ALL: io.github.humbleui.skija.BackendState;
+            _values: Array<io.github.humbleui.skija.BackendState>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.BackendState>;
+            values(): Array<io.github.humbleui.skija.BackendState>;
+            valueOf(value: string): io.github.humbleui.skija.BackendState;
+          }
+          interface BackendState extends kotlin.Enum<io.github.humbleui.skija.BackendState> { 
+            _value: number;
+            getValue(): number;
+          }
+          const BackendRenderTarget: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.BackendRenderTarget$_FinalizerHolder;
+            new(p0: number): io.github.humbleui.skija.BackendRenderTarget;
+            makeGL(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): io.github.humbleui.skija.BackendRenderTarget;
+            makeMetal(p0: number, p1: number, p2: number): io.github.humbleui.skija.BackendRenderTarget;
+            makeDirect3D(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): io.github.humbleui.skija.BackendRenderTarget;
+            makeVulkan(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number): io.github.humbleui.skija.BackendRenderTarget;
+            _nGetFinalizer(): number;
+            _nMakeGL(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nMakeMetal(p0: number, p1: number, p2: number): number;
+            _nMakeDirect3D(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nMakeVulkan(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number): number;
+          }
+          interface BackendRenderTarget extends io.github.humbleui.skija.impl.Managed { 
+          }
+          const BackendRenderTarget$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.BackendRenderTarget$_FinalizerHolder;
+          }
+          interface BackendRenderTarget$_FinalizerHolder { 
+          }
+          const ImageInfo: {
+            DEFAULT: io.github.humbleui.skija.ImageInfo;
+            new(p0: number, p1: number, p2: io.github.humbleui.skija.ColorType, p3: io.github.humbleui.skija.ColorAlphaType): io.github.humbleui.skija.ImageInfo;
+            new(p0: number, p1: number, p2: io.github.humbleui.skija.ColorType, p3: io.github.humbleui.skija.ColorAlphaType, p4: io.github.humbleui.skija.ColorSpace | null | undefined): io.github.humbleui.skija.ImageInfo;
+            new(p0: number, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.skija.ImageInfo;
+            new(p0: io.github.humbleui.skija.ColorInfo, p1: number, p2: number): io.github.humbleui.skija.ImageInfo;
+            makeN32(p0: number, p1: number, p2: io.github.humbleui.skija.ColorAlphaType): io.github.humbleui.skija.ImageInfo;
+            makeN32(p0: number, p1: number, p2: io.github.humbleui.skija.ColorAlphaType, p3: io.github.humbleui.skija.ColorSpace | null | undefined): io.github.humbleui.skija.ImageInfo;
+            makeS32(p0: number, p1: number, p2: io.github.humbleui.skija.ColorAlphaType): io.github.humbleui.skija.ImageInfo;
+            makeN32Premul(p0: number, p1: number): io.github.humbleui.skija.ImageInfo;
+            makeN32Premul(p0: number, p1: number, p2: io.github.humbleui.skija.ColorSpace | null | undefined): io.github.humbleui.skija.ImageInfo;
+            makeA8(p0: number, p1: number): io.github.humbleui.skija.ImageInfo;
+            makeUnknown(p0: number, p1: number): io.github.humbleui.skija.ImageInfo;
+          }
+          interface ImageInfo { 
+            _colorInfo: io.github.humbleui.skija.ColorInfo;
+            _width: number;
+            _height: number;
+            getColorType(): io.github.humbleui.skija.ColorType;
+            withColorType(p0: io.github.humbleui.skija.ColorType): io.github.humbleui.skija.ImageInfo;
+            getColorAlphaType(): io.github.humbleui.skija.ColorAlphaType;
+            withColorAlphaType(p0: io.github.humbleui.skija.ColorAlphaType): io.github.humbleui.skija.ImageInfo;
+            getColorSpace(): io.github.humbleui.skija.ColorSpace | null | undefined;
+            withColorSpace(p0: io.github.humbleui.skija.ColorSpace): io.github.humbleui.skija.ImageInfo;
+            isEmpty(): boolean;
+            isOpaque(): boolean;
+            getBounds(): io.github.humbleui.types.IRect;
+            isGammaCloseToSRGB(): boolean;
+            withWidthHeight(p0: number, p1: number): io.github.humbleui.skija.ImageInfo;
+            getBytesPerPixel(): number;
+            getShiftPerPixel(): number;
+            getMinRowBytes(): number;
+            computeOffset(p0: number, p1: number, p2: number): number;
+            computeByteSize(p0: number): number;
+            computeMinByteSize(): number;
+            isRowBytesValid(p0: number): boolean;
+            getColorInfo(): io.github.humbleui.skija.ColorInfo;
+            getWidth(): number;
+            getHeight(): number;
+            withColorInfo(p0: io.github.humbleui.skija.ColorInfo): io.github.humbleui.skija.ImageInfo;
+            withWidth(p0: number): io.github.humbleui.skija.ImageInfo;
+            withHeight(p0: number): io.github.humbleui.skija.ImageInfo;
+          }
+          const ColorInfo: {
+            DEFAULT: io.github.humbleui.skija.ColorInfo;
+            new(p0: io.github.humbleui.skija.ColorType, p1: io.github.humbleui.skija.ColorAlphaType, p2: io.github.humbleui.skija.ColorSpace | null | undefined): io.github.humbleui.skija.ColorInfo;
+          }
+          interface ColorInfo { 
+            _colorType: io.github.humbleui.skija.ColorType;
+            _alphaType: io.github.humbleui.skija.ColorAlphaType;
+            _colorSpace: io.github.humbleui.skija.ColorSpace | null | undefined;
+            isOpaque(): boolean;
+            getBytesPerPixel(): number;
+            getShiftPerPixel(): number;
+            isGammaCloseToSRGB(): boolean;
+            getColorType(): io.github.humbleui.skija.ColorType;
+            getAlphaType(): io.github.humbleui.skija.ColorAlphaType;
+            getColorSpace(): io.github.humbleui.skija.ColorSpace | null | undefined;
+            withColorType(p0: io.github.humbleui.skija.ColorType): io.github.humbleui.skija.ColorInfo;
+            withAlphaType(p0: io.github.humbleui.skija.ColorAlphaType): io.github.humbleui.skija.ColorInfo;
+            withColorSpace(p0: io.github.humbleui.skija.ColorSpace | null | undefined): io.github.humbleui.skija.ColorInfo;
+          }
+          const ColorType: {
+            UNKNOWN: io.github.humbleui.skija.ColorType;
+            ALPHA_8: io.github.humbleui.skija.ColorType;
+            RGB_565: io.github.humbleui.skija.ColorType;
+            ARGB_4444: io.github.humbleui.skija.ColorType;
+            RGBA_8888: io.github.humbleui.skija.ColorType;
+            RGB_888X: io.github.humbleui.skija.ColorType;
+            BGRA_8888: io.github.humbleui.skija.ColorType;
+            RGBA_1010102: io.github.humbleui.skija.ColorType;
+            BGRA_1010102: io.github.humbleui.skija.ColorType;
+            RGB_101010X: io.github.humbleui.skija.ColorType;
+            BGR_101010X: io.github.humbleui.skija.ColorType;
+            BGR_101010X_XR: io.github.humbleui.skija.ColorType;
+            BGRA_10101010_XR: io.github.humbleui.skija.ColorType;
+            RGBA_10X6: io.github.humbleui.skija.ColorType;
+            GRAY_8: io.github.humbleui.skija.ColorType;
+            RGBA_F16NORM: io.github.humbleui.skija.ColorType;
+            RGBA_F16: io.github.humbleui.skija.ColorType;
+            RGB_F16F16F16X: io.github.humbleui.skija.ColorType;
+            RGBA_F32: io.github.humbleui.skija.ColorType;
+            R8G8_UNORM: io.github.humbleui.skija.ColorType;
+            A16_FLOAT: io.github.humbleui.skija.ColorType;
+            R16G16_FLOAT: io.github.humbleui.skija.ColorType;
+            A16_UNORM: io.github.humbleui.skija.ColorType;
+            R16G16_UNORM: io.github.humbleui.skija.ColorType;
+            R16G16B16A16_UNORM: io.github.humbleui.skija.ColorType;
+            SRGBA_8888: io.github.humbleui.skija.ColorType;
+            R8_UNORM: io.github.humbleui.skija.ColorType;
+            N32: io.github.humbleui.skija.ColorType;
+            _values: Array<io.github.humbleui.skija.ColorType>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.ColorType>;
+            values(): Array<io.github.humbleui.skija.ColorType>;
+            valueOf(value: string): io.github.humbleui.skija.ColorType;
+          }
+          interface ColorType extends kotlin.Enum<io.github.humbleui.skija.ColorType> { 
+            getBytesPerPixel(): number;
+            getShiftPerPixel(): number;
+            isAlwaysOpaque(): boolean;
+            isAlphaOnly(): boolean;
+            validateAlphaType(p0: io.github.humbleui.skija.ColorAlphaType): io.github.humbleui.skija.ColorAlphaType | null | undefined;
+            getChannelFlags(): number;
+            getNumChannels(): number;
+            computeOffset(p0: number, p1: number, p2: number): number;
+            getR(p0: number): number;
+            getR(p0: number): number;
+            getR(p0: number): number;
+            getG(p0: number): number;
+            getG(p0: number): number;
+            getG(p0: number): number;
+            getB(p0: number): number;
+            getB(p0: number): number;
+            getB(p0: number): number;
+            getA(p0: number): number;
+            getA(p0: number): number;
+            getA(p0: number): number;
+          }
+          const ColorAlphaType: {
+            UNKNOWN: io.github.humbleui.skija.ColorAlphaType;
+            OPAQUE: io.github.humbleui.skija.ColorAlphaType;
+            PREMUL: io.github.humbleui.skija.ColorAlphaType;
+            UNPREMUL: io.github.humbleui.skija.ColorAlphaType;
+            _values: Array<io.github.humbleui.skija.ColorAlphaType>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.ColorAlphaType>;
+            values(): Array<io.github.humbleui.skija.ColorAlphaType>;
+            valueOf(value: string): io.github.humbleui.skija.ColorAlphaType;
+          }
+          interface ColorAlphaType extends kotlin.Enum<io.github.humbleui.skija.ColorAlphaType> { 
+          }
+          const ColorSpace: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.ColorSpace$_FinalizerHolder;
+            _DisplayP3Holder: typeof io.github.humbleui.skija.ColorSpace$_DisplayP3Holder;
+            _SRGBLinearHolder: typeof io.github.humbleui.skija.ColorSpace$_SRGBLinearHolder;
+            _SRGBHolder: typeof io.github.humbleui.skija.ColorSpace$_SRGBHolder;
+            new(p0: number): io.github.humbleui.skija.ColorSpace;
+            new(p0: number, p1: boolean): io.github.humbleui.skija.ColorSpace;
+            getSRGB(): io.github.humbleui.skija.ColorSpace;
+            getSRGBLinear(): io.github.humbleui.skija.ColorSpace;
+            getDisplayP3(): io.github.humbleui.skija.ColorSpace;
+            makeRGB(p0: io.github.humbleui.skija.TransferFunction, p1: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.ColorSpace | null | undefined;
+            makeCICP(p0: io.github.humbleui.skija.ColorSpaceNamedPrimaries, p1: io.github.humbleui.skija.ColorSpaceNamedTransferFn): io.github.humbleui.skija.ColorSpace | null | undefined;
+            makeFromData(p0: io.github.humbleui.skija.Data): io.github.humbleui.skija.ColorSpace | null | undefined;
+            makeFromICCProfile(p0: Array<number>): io.github.humbleui.skija.ColorSpace | null | undefined;
+            _nGetFinalizer(): number;
+            _nMakeSRGB(): number;
+            _nMakeDisplayP3(): number;
+            _nMakeSRGBLinear(): number;
+            _nMakeRGB(p0: io.github.humbleui.skija.TransferFunction, p1: kotlin.FloatArray): number;
+            _nMakeCICP(p0: number, p1: number): number;
+            _nConvert(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): kotlin.FloatArray;
+            _nIsGammaCloseToSRGB(p0: number): boolean;
+            _nIsGammaLinear(p0: number): boolean;
+            _nIsSRGB(p0: number): boolean;
+            _nGetNumericalTransferFn(p0: number): io.github.humbleui.skija.TransferFunction;
+            _nGetToXYZD50(p0: number): kotlin.FloatArray;
+            _nGetToXYZD50Hash(p0: number): number;
+            _nGetTransferFnHash(p0: number): number;
+            _nGetHash(p0: number): number;
+            _nMakeLinearGamma(p0: number): number;
+            _nMakeSRGBGamma(p0: number): number;
+            _nMakeColorSpin(p0: number): number;
+            _nSerializeToData(p0: number): number;
+            _nMakeFromData(p0: number): number;
+            _nTransferFn(p0: number): io.github.humbleui.skija.TransferFunction;
+            _nInvTransferFn(p0: number): io.github.humbleui.skija.TransferFunction;
+            _nGamutTransformTo(p0: number, p1: number): kotlin.FloatArray;
+            _nEquals(p0: number, p1: number): boolean;
+            _nMakeFromICCProfile(p0: Array<number>): number;
+          }
+          interface ColorSpace extends io.github.humbleui.skija.impl.Managed { 
+            convert(p0: io.github.humbleui.skija.ColorSpace, p1: io.github.humbleui.skija.Color4f): io.github.humbleui.skija.Color4f;
+            isGammaCloseToSRGB(): boolean;
+            isGammaLinear(): boolean;
+            isSRGB(): boolean;
+            getNumericalTransferFn(): io.github.humbleui.skija.TransferFunction | null | undefined;
+            getToXYZD50(): io.github.humbleui.skija.Matrix33 | null | undefined;
+            getToXYZD50Hash(): number;
+            getTransferFnHash(): number;
+            getHash(): number;
+            makeLinearGamma(): io.github.humbleui.skija.ColorSpace;
+            makeSRGBGamma(): io.github.humbleui.skija.ColorSpace;
+            makeColorSpin(): io.github.humbleui.skija.ColorSpace;
+            serializeToData(): io.github.humbleui.skija.Data;
+            getTransferFn(): io.github.humbleui.skija.TransferFunction;
+            getInvTransferFn(): io.github.humbleui.skija.TransferFunction;
+            getGamutTransformTo(p0: io.github.humbleui.skija.ColorSpace): io.github.humbleui.skija.Matrix33;
+          }
+          const Color4f: {
+            new(p0: number, p1: number, p2: number): io.github.humbleui.skija.Color4f;
+            new(p0: kotlin.FloatArray): io.github.humbleui.skija.Color4f;
+            new(p0: number): io.github.humbleui.skija.Color4f;
+            new(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.skija.Color4f;
+            flattenArray(p0: Array<io.github.humbleui.skija.Color4f>): kotlin.FloatArray;
+          }
+          interface Color4f { 
+            _r: number;
+            _g: number;
+            _b: number;
+            _a: number;
+            toColor(): number;
+            flatten(): kotlin.FloatArray;
+            premultiply(): io.github.humbleui.skija.Color4f;
+            unpremultiply(): io.github.humbleui.skija.Color4f;
+            makeLerp(p0: io.github.humbleui.skija.Color4f, p1: number): io.github.humbleui.skija.Color4f;
+            makeLerpPM(p0: io.github.humbleui.skija.Color4f, p1: number): io.github.humbleui.skija.Color4f;
+            getR(): number;
+            getG(): number;
+            getB(): number;
+            getA(): number;
+            withR(p0: number): io.github.humbleui.skija.Color4f;
+            withG(p0: number): io.github.humbleui.skija.Color4f;
+            withB(p0: number): io.github.humbleui.skija.Color4f;
+            withA(p0: number): io.github.humbleui.skija.Color4f;
+          }
+          const TransferFunction: {
+            new(p0: kotlin.FloatArray): io.github.humbleui.skija.TransferFunction;
+            new(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): io.github.humbleui.skija.TransferFunction;
+          }
+          interface TransferFunction { 
+            _g: number;
+            _a: number;
+            _b: number;
+            _c: number;
+            _d: number;
+            _e: number;
+            _f: number;
+            getG(): number;
+            getA(): number;
+            getB(): number;
+            getC(): number;
+            getD(): number;
+            getE(): number;
+            getF(): number;
+            withG(p0: number): io.github.humbleui.skija.TransferFunction;
+            withA(p0: number): io.github.humbleui.skija.TransferFunction;
+            withB(p0: number): io.github.humbleui.skija.TransferFunction;
+            withC(p0: number): io.github.humbleui.skija.TransferFunction;
+            withD(p0: number): io.github.humbleui.skija.TransferFunction;
+            withE(p0: number): io.github.humbleui.skija.TransferFunction;
+            withF(p0: number): io.github.humbleui.skija.TransferFunction;
+          }
+          const Matrix33: {
+            IDENTITY: io.github.humbleui.skija.Matrix33;
+            new(p0: number): io.github.humbleui.skija.Matrix33;
+            makeTranslate(p0: number, p1: number): io.github.humbleui.skija.Matrix33;
+            makeScale(p0: number): io.github.humbleui.skija.Matrix33;
+            makeScale(p0: number, p1: number): io.github.humbleui.skija.Matrix33;
+            makeRotate(p0: number): io.github.humbleui.skija.Matrix33;
+            makeRotate(p0: number, p1: io.github.humbleui.types.Point): io.github.humbleui.skija.Matrix33;
+            makeRotate(p0: number, p1: number, p2: number): io.github.humbleui.skija.Matrix33;
+            makeSkew(p0: number, p1: number): io.github.humbleui.skija.Matrix33;
+          }
+          interface Matrix33 { 
+            _mat: kotlin.FloatArray;
+            makePreScale(p0: number, p1: number): io.github.humbleui.skija.Matrix33;
+            makeConcat(p0: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.Matrix33;
+            asMatrix44(): io.github.humbleui.skija.Matrix44;
+            getMat(): kotlin.FloatArray;
+          }
+          const Matrix44: {
+            IDENTITY: io.github.humbleui.skija.Matrix44;
+            new(p0: number): io.github.humbleui.skija.Matrix44;
+          }
+          interface Matrix44 { 
+            _mat: kotlin.FloatArray;
+            asMatrix33(): io.github.humbleui.skija.Matrix33;
+            getMat(): kotlin.FloatArray;
+          }
+          const Data: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.Data$_FinalizerHolder;
+            new(p0: number): io.github.humbleui.skija.Data;
+            makeFromBytes(p0: Array<number>): io.github.humbleui.skija.Data;
+            makeFromBytes(p0: Array<number>, p1: number, p2: number): io.github.humbleui.skija.Data;
+            makeFromFileName(p0: string): io.github.humbleui.skija.Data | null | undefined;
+            makeEmpty(): io.github.humbleui.skija.Data;
+            _nGetFinalizer(): number;
+            _nSize(p0: number): number;
+            _nBytes(p0: number, p1: number, p2: number): Array<number>;
+            _nEquals(p0: number, p1: number): boolean;
+            _nToByteBuffer(p0: number): java.nio.ByteBuffer;
+            _nMakeFromBytes(p0: Array<number>, p1: number, p2: number): number;
+            _nMakeFromFileName(p0: string): number;
+            _nMakeSubset(p0: number, p1: number, p2: number): number;
+            _nMakeEmpty(): number;
+          }
+          interface Data extends io.github.humbleui.skija.impl.Managed { 
+            getSize(): number;
+            getBytes(): Array<number>;
+            getBytes(p0: number, p1: number): Array<number>;
+            makeSubset(p0: number, p1: number): io.github.humbleui.skija.Data;
+            makeCopy(): io.github.humbleui.skija.Data;
+            toByteBuffer(): java.nio.ByteBuffer;
+          }
+          const Data$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.Data$_FinalizerHolder;
+          }
+          interface Data$_FinalizerHolder { 
+          }
+          const ColorSpaceNamedPrimaries: {
+            REC709: io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+            REC470_SYSTEM_M: io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+            REC470_SYSTEM_BG: io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+            REC601: io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+            SMPTE_ST_240: io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+            GENERIC_FILM: io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+            REC2020: io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+            SMPTE_ST_428_1: io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+            SMPTE_RP_431_2: io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+            SMPTE_EG_432_1: io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+            ITU_T_H273_VALUE22: io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.ColorSpaceNamedPrimaries>;
+            values(): Array<io.github.humbleui.skija.ColorSpaceNamedPrimaries>;
+            valueOf(value: string): io.github.humbleui.skija.ColorSpaceNamedPrimaries;
+          }
+          interface ColorSpaceNamedPrimaries extends kotlin.Enum<io.github.humbleui.skija.ColorSpaceNamedPrimaries> { 
+            _value: number;
+          }
+          const ColorSpaceNamedTransferFn: {
+            REC709: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            REC470_SYSTEM_M: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            REC470_SYSTEM_BG: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            REC601: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            SMPTE_ST_240: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            LINEAR: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            IEC61966_2_4: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            SRGB: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            REC2020_10BIT: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            REC2020_12BIT: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            PQ: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            SMPTE_ST_428_1: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            HLG: io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.ColorSpaceNamedTransferFn>;
+            values(): Array<io.github.humbleui.skija.ColorSpaceNamedTransferFn>;
+            valueOf(value: string): io.github.humbleui.skija.ColorSpaceNamedTransferFn;
+          }
+          interface ColorSpaceNamedTransferFn extends kotlin.Enum<io.github.humbleui.skija.ColorSpaceNamedTransferFn> { 
+            _value: number;
+          }
+          const ColorSpace$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.ColorSpace$_FinalizerHolder;
+          }
+          interface ColorSpace$_FinalizerHolder { 
+          }
+          const ColorSpace$_DisplayP3Holder: {
+            INSTANCE: io.github.humbleui.skija.ColorSpace;
+            new(): io.github.humbleui.skija.ColorSpace$_DisplayP3Holder;
+          }
+          interface ColorSpace$_DisplayP3Holder { 
+          }
+          const ColorSpace$_SRGBLinearHolder: {
+            INSTANCE: io.github.humbleui.skija.ColorSpace;
+            new(): io.github.humbleui.skija.ColorSpace$_SRGBLinearHolder;
+          }
+          interface ColorSpace$_SRGBLinearHolder { 
+          }
+          const ColorSpace$_SRGBHolder: {
+            INSTANCE: io.github.humbleui.skija.ColorSpace;
+            new(): io.github.humbleui.skija.ColorSpace$_SRGBHolder;
+          }
+          interface ColorSpace$_SRGBHolder { 
+          }
+          const ContentChangeMode: {
+            DISCARD: io.github.humbleui.skija.ContentChangeMode;
+            RETAIN: io.github.humbleui.skija.ContentChangeMode;
+            _values: Array<io.github.humbleui.skija.ContentChangeMode>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.ContentChangeMode>;
+            values(): Array<io.github.humbleui.skija.ContentChangeMode>;
+            valueOf(value: string): io.github.humbleui.skija.ContentChangeMode;
+          }
+          interface ContentChangeMode extends kotlin.Enum<io.github.humbleui.skija.ContentChangeMode> { 
+          }
+          const Image: {
+            new(p0: number): io.github.humbleui.skija.Image;
+            makeRaster(p0: io.github.humbleui.skija.ImageInfo, p1: Array<number>, p2: number): io.github.humbleui.skija.Image;
+            makeRaster(p0: io.github.humbleui.skija.ImageInfo, p1: io.github.humbleui.skija.Data, p2: number): io.github.humbleui.skija.Image;
+            adoptGLTextureFrom(p0: io.github.humbleui.skija.DirectContext, p1: number, p2: number, p3: number, p4: number, p5: number, p6: io.github.humbleui.skija.SurfaceOrigin, p7: io.github.humbleui.skija.ColorType): io.github.humbleui.skija.Image;
+            makeRasterFromBytes(p0: io.github.humbleui.skija.ImageInfo, p1: Array<number>, p2: number): io.github.humbleui.skija.Image;
+            makeRasterFromData(p0: io.github.humbleui.skija.ImageInfo, p1: io.github.humbleui.skija.Data, p2: number): io.github.humbleui.skija.Image;
+            makeFromBitmap(p0: io.github.humbleui.skija.Bitmap): io.github.humbleui.skija.Image;
+            makeRasterFromBitmap(p0: io.github.humbleui.skija.Bitmap): io.github.humbleui.skija.Image;
+            makeFromPixmap(p0: io.github.humbleui.skija.Pixmap): io.github.humbleui.skija.Image;
+            makeRasterFromPixmap(p0: io.github.humbleui.skija.Pixmap): io.github.humbleui.skija.Image;
+            makeFromEncoded(p0: Array<number>): io.github.humbleui.skija.Image;
+            makeDeferredFromEncodedBytes(p0: Array<number>): io.github.humbleui.skija.Image;
+            makeWithFilter(p0: io.github.humbleui.skija.ImageFilter, p1: io.github.humbleui.skija.Image, p2: io.github.humbleui.types.IRect, p3: io.github.humbleui.types.IRect): io.github.humbleui.skija.ImageWithFilterResult | null | undefined;
+            makeWithFilter(p0: io.github.humbleui.skija.DirectContext, p1: io.github.humbleui.skija.ImageFilter, p2: io.github.humbleui.skija.Image, p3: io.github.humbleui.types.IRect, p4: io.github.humbleui.types.IRect): io.github.humbleui.skija.ImageWithFilterResult | null | undefined;
+            _nAdoptGLTextureFrom(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): number;
+            _nMakeRasterFromBytes(p0: number, p1: number, p2: number, p3: number, p4: number, p5: Array<number>, p6: number): number;
+            _nMakeRasterFromData(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): number;
+            _nMakeRasterFromBitmap(p0: number): number;
+            _nMakeRasterFromPixmap(p0: number): number;
+            _nMakeDeferredFromEncodedBytes(p0: Array<number>): number;
+            _nGetImageInfo(p0: number): io.github.humbleui.skija.ImageInfo;
+            _nMakeShader(p0: number, p1: number, p2: number, p3: number, p4: kotlin.FloatArray): number;
+            _nPeekPixels(p0: number): java.nio.ByteBuffer;
+            _nPeekPixelsToPixmap(p0: number, p1: number): boolean;
+            _nScalePixels(p0: number, p1: number, p2: number, p3: boolean): boolean;
+            _nMakeScaled(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): number;
+            _nMakeSubset(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nReadPixelsBitmap(p0: number, p1: number, p2: number, p3: number, p4: number, p5: boolean): boolean;
+            _nReadPixelsPixmap(p0: number, p1: number, p2: number, p3: number, p4: boolean): boolean;
+            _nMakeWithFilter(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number): io.github.humbleui.skija.ImageWithFilterResult;
+            _nMakeWithFilterContext(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number): io.github.humbleui.skija.ImageWithFilterResult;
+          }
+          interface Image extends io.github.humbleui.skija.impl.RefCnt, io.github.humbleui.skija.IHasImageInfo { 
+            _imageInfo: io.github.humbleui.skija.ImageInfo;
+            encodeToData(): io.github.humbleui.skija.Data;
+            encodeToData(p0: io.github.humbleui.skija.EncodedImageFormat): io.github.humbleui.skija.Data;
+            encodeToData(p0: io.github.humbleui.skija.EncodedImageFormat, p1: number): io.github.humbleui.skija.Data;
+            makeShader(): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.Matrix33 | null | undefined): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.FilterTileMode): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.FilterTileMode, p1: io.github.humbleui.skija.FilterTileMode): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.FilterTileMode, p1: io.github.humbleui.skija.FilterTileMode, p2: io.github.humbleui.skija.Matrix33 | null | undefined): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.FilterTileMode, p1: io.github.humbleui.skija.FilterTileMode, p2: io.github.humbleui.skija.SamplingMode, p3: io.github.humbleui.skija.Matrix33 | null | undefined): io.github.humbleui.skija.Shader;
+            peekPixels(): java.nio.ByteBuffer | null | undefined;
+            peekPixels(p0: io.github.humbleui.skija.Pixmap): boolean;
+            readPixels(p0: io.github.humbleui.skija.Bitmap): boolean;
+            readPixels(p0: io.github.humbleui.skija.Bitmap, p1: number, p2: number): boolean;
+            readPixels(p0: io.github.humbleui.skija.DirectContext | null | undefined, p1: io.github.humbleui.skija.Bitmap, p2: number, p3: number, p4: boolean): boolean;
+            readPixels(p0: io.github.humbleui.skija.Pixmap, p1: number, p2: number, p3: boolean): boolean;
+            scalePixels(p0: io.github.humbleui.skija.Pixmap, p1: io.github.humbleui.skija.SamplingMode, p2: boolean): boolean;
+            makeScaled(p0: io.github.humbleui.skija.ImageInfo, p1: io.github.humbleui.skija.SamplingMode): io.github.humbleui.skija.Image | null | undefined;
+            makeSubset(p0: io.github.humbleui.types.IRect): io.github.humbleui.skija.Image | null | undefined;
+            makeSubset(p0: io.github.humbleui.skija.DirectContext | null | undefined, p1: io.github.humbleui.types.IRect): io.github.humbleui.skija.Image | null | undefined;
+          }
+          interface IHasImageInfo { 
+            getImageInfo(): io.github.humbleui.skija.ImageInfo;
+            getWidth(): number;
+            getHeight(): number;
+            getColorInfo(): io.github.humbleui.skija.ColorInfo;
+            getColorType(): io.github.humbleui.skija.ColorType;
+            getAlphaType(): io.github.humbleui.skija.ColorAlphaType;
+            getColorSpace(): io.github.humbleui.skija.ColorSpace | null | undefined;
+            getBytesPerPixel(): number;
+            getShiftPerPixel(): number;
+            isEmpty(): boolean;
+            isOpaque(): boolean;
+          }
+          const EncodedImageFormat: {
+            BMP: io.github.humbleui.skija.EncodedImageFormat;
+            GIF: io.github.humbleui.skija.EncodedImageFormat;
+            ICO: io.github.humbleui.skija.EncodedImageFormat;
+            JPEG: io.github.humbleui.skija.EncodedImageFormat;
+            PNG: io.github.humbleui.skija.EncodedImageFormat;
+            WBMP: io.github.humbleui.skija.EncodedImageFormat;
+            WEBP: io.github.humbleui.skija.EncodedImageFormat;
+            PKM: io.github.humbleui.skija.EncodedImageFormat;
+            KTX: io.github.humbleui.skija.EncodedImageFormat;
+            ASTC: io.github.humbleui.skija.EncodedImageFormat;
+            DNG: io.github.humbleui.skija.EncodedImageFormat;
+            HEIF: io.github.humbleui.skija.EncodedImageFormat;
+            AVIF: io.github.humbleui.skija.EncodedImageFormat;
+            JPEGXL: io.github.humbleui.skija.EncodedImageFormat;
+            _values: Array<io.github.humbleui.skija.EncodedImageFormat>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.EncodedImageFormat>;
+            values(): Array<io.github.humbleui.skija.EncodedImageFormat>;
+            valueOf(value: string): io.github.humbleui.skija.EncodedImageFormat;
+          }
+          interface EncodedImageFormat extends kotlin.Enum<io.github.humbleui.skija.EncodedImageFormat> { 
+          }
+          const Shader: {
+            new(p0: number): io.github.humbleui.skija.Shader;
+            makeLinearGradient(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: Array<number>): io.github.humbleui.skija.Shader;
+            makeLinearGradient(p0: number, p1: number, p2: number, p3: number, p4: Array<number>): io.github.humbleui.skija.Shader;
+            makeLinearGradient(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: Array<number>, p3: kotlin.FloatArray): io.github.humbleui.skija.Shader;
+            makeLinearGradient(p0: number, p1: number, p2: number, p3: number, p4: Array<number>, p5: kotlin.FloatArray): io.github.humbleui.skija.Shader;
+            makeLinearGradient(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: Array<number>, p3: kotlin.FloatArray, p4: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeLinearGradient(p0: number, p1: number, p2: number, p3: number, p4: Array<number>, p5: kotlin.FloatArray, p6: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeLinearGradient(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: Array<io.github.humbleui.skija.Color4f>, p3: io.github.humbleui.skija.ColorSpace, p4: kotlin.FloatArray, p5: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeLinearGradient(p0: number, p1: number, p2: number, p3: number, p4: Array<io.github.humbleui.skija.Color4f>, p5: io.github.humbleui.skija.ColorSpace, p6: kotlin.FloatArray, p7: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeRadialGradient(p0: io.github.humbleui.types.Point, p1: number, p2: Array<number>): io.github.humbleui.skija.Shader;
+            makeRadialGradient(p0: number, p1: number, p2: number, p3: Array<number>): io.github.humbleui.skija.Shader;
+            makeRadialGradient(p0: io.github.humbleui.types.Point, p1: number, p2: Array<number>, p3: kotlin.FloatArray): io.github.humbleui.skija.Shader;
+            makeRadialGradient(p0: number, p1: number, p2: number, p3: Array<number>, p4: kotlin.FloatArray): io.github.humbleui.skija.Shader;
+            makeRadialGradient(p0: io.github.humbleui.types.Point, p1: number, p2: Array<number>, p3: kotlin.FloatArray, p4: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeRadialGradient(p0: number, p1: number, p2: number, p3: Array<number>, p4: kotlin.FloatArray, p5: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeRadialGradient(p0: io.github.humbleui.types.Point, p1: number, p2: Array<io.github.humbleui.skija.Color4f>, p3: io.github.humbleui.skija.ColorSpace, p4: kotlin.FloatArray, p5: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeRadialGradient(p0: number, p1: number, p2: number, p3: Array<io.github.humbleui.skija.Color4f>, p4: io.github.humbleui.skija.ColorSpace, p5: kotlin.FloatArray, p6: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeTwoPointConicalGradient(p0: io.github.humbleui.types.Point, p1: number, p2: io.github.humbleui.types.Point, p3: number, p4: Array<number>): io.github.humbleui.skija.Shader;
+            makeTwoPointConicalGradient(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: Array<number>): io.github.humbleui.skija.Shader;
+            makeTwoPointConicalGradient(p0: io.github.humbleui.types.Point, p1: number, p2: io.github.humbleui.types.Point, p3: number, p4: Array<number>, p5: kotlin.FloatArray): io.github.humbleui.skija.Shader;
+            makeTwoPointConicalGradient(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: Array<number>, p7: kotlin.FloatArray): io.github.humbleui.skija.Shader;
+            makeTwoPointConicalGradient(p0: io.github.humbleui.types.Point, p1: number, p2: io.github.humbleui.types.Point, p3: number, p4: Array<number>, p5: kotlin.FloatArray, p6: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeTwoPointConicalGradient(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: Array<number>, p7: kotlin.FloatArray, p8: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeTwoPointConicalGradient(p0: io.github.humbleui.types.Point, p1: number, p2: io.github.humbleui.types.Point, p3: number, p4: Array<io.github.humbleui.skija.Color4f>, p5: io.github.humbleui.skija.ColorSpace, p6: kotlin.FloatArray, p7: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeTwoPointConicalGradient(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: Array<io.github.humbleui.skija.Color4f>, p7: io.github.humbleui.skija.ColorSpace, p8: kotlin.FloatArray, p9: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeSweepGradient(p0: io.github.humbleui.types.Point, p1: Array<number>): io.github.humbleui.skija.Shader;
+            makeSweepGradient(p0: number, p1: number, p2: Array<number>): io.github.humbleui.skija.Shader;
+            makeSweepGradient(p0: io.github.humbleui.types.Point, p1: Array<number>, p2: kotlin.FloatArray): io.github.humbleui.skija.Shader;
+            makeSweepGradient(p0: number, p1: number, p2: Array<number>, p3: kotlin.FloatArray): io.github.humbleui.skija.Shader;
+            makeSweepGradient(p0: io.github.humbleui.types.Point, p1: Array<number>, p2: kotlin.FloatArray, p3: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeSweepGradient(p0: number, p1: number, p2: Array<number>, p3: kotlin.FloatArray, p4: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeSweepGradient(p0: io.github.humbleui.types.Point, p1: number, p2: number, p3: Array<number>, p4: kotlin.FloatArray, p5: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeSweepGradient(p0: number, p1: number, p2: number, p3: number, p4: Array<number>, p5: kotlin.FloatArray, p6: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeSweepGradient(p0: io.github.humbleui.types.Point, p1: number, p2: number, p3: Array<io.github.humbleui.skija.Color4f>, p4: io.github.humbleui.skija.ColorSpace, p5: kotlin.FloatArray, p6: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeSweepGradient(p0: number, p1: number, p2: number, p3: number, p4: Array<io.github.humbleui.skija.Color4f>, p5: io.github.humbleui.skija.ColorSpace, p6: kotlin.FloatArray, p7: io.github.humbleui.skija.GradientStyle): io.github.humbleui.skija.Shader;
+            makeFractalNoise(p0: number, p1: number, p2: number, p3: number, p4: io.github.humbleui.types.IPoint | null | undefined): io.github.humbleui.skija.Shader;
+            makeFractalNoise(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.skija.Shader;
+            makeTurbulence(p0: number, p1: number, p2: number, p3: number, p4: io.github.humbleui.types.IPoint | null | undefined): io.github.humbleui.skija.Shader;
+            makeTurbulence(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.skija.Shader;
+            makeEmpty(): io.github.humbleui.skija.Shader;
+            makeColor(p0: number): io.github.humbleui.skija.Shader;
+            makeColor(p0: io.github.humbleui.skija.Color4f, p1: io.github.humbleui.skija.ColorSpace): io.github.humbleui.skija.Shader;
+            makeBlend(p0: io.github.humbleui.skija.BlendMode, p1: io.github.humbleui.skija.Shader, p2: io.github.humbleui.skija.Shader): io.github.humbleui.skija.Shader;
+            _nIsOpaque(p0: number): boolean;
+            _nGetImage(p0: number): number;
+            _nMakeWithLocalMatrix(p0: number, p1: kotlin.FloatArray): number;
+            _nMakeWithWorkingColorSpace(p0: number, p1: number, p2: number): number;
+            _nMakeWithColorFilter(p0: number, p1: number): number;
+            _nMakeLinearGradient(p0: number, p1: number, p2: number, p3: number, p4: Array<number>, p5: kotlin.FloatArray, p6: number, p7: number, p8: kotlin.FloatArray): number;
+            _nMakeLinearGradientCS(p0: number, p1: number, p2: number, p3: number, p4: kotlin.FloatArray, p5: number, p6: kotlin.FloatArray, p7: number, p8: number, p9: kotlin.FloatArray): number;
+            _nMakeRadialGradient(p0: number, p1: number, p2: number, p3: Array<number>, p4: kotlin.FloatArray, p5: number, p6: number, p7: kotlin.FloatArray): number;
+            _nMakeRadialGradientCS(p0: number, p1: number, p2: number, p3: kotlin.FloatArray, p4: number, p5: kotlin.FloatArray, p6: number, p7: number, p8: kotlin.FloatArray): number;
+            _nMakeTwoPointConicalGradient(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: Array<number>, p7: kotlin.FloatArray, p8: number, p9: number, p10: kotlin.FloatArray): number;
+            _nMakeTwoPointConicalGradientCS(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: kotlin.FloatArray, p7: number, p8: kotlin.FloatArray, p9: number, p10: number, p11: kotlin.FloatArray): number;
+            _nMakeSweepGradient(p0: number, p1: number, p2: number, p3: number, p4: Array<number>, p5: kotlin.FloatArray, p6: number, p7: number, p8: kotlin.FloatArray): number;
+            _nMakeSweepGradientCS(p0: number, p1: number, p2: number, p3: number, p4: kotlin.FloatArray, p5: number, p6: kotlin.FloatArray, p7: number, p8: number, p9: kotlin.FloatArray): number;
+            _nMakeFractalNoise(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nMakeTurbulence(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nMakeEmpty(): number;
+            _nMakeColor(p0: number): number;
+            _nMakeColorCS(p0: number, p1: number, p2: number, p3: number, p4: number): number;
+            _nMakeBlend(p0: number, p1: number, p2: number): number;
+          }
+          interface Shader extends io.github.humbleui.skija.RuntimeEffectChild { 
+            isOpaque(): boolean;
+            getImage(): io.github.humbleui.skija.Image | null | undefined;
+            makeWithLocalMatrix(p0: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.Shader;
+            makeWithWorkingColorSpace(p0: io.github.humbleui.skija.ColorSpace | null | undefined): io.github.humbleui.skija.Shader;
+            makeWithWorkingColorSpace(p0: io.github.humbleui.skija.ColorSpace | null | undefined, p1: io.github.humbleui.skija.ColorSpace | null | undefined): io.github.humbleui.skija.Shader;
+            makeWithColorFilter(p0: io.github.humbleui.skija.ColorFilter): io.github.humbleui.skija.Shader;
+          }
+          interface RuntimeEffectChild extends io.github.humbleui.skija.impl.RefCnt, io.github.humbleui.skija.Flattenable { 
+          }
+          interface Flattenable { 
+          }
+          const ColorFilter: {
+            _LumaHolder: typeof io.github.humbleui.skija.ColorFilter$_LumaHolder;
+            _SRGBToLinearGammaHolder: typeof io.github.humbleui.skija.ColorFilter$_SRGBToLinearGammaHolder;
+            _LinearToSRGBGammaHolder: typeof io.github.humbleui.skija.ColorFilter$_LinearToSRGBGammaHolder;
+            new(p0: number): io.github.humbleui.skija.ColorFilter;
+            new(p0: number, p1: boolean): io.github.humbleui.skija.ColorFilter;
+            makeComposed(p0: io.github.humbleui.skija.ColorFilter, p1: io.github.humbleui.skija.ColorFilter): io.github.humbleui.skija.ColorFilter;
+            makeBlend(p0: number, p1: io.github.humbleui.skija.BlendMode): io.github.humbleui.skija.ColorFilter;
+            makeMatrix(p0: io.github.humbleui.skija.ColorMatrix): io.github.humbleui.skija.ColorFilter;
+            makeHSLAMatrix(p0: io.github.humbleui.skija.ColorMatrix): io.github.humbleui.skija.ColorFilter;
+            getLinearToSRGBGamma(): io.github.humbleui.skija.ColorFilter;
+            getSRGBToLinearGamma(): io.github.humbleui.skija.ColorFilter;
+            makeLerp(p0: io.github.humbleui.skija.ColorFilter, p1: io.github.humbleui.skija.ColorFilter, p2: number): io.github.humbleui.skija.ColorFilter;
+            makeLighting(p0: number, p1: number): io.github.humbleui.skija.ColorFilter;
+            makeHighContrast(p0: boolean, p1: io.github.humbleui.skija.InversionMode, p2: number): io.github.humbleui.skija.ColorFilter;
+            makeTable(p0: Array<number>): io.github.humbleui.skija.ColorFilter;
+            makeTableARGB(p0: Array<number>, p1: Array<number>, p2: Array<number>, p3: Array<number>): io.github.humbleui.skija.ColorFilter;
+            makeOverdraw(p0: Array<number>): io.github.humbleui.skija.ColorFilter;
+            getLuma(): io.github.humbleui.skija.ColorFilter;
+            _nMakeComposed(p0: number, p1: number): number;
+            _nMakeBlend(p0: number, p1: number): number;
+            _nMakeMatrix(p0: kotlin.FloatArray): number;
+            _nMakeHSLAMatrix(p0: kotlin.FloatArray): number;
+            _nGetLinearToSRGBGamma(): number;
+            _nGetSRGBToLinearGamma(): number;
+            _nMakeLerp(p0: number, p1: number, p2: number): number;
+            _nMakeLighting(p0: number, p1: number): number;
+            _nMakeHighContrast(p0: boolean, p1: number, p2: number): number;
+            _nMakeTable(p0: Array<number>): number;
+            _nMakeTableARGB(p0: Array<number>, p1: Array<number>, p2: Array<number>, p3: Array<number>): number;
+            _nMakeOverdraw(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nGetLuma(): number;
+          }
+          interface ColorFilter extends io.github.humbleui.skija.RuntimeEffectChild { 
+          }
+          const BlendMode: {
+            CLEAR: io.github.humbleui.skija.BlendMode;
+            SRC: io.github.humbleui.skija.BlendMode;
+            DST: io.github.humbleui.skija.BlendMode;
+            SRC_OVER: io.github.humbleui.skija.BlendMode;
+            DST_OVER: io.github.humbleui.skija.BlendMode;
+            SRC_IN: io.github.humbleui.skija.BlendMode;
+            DST_IN: io.github.humbleui.skija.BlendMode;
+            SRC_OUT: io.github.humbleui.skija.BlendMode;
+            DST_OUT: io.github.humbleui.skija.BlendMode;
+            SRC_ATOP: io.github.humbleui.skija.BlendMode;
+            DST_ATOP: io.github.humbleui.skija.BlendMode;
+            XOR: io.github.humbleui.skija.BlendMode;
+            PLUS: io.github.humbleui.skija.BlendMode;
+            MODULATE: io.github.humbleui.skija.BlendMode;
+            SCREEN: io.github.humbleui.skija.BlendMode;
+            OVERLAY: io.github.humbleui.skija.BlendMode;
+            DARKEN: io.github.humbleui.skija.BlendMode;
+            LIGHTEN: io.github.humbleui.skija.BlendMode;
+            COLOR_DODGE: io.github.humbleui.skija.BlendMode;
+            COLOR_BURN: io.github.humbleui.skija.BlendMode;
+            HARD_LIGHT: io.github.humbleui.skija.BlendMode;
+            SOFT_LIGHT: io.github.humbleui.skija.BlendMode;
+            DIFFERENCE: io.github.humbleui.skija.BlendMode;
+            EXCLUSION: io.github.humbleui.skija.BlendMode;
+            MULTIPLY: io.github.humbleui.skija.BlendMode;
+            HUE: io.github.humbleui.skija.BlendMode;
+            SATURATION: io.github.humbleui.skija.BlendMode;
+            COLOR: io.github.humbleui.skija.BlendMode;
+            LUMINOSITY: io.github.humbleui.skija.BlendMode;
+            LAST_COEFF_MODE: io.github.humbleui.skija.BlendMode;
+            LAST_SEPARABLE_MODE: io.github.humbleui.skija.BlendMode;
+            _values: Array<io.github.humbleui.skija.BlendMode>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.BlendMode>;
+            values(): Array<io.github.humbleui.skija.BlendMode>;
+            valueOf(value: string): io.github.humbleui.skija.BlendMode;
+          }
+          interface BlendMode extends kotlin.Enum<io.github.humbleui.skija.BlendMode> { 
+          }
+          const ColorMatrix: {
+            new(p0: number): io.github.humbleui.skija.ColorMatrix;
+          }
+          interface ColorMatrix { 
+            _mat: kotlin.FloatArray;
+            getMat(): kotlin.FloatArray;
+          }
+          const InversionMode: {
+            NO: io.github.humbleui.skija.InversionMode;
+            BRIGHTNESS: io.github.humbleui.skija.InversionMode;
+            LIGHTNESS: io.github.humbleui.skija.InversionMode;
+            _values: Array<io.github.humbleui.skija.InversionMode>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.InversionMode>;
+            values(): Array<io.github.humbleui.skija.InversionMode>;
+            valueOf(value: string): io.github.humbleui.skija.InversionMode;
+          }
+          interface InversionMode extends kotlin.Enum<io.github.humbleui.skija.InversionMode> { 
+          }
+          const ColorFilter$_LumaHolder: {
+            INSTANCE: io.github.humbleui.skija.ColorFilter;
+            new(): io.github.humbleui.skija.ColorFilter$_LumaHolder;
+          }
+          interface ColorFilter$_LumaHolder { 
+          }
+          const ColorFilter$_SRGBToLinearGammaHolder: {
+            INSTANCE: io.github.humbleui.skija.ColorFilter;
+            new(): io.github.humbleui.skija.ColorFilter$_SRGBToLinearGammaHolder;
+          }
+          interface ColorFilter$_SRGBToLinearGammaHolder { 
+          }
+          const ColorFilter$_LinearToSRGBGammaHolder: {
+            INSTANCE: io.github.humbleui.skija.ColorFilter;
+            new(): io.github.humbleui.skija.ColorFilter$_LinearToSRGBGammaHolder;
+          }
+          interface ColorFilter$_LinearToSRGBGammaHolder { 
+          }
+          const GradientStyle: {
+            _INTERPOLATE_PREMUL: number;
+            DEFAULT: io.github.humbleui.skija.GradientStyle;
+            new(p0: io.github.humbleui.skija.FilterTileMode, p1: boolean, p2: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.GradientStyle;
+          }
+          interface GradientStyle { 
+            _tileMode: io.github.humbleui.skija.FilterTileMode;
+            _premul: boolean;
+            _localMatrix: io.github.humbleui.skija.Matrix33;
+            _getFlags(): number;
+            _getMatrixArray(): kotlin.FloatArray;
+            getTileMode(): io.github.humbleui.skija.FilterTileMode;
+            isPremul(): boolean;
+            getLocalMatrix(): io.github.humbleui.skija.Matrix33;
+            withTileMode(p0: io.github.humbleui.skija.FilterTileMode): io.github.humbleui.skija.GradientStyle;
+            withPremul(p0: boolean): io.github.humbleui.skija.GradientStyle;
+            withLocalMatrix(p0: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.GradientStyle;
+          }
+          const FilterTileMode: {
+            CLAMP: io.github.humbleui.skija.FilterTileMode;
+            REPEAT: io.github.humbleui.skija.FilterTileMode;
+            MIRROR: io.github.humbleui.skija.FilterTileMode;
+            DECAL: io.github.humbleui.skija.FilterTileMode;
+            _values: Array<io.github.humbleui.skija.FilterTileMode>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.FilterTileMode>;
+            values(): Array<io.github.humbleui.skija.FilterTileMode>;
+            valueOf(value: string): io.github.humbleui.skija.FilterTileMode;
+          }
+          interface FilterTileMode extends kotlin.Enum<io.github.humbleui.skija.FilterTileMode> { 
+          }
+          const SamplingMode: {
+            DEFAULT: io.github.humbleui.skija.SamplingMode;
+            LINEAR: io.github.humbleui.skija.SamplingMode;
+            MITCHELL: io.github.humbleui.skija.SamplingMode;
+            CATMULL_ROM: io.github.humbleui.skija.SamplingMode;
+          }
+          interface SamplingMode { 
+            _pack(): number;
+          }
+          const Pixmap: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.Pixmap$_FinalizerHolder;
+            new(p0: number, p1: boolean): io.github.humbleui.skija.Pixmap;
+            new(): io.github.humbleui.skija.Pixmap;
+            make(p0: io.github.humbleui.skija.ImageInfo, p1: java.nio.ByteBuffer, p2: number): io.github.humbleui.skija.Pixmap;
+            make(p0: io.github.humbleui.skija.ImageInfo, p1: number, p2: number): io.github.humbleui.skija.Pixmap;
+            _nGetFinalizer(): number;
+            _nMakeNull(): number;
+            _nMake(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): number;
+            _nReset(p0: number): void;
+            _nResetWithInfo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): void;
+            _nSetColorSpace(p0: number, p1: number): void;
+            _nExtractSubset(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): boolean;
+            _nGetImageInfo(p0: number): io.github.humbleui.skija.ImageInfo;
+            _nGetRowBytes(p0: number): number;
+            _nGetAddr(p0: number): number;
+            _nGetRowBytesAsPixels(p0: number): number;
+            _nComputeByteSize(p0: number): number;
+            _nComputeIsOpaque(p0: number): boolean;
+            _nGetColor(p0: number, p1: number, p2: number): number;
+            _nGetColor4f(p0: number, p1: number, p2: number): io.github.humbleui.skija.Color4f;
+            _nGetAlphaF(p0: number, p1: number, p2: number): number;
+            _nGetAddrAt(p0: number, p1: number, p2: number): number;
+            _nReadPixels(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): boolean;
+            _nReadPixelsFromPoint(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number): boolean;
+            _nReadPixelsToPixmap(p0: number, p1: number): boolean;
+            _nReadPixelsToPixmapFromPoint(p0: number, p1: number, p2: number, p3: number): boolean;
+            _nScalePixels(p0: number, p1: number, p2: number): boolean;
+            _nErase(p0: number, p1: number): boolean;
+            _nEraseSubset(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): boolean;
+            _nErase4f(p0: number, p1: number, p2: number, p3: number, p4: number): boolean;
+            _nEraseSubset4f(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number): boolean;
+          }
+          interface Pixmap extends io.github.humbleui.skija.impl.Managed, io.github.humbleui.skija.IHasImageInfo { 
+            _imageInfo: io.github.humbleui.skija.ImageInfo;
+            reset(): void;
+            reset(p0: io.github.humbleui.skija.ImageInfo, p1: number, p2: number): void;
+            reset(p0: io.github.humbleui.skija.ImageInfo, p1: java.nio.ByteBuffer, p2: number): void;
+            setColorSpace(p0: io.github.humbleui.skija.ColorSpace): void;
+            extractSubset(p0: number, p1: io.github.humbleui.types.IRect): boolean;
+            extractSubset(p0: java.nio.ByteBuffer, p1: io.github.humbleui.types.IRect): boolean;
+            getRowBytes(): number;
+            getRowBytesAsPixels(): number;
+            computeByteSize(): number;
+            computeIsOpaque(): boolean;
+            getColor(p0: number, p1: number): number;
+            getColor4f(p0: number, p1: number): io.github.humbleui.skija.Color4f;
+            getAlphaF(p0: number, p1: number): number;
+            getAddr(): number;
+            getAddrAt(p0: number, p1: number): number;
+            readPixels(p0: io.github.humbleui.skija.ImageInfo, p1: number, p2: number): boolean;
+            readPixels(p0: io.github.humbleui.skija.ImageInfo, p1: number, p2: number, p3: number, p4: number): boolean;
+            readPixels(p0: io.github.humbleui.skija.Pixmap): boolean;
+            readPixels(p0: io.github.humbleui.skija.Pixmap, p1: number, p2: number): boolean;
+            scalePixels(p0: io.github.humbleui.skija.Pixmap, p1: io.github.humbleui.skija.SamplingMode): boolean;
+            erase(p0: number): boolean;
+            erase(p0: number, p1: io.github.humbleui.types.IRect): boolean;
+            erase(p0: io.github.humbleui.skija.Color4f): boolean;
+            erase(p0: io.github.humbleui.skija.Color4f, p1: io.github.humbleui.types.IRect): boolean;
+            getBuffer(): java.nio.ByteBuffer;
+          }
+          const Pixmap$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.Pixmap$_FinalizerHolder;
+          }
+          interface Pixmap$_FinalizerHolder { 
+          }
+          const Bitmap: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.Bitmap$_FinalizerHolder;
+            new(p0: number): io.github.humbleui.skija.Bitmap;
+            new(): io.github.humbleui.skija.Bitmap;
+            makeFromImage(p0: io.github.humbleui.skija.Image): io.github.humbleui.skija.Bitmap;
+            _nGetFinalizer(): number;
+            _nMake(): number;
+            _nMakeClone(p0: number): number;
+            _nSwap(p0: number, p1: number): void;
+            _nGetImageInfo(p0: number): io.github.humbleui.skija.ImageInfo;
+            _nGetRowBytesAsPixels(p0: number): number;
+            _nIsNull(p0: number): boolean;
+            _nGetRowBytes(p0: number): number;
+            _nSetAlphaType(p0: number, p1: number): boolean;
+            _nSetColorSpace(p0: number, p1: number): void;
+            _nComputeByteSize(p0: number): number;
+            _nIsImmutable(p0: number): boolean;
+            _nSetImmutable(p0: number): void;
+            _nIsVolatile(p0: number): boolean;
+            _nSetVolatile(p0: number, p1: boolean): void;
+            _nReset(p0: number): void;
+            _nComputeIsOpaque(p0: number): boolean;
+            _nSetImageInfo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): boolean;
+            _nAllocPixelsFlags(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): boolean;
+            _nAllocPixelsRowBytes(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): boolean;
+            _nInstallPixels(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: Array<number>, p7: number): boolean;
+            _nAllocPixels(p0: number): boolean;
+            _nGetPixelRef(p0: number): number;
+            _nGetPixelRefOrigin(p0: number): number;
+            _nSetPixelRef(p0: number, p1: number, p2: number, p3: number): void;
+            _nIsReadyToDraw(p0: number): boolean;
+            _nGetGenerationId(p0: number): number;
+            _nNotifyPixelsChanged(p0: number): void;
+            _nErase4f(p0: number, p1: number, p2: number, p3: number, p4: number): void;
+            _nEraseRect4f(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number): void;
+            _nErase(p0: number, p1: number): void;
+            _nEraseRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): void;
+            _nGetColor(p0: number, p1: number, p2: number): number;
+            _nGetColor4f(p0: number, p1: number, p2: number): io.github.humbleui.skija.Color4f;
+            _nGetAlphaf(p0: number, p1: number, p2: number): number;
+            _nExtractSubset(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): boolean;
+            _nReadPixels(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number): Array<number>;
+            _nExtractAlpha(p0: number, p1: number, p2: number): io.github.humbleui.types.IPoint;
+            _nPeekPixels(p0: number): number;
+            _nMakeShader(p0: number, p1: number, p2: number, p3: number, p4: kotlin.FloatArray): number;
+          }
+          interface Bitmap extends io.github.humbleui.skija.impl.Managed, io.github.humbleui.skija.IHasImageInfo { 
+            _imageInfo: io.github.humbleui.skija.ImageInfo;
+            makeClone(): io.github.humbleui.skija.Bitmap;
+            swap(p0: io.github.humbleui.skija.Bitmap): void;
+            getRowBytesAsPixels(): number;
+            isNull(): boolean;
+            drawsNothing(): boolean;
+            getRowBytes(): number;
+            setAlphaType(p0: io.github.humbleui.skija.ColorAlphaType): boolean;
+            setColorSpace(p0: io.github.humbleui.skija.ColorSpace | null | undefined): io.github.humbleui.skija.Bitmap;
+            computeByteSize(): number;
+            isImmutable(): boolean;
+            setImmutable(): io.github.humbleui.skija.Bitmap;
+            reset(): io.github.humbleui.skija.Bitmap;
+            computeIsOpaque(): boolean;
+            getBounds(): io.github.humbleui.types.IRect;
+            getSubset(): io.github.humbleui.types.IRect;
+            setImageInfo(p0: io.github.humbleui.skija.ImageInfo): boolean;
+            setImageInfo(p0: io.github.humbleui.skija.ImageInfo, p1: number): boolean;
+            allocPixelsFlags(p0: io.github.humbleui.skija.ImageInfo, p1: boolean): boolean;
+            allocPixels(p0: io.github.humbleui.skija.ImageInfo, p1: number): boolean;
+            allocPixels(p0: io.github.humbleui.skija.ImageInfo): boolean;
+            allocPixels(): boolean;
+            allocN32Pixels(p0: number, p1: number): boolean;
+            allocN32Pixels(p0: number, p1: number, p2: boolean): boolean;
+            installPixels(p0: Array<number>): boolean;
+            installPixels(p0: io.github.humbleui.skija.ImageInfo, p1: Array<number>, p2: number): boolean;
+            getPixelRef(): io.github.humbleui.skija.PixelRef | null | undefined;
+            getPixelRefOrigin(): io.github.humbleui.types.IPoint;
+            setPixelRef(p0: io.github.humbleui.skija.PixelRef | null | undefined, p1: number, p2: number): io.github.humbleui.skija.Bitmap;
+            isReadyToDraw(): boolean;
+            getGenerationId(): number;
+            notifyPixelsChanged(): io.github.humbleui.skija.Bitmap;
+            erase(p0: io.github.humbleui.skija.Color4f): io.github.humbleui.skija.Bitmap;
+            erase(p0: io.github.humbleui.skija.Color4f, p1: io.github.humbleui.types.IRect): io.github.humbleui.skija.Bitmap;
+            erase(p0: number): io.github.humbleui.skija.Bitmap;
+            erase(p0: number, p1: io.github.humbleui.types.IRect): io.github.humbleui.skija.Bitmap;
+            getColor(p0: number, p1: number): number;
+            getColor4f(p0: number, p1: number): io.github.humbleui.skija.Color4f;
+            getAlphaf(p0: number, p1: number): number;
+            extractSubset(p0: io.github.humbleui.skija.Bitmap, p1: io.github.humbleui.types.IRect): boolean;
+            readPixels(): Array<number>;
+            readPixels(p0: io.github.humbleui.skija.ImageInfo, p1: number, p2: number, p3: number): Array<number>;
+            extractAlpha(p0: io.github.humbleui.skija.Bitmap): boolean;
+            extractAlpha(p0: io.github.humbleui.skija.Bitmap, p1: io.github.humbleui.skija.Paint | null | undefined): io.github.humbleui.types.IPoint | null | undefined;
+            peekPixels(): io.github.humbleui.skija.Pixmap | null | undefined;
+            makeShader(): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.Matrix33 | null | undefined): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.FilterTileMode): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.FilterTileMode, p1: io.github.humbleui.skija.FilterTileMode): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.FilterTileMode, p1: io.github.humbleui.skija.FilterTileMode, p2: io.github.humbleui.skija.Matrix33 | null | undefined): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.FilterTileMode, p1: io.github.humbleui.skija.FilterTileMode, p2: io.github.humbleui.skija.SamplingMode, p3: io.github.humbleui.skija.Matrix33 | null | undefined): io.github.humbleui.skija.Shader;
+          }
+          const PixelRef: {
+            new(p0: number): io.github.humbleui.skija.PixelRef;
+            _nGetWidth(p0: number): number;
+            _nGetHeight(p0: number): number;
+            _nGetRowBytes(p0: number): number;
+            _nGetGenerationId(p0: number): number;
+            _nNotifyPixelsChanged(p0: number): void;
+            _nIsImmutable(p0: number): boolean;
+            _nSetImmutable(p0: number): void;
+          }
+          interface PixelRef extends io.github.humbleui.skija.impl.RefCnt { 
+            getWidth(): number;
+            getHeight(): number;
+            getRowBytes(): number;
+            getGenerationId(): number;
+            notifyPixelsChanged(): io.github.humbleui.skija.PixelRef;
+            isImmutable(): boolean;
+            setImmutable(): io.github.humbleui.skija.PixelRef;
+          }
+          const Paint: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.Paint$_FinalizerHolder;
+            new(p0: number, p1: boolean): io.github.humbleui.skija.Paint;
+            new(): io.github.humbleui.skija.Paint;
+            _nGetFinalizer(): number;
+            _nMake(): number;
+            _nMakeClone(p0: number): number;
+            _nEquals(p0: number, p1: number): boolean;
+            _nReset(p0: number): void;
+            _nIsAntiAlias(p0: number): boolean;
+            _nSetAntiAlias(p0: number, p1: boolean): void;
+            _nIsDither(p0: number): boolean;
+            _nSetDither(p0: number, p1: boolean): void;
+            _nGetMode(p0: number): number;
+            _nSetMode(p0: number, p1: number): void;
+            _nGetColor(p0: number): number;
+            _nGetColor4f(p0: number): io.github.humbleui.skija.Color4f;
+            _nSetColor(p0: number, p1: number): void;
+            _nSetColor4f(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): void;
+            _nGetStrokeWidth(p0: number): number;
+            _nSetStrokeWidth(p0: number, p1: number): void;
+            _nGetStrokeMiter(p0: number): number;
+            _nSetStrokeMiter(p0: number, p1: number): void;
+            _nGetStrokeCap(p0: number): number;
+            _nSetStrokeCap(p0: number, p1: number): void;
+            _nGetStrokeJoin(p0: number): number;
+            _nSetStrokeJoin(p0: number, p1: number): void;
+            _nGetFillPath(p0: number, p1: number, p2: number): number;
+            _nGetFillPathCull(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): number;
+            _nGetShader(p0: number): number;
+            _nSetShader(p0: number, p1: number): void;
+            _nGetColorFilter(p0: number): number;
+            _nSetColorFilter(p0: number, p1: number): void;
+            _nGetBlender(p0: number): number;
+            _nSetBlender(p0: number, p1: number): void;
+            _nGetBlendMode(p0: number): number;
+            _nSetBlendMode(p0: number, p1: number): void;
+            _nGetPathEffect(p0: number): number;
+            _nSetPathEffect(p0: number, p1: number): void;
+            _nGetMaskFilter(p0: number): number;
+            _nSetMaskFilter(p0: number, p1: number): void;
+            _nGetImageFilter(p0: number): number;
+            _nSetImageFilter(p0: number, p1: number): void;
+            _nHasNothingToDraw(p0: number): boolean;
+          }
+          interface Paint extends io.github.humbleui.skija.impl.Managed { 
+            makeClone(): io.github.humbleui.skija.Paint;
+            reset(): io.github.humbleui.skija.Paint;
+            isAntiAlias(): boolean;
+            setAntiAlias(p0: boolean): io.github.humbleui.skija.Paint;
+            isDither(): boolean;
+            setDither(p0: boolean): io.github.humbleui.skija.Paint;
+            getMode(): io.github.humbleui.skija.PaintMode;
+            setMode(p0: io.github.humbleui.skija.PaintMode): io.github.humbleui.skija.Paint;
+            setStroke(p0: boolean): io.github.humbleui.skija.Paint;
+            getColor(): number;
+            getColor4f(): io.github.humbleui.skija.Color4f;
+            setColor(p0: number): io.github.humbleui.skija.Paint;
+            setColor4f(p0: io.github.humbleui.skija.Color4f): io.github.humbleui.skija.Paint;
+            setColor4f(p0: io.github.humbleui.skija.Color4f, p1: io.github.humbleui.skija.ColorSpace | null | undefined): io.github.humbleui.skija.Paint;
+            getAlphaf(): number;
+            getAlpha(): number;
+            setAlphaf(p0: number): io.github.humbleui.skija.Paint;
+            setAlpha(p0: number): io.github.humbleui.skija.Paint;
+            setARGB(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.skija.Paint;
+            getStrokeWidth(): number;
+            setStrokeWidth(p0: number): io.github.humbleui.skija.Paint;
+            getStrokeMiter(): number;
+            setStrokeMiter(p0: number): io.github.humbleui.skija.Paint;
+            getStrokeCap(): io.github.humbleui.skija.PaintStrokeCap;
+            setStrokeCap(p0: io.github.humbleui.skija.PaintStrokeCap): io.github.humbleui.skija.Paint;
+            getStrokeJoin(): io.github.humbleui.skija.PaintStrokeJoin;
+            setStrokeJoin(p0: io.github.humbleui.skija.PaintStrokeJoin): io.github.humbleui.skija.Paint;
+            getFillPath(p0: io.github.humbleui.skija.Path): io.github.humbleui.skija.Path;
+            getFillPath(p0: io.github.humbleui.skija.Path, p1: io.github.humbleui.types.Rect | null | undefined, p2: number): io.github.humbleui.skija.Path;
+            getShader(): io.github.humbleui.skija.Shader | null | undefined;
+            setShader(p0: io.github.humbleui.skija.Shader | null | undefined): io.github.humbleui.skija.Paint;
+            getColorFilter(): io.github.humbleui.skija.ColorFilter | null | undefined;
+            setColorFilter(p0: io.github.humbleui.skija.ColorFilter | null | undefined): io.github.humbleui.skija.Paint;
+            getBlender(): io.github.humbleui.skija.Blender | null | undefined;
+            setBlender(p0: io.github.humbleui.skija.Blender | null | undefined): io.github.humbleui.skija.Paint;
+            getBlendMode(): io.github.humbleui.skija.BlendMode | null | undefined;
+            isSrcOver(): boolean;
+            setBlendMode(p0: io.github.humbleui.skija.BlendMode): io.github.humbleui.skija.Paint;
+            getPathEffect(): io.github.humbleui.skija.PathEffect | null | undefined;
+            setPathEffect(p0: io.github.humbleui.skija.PathEffect | null | undefined): io.github.humbleui.skija.Paint;
+            getMaskFilter(): io.github.humbleui.skija.MaskFilter | null | undefined;
+            setMaskFilter(p0: io.github.humbleui.skija.MaskFilter | null | undefined): io.github.humbleui.skija.Paint;
+            getImageFilter(): io.github.humbleui.skija.ImageFilter | null | undefined;
+            setImageFilter(p0: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.Paint;
+            hasNothingToDraw(): boolean;
+          }
+          const PaintMode: {
+            FILL: io.github.humbleui.skija.PaintMode;
+            STROKE: io.github.humbleui.skija.PaintMode;
+            STROKE_AND_FILL: io.github.humbleui.skija.PaintMode;
+            _values: Array<io.github.humbleui.skija.PaintMode>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.PaintMode>;
+            values(): Array<io.github.humbleui.skija.PaintMode>;
+            valueOf(value: string): io.github.humbleui.skija.PaintMode;
+          }
+          interface PaintMode extends kotlin.Enum<io.github.humbleui.skija.PaintMode> { 
+          }
+          const PaintStrokeCap: {
+            BUTT: io.github.humbleui.skija.PaintStrokeCap;
+            ROUND: io.github.humbleui.skija.PaintStrokeCap;
+            SQUARE: io.github.humbleui.skija.PaintStrokeCap;
+            _values: Array<io.github.humbleui.skija.PaintStrokeCap>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.PaintStrokeCap>;
+            values(): Array<io.github.humbleui.skija.PaintStrokeCap>;
+            valueOf(value: string): io.github.humbleui.skija.PaintStrokeCap;
+          }
+          interface PaintStrokeCap extends kotlin.Enum<io.github.humbleui.skija.PaintStrokeCap> { 
+          }
+          const PaintStrokeJoin: {
+            MITER: io.github.humbleui.skija.PaintStrokeJoin;
+            ROUND: io.github.humbleui.skija.PaintStrokeJoin;
+            BEVEL: io.github.humbleui.skija.PaintStrokeJoin;
+            _values: Array<io.github.humbleui.skija.PaintStrokeJoin>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.PaintStrokeJoin>;
+            values(): Array<io.github.humbleui.skija.PaintStrokeJoin>;
+            valueOf(value: string): io.github.humbleui.skija.PaintStrokeJoin;
+          }
+          interface PaintStrokeJoin extends kotlin.Enum<io.github.humbleui.skija.PaintStrokeJoin> { 
+          }
+          const Path: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.Path$_FinalizerHolder;
+            new(): io.github.humbleui.skija.Path;
+            new(p0: io.github.humbleui.skija.PathFillMode): io.github.humbleui.skija.Path;
+            new(p0: io.github.humbleui.skija.Path): io.github.humbleui.skija.Path;
+            new(p0: number): io.github.humbleui.skija.Path;
+            makeRaw(p0: Array<io.github.humbleui.types.Point>, p1: Array<io.github.humbleui.skija.PathVerb>, p2: kotlin.FloatArray, p3: io.github.humbleui.skija.PathFillMode): io.github.humbleui.skija.Path;
+            makeRaw(p0: Array<io.github.humbleui.types.Point>, p1: Array<io.github.humbleui.skija.PathVerb>, p2: kotlin.FloatArray, p3: io.github.humbleui.skija.PathFillMode, p4: boolean): io.github.humbleui.skija.Path;
+            makeRect(p0: io.github.humbleui.types.Rect): io.github.humbleui.skija.Path;
+            makeRect(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.PathDirection): io.github.humbleui.skija.Path;
+            makeRect(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.PathDirection, p2: number): io.github.humbleui.skija.Path;
+            makeOval(p0: io.github.humbleui.types.Rect): io.github.humbleui.skija.Path;
+            makeOval(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.PathDirection): io.github.humbleui.skija.Path;
+            makeCircle(p0: number, p1: number, p2: number): io.github.humbleui.skija.Path;
+            makeCircle(p0: number, p1: number, p2: number, p3: io.github.humbleui.skija.PathDirection): io.github.humbleui.skija.Path;
+            makeRRect(p0: io.github.humbleui.types.RRect): io.github.humbleui.skija.Path;
+            makeRRect(p0: io.github.humbleui.types.RRect, p1: io.github.humbleui.skija.PathDirection): io.github.humbleui.skija.Path;
+            makeRRect(p0: io.github.humbleui.types.RRect, p1: io.github.humbleui.skija.PathDirection, p2: number): io.github.humbleui.skija.Path;
+            makePolygon(p0: Array<io.github.humbleui.types.Point>, p1: boolean): io.github.humbleui.skija.Path;
+            makePolygon(p0: Array<io.github.humbleui.types.Point>, p1: boolean, p2: io.github.humbleui.skija.PathFillMode): io.github.humbleui.skija.Path;
+            makePolygon(p0: Array<io.github.humbleui.types.Point>, p1: boolean, p2: io.github.humbleui.skija.PathFillMode, p3: boolean): io.github.humbleui.skija.Path;
+            makeLine(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point): io.github.humbleui.skija.Path;
+            makeLine(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.skija.Path;
+            makeFromSVGString(p0: string): io.github.humbleui.skija.Path;
+            makeCombining(p0: io.github.humbleui.skija.Path, p1: io.github.humbleui.skija.Path, p2: io.github.humbleui.skija.PathOp): io.github.humbleui.skija.Path | null | undefined;
+            isLineDegenerate(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: boolean): boolean;
+            isQuadDegenerate(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: io.github.humbleui.types.Point, p3: boolean): boolean;
+            isCubicDegenerate(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: io.github.humbleui.types.Point, p3: io.github.humbleui.types.Point, p4: boolean): boolean;
+            convertConicToQuads(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: io.github.humbleui.types.Point, p3: number, p4: number): Array<io.github.humbleui.types.Point>;
+            makeFromBytes(p0: Array<number>): io.github.humbleui.skija.Path | null | undefined;
+            _nGetFinalizer(): number;
+            _nMakeRaw(p0: kotlin.FloatArray, p1: Array<number>, p2: kotlin.FloatArray, p3: number, p4: boolean): number;
+            _nMakeRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nMakeOval(p0: number, p1: number, p2: number, p3: number, p4: number): number;
+            _nMakeCircle(p0: number, p1: number, p2: number, p3: number): number;
+            _nMakeRRect(p0: number, p1: number, p2: number, p3: number, p4: kotlin.FloatArray, p5: number, p6: number): number;
+            _nMakePolygon(p0: kotlin.FloatArray, p1: boolean, p2: number, p3: boolean): number;
+            _nMakeLine(p0: number, p1: number, p2: number, p3: number): number;
+            _nMakeFromSVGString(p0: string): number;
+            _nMake(p0: number): number;
+            _nMakeCopy(p0: number): number;
+            _nMakeCombining(p0: number, p1: number, p2: number): number;
+            _nEquals(p0: number, p1: number): boolean;
+            _nIsInterpolatable(p0: number, p1: number): boolean;
+            _nMakeInterpolate(p0: number, p1: number, p2: number): number;
+            _nGetFillMode(p0: number): number;
+            _nMakeWithFillMode(p0: number, p1: number): number;
+            _nIsInverseFillType(p0: number): boolean;
+            _nMakeToggleInverseFillType(p0: number): number;
+            _nIsConvex(p0: number): boolean;
+            _nIsOval(p0: number): io.github.humbleui.types.Rect;
+            _nIsRRect(p0: number): io.github.humbleui.types.RRect;
+            _nIsEmpty(p0: number): boolean;
+            _nIsLastContourClosed(p0: number): boolean;
+            _nIsFinite(p0: number): boolean;
+            _nIsVolatile(p0: number): boolean;
+            _nMakeWithVolatile(p0: number, p1: boolean): number;
+            _nIsLineDegenerate(p0: number, p1: number, p2: number, p3: number, p4: boolean): boolean;
+            _nIsQuadDegenerate(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: boolean): boolean;
+            _nIsCubicDegenerate(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: boolean): boolean;
+            _nMaybeGetAsLine(p0: number): Array<io.github.humbleui.types.Point>;
+            _nGetPoints(p0: number): Array<io.github.humbleui.types.Point>;
+            _nGetVerbs(p0: number): Array<number>;
+            _nGetConicWeights(p0: number): kotlin.FloatArray;
+            _nGetPointsCount(p0: number): number;
+            _nCountVerbs(p0: number): number;
+            _nGetLastPt(p0: number): io.github.humbleui.types.Point;
+            _nApproximateBytesUsed(p0: number): number;
+            _nGetBounds(p0: number): io.github.humbleui.types.Rect;
+            _nUpdateBoundsCache(p0: number): void;
+            _nComputeTightBounds(p0: number): io.github.humbleui.types.Rect;
+            _nConservativelyContainsRect(p0: number, p1: number, p2: number, p3: number, p4: number): boolean;
+            _nConvertConicToQuads(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): Array<io.github.humbleui.types.Point>;
+            _nIsRect(p0: number): io.github.humbleui.types.Rect;
+            _nMakeTransform(p0: number, p1: kotlin.FloatArray): number;
+            _nMakeOffset(p0: number, p1: number, p2: number): number;
+            _nMakeScale(p0: number, p1: number, p2: number): number;
+            _nGetSegmentMasks(p0: number): number;
+            _nSetVolatile(p0: number, p1: boolean): void;
+            _nSwap(p0: number, p1: number): void;
+            _nSetFillMode(p0: number, p1: number): void;
+            _nReset(p0: number): void;
+            _nContains(p0: number, p1: number, p2: number): boolean;
+            _nDump(p0: number): void;
+            _nDumpHex(p0: number): void;
+            _nSerializeToBytes(p0: number): Array<number>;
+            _nMakeFromBytes(p0: Array<number>): number;
+            _nGetGenerationId(p0: number): number;
+            _nIsValid(p0: number): boolean;
+            _nFillWithPaint(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: kotlin.FloatArray): boolean;
+          }
+          interface Path extends io.github.humbleui.skija.impl.Managed, kotlin.collections.MutableIterable<io.github.humbleui.skija.PathSegment> { 
+            isInterpolatable(p0: io.github.humbleui.skija.Path): boolean;
+            makeInterpolate(p0: io.github.humbleui.skija.Path, p1: number): io.github.humbleui.skija.Path;
+            getFillMode(): io.github.humbleui.skija.PathFillMode;
+            makeWithFillMode(p0: io.github.humbleui.skija.PathFillMode): io.github.humbleui.skija.Path;
+            isInverseFillType(): boolean;
+            makeToggleInverseFillType(): io.github.humbleui.skija.Path;
+            isConvex(): boolean;
+            isOval(): io.github.humbleui.types.Rect | null | undefined;
+            isRRect(): io.github.humbleui.types.RRect | null | undefined;
+            isEmpty(): boolean;
+            isLastContourClosed(): boolean;
+            isFinite(): boolean;
+            isVolatile(): boolean;
+            makeWithVolatile(p0: boolean): io.github.humbleui.skija.Path;
+            getAsLine(): Array<io.github.humbleui.types.Point | null | undefined>;
+            getPoints(): Array<io.github.humbleui.types.Point>;
+            getVerbs(): Array<io.github.humbleui.skija.PathVerb>;
+            getConicWeights(): kotlin.FloatArray;
+            getPointsCount(): number;
+            getVerbsCount(): number;
+            getLastPt(): io.github.humbleui.types.Point | null | undefined;
+            getApproximateBytesUsed(): number;
+            getBounds(): io.github.humbleui.types.Rect;
+            updateBoundsCache(): io.github.humbleui.skija.Path;
+            computeTightBounds(): io.github.humbleui.types.Rect;
+            conservativelyContainsRect(p0: io.github.humbleui.types.Rect): boolean;
+            isRect(): io.github.humbleui.types.Rect | null | undefined;
+            makeTransform(p0: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.Path | null | undefined;
+            makeOffset(p0: number, p1: number): io.github.humbleui.skija.Path | null | undefined;
+            makeScale(p0: number): io.github.humbleui.skija.Path | null | undefined;
+            makeScale(p0: number, p1: number): io.github.humbleui.skija.Path | null | undefined;
+            getSegmentTypes(): Array<unknown>;
+            setVolatile(p0: boolean): io.github.humbleui.skija.Path;
+            swap(p0: io.github.humbleui.skija.Path): io.github.humbleui.skija.Path;
+            setFillMode(p0: io.github.humbleui.skija.PathFillMode): io.github.humbleui.skija.Path;
+            reset(): io.github.humbleui.skija.Path;
+            iterator(p0: boolean): io.github.humbleui.skija.PathSegmentIterator;
+            contains(p0: number, p1: number): boolean;
+            contains(p0: io.github.humbleui.types.Point): boolean;
+            dump(): io.github.humbleui.skija.Path;
+            dumpHex(): io.github.humbleui.skija.Path;
+            serializeToBytes(): Array<number>;
+            getGenerationId(): number;
+            isValid(): boolean;
+            fillWithPaint(p0: io.github.humbleui.skija.Paint, p1: io.github.humbleui.skija.PathBuilder, p2: io.github.humbleui.types.Rect | null | undefined, p3: io.github.humbleui.skija.Matrix33): boolean;
+            fillWithPaint(p0: io.github.humbleui.skija.Paint, p1: io.github.humbleui.skija.PathBuilder, p2: io.github.humbleui.skija.Matrix33): boolean;
+            fillWithPaint(p0: io.github.humbleui.skija.Paint, p1: io.github.humbleui.skija.PathBuilder): boolean;
+            fillWithPaint(p0: io.github.humbleui.skija.Paint, p1: io.github.humbleui.skija.PathBuilder, p2: number): boolean;
+          }
+          const PathFillMode: {
+            WINDING: io.github.humbleui.skija.PathFillMode;
+            EVEN_ODD: io.github.humbleui.skija.PathFillMode;
+            INVERSE_WINDING: io.github.humbleui.skija.PathFillMode;
+            INVERSE_EVEN_ODD: io.github.humbleui.skija.PathFillMode;
+            _values: Array<io.github.humbleui.skija.PathFillMode>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.PathFillMode>;
+            values(): Array<io.github.humbleui.skija.PathFillMode>;
+            valueOf(value: string): io.github.humbleui.skija.PathFillMode;
+          }
+          interface PathFillMode extends kotlin.Enum<io.github.humbleui.skija.PathFillMode> { 
+            isInverse(): boolean;
+            inverse(): io.github.humbleui.skija.PathFillMode;
+          }
+          const PathSegmentIterator: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.PathSegmentIterator$_FinalizerHolder;
+            new(p0: io.github.humbleui.skija.Path, p1: number): io.github.humbleui.skija.PathSegmentIterator;
+            make(p0: io.github.humbleui.skija.Path, p1: boolean): io.github.humbleui.skija.PathSegmentIterator;
+            _nMake(p0: number, p1: boolean): number;
+            _nGetFinalizer(): number;
+            _nNext(p0: number): io.github.humbleui.skija.PathSegment;
+          }
+          interface PathSegmentIterator extends io.github.humbleui.skija.impl.Managed, kotlin.collections.MutableIterator<io.github.humbleui.skija.PathSegment> { 
+            _path: io.github.humbleui.skija.Path;
+            _nextSegment: io.github.humbleui.skija.PathSegment;
+          }
+          const PathSegment: {
+            new(): io.github.humbleui.skija.PathSegment;
+            new(p0: number, p1: number, p2: number, p3: boolean): io.github.humbleui.skija.PathSegment;
+            new(p0: number, p1: number, p2: number, p3: number, p4: boolean, p5: boolean): io.github.humbleui.skija.PathSegment;
+            new(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: boolean): io.github.humbleui.skija.PathSegment;
+            new(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: boolean): io.github.humbleui.skija.PathSegment;
+            new(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: boolean): io.github.humbleui.skija.PathSegment;
+            new(p0: io.github.humbleui.skija.PathVerb, p1: io.github.humbleui.types.Point, p2: io.github.humbleui.types.Point, p3: io.github.humbleui.types.Point, p4: io.github.humbleui.types.Point, p5: number, p6: boolean, p7: boolean): io.github.humbleui.skija.PathSegment;
+          }
+          interface PathSegment { 
+            _verb: io.github.humbleui.skija.PathVerb;
+            _p0: io.github.humbleui.types.Point;
+            _p1: io.github.humbleui.types.Point;
+            _p2: io.github.humbleui.types.Point;
+            _p3: io.github.humbleui.types.Point;
+            _conicWeight: number;
+            _closeLine: boolean;
+            _closedContour: boolean;
+            getVerb(): io.github.humbleui.skija.PathVerb;
+            getP0(): io.github.humbleui.types.Point;
+            getP1(): io.github.humbleui.types.Point;
+            getP2(): io.github.humbleui.types.Point;
+            getP3(): io.github.humbleui.types.Point;
+            getConicWeight(): number;
+            isCloseLine(): boolean;
+            isClosedContour(): boolean;
+          }
+          const PathVerb: {
+            MOVE: io.github.humbleui.skija.PathVerb;
+            LINE: io.github.humbleui.skija.PathVerb;
+            QUAD: io.github.humbleui.skija.PathVerb;
+            CONIC: io.github.humbleui.skija.PathVerb;
+            CUBIC: io.github.humbleui.skija.PathVerb;
+            CLOSE: io.github.humbleui.skija.PathVerb;
+            DONE: io.github.humbleui.skija.PathVerb;
+            _values: Array<io.github.humbleui.skija.PathVerb>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.PathVerb>;
+            values(): Array<io.github.humbleui.skija.PathVerb>;
+            valueOf(value: string): io.github.humbleui.skija.PathVerb;
+          }
+          interface PathVerb extends kotlin.Enum<io.github.humbleui.skija.PathVerb> { 
+          }
+          const PathSegmentIterator$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.PathSegmentIterator$_FinalizerHolder;
+          }
+          interface PathSegmentIterator$_FinalizerHolder { 
+          }
+          const PathBuilder: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.PathBuilder$_FinalizerHolder;
+            new(): io.github.humbleui.skija.PathBuilder;
+            new(p0: io.github.humbleui.skija.PathFillMode): io.github.humbleui.skija.PathBuilder;
+            new(p0: io.github.humbleui.skija.PathBuilder): io.github.humbleui.skija.PathBuilder;
+            new(p0: io.github.humbleui.skija.Path): io.github.humbleui.skija.PathBuilder;
+            new(p0: number, p1: number): io.github.humbleui.skija.PathBuilder;
+            _nGetFinalizer(): number;
+            _nMake(): number;
+            _nMakeFromFillMode(p0: number): number;
+            _nMakeFromPathBuilder(p0: number): number;
+            _nMakeFromPath(p0: number): number;
+            _nEquals(p0: number, p1: number): boolean;
+            _nGetFillMode(p0: number): number;
+            _nComputeFiniteBounds(p0: number): io.github.humbleui.types.Rect;
+            _nComputeTightBounds(p0: number): io.github.humbleui.types.Rect;
+            _nSnapshot(p0: number, p1: kotlin.FloatArray): number;
+            _nDetach(p0: number, p1: kotlin.FloatArray): number;
+            _nSetFillMode(p0: number, p1: number): void;
+            _nSetVolatile(p0: number, p1: boolean): void;
+            _nReset(p0: number): void;
+            _nMoveTo(p0: number, p1: number, p2: number): void;
+            _nLineTo(p0: number, p1: number, p2: number): void;
+            _nQuadTo(p0: number, p1: number, p2: number, p3: number, p4: number): void;
+            _nConicTo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): void;
+            _nCubicTo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): void;
+            _nClosePath(p0: number): void;
+            _nPolylineTo(p0: number, p1: kotlin.FloatArray): void;
+            _nRMoveTo(p0: number, p1: number, p2: number): void;
+            _nRLineTo(p0: number, p1: number, p2: number): void;
+            _nRQuadTo(p0: number, p1: number, p2: number, p3: number, p4: number): void;
+            _nRConicTo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): void;
+            _nRCubicTo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): void;
+            _nREllipticalArcTo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): void;
+            _nArcTo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: boolean): void;
+            _nTangentArcTo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): void;
+            _nEllipticalArcTo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): void;
+            _nAddArc(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): void;
+            _nAddRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): void;
+            _nAddOval(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): void;
+            _nAddRRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: kotlin.FloatArray, p6: number, p7: number): void;
+            _nAddCircle(p0: number, p1: number, p2: number, p3: number, p4: number): void;
+            _nAddPolygon(p0: number, p1: kotlin.FloatArray, p2: boolean): void;
+            _nAddPath(p0: number, p1: number, p2: boolean): void;
+            _nAddPathOffset(p0: number, p1: number, p2: number, p3: number, p4: boolean): void;
+            _nAddPathTransform(p0: number, p1: number, p2: kotlin.FloatArray, p3: boolean): void;
+            _nIncReserve(p0: number, p1: number, p2: number, p3: number): void;
+            _nOffset(p0: number, p1: number, p2: number): void;
+            _nTransform(p0: number, p1: kotlin.FloatArray): void;
+            _nIsFinite(p0: number): boolean;
+            _nToggleInverseFillType(p0: number): void;
+            _nIsEmpty(p0: number): boolean;
+            _nGetLastPt(p0: number): io.github.humbleui.types.Point;
+            _nSetPoint(p0: number, p1: number, p2: number, p3: number): void;
+            _nSetLastPt(p0: number, p1: number, p2: number): void;
+            _nCountPoints(p0: number): number;
+            _nIsInverseFillType(p0: number): boolean;
+            _nGetPoints(p0: number): Array<io.github.humbleui.types.Point>;
+            _nGetVerbs(p0: number): Array<number>;
+            _nGetConicWeights(p0: number): kotlin.FloatArray;
+          }
+          interface PathBuilder extends io.github.humbleui.skija.impl.Managed { 
+            getFillMode(): io.github.humbleui.skija.PathFillMode;
+            computeFiniteBounds(): io.github.humbleui.types.Rect | null | undefined;
+            computeTightBounds(): io.github.humbleui.types.Rect | null | undefined;
+            snapshot(): io.github.humbleui.skija.Path;
+            snapshot(p0: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.Path;
+            detach(): io.github.humbleui.skija.Path;
+            detach(p0: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.Path;
+            build(): io.github.humbleui.skija.Path;
+            setFillMode(p0: io.github.humbleui.skija.PathFillMode): io.github.humbleui.skija.PathBuilder;
+            setVolatile(p0: boolean): io.github.humbleui.skija.PathBuilder;
+            reset(): io.github.humbleui.skija.PathBuilder;
+            moveTo(p0: number, p1: number): io.github.humbleui.skija.PathBuilder;
+            moveTo(p0: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            lineTo(p0: number, p1: number): io.github.humbleui.skija.PathBuilder;
+            lineTo(p0: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            quadTo(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.skija.PathBuilder;
+            quadTo(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            conicTo(p0: number, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.skija.PathBuilder;
+            conicTo(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: number): io.github.humbleui.skija.PathBuilder;
+            cubicTo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): io.github.humbleui.skija.PathBuilder;
+            cubicTo(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            closePath(): io.github.humbleui.skija.PathBuilder;
+            polylineTo(p0: kotlin.FloatArray): io.github.humbleui.skija.PathBuilder;
+            polylineTo(p0: Array<io.github.humbleui.types.Point>): io.github.humbleui.skija.PathBuilder;
+            rMoveTo(p0: number, p1: number): io.github.humbleui.skija.PathBuilder;
+            rMoveTo(p0: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            rLineTo(p0: number, p1: number): io.github.humbleui.skija.PathBuilder;
+            rLineTo(p0: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            rQuadTo(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.skija.PathBuilder;
+            rQuadTo(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            rConicTo(p0: number, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.skija.PathBuilder;
+            rConicTo(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: number): io.github.humbleui.skija.PathBuilder;
+            rCubicTo(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): io.github.humbleui.skija.PathBuilder;
+            rCubicTo(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            rEllipticalArcTo(p0: number, p1: number, p2: number, p3: io.github.humbleui.skija.PathEllipseArc, p4: io.github.humbleui.skija.PathDirection, p5: number, p6: number): io.github.humbleui.skija.PathBuilder;
+            arcTo(p0: io.github.humbleui.types.Rect, p1: number, p2: number, p3: boolean): io.github.humbleui.skija.PathBuilder;
+            tangentArcTo(p0: number, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.skija.PathBuilder;
+            tangentArcTo(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point, p2: number): io.github.humbleui.skija.PathBuilder;
+            ellipticalArcTo(p0: number, p1: number, p2: number, p3: io.github.humbleui.skija.PathEllipseArc, p4: io.github.humbleui.skija.PathDirection, p5: number, p6: number): io.github.humbleui.skija.PathBuilder;
+            ellipticalArcTo(p0: io.github.humbleui.types.Point, p1: number, p2: io.github.humbleui.skija.PathEllipseArc, p3: io.github.humbleui.skija.PathDirection, p4: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            addArc(p0: io.github.humbleui.types.Rect, p1: number, p2: number): io.github.humbleui.skija.PathBuilder;
+            addLine(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.skija.PathBuilder;
+            addLine(p0: io.github.humbleui.types.Point, p1: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            addRect(p0: io.github.humbleui.types.Rect): io.github.humbleui.skija.PathBuilder;
+            addRect(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.PathDirection): io.github.humbleui.skija.PathBuilder;
+            addRect(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.PathDirection, p2: number): io.github.humbleui.skija.PathBuilder;
+            addOval(p0: io.github.humbleui.types.Rect): io.github.humbleui.skija.PathBuilder;
+            addOval(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.PathDirection): io.github.humbleui.skija.PathBuilder;
+            addOval(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.PathDirection, p2: number): io.github.humbleui.skija.PathBuilder;
+            addRRect(p0: io.github.humbleui.types.RRect): io.github.humbleui.skija.PathBuilder;
+            addRRect(p0: io.github.humbleui.types.RRect, p1: io.github.humbleui.skija.PathDirection): io.github.humbleui.skija.PathBuilder;
+            addRRect(p0: io.github.humbleui.types.RRect, p1: io.github.humbleui.skija.PathDirection, p2: number): io.github.humbleui.skija.PathBuilder;
+            addCircle(p0: number, p1: number, p2: number): io.github.humbleui.skija.PathBuilder;
+            addCircle(p0: io.github.humbleui.types.Point, p1: number): io.github.humbleui.skija.PathBuilder;
+            addCircle(p0: number, p1: number, p2: number, p3: io.github.humbleui.skija.PathDirection): io.github.humbleui.skija.PathBuilder;
+            addCircle(p0: io.github.humbleui.types.Point, p1: number, p2: io.github.humbleui.skija.PathDirection): io.github.humbleui.skija.PathBuilder;
+            addPolygon(p0: Array<io.github.humbleui.types.Point>, p1: boolean): io.github.humbleui.skija.PathBuilder;
+            addPolygon(p0: kotlin.FloatArray, p1: boolean): io.github.humbleui.skija.PathBuilder;
+            addPath(p0: io.github.humbleui.skija.Path): io.github.humbleui.skija.PathBuilder;
+            addPath(p0: io.github.humbleui.skija.Path, p1: boolean): io.github.humbleui.skija.PathBuilder;
+            addPath(p0: io.github.humbleui.skija.Path, p1: number, p2: number): io.github.humbleui.skija.PathBuilder;
+            addPath(p0: io.github.humbleui.skija.Path, p1: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            addPath(p0: io.github.humbleui.skija.Path, p1: number, p2: number, p3: boolean): io.github.humbleui.skija.PathBuilder;
+            addPath(p0: io.github.humbleui.skija.Path, p1: io.github.humbleui.types.Point, p2: boolean): io.github.humbleui.skija.PathBuilder;
+            addPath(p0: io.github.humbleui.skija.Path, p1: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.PathBuilder;
+            addPath(p0: io.github.humbleui.skija.Path, p1: io.github.humbleui.skija.Matrix33, p2: boolean): io.github.humbleui.skija.PathBuilder;
+            incReserve(p0: number, p1: number, p2: number): io.github.humbleui.skija.PathBuilder;
+            incReserve(p0: number): io.github.humbleui.skija.PathBuilder;
+            offset(p0: number, p1: number): io.github.humbleui.skija.PathBuilder;
+            offset(p0: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            transform(p0: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.PathBuilder;
+            isFinite(): boolean;
+            toggleInverseFillType(): io.github.humbleui.skija.PathBuilder;
+            isEmpty(): boolean;
+            getLastPt(): io.github.humbleui.types.Point | null | undefined;
+            setPoint(p0: number, p1: number, p2: number): io.github.humbleui.skija.PathBuilder;
+            setPoint(p0: number, p1: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            setLastPt(p0: number, p1: number): io.github.humbleui.skija.PathBuilder;
+            setLastPt(p0: io.github.humbleui.types.Point): io.github.humbleui.skija.PathBuilder;
+            countPoints(): number;
+            isInverseFillType(): boolean;
+            getPoints(): Array<io.github.humbleui.types.Point>;
+            getVerbs(): Array<io.github.humbleui.skija.PathVerb>;
+            getConicWeights(): kotlin.FloatArray;
+          }
+          const PathEllipseArc: {
+            SMALLER: io.github.humbleui.skija.PathEllipseArc;
+            LARGER: io.github.humbleui.skija.PathEllipseArc;
+            _values: Array<io.github.humbleui.skija.PathEllipseArc>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.PathEllipseArc>;
+            values(): Array<io.github.humbleui.skija.PathEllipseArc>;
+            valueOf(value: string): io.github.humbleui.skija.PathEllipseArc;
+          }
+          interface PathEllipseArc extends kotlin.Enum<io.github.humbleui.skija.PathEllipseArc> { 
+          }
+          const PathDirection: {
+            CLOCKWISE: io.github.humbleui.skija.PathDirection;
+            COUNTER_CLOCKWISE: io.github.humbleui.skija.PathDirection;
+            _values: Array<io.github.humbleui.skija.PathDirection>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.PathDirection>;
+            values(): Array<io.github.humbleui.skija.PathDirection>;
+            valueOf(value: string): io.github.humbleui.skija.PathDirection;
+          }
+          interface PathDirection extends kotlin.Enum<io.github.humbleui.skija.PathDirection> { 
+          }
+          const PathBuilder$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.PathBuilder$_FinalizerHolder;
+          }
+          interface PathBuilder$_FinalizerHolder { 
+          }
+          const PathOp: {
+            DIFFERENCE: io.github.humbleui.skija.PathOp;
+            INTERSECT: io.github.humbleui.skija.PathOp;
+            UNION: io.github.humbleui.skija.PathOp;
+            XOR: io.github.humbleui.skija.PathOp;
+            REVERSE_DIFFERENCE: io.github.humbleui.skija.PathOp;
+            _values: Array<io.github.humbleui.skija.PathOp>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.PathOp>;
+            values(): Array<io.github.humbleui.skija.PathOp>;
+            valueOf(value: string): io.github.humbleui.skija.PathOp;
+          }
+          interface PathOp extends kotlin.Enum<io.github.humbleui.skija.PathOp> { 
+          }
+          const Path$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.Path$_FinalizerHolder;
+          }
+          interface Path$_FinalizerHolder { 
+          }
+          const Blender: {
+            new(p0: number): io.github.humbleui.skija.Blender;
+            makeWithMode(p0: io.github.humbleui.skija.BlendMode): io.github.humbleui.skija.Blender;
+            makeArithmetic(p0: number, p1: number, p2: number, p3: number, p4: boolean): io.github.humbleui.skija.Blender;
+            makeRuntime<T>(p0: io.github.humbleui.skija.RuntimeEffect, p1: io.github.humbleui.skija.Data | null | undefined, p2: Array<T>): io.github.humbleui.skija.Blender;
+            _nMakeWithMode(p0: number): number;
+            _nMakeArithmetic(p0: number, p1: number, p2: number, p3: number, p4: boolean): number;
+            _nMakeRuntime(p0: number, p1: number, p2: Array<number>): number;
+          }
+          interface Blender extends io.github.humbleui.skija.RuntimeEffectChild { 
+          }
+          const RuntimeEffect: {
+            new(p0: number): io.github.humbleui.skija.RuntimeEffect;
+            makeForColorFilter(p0: string): io.github.humbleui.skija.RuntimeEffect;
+            makeForColorFilter(p0: string, p1: io.github.humbleui.skija.RuntimeEffectOptions): io.github.humbleui.skija.RuntimeEffect;
+            makeForShader(p0: string): io.github.humbleui.skija.RuntimeEffect;
+            makeForShader(p0: string, p1: io.github.humbleui.skija.RuntimeEffectOptions): io.github.humbleui.skija.RuntimeEffect;
+            makeForBlender(p0: string): io.github.humbleui.skija.RuntimeEffect;
+            makeForBlender(p0: string, p1: io.github.humbleui.skija.RuntimeEffectOptions): io.github.humbleui.skija.RuntimeEffect;
+            _nMakeForColorFilter(p0: string, p1: boolean, p2: string): number;
+            _nMakeForShader(p0: string, p1: boolean, p2: string): number;
+            _nMakeForBlender(p0: string, p1: boolean, p2: string): number;
+            _nMakeShader(p0: number, p1: number, p2: Array<number>, p3: kotlin.FloatArray): number;
+            _nMakeColorFilter(p0: number, p1: number, p2: Array<number>): number;
+            _nMakeBlender(p0: number, p1: number, p2: Array<number>): number;
+            _nGetSource(p0: number): string;
+            _nGetUniformSize(p0: number): number;
+            _nIsShaderAllowed(p0: number): boolean;
+            _nIsColorFilterAllowed(p0: number): boolean;
+            _nIsBlenderAllowed(p0: number): boolean;
+            _nGetUniforms(p0: number): Array<io.github.humbleui.skija.RuntimeEffectUniformInfo>;
+            _nGetUniform(p0: number, p1: string): io.github.humbleui.skija.RuntimeEffectUniformInfo;
+            _nGetChildren(p0: number): Array<io.github.humbleui.skija.RuntimeEffectChildInfo>;
+            _nGetChild(p0: number, p1: string): io.github.humbleui.skija.RuntimeEffectChildInfo;
+          }
+          interface RuntimeEffect extends io.github.humbleui.skija.impl.RefCnt { 
+            makeColorFilter<T>(p0: io.github.humbleui.skija.Data | null | undefined, p1: Array<T>): io.github.humbleui.skija.ColorFilter;
+            makeColorFilter(p0: io.github.humbleui.skija.Data | null | undefined): io.github.humbleui.skija.ColorFilter;
+            makeShader<T>(p0: io.github.humbleui.skija.Data | null | undefined, p1: Array<T>, p2: io.github.humbleui.skija.Matrix33 | null | undefined): io.github.humbleui.skija.Shader;
+            makeShader<T>(p0: io.github.humbleui.skija.Data | null | undefined, p1: Array<T>): io.github.humbleui.skija.Shader;
+            makeBlender<T>(p0: io.github.humbleui.skija.Data | null | undefined, p1: Array<T>): io.github.humbleui.skija.Blender;
+            makeBlender(p0: io.github.humbleui.skija.Data | null | undefined): io.github.humbleui.skija.Blender;
+            getSource(): string;
+            getUniformSize(): number;
+            isShaderAllowed(): boolean;
+            isColorFilterAllowed(): boolean;
+            isBlenderAllowed(): boolean;
+            getUniforms(): Array<io.github.humbleui.skija.RuntimeEffectUniformInfo>;
+            getUniform(p0: string): io.github.humbleui.skija.RuntimeEffectUniformInfo | null | undefined;
+            getChildren(): Array<io.github.humbleui.skija.RuntimeEffectChildInfo>;
+            getChild(p0: string): io.github.humbleui.skija.RuntimeEffectChildInfo | null | undefined;
+          }
+          const RuntimeEffectUniformInfo: {
+            new(p0: string, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.skija.RuntimeEffectUniformInfo;
+            new(p0: string, p1: number, p2: io.github.humbleui.skija.RuntimeEffectUniformType, p3: number, p4: number): io.github.humbleui.skija.RuntimeEffectUniformInfo;
+          }
+          interface RuntimeEffectUniformInfo { 
+            _name: string;
+            _offset: number;
+            _type: io.github.humbleui.skija.RuntimeEffectUniformType;
+            _count: number;
+            _flags: number;
+            isArray(): boolean;
+            isColor(): boolean;
+            getSizeInBytes(): number;
+            getName(): string;
+            getOffset(): number;
+            getType(): io.github.humbleui.skija.RuntimeEffectUniformType;
+            getCount(): number;
+            getFlags(): number;
+          }
+          const RuntimeEffectUniformType: {
+            FLOAT: io.github.humbleui.skija.RuntimeEffectUniformType;
+            FLOAT2: io.github.humbleui.skija.RuntimeEffectUniformType;
+            FLOAT3: io.github.humbleui.skija.RuntimeEffectUniformType;
+            FLOAT4: io.github.humbleui.skija.RuntimeEffectUniformType;
+            FLOAT2X2: io.github.humbleui.skija.RuntimeEffectUniformType;
+            FLOAT3X3: io.github.humbleui.skija.RuntimeEffectUniformType;
+            FLOAT4X4: io.github.humbleui.skija.RuntimeEffectUniformType;
+            INT: io.github.humbleui.skija.RuntimeEffectUniformType;
+            INT2: io.github.humbleui.skija.RuntimeEffectUniformType;
+            INT3: io.github.humbleui.skija.RuntimeEffectUniformType;
+            INT4: io.github.humbleui.skija.RuntimeEffectUniformType;
+            _values: Array<io.github.humbleui.skija.RuntimeEffectUniformType>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.RuntimeEffectUniformType>;
+            values(): Array<io.github.humbleui.skija.RuntimeEffectUniformType>;
+            valueOf(value: string): io.github.humbleui.skija.RuntimeEffectUniformType;
+          }
+          interface RuntimeEffectUniformType extends kotlin.Enum<io.github.humbleui.skija.RuntimeEffectUniformType> { 
+          }
+          const RuntimeEffectChildInfo: {
+            new(p0: string, p1: number, p2: number): io.github.humbleui.skija.RuntimeEffectChildInfo;
+            new(p0: string, p1: io.github.humbleui.skija.RuntimeEffectChildType, p2: number): io.github.humbleui.skija.RuntimeEffectChildInfo;
+          }
+          interface RuntimeEffectChildInfo { 
+            _name: string;
+            _type: io.github.humbleui.skija.RuntimeEffectChildType;
+            _index: number;
+            getName(): string;
+            getType(): io.github.humbleui.skija.RuntimeEffectChildType;
+            getIndex(): number;
+          }
+          const RuntimeEffectChildType: {
+            SHADER: io.github.humbleui.skija.RuntimeEffectChildType;
+            COLOR_FILTER: io.github.humbleui.skija.RuntimeEffectChildType;
+            BLENDER: io.github.humbleui.skija.RuntimeEffectChildType;
+            _values: Array<io.github.humbleui.skija.RuntimeEffectChildType>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.RuntimeEffectChildType>;
+            values(): Array<io.github.humbleui.skija.RuntimeEffectChildType>;
+            valueOf(value: string): io.github.humbleui.skija.RuntimeEffectChildType;
+          }
+          interface RuntimeEffectChildType extends kotlin.Enum<io.github.humbleui.skija.RuntimeEffectChildType> { 
+          }
+          const RuntimeEffectOptions: {
+            DEFAULT: io.github.humbleui.skija.RuntimeEffectOptions;
+            new(p0: boolean): io.github.humbleui.skija.RuntimeEffectOptions;
+            new(p0: string | null | undefined): io.github.humbleui.skija.RuntimeEffectOptions;
+            new(p0: boolean, p1: string | null | undefined): io.github.humbleui.skija.RuntimeEffectOptions;
+          }
+          interface RuntimeEffectOptions { 
+            _forceUnoptimized: boolean;
+            _name: string | null | undefined;
+            isForceUnoptimized(): boolean;
+            getName(): string | null | undefined;
+          }
+          const PathEffect: {
+            new(p0: number): io.github.humbleui.skija.PathEffect;
+            makePath1D(p0: io.github.humbleui.skija.Path, p1: number, p2: number, p3: io.github.humbleui.skija.PathEffect1DStyle): io.github.humbleui.skija.PathEffect;
+            makePath2D(p0: io.github.humbleui.skija.Matrix33, p1: io.github.humbleui.skija.Path): io.github.humbleui.skija.PathEffect;
+            makeLine2D(p0: number, p1: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.PathEffect;
+            makeCorner(p0: number): io.github.humbleui.skija.PathEffect;
+            makeDash(p0: kotlin.FloatArray, p1: number): io.github.humbleui.skija.PathEffect;
+            makeDiscrete(p0: number, p1: number, p2: number): io.github.humbleui.skija.PathEffect;
+            _nMakeSum(p0: number, p1: number): number;
+            _nMakeCompose(p0: number, p1: number): number;
+            _nMakePath1D(p0: number, p1: number, p2: number, p3: number): number;
+            _nMakePath2D(p0: kotlin.FloatArray, p1: number): number;
+            _nMakeLine2D(p0: number, p1: kotlin.FloatArray): number;
+            _nMakeCorner(p0: number): number;
+            _nMakeDash(p0: kotlin.FloatArray, p1: number): number;
+            _nMakeDiscrete(p0: number, p1: number, p2: number): number;
+          }
+          interface PathEffect extends io.github.humbleui.skija.impl.RefCnt, io.github.humbleui.skija.Flattenable { 
+            makeSum(p0: io.github.humbleui.skija.PathEffect): io.github.humbleui.skija.PathEffect;
+            makeCompose(p0: io.github.humbleui.skija.PathEffect): io.github.humbleui.skija.PathEffect;
+          }
+          const PathEffect1DStyle: {
+            TRANSLATE: io.github.humbleui.skija.PathEffect1DStyle;
+            ROTATE: io.github.humbleui.skija.PathEffect1DStyle;
+            MORPH: io.github.humbleui.skija.PathEffect1DStyle;
+            _values: Array<io.github.humbleui.skija.PathEffect1DStyle>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.PathEffect1DStyle>;
+            values(): Array<io.github.humbleui.skija.PathEffect1DStyle>;
+            valueOf(value: string): io.github.humbleui.skija.PathEffect1DStyle;
+          }
+          interface PathEffect1DStyle extends kotlin.Enum<io.github.humbleui.skija.PathEffect1DStyle> { 
+          }
+          const MaskFilter: {
+            new(p0: number): io.github.humbleui.skija.MaskFilter;
+            makeBlur(p0: io.github.humbleui.skija.FilterBlurMode, p1: number): io.github.humbleui.skija.MaskFilter;
+            makeBlur(p0: io.github.humbleui.skija.FilterBlurMode, p1: number, p2: boolean): io.github.humbleui.skija.MaskFilter;
+            makeShader(p0: io.github.humbleui.skija.Shader): io.github.humbleui.skija.MaskFilter;
+            makeTable(p0: Array<number>): io.github.humbleui.skija.MaskFilter;
+            makeGamma(p0: number): io.github.humbleui.skija.MaskFilter;
+            makeClip(p0: number, p1: number): io.github.humbleui.skija.MaskFilter;
+            _nMakeBlur(p0: number, p1: number, p2: boolean): number;
+            _nMakeShader(p0: number): number;
+            _nMakeTable(p0: Array<number>): number;
+            _nMakeGamma(p0: number): number;
+            _nMakeClip(p0: number, p1: number): number;
+          }
+          interface MaskFilter extends io.github.humbleui.skija.impl.RefCnt, io.github.humbleui.skija.Flattenable { 
+          }
+          const FilterBlurMode: {
+            NORMAL: io.github.humbleui.skija.FilterBlurMode;
+            SOLID: io.github.humbleui.skija.FilterBlurMode;
+            OUTER: io.github.humbleui.skija.FilterBlurMode;
+            INNER: io.github.humbleui.skija.FilterBlurMode;
+            _values: Array<io.github.humbleui.skija.FilterBlurMode>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.FilterBlurMode>;
+            values(): Array<io.github.humbleui.skija.FilterBlurMode>;
+            valueOf(value: string): io.github.humbleui.skija.FilterBlurMode;
+          }
+          interface FilterBlurMode extends kotlin.Enum<io.github.humbleui.skija.FilterBlurMode> { 
+          }
+          const ImageFilter: {
+            new(p0: number): io.github.humbleui.skija.ImageFilter;
+            makeArithmetic(p0: number, p1: number, p2: number, p3: number, p4: boolean, p5: io.github.humbleui.skija.ImageFilter | null | undefined, p6: io.github.humbleui.skija.ImageFilter | null | undefined, p7: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeArithmetic(p0: number, p1: number, p2: number, p3: number, p4: boolean, p5: io.github.humbleui.skija.ImageFilter | null | undefined, p6: io.github.humbleui.skija.ImageFilter | null | undefined, p7: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeArithmetic(p0: number, p1: number, p2: number, p3: number, p4: boolean, p5: io.github.humbleui.skija.ImageFilter | null | undefined, p6: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeBlend(p0: io.github.humbleui.skija.BlendMode, p1: io.github.humbleui.skija.ImageFilter | null | undefined, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeBlend(p0: io.github.humbleui.skija.BlendMode, p1: io.github.humbleui.skija.ImageFilter | null | undefined, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeBlend(p0: io.github.humbleui.skija.BlendMode, p1: io.github.humbleui.skija.ImageFilter | null | undefined, p2: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeBlend(p0: io.github.humbleui.skija.Blender, p1: io.github.humbleui.skija.ImageFilter | null | undefined, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeBlend(p0: io.github.humbleui.skija.Blender, p1: io.github.humbleui.skija.ImageFilter | null | undefined, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeBlend(p0: io.github.humbleui.skija.Blender, p1: io.github.humbleui.skija.ImageFilter | null | undefined, p2: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeBlur(p0: number, p1: number, p2: io.github.humbleui.skija.FilterTileMode, p3: io.github.humbleui.skija.ImageFilter | null | undefined, p4: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeBlur(p0: number, p1: number, p2: io.github.humbleui.skija.FilterTileMode, p3: io.github.humbleui.skija.ImageFilter | null | undefined, p4: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeBlur(p0: number, p1: number, p2: io.github.humbleui.skija.FilterTileMode): io.github.humbleui.skija.ImageFilter;
+            makeColorFilter(p0: io.github.humbleui.skija.ColorFilter, p1: io.github.humbleui.skija.ImageFilter | null | undefined, p2: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeColorFilter(p0: io.github.humbleui.skija.ColorFilter, p1: io.github.humbleui.skija.ImageFilter | null | undefined, p2: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeColorFilter(p0: io.github.humbleui.skija.ColorFilter, p1: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeCompose(p0: io.github.humbleui.skija.ImageFilter, p1: io.github.humbleui.skija.ImageFilter): io.github.humbleui.skija.ImageFilter;
+            makeCrop(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.FilterTileMode, p2: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeCrop(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDisplacementMap(p0: io.github.humbleui.skija.ColorChannel, p1: io.github.humbleui.skija.ColorChannel, p2: number, p3: io.github.humbleui.skija.ImageFilter | null | undefined, p4: io.github.humbleui.skija.ImageFilter | null | undefined, p5: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDisplacementMap(p0: io.github.humbleui.skija.ColorChannel, p1: io.github.humbleui.skija.ColorChannel, p2: number, p3: io.github.humbleui.skija.ImageFilter | null | undefined, p4: io.github.humbleui.skija.ImageFilter | null | undefined, p5: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDisplacementMap(p0: io.github.humbleui.skija.ColorChannel, p1: io.github.humbleui.skija.ColorChannel, p2: number, p3: io.github.humbleui.skija.ImageFilter | null | undefined, p4: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadow(p0: number, p1: number, p2: number, p3: number, p4: io.github.humbleui.skija.Color4f, p5: io.github.humbleui.skija.ColorSpace | null | undefined, p6: io.github.humbleui.skija.ImageFilter | null | undefined, p7: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadow(p0: number, p1: number, p2: number, p3: number, p4: io.github.humbleui.skija.Color4f, p5: io.github.humbleui.skija.ColorSpace | null | undefined, p6: io.github.humbleui.skija.ImageFilter | null | undefined, p7: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadow(p0: number, p1: number, p2: number, p3: number, p4: io.github.humbleui.skija.Color4f, p5: io.github.humbleui.skija.ColorSpace | null | undefined, p6: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadow(p0: number, p1: number, p2: number, p3: number, p4: number, p5: io.github.humbleui.skija.ImageFilter | null | undefined, p6: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadow(p0: number, p1: number, p2: number, p3: number, p4: number, p5: io.github.humbleui.skija.ImageFilter | null | undefined, p6: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadow(p0: number, p1: number, p2: number, p3: number, p4: number, p5: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadow(p0: number, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.skija.ImageFilter;
+            makeDropShadowOnly(p0: number, p1: number, p2: number, p3: number, p4: io.github.humbleui.skija.Color4f, p5: io.github.humbleui.skija.ColorSpace | null | undefined, p6: io.github.humbleui.skija.ImageFilter | null | undefined, p7: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadowOnly(p0: number, p1: number, p2: number, p3: number, p4: io.github.humbleui.skija.Color4f, p5: io.github.humbleui.skija.ColorSpace | null | undefined, p6: io.github.humbleui.skija.ImageFilter | null | undefined, p7: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadowOnly(p0: number, p1: number, p2: number, p3: number, p4: io.github.humbleui.skija.Color4f, p5: io.github.humbleui.skija.ColorSpace | null | undefined, p6: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadowOnly(p0: number, p1: number, p2: number, p3: number, p4: number, p5: io.github.humbleui.skija.ImageFilter | null | undefined, p6: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadowOnly(p0: number, p1: number, p2: number, p3: number, p4: number, p5: io.github.humbleui.skija.ImageFilter | null | undefined, p6: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDropShadowOnly(p0: number, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.skija.ImageFilter;
+            makeEmpty(): io.github.humbleui.skija.ImageFilter;
+            makeImage(p0: io.github.humbleui.skija.Image | null | undefined, p1: io.github.humbleui.types.Rect, p2: io.github.humbleui.types.Rect, p3: io.github.humbleui.skija.SamplingMode): io.github.humbleui.skija.ImageFilter;
+            makeImage(p0: io.github.humbleui.skija.Image | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeMagnifier(p0: io.github.humbleui.types.Rect, p1: number, p2: number, p3: io.github.humbleui.skija.SamplingMode, p4: io.github.humbleui.skija.ImageFilter | null | undefined, p5: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeMagnifier(p0: io.github.humbleui.types.Rect, p1: number, p2: number, p3: io.github.humbleui.skija.SamplingMode, p4: io.github.humbleui.skija.ImageFilter | null | undefined, p5: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeMagnifier(p0: io.github.humbleui.types.Rect, p1: number, p2: number, p3: io.github.humbleui.skija.SamplingMode, p4: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeMatrixConvolution(p0: number, p1: number, p2: kotlin.FloatArray, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.skija.FilterTileMode, p8: boolean, p9: io.github.humbleui.skija.ImageFilter | null | undefined, p10: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeMatrixConvolution(p0: number, p1: number, p2: kotlin.FloatArray, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.skija.FilterTileMode, p8: boolean, p9: io.github.humbleui.skija.ImageFilter | null | undefined, p10: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeMatrixConvolution(p0: number, p1: number, p2: kotlin.FloatArray, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.skija.FilterTileMode, p8: boolean, p9: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeMatrixTransform(p0: io.github.humbleui.skija.Matrix33, p1: io.github.humbleui.skija.SamplingMode, p2: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeMerge(p0: Array<io.github.humbleui.skija.ImageFilter>, p1: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeMerge(p0: Array<io.github.humbleui.skija.ImageFilter>, p1: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeMerge(p0: Array<io.github.humbleui.skija.ImageFilter>): io.github.humbleui.skija.ImageFilter;
+            makeOffset(p0: number, p1: number, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeOffset(p0: number, p1: number, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeOffset(p0: number, p1: number, p2: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makePicture(p0: io.github.humbleui.skija.Picture | null | undefined, p1: io.github.humbleui.types.Rect): io.github.humbleui.skija.ImageFilter;
+            makePicture(p0: io.github.humbleui.skija.Picture | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeRuntimeShader(p0: io.github.humbleui.skija.RuntimeEffectBuilder, p1: string | null | undefined, p2: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeRuntimeShader(p0: io.github.humbleui.skija.RuntimeEffectBuilder, p1: number, p2: string | null | undefined, p3: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeRuntimeShader(p0: io.github.humbleui.skija.RuntimeEffectBuilder, p1: Array<string>, p2: Array<io.github.humbleui.skija.ImageFilter | null | undefined>): io.github.humbleui.skija.ImageFilter;
+            makeRuntimeShader(p0: io.github.humbleui.skija.RuntimeEffectBuilder, p1: number, p2: Array<string>, p3: Array<io.github.humbleui.skija.ImageFilter | null | undefined>): io.github.humbleui.skija.ImageFilter;
+            makeShader(p0: io.github.humbleui.skija.Shader, p1: boolean, p2: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeShader(p0: io.github.humbleui.skija.Shader, p1: boolean, p2: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeShader(p0: io.github.humbleui.skija.Shader, p1: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeShader(p0: io.github.humbleui.skija.Shader, p1: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeShader(p0: io.github.humbleui.skija.Shader): io.github.humbleui.skija.ImageFilter;
+            makeTile(p0: io.github.humbleui.types.Rect, p1: io.github.humbleui.types.Rect, p2: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDilate(p0: number, p1: number, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDilate(p0: number, p1: number, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDilate(p0: number, p1: number, p2: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeErode(p0: number, p1: number, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeErode(p0: number, p1: number, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeErode(p0: number, p1: number, p2: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDistantLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: io.github.humbleui.skija.ImageFilter | null | undefined, p7: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDistantLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: io.github.humbleui.skija.ImageFilter | null | undefined, p7: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDistantLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makePointLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: io.github.humbleui.skija.ImageFilter | null | undefined, p7: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makePointLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: io.github.humbleui.skija.ImageFilter | null | undefined, p7: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makePointLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeSpotLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number, p11: io.github.humbleui.skija.ImageFilter | null | undefined, p12: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeSpotLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number, p11: io.github.humbleui.skija.ImageFilter | null | undefined, p12: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeSpotLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number, p11: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDistantLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.skija.ImageFilter | null | undefined, p8: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDistantLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.skija.ImageFilter | null | undefined, p8: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeDistantLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makePointLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.skija.ImageFilter | null | undefined, p8: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makePointLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.skija.ImageFilter | null | undefined, p8: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makePointLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeSpotLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number, p11: number, p12: io.github.humbleui.skija.ImageFilter | null | undefined, p13: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeSpotLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number, p11: number, p12: io.github.humbleui.skija.ImageFilter | null | undefined, p13: io.github.humbleui.types.IRect | null | undefined): io.github.humbleui.skija.ImageFilter;
+            makeSpotLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number, p11: number, p12: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.ImageFilter;
+            _nMakeArithmetic(p0: number, p1: number, p2: number, p3: number, p4: boolean, p5: number, p6: number, p7: io.github.humbleui.types.Rect): number;
+            _nMakeBlend(p0: number, p1: number, p2: number, p3: io.github.humbleui.types.Rect): number;
+            _nMakeBlendBlender(p0: number, p1: number, p2: number, p3: io.github.humbleui.types.Rect): number;
+            _nMakeBlur(p0: number, p1: number, p2: number, p3: number, p4: io.github.humbleui.types.Rect): number;
+            _nMakeColorFilter(p0: number, p1: number, p2: io.github.humbleui.types.Rect): number;
+            _nMakeCompose(p0: number, p1: number): number;
+            _nMakeCrop(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): number;
+            _nMakeDisplacementMap(p0: number, p1: number, p2: number, p3: number, p4: number, p5: io.github.humbleui.types.Rect): number;
+            _nMakeDropShadowCS(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: io.github.humbleui.types.Rect): number;
+            _nMakeDropShadow(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: io.github.humbleui.types.Rect): number;
+            _nMakeDropShadowOnlyCS(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: io.github.humbleui.types.Rect): number;
+            _nMakeDropShadowOnly(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: io.github.humbleui.types.Rect): number;
+            _nMakeEmpty(): number;
+            _nMakeImage(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number): number;
+            _nMakeMagnifier(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: io.github.humbleui.types.Rect): number;
+            _nMakeMatrixConvolution(p0: number, p1: number, p2: kotlin.FloatArray, p3: number, p4: number, p5: number, p6: number, p7: number, p8: boolean, p9: number, p10: io.github.humbleui.types.Rect): number;
+            _nMakeMatrixTransform(p0: kotlin.FloatArray, p1: number, p2: number): number;
+            _nMakeMerge(p0: Array<number>, p1: io.github.humbleui.types.Rect): number;
+            _nMakeOffset(p0: number, p1: number, p2: number, p3: io.github.humbleui.types.Rect): number;
+            _nMakePicture(p0: number, p1: number, p2: number, p3: number, p4: number): number;
+            _nMakePicture(p0: number): number;
+            _nMakeShader(p0: number, p1: boolean, p2: io.github.humbleui.types.Rect): number;
+            _nMakeTile(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number): number;
+            _nMakeDilate(p0: number, p1: number, p2: number, p3: io.github.humbleui.types.Rect): number;
+            _nMakeErode(p0: number, p1: number, p2: number, p3: io.github.humbleui.types.Rect): number;
+            _nMakeDistantLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.types.Rect): number;
+            _nMakePointLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: io.github.humbleui.types.Rect): number;
+            _nMakeSpotLitDiffuse(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number, p11: number, p12: io.github.humbleui.types.Rect): number;
+            _nMakeDistantLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: io.github.humbleui.types.Rect): number;
+            _nMakePointLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: io.github.humbleui.types.Rect): number;
+            _nMakeSpotLitSpecular(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number, p11: number, p12: number, p13: io.github.humbleui.types.Rect): number;
+            _nMakeRuntimeShader(p0: number, p1: number, p2: Array<string>, p3: Array<number>): number;
+          }
+          interface ImageFilter extends io.github.humbleui.skija.impl.RefCnt, io.github.humbleui.skija.Flattenable { 
+          }
+          const ColorChannel: {
+            R: io.github.humbleui.skija.ColorChannel;
+            G: io.github.humbleui.skija.ColorChannel;
+            B: io.github.humbleui.skija.ColorChannel;
+            A: io.github.humbleui.skija.ColorChannel;
+            _values: Array<io.github.humbleui.skija.ColorChannel>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.ColorChannel>;
+            values(): Array<io.github.humbleui.skija.ColorChannel>;
+            valueOf(value: string): io.github.humbleui.skija.ColorChannel;
+          }
+          interface ColorChannel extends kotlin.Enum<io.github.humbleui.skija.ColorChannel> { 
+          }
+          const Picture: {
+            new(p0: number): io.github.humbleui.skija.Picture;
+            makeFromData(p0: io.github.humbleui.skija.Data): io.github.humbleui.skija.Picture | null | undefined;
+            makePlaceholder(p0: io.github.humbleui.types.Rect): io.github.humbleui.skija.Picture;
+            _nMakeFromData(p0: number): number;
+            _nPlayback(p0: number, p1: number, p2: unknown): void;
+            _nGetCullRect(p0: number): io.github.humbleui.types.Rect;
+            _nGetUniqueId(p0: number): number;
+            _nSerializeToData(p0: number): number;
+            _nMakePlaceholder(p0: number, p1: number, p2: number, p3: number): number;
+            _nGetApproximateOpCount(p0: number): number;
+            _nGetApproximateBytesUsed(p0: number): number;
+            _nMakeShader(p0: number, p1: number, p2: number, p3: number, p4: kotlin.FloatArray, p5: io.github.humbleui.types.Rect): number;
+          }
+          interface Picture extends io.github.humbleui.skija.impl.RefCnt { 
+            playback(p0: io.github.humbleui.skija.Canvas): io.github.humbleui.skija.Picture;
+            playback(p0: io.github.humbleui.skija.Canvas, p1: unknown): io.github.humbleui.skija.Picture;
+            getCullRect(): io.github.humbleui.types.Rect;
+            getUniqueId(): number;
+            serializeToData(): io.github.humbleui.skija.Data;
+            getApproximateOpCount(): number;
+            getApproximateBytesUsed(): number;
+            makeShader(p0: io.github.humbleui.skija.FilterTileMode, p1: io.github.humbleui.skija.FilterTileMode, p2: io.github.humbleui.skija.FilterMode): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.FilterTileMode, p1: io.github.humbleui.skija.FilterTileMode, p2: io.github.humbleui.skija.FilterMode, p3: io.github.humbleui.skija.Matrix33 | null | undefined): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.FilterTileMode, p1: io.github.humbleui.skija.FilterTileMode, p2: io.github.humbleui.skija.FilterMode, p3: io.github.humbleui.skija.Matrix33 | null | undefined, p4: io.github.humbleui.types.Rect | null | undefined): io.github.humbleui.skija.Shader;
+          }
+          const FilterMode: {
+            NEAREST: io.github.humbleui.skija.FilterMode;
+            LINEAR: io.github.humbleui.skija.FilterMode;
+            _values: Array<io.github.humbleui.skija.FilterMode>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.FilterMode>;
+            values(): Array<io.github.humbleui.skija.FilterMode>;
+            valueOf(value: string): io.github.humbleui.skija.FilterMode;
+          }
+          interface FilterMode extends kotlin.Enum<io.github.humbleui.skija.FilterMode> { 
+          }
+          const RuntimeEffectBuilder: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.RuntimeEffectBuilder$_FinalizerHolder;
+            new(p0: io.github.humbleui.skija.RuntimeEffect): io.github.humbleui.skija.RuntimeEffectBuilder;
+            new(p0: io.github.humbleui.skija.RuntimeEffect, p1: io.github.humbleui.skija.Data): io.github.humbleui.skija.RuntimeEffectBuilder;
+            new(p0: io.github.humbleui.skija.RuntimeEffectBuilder): io.github.humbleui.skija.RuntimeEffectBuilder;
+            _nGetFinalizer(): number;
+            _nMake(p0: number): number;
+            _nMakeWithUniforms(p0: number, p1: number): number;
+            _nMakeCopy(p0: number): number;
+            _nMakeShader(p0: number, p1: kotlin.FloatArray): number;
+            _nMakeColorFilter(p0: number): number;
+            _nMakeBlender(p0: number): number;
+            _nGetUniforms(p0: number): number;
+            _nSetUniformFloats(p0: number, p1: string, p2: kotlin.FloatArray): void;
+            _nSetUniformInts(p0: number, p1: string, p2: Array<number>): void;
+            _nSetChild(p0: number, p1: string, p2: number): void;
+          }
+          interface RuntimeEffectBuilder extends io.github.humbleui.skija.impl.Managed { 
+            _effect: io.github.humbleui.skija.RuntimeEffect;
+            _uniforms: io.github.humbleui.skija.Data;
+            makeShader(): io.github.humbleui.skija.Shader;
+            makeShader(p0: io.github.humbleui.skija.Matrix33 | null | undefined): io.github.humbleui.skija.Shader;
+            makeColorFilter(): io.github.humbleui.skija.ColorFilter;
+            makeBlender(): io.github.humbleui.skija.Blender;
+            setUniform(p0: string, p1: number): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setUniform(p0: string, p1: number, p2: number): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setUniform(p0: string, p1: number, p2: number, p3: number): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setUniform(p0: string, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setUniform(p0: string, p1: kotlin.FloatArray): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setUniform(p0: string, p1: io.github.humbleui.skija.Matrix33): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setUniform(p0: string, p1: io.github.humbleui.skija.Matrix44): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setUniform(p0: string, p1: number): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setUniform(p0: string, p1: number, p2: number): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setUniform(p0: string, p1: number, p2: number, p3: number): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setUniform(p0: string, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setUniform(p0: string, p1: Array<number>): io.github.humbleui.skija.RuntimeEffectBuilder;
+            setChild(p0: string, p1: io.github.humbleui.skija.RuntimeEffectChild | null | undefined): io.github.humbleui.skija.RuntimeEffectBuilder;
+            getEffect(): io.github.humbleui.skija.RuntimeEffect;
+            getUniforms(): io.github.humbleui.skija.Data;
+          }
+          const RuntimeEffectBuilder$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.RuntimeEffectBuilder$_FinalizerHolder;
+          }
+          interface RuntimeEffectBuilder$_FinalizerHolder { 
+          }
+          const Paint$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.Paint$_FinalizerHolder;
+          }
+          interface Paint$_FinalizerHolder { 
+          }
+          const Bitmap$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.Bitmap$_FinalizerHolder;
+          }
+          interface Bitmap$_FinalizerHolder { 
+          }
+          const SurfaceOrigin: {
+            TOP_LEFT: io.github.humbleui.skija.SurfaceOrigin;
+            BOTTOM_LEFT: io.github.humbleui.skija.SurfaceOrigin;
+            _values: Array<io.github.humbleui.skija.SurfaceOrigin>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.SurfaceOrigin>;
+            values(): Array<io.github.humbleui.skija.SurfaceOrigin>;
+            valueOf(value: string): io.github.humbleui.skija.SurfaceOrigin;
+          }
+          interface SurfaceOrigin extends kotlin.Enum<io.github.humbleui.skija.SurfaceOrigin> { 
+          }
+          const ImageWithFilterResult: {
+            new(p0: io.github.humbleui.skija.Image, p1: io.github.humbleui.types.IRect, p2: io.github.humbleui.types.IPoint): io.github.humbleui.skija.ImageWithFilterResult;
+          }
+          interface ImageWithFilterResult extends java.lang.AutoCloseable { 
+            _image: io.github.humbleui.skija.Image;
+            _subset: io.github.humbleui.types.IRect;
+            _offset: io.github.humbleui.types.IPoint;
+            getImage(): io.github.humbleui.skija.Image;
+            getSubset(): io.github.humbleui.types.IRect;
+            getOffset(): io.github.humbleui.types.IPoint;
+          }
+          const Region: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.Region$_FinalizerHolder;
+            new(): io.github.humbleui.skija.Region;
+            _nMake(): number;
+            _nGetFinalizer(): number;
+            _nSet(p0: number, p1: number): boolean;
+            _nIsEmpty(p0: number): boolean;
+            _nIsRect(p0: number): boolean;
+            _nIsComplex(p0: number): boolean;
+            _nGetBounds(p0: number): io.github.humbleui.types.IRect;
+            _nComputeRegionComplexity(p0: number): number;
+            _nGetBoundaryPath(p0: number): number;
+            _nSetEmpty(p0: number): boolean;
+            _nSetRect(p0: number, p1: number, p2: number, p3: number, p4: number): boolean;
+            _nSetRects(p0: number, p1: Array<number>): boolean;
+            _nSetRegion(p0: number, p1: number): boolean;
+            _nSetPath(p0: number, p1: number, p2: number): boolean;
+            _nIntersectsIRect(p0: number, p1: number, p2: number, p3: number, p4: number): boolean;
+            _nIntersectsRegion(p0: number, p1: number): boolean;
+            _nContainsIPoint(p0: number, p1: number, p2: number): boolean;
+            _nContainsIRect(p0: number, p1: number, p2: number, p3: number, p4: number): boolean;
+            _nContainsRegion(p0: number, p1: number): boolean;
+            _nQuickContains(p0: number, p1: number, p2: number, p3: number, p4: number): boolean;
+            _nQuickRejectIRect(p0: number, p1: number, p2: number, p3: number, p4: number): boolean;
+            _nQuickRejectRegion(p0: number, p1: number): boolean;
+            _nTranslate(p0: number, p1: number, p2: number): void;
+            _nOpIRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): boolean;
+            _nOpRegion(p0: number, p1: number, p2: number): boolean;
+            _nOpIRectRegion(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): boolean;
+            _nOpRegionIRect(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number): boolean;
+            _nOpRegionRegion(p0: number, p1: number, p2: number, p3: number): boolean;
+          }
+          interface Region extends io.github.humbleui.skija.impl.Managed { 
+            set(p0: io.github.humbleui.skija.Region): boolean;
+            isEmpty(): boolean;
+            isRect(): boolean;
+            isComplex(): boolean;
+            getBounds(): io.github.humbleui.types.IRect;
+            computeRegionComplexity(): number;
+            getBoundaryPath(): io.github.humbleui.skija.Path;
+            setEmpty(): boolean;
+            setRect(p0: io.github.humbleui.types.IRect): boolean;
+            setRects(p0: Array<io.github.humbleui.types.IRect>): boolean;
+            setRegion(p0: io.github.humbleui.skija.Region): boolean;
+            setPath(p0: io.github.humbleui.skija.Path, p1: io.github.humbleui.skija.Region): boolean;
+            intersects(p0: io.github.humbleui.types.IRect): boolean;
+            intersects(p0: io.github.humbleui.skija.Region): boolean;
+            contains(p0: number, p1: number): boolean;
+            contains(p0: io.github.humbleui.types.IRect): boolean;
+            contains(p0: io.github.humbleui.skija.Region): boolean;
+            quickContains(p0: io.github.humbleui.types.IRect): boolean;
+            quickReject(p0: io.github.humbleui.types.IRect): boolean;
+            quickReject(p0: io.github.humbleui.skija.Region): boolean;
+            translate(p0: number, p1: number): void;
+            op(p0: io.github.humbleui.types.IRect, p1: io.github.humbleui.skija.RegionOp): boolean;
+            op(p0: io.github.humbleui.skija.Region, p1: io.github.humbleui.skija.RegionOp): boolean;
+            op(p0: io.github.humbleui.types.IRect, p1: io.github.humbleui.skija.Region, p2: io.github.humbleui.skija.RegionOp): boolean;
+            op(p0: io.github.humbleui.skija.Region, p1: io.github.humbleui.types.IRect, p2: io.github.humbleui.skija.RegionOp): boolean;
+            op(p0: io.github.humbleui.skija.Region, p1: io.github.humbleui.skija.Region, p2: io.github.humbleui.skija.RegionOp): boolean;
+          }
+          const RegionOp: {
+            DIFFERENCE: io.github.humbleui.skija.RegionOp;
+            INTERSECT: io.github.humbleui.skija.RegionOp;
+            UNION: io.github.humbleui.skija.RegionOp;
+            XOR: io.github.humbleui.skija.RegionOp;
+            REVERSE_DIFFERENCE: io.github.humbleui.skija.RegionOp;
+            REPLACE: io.github.humbleui.skija.RegionOp;
+            _values: Array<io.github.humbleui.skija.RegionOp>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.RegionOp>;
+            values(): Array<io.github.humbleui.skija.RegionOp>;
+            valueOf(value: string): io.github.humbleui.skija.RegionOp;
+          }
+          interface RegionOp extends kotlin.Enum<io.github.humbleui.skija.RegionOp> { 
+          }
+          const Region$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.Region$_FinalizerHolder;
+          }
+          interface Region$_FinalizerHolder { 
+          }
+          const Font: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.Font$_FinalizerHolder;
+            new(p0: number): io.github.humbleui.skija.Font;
+            new(p0: number, p1: boolean): io.github.humbleui.skija.Font;
+            new(): io.github.humbleui.skija.Font;
+            new(p0: io.github.humbleui.skija.Typeface | null | undefined): io.github.humbleui.skija.Font;
+            new(p0: io.github.humbleui.skija.Typeface | null | undefined, p1: number): io.github.humbleui.skija.Font;
+            new(p0: io.github.humbleui.skija.Typeface | null | undefined, p1: number, p2: number, p3: number): io.github.humbleui.skija.Font;
+            makeClone(p0: number): io.github.humbleui.skija.Font;
+            _nGetFinalizer(): number;
+            _nMakeDefault(): number;
+            _nMakeTypeface(p0: number): number;
+            _nMakeTypefaceSize(p0: number, p1: number): number;
+            _nMakeTypefaceSizeScaleSkew(p0: number, p1: number, p2: number, p3: number): number;
+            _nMakeClone(p0: number): number;
+            _nEquals(p0: number, p1: number): boolean;
+            _nIsAutoHintingForced(p0: number): boolean;
+            _nAreBitmapsEmbedded(p0: number): boolean;
+            _nIsSubpixel(p0: number): boolean;
+            _nAreMetricsLinear(p0: number): boolean;
+            _nIsEmboldened(p0: number): boolean;
+            _nIsBaselineSnapped(p0: number): boolean;
+            _nSetAutoHintingForced(p0: number, p1: boolean): void;
+            _nSetBitmapsEmbedded(p0: number, p1: boolean): void;
+            _nSetSubpixel(p0: number, p1: boolean): void;
+            _nSetMetricsLinear(p0: number, p1: boolean): void;
+            _nSetEmboldened(p0: number, p1: boolean): void;
+            _nSetBaselineSnapped(p0: number, p1: boolean): void;
+            _nGetEdging(p0: number): number;
+            _nSetEdging(p0: number, p1: number): void;
+            _nGetHinting(p0: number): number;
+            _nSetHinting(p0: number, p1: number): void;
+            _nGetTypeface(p0: number): number;
+            _nGetSize(p0: number): number;
+            _nGetScaleX(p0: number): number;
+            _nGetSkewX(p0: number): number;
+            _nSetTypeface(p0: number, p1: number): void;
+            _nSetSize(p0: number, p1: number): void;
+            _nSetScaleX(p0: number, p1: number): void;
+            _nSetSkewX(p0: number, p1: number): void;
+            _nGetStringGlyphs(p0: number, p1: string): Array<number>;
+            _nGetUTF32Glyph(p0: number, p1: number): number;
+            _nGetUTF32Glyphs(p0: number, p1: Array<number>): Array<number>;
+            _nGetStringGlyphsCount(p0: number, p1: string): number;
+            _nMeasureText(p0: number, p1: string, p2: number): io.github.humbleui.types.Rect;
+            _nMeasureTextWidth(p0: number, p1: string, p2: number): number;
+            _nGetWidths(p0: number, p1: Array<number>): kotlin.FloatArray;
+            _nGetBounds(p0: number, p1: Array<number>, p2: number): Array<io.github.humbleui.types.Rect>;
+            _nGetPositions(p0: number, p1: Array<number>, p2: number, p3: number): Array<io.github.humbleui.types.Point>;
+            _nGetXPositions(p0: number, p1: Array<number>, p2: number): kotlin.FloatArray;
+            _nGetPath(p0: number, p1: number): number;
+            _nGetPaths(p0: number, p1: Array<number>): Array<io.github.humbleui.skija.Path>;
+            _nGetMetrics(p0: number): io.github.humbleui.skija.FontMetrics;
+            _nGetSpacing(p0: number): number;
+          }
+          interface Font extends io.github.humbleui.skija.impl.Managed { 
+            _metrics: io.github.humbleui.skija.FontMetrics;
+            _spacing: number;
+            _resetMetrics(): void;
+            isAutoHintingForced(): boolean;
+            areBitmapsEmbedded(): boolean;
+            isSubpixel(): boolean;
+            areMetricsLinear(): boolean;
+            isEmboldened(): boolean;
+            isBaselineSnapped(): boolean;
+            setAutoHintingForced(p0: boolean): io.github.humbleui.skija.Font;
+            setBitmapsEmbedded(p0: boolean): io.github.humbleui.skija.Font;
+            setSubpixel(p0: boolean): io.github.humbleui.skija.Font;
+            setMetricsLinear(p0: boolean): io.github.humbleui.skija.Font;
+            setEmboldened(p0: boolean): io.github.humbleui.skija.Font;
+            setBaselineSnapped(p0: boolean): io.github.humbleui.skija.Font;
+            getEdging(): io.github.humbleui.skija.FontEdging;
+            setEdging(p0: io.github.humbleui.skija.FontEdging): io.github.humbleui.skija.Font;
+            getHinting(): io.github.humbleui.skija.FontHinting;
+            setHinting(p0: io.github.humbleui.skija.FontHinting): io.github.humbleui.skija.Font;
+            makeWithSize(p0: number): io.github.humbleui.skija.Font;
+            getTypeface(): io.github.humbleui.skija.Typeface | null | undefined;
+            getSize(): number;
+            getScaleX(): number;
+            getSkewX(): number;
+            setTypeface(p0: io.github.humbleui.skija.Typeface | null | undefined): io.github.humbleui.skija.Font;
+            setSize(p0: number): io.github.humbleui.skija.Font;
+            setScaleX(p0: number): io.github.humbleui.skija.Font;
+            setSkewX(p0: number): io.github.humbleui.skija.Font;
+            getStringGlyphs(p0: string): Array<number>;
+            getUTF32Glyphs(p0: Array<number>): Array<number>;
+            getUTF32Glyph(p0: number): number;
+            getStringGlyphsCount(p0: string): number;
+            measureText(p0: string): io.github.humbleui.types.Rect;
+            measureText(p0: string, p1: io.github.humbleui.skija.Paint): io.github.humbleui.types.Rect;
+            measureTextWidth(p0: string): number;
+            measureTextWidth(p0: string, p1: io.github.humbleui.skija.Paint): number;
+            getWidths(p0: Array<number>): kotlin.FloatArray;
+            getBounds(p0: Array<number>): Array<io.github.humbleui.types.Rect>;
+            getBounds(p0: Array<number>, p1: io.github.humbleui.skija.Paint): Array<io.github.humbleui.types.Rect>;
+            getPositions(p0: Array<number>): Array<io.github.humbleui.types.Point>;
+            getPositions(p0: Array<number>, p1: io.github.humbleui.types.Point): Array<io.github.humbleui.types.Point>;
+            getXPositions(p0: Array<number>): kotlin.FloatArray;
+            getXPositions(p0: Array<number>, p1: number): kotlin.FloatArray;
+            getPath(p0: number): io.github.humbleui.skija.Path | null | undefined;
+            getPaths(p0: Array<number>): Array<io.github.humbleui.skija.Path>;
+            getMetrics(): io.github.humbleui.skija.FontMetrics;
+            getSpacing(): number;
+          }
+          const FontMetrics: {
+            new(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number, p8: number, p9: number, p10: number, p11: number | null | undefined, p12: number | null | undefined, p13: number | null | undefined, p14: number | null | undefined): io.github.humbleui.skija.FontMetrics;
+          }
+          interface FontMetrics { 
+            _top: number;
+            _ascent: number;
+            _descent: number;
+            _bottom: number;
+            _leading: number;
+            _avgCharWidth: number;
+            _maxCharWidth: number;
+            _xMin: number;
+            _xMax: number;
+            _xHeight: number;
+            _capHeight: number;
+            _underlineThickness: number | null | undefined;
+            _underlinePosition: number | null | undefined;
+            _strikeoutThickness: number | null | undefined;
+            _strikeoutPosition: number | null | undefined;
+            getHeight(): number;
+            getTop(): number;
+            getAscent(): number;
+            getDescent(): number;
+            getBottom(): number;
+            getLeading(): number;
+            getAvgCharWidth(): number;
+            getMaxCharWidth(): number;
+            getXMin(): number;
+            getXMax(): number;
+            getXHeight(): number;
+            getCapHeight(): number;
+            getUnderlineThickness(): number | null | undefined;
+            getUnderlinePosition(): number | null | undefined;
+            getStrikeoutThickness(): number | null | undefined;
+            getStrikeoutPosition(): number | null | undefined;
+          }
+          const FontEdging: {
+            ALIAS: io.github.humbleui.skija.FontEdging;
+            ANTI_ALIAS: io.github.humbleui.skija.FontEdging;
+            SUBPIXEL_ANTI_ALIAS: io.github.humbleui.skija.FontEdging;
+            _values: Array<io.github.humbleui.skija.FontEdging>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.FontEdging>;
+            values(): Array<io.github.humbleui.skija.FontEdging>;
+            valueOf(value: string): io.github.humbleui.skija.FontEdging;
+          }
+          interface FontEdging extends kotlin.Enum<io.github.humbleui.skija.FontEdging> { 
+          }
+          const FontHinting: {
+            NONE: io.github.humbleui.skija.FontHinting;
+            SLIGHT: io.github.humbleui.skija.FontHinting;
+            NORMAL: io.github.humbleui.skija.FontHinting;
+            FULL: io.github.humbleui.skija.FontHinting;
+            _values: Array<io.github.humbleui.skija.FontHinting>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.FontHinting>;
+            values(): Array<io.github.humbleui.skija.FontHinting>;
+            valueOf(value: string): io.github.humbleui.skija.FontHinting;
+          }
+          interface FontHinting extends kotlin.Enum<io.github.humbleui.skija.FontHinting> { 
+          }
+          const Typeface: {
+            new(p0: number): io.github.humbleui.skija.Typeface;
+            _nGetFontStyle(p0: number): number;
+            _nIsFixedPitch(p0: number): boolean;
+            _nGetVariations(p0: number): Array<io.github.humbleui.skija.FontVariation>;
+            _nGetVariationAxes(p0: number): Array<unknown>;
+            _nGetUniqueId(p0: number): number;
+            _nEquals(p0: number, p1: number): boolean;
+            _nMakeFromName(p0: string, p1: number): number;
+            _nMakeFromFile(p0: string, p1: number): number;
+            _nMakeFromData(p0: number, p1: number): number;
+            _nMakeClone(p0: number, p1: io.github.humbleui.skija.FontArguments): number;
+            _nGetUTF32Glyphs(p0: number, p1: Array<number>): Array<number>;
+            _nGetUTF32Glyph(p0: number, p1: number): number;
+            _nGetGlyphsCount(p0: number): number;
+            _nGetTablesCount(p0: number): number;
+            _nGetTableTags(p0: number): Array<number>;
+            _nGetTableSize(p0: number, p1: number): number;
+            _nGetTableData(p0: number, p1: number): number;
+            _nGetUnitsPerEm(p0: number): number;
+            _nGetKerningPairAdjustments(p0: number, p1: Array<number>): Array<number>;
+            _nGetFamilyNames(p0: number): Array<unknown>;
+            _nGetFamilyName(p0: number): string;
+            _nGetBounds(p0: number): io.github.humbleui.types.Rect;
+            _nOpenStream(p0: number, p1: Array<number>): number;
+          }
+          interface Typeface extends io.github.humbleui.skija.impl.RefCnt { 
+            getFontStyle(): io.github.humbleui.skija.FontStyle;
+            isBold(): boolean;
+            isItalic(): boolean;
+            isFixedPitch(): boolean;
+            getVariations(): Array<io.github.humbleui.skija.FontVariation | null | undefined>;
+            getVariationAxes(): Array<unknown>;
+            getUniqueId(): number;
+            makeClone(p0: io.github.humbleui.skija.FontVariation): io.github.humbleui.skija.Typeface;
+            makeClone(p0: Array<io.github.humbleui.skija.FontVariation>): io.github.humbleui.skija.Typeface;
+            makeClone(p0: io.github.humbleui.skija.FontArguments): io.github.humbleui.skija.Typeface;
+            getStringGlyphs(p0: string): Array<number>;
+            getUTF32Glyphs(p0: Array<number>): Array<number>;
+            getUTF32Glyph(p0: number): number;
+            getGlyphsCount(): number;
+            getTablesCount(): number;
+            getTableTags(): Array<string>;
+            getTableSize(p0: string): number;
+            getTableData(p0: string): io.github.humbleui.skija.Data | null | undefined;
+            getUnitsPerEm(): number;
+            getKerningPairAdjustments(p0: Array<number>): Array<number>;
+            getFamilyNames(): Array<unknown>;
+            getFamilyName(): string;
+            getBounds(): io.github.humbleui.types.Rect;
+            openStream(): io.github.humbleui.skija.StreamAsset;
+            openStream(p0: Array<number>): io.github.humbleui.skija.StreamAsset;
+          }
+          const FontStyle: {
+            NORMAL: io.github.humbleui.skija.FontStyle;
+            BOLD: io.github.humbleui.skija.FontStyle;
+            ITALIC: io.github.humbleui.skija.FontStyle;
+            BOLD_ITALIC: io.github.humbleui.skija.FontStyle;
+            new(p0: number, p1: number, p2: io.github.humbleui.skija.FontSlant): io.github.humbleui.skija.FontStyle;
+            new(p0: number): io.github.humbleui.skija.FontStyle;
+          }
+          interface FontStyle { 
+            _value: number;
+            getWeight(): number;
+            withWeight(p0: number): io.github.humbleui.skija.FontStyle;
+            getWidth(): number;
+            withWidth(p0: number): io.github.humbleui.skija.FontStyle;
+            getSlant(): io.github.humbleui.skija.FontSlant;
+            withSlant(p0: io.github.humbleui.skija.FontSlant): io.github.humbleui.skija.FontStyle;
+          }
+          const FontSlant: {
+            UPRIGHT: io.github.humbleui.skija.FontSlant;
+            ITALIC: io.github.humbleui.skija.FontSlant;
+            OBLIQUE: io.github.humbleui.skija.FontSlant;
+            _values: Array<io.github.humbleui.skija.FontSlant>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.FontSlant>;
+            values(): Array<io.github.humbleui.skija.FontSlant>;
+            valueOf(value: string): io.github.humbleui.skija.FontSlant;
+          }
+          interface FontSlant extends kotlin.Enum<io.github.humbleui.skija.FontSlant> { 
+          }
+          const FontVariation: {
+            EMPTY: Array<io.github.humbleui.skija.FontVariation>;
+            _splitPattern: java.util.regex.Pattern;
+            _variationPattern: java.util.regex.Pattern;
+            new(p0: string, p1: number): io.github.humbleui.skija.FontVariation;
+            new(p0: number, p1: number): io.github.humbleui.skija.FontVariation;
+            parseOne(p0: string): io.github.humbleui.skija.FontVariation;
+            parse(p0: string): Array<io.github.humbleui.skija.FontVariation>;
+          }
+          interface FontVariation { 
+            _tag: number;
+            _value: number;
+            getTag(): string;
+            getValue(): number;
+          }
+          const FontArguments: {
+            DEFAULT: io.github.humbleui.skija.FontArguments;
+            new(p0: number, p1: Array<io.github.humbleui.skija.FontVariation>, p2: number, p3: Array<unknown>): io.github.humbleui.skija.FontArguments;
+          }
+          interface FontArguments { 
+            _collectionIndex: number;
+            _variations: Array<io.github.humbleui.skija.FontVariation>;
+            _paletteIndex: number;
+            _paletteOverrides: Array<unknown>;
+            getCollectionIndex(): number;
+            getVariations(): Array<io.github.humbleui.skija.FontVariation>;
+            getPaletteIndex(): number;
+            getPaletteOverrides(): Array<unknown>;
+            withCollectionIndex(p0: number): io.github.humbleui.skija.FontArguments;
+            withVariations(p0: Array<io.github.humbleui.skija.FontVariation>): io.github.humbleui.skija.FontArguments;
+            withPaletteIndex(p0: number): io.github.humbleui.skija.FontArguments;
+            withPaletteOverrides(p0: Array<unknown>): io.github.humbleui.skija.FontArguments;
+          }
+          const StreamAsset: {
+            new(p0: number): io.github.humbleui.skija.StreamAsset;
+            _nGetFinalizer(): number;
+            _nIsAtEnd(p0: number): boolean;
+            _nRead(p0: number, p1: Array<number>, p2: number): number;
+            _nPeek(p0: number, p1: Array<number>, p2: number): number;
+            _nSkip(p0: number, p1: number): number;
+            _nRewind(p0: number): boolean;
+            _nDuplicate(p0: number): number;
+            _nFork(p0: number): number;
+            _nHasPosition(p0: number): boolean;
+            _nGetPosition(p0: number): number;
+            _nSeek(p0: number, p1: number): boolean;
+            _nMove(p0: number, p1: number): boolean;
+            _nHasLength(p0: number): boolean;
+            _nGetLength(p0: number): number;
+            _nGetMemoryBase(p0: number): number;
+          }
+          interface StreamAsset extends io.github.humbleui.skija.impl.Managed { 
+            isAtEnd(): boolean;
+            read(p0: Array<number>, p1: number): number;
+            peek(p0: Array<number>, p1: number): number;
+            skip(p0: number): number;
+            rewind(): boolean;
+            duplicate(): io.github.humbleui.skija.StreamAsset | null | undefined;
+            fork(): io.github.humbleui.skija.StreamAsset | null | undefined;
+            hasPosition(): boolean;
+            getPosition(): number;
+            seek(p0: number): boolean;
+            move(p0: number): boolean;
+            hasLength(): boolean;
+            getLength(): number;
+            getMemoryBase(): number;
+          }
+          const Font$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.Font$_FinalizerHolder;
+          }
+          interface Font$_FinalizerHolder { 
+          }
+          const TextBlob: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.TextBlob$_FinalizerHolder;
+            new(p0: number): io.github.humbleui.skija.TextBlob;
+            makeFromPosH(p0: Array<number>, p1: kotlin.FloatArray, p2: number, p3: io.github.humbleui.skija.Font): io.github.humbleui.skija.TextBlob;
+            makeFromPos(p0: Array<number>, p1: Array<io.github.humbleui.types.Point>, p2: io.github.humbleui.skija.Font): io.github.humbleui.skija.TextBlob;
+            makeFromRSXform(p0: Array<number>, p1: Array<unknown>, p2: io.github.humbleui.skija.Font): io.github.humbleui.skija.TextBlob;
+            makeFromData(p0: io.github.humbleui.skija.Data): io.github.humbleui.skija.TextBlob | null | undefined;
+            _nGetFinalizer(): number;
+            _nBounds(p0: number): io.github.humbleui.types.Rect;
+            _nGetUniqueId(p0: number): number;
+            _nGetIntercepts(p0: number, p1: number, p2: number, p3: number): kotlin.FloatArray;
+            _nMakeFromPosH(p0: Array<number>, p1: kotlin.FloatArray, p2: number, p3: number): number;
+            _nMakeFromPos(p0: Array<number>, p1: kotlin.FloatArray, p2: number): number;
+            _nMakeFromRSXform(p0: Array<number>, p1: kotlin.FloatArray, p2: number): number;
+            _nSerializeToData(p0: number): number;
+            _nMakeFromData(p0: number): number;
+            _nGetGlyphs(p0: number): Array<number>;
+            _nGetPositions(p0: number): kotlin.FloatArray;
+            _nGetClusters(p0: number): Array<number>;
+            _nGetTightBounds(p0: number): io.github.humbleui.types.Rect;
+            _nGetBlockBounds(p0: number): io.github.humbleui.types.Rect;
+            _nGetFirstBaseline(p0: number): number;
+            _nGetLastBaseline(p0: number): number;
+          }
+          interface TextBlob extends io.github.humbleui.skija.impl.Managed { 
+            getBounds(): io.github.humbleui.types.Rect;
+            getUniqueId(): number;
+            getIntercepts(p0: number, p1: number): kotlin.FloatArray;
+            getIntercepts(p0: number, p1: number, p2: io.github.humbleui.skija.Paint | null | undefined): kotlin.FloatArray;
+            serializeToData(): io.github.humbleui.skija.Data;
+            getGlyphs(): Array<number>;
+            getPositions(): kotlin.FloatArray;
+            getClusters(): Array<number>;
+            getTightBounds(): io.github.humbleui.types.Rect;
+            getBlockBounds(): io.github.humbleui.types.Rect;
+            getFirstBaseline(): number;
+            getLastBaseline(): number;
+          }
+          const TextBlob$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.TextBlob$_FinalizerHolder;
+          }
+          interface TextBlob$_FinalizerHolder { 
+          }
+          const TextLine: {
+            _FinalizerHolder: typeof io.github.humbleui.skija.TextLine$_FinalizerHolder;
+            new(p0: number): io.github.humbleui.skija.TextLine;
+            make(p0: string, p1: io.github.humbleui.skija.Font): io.github.humbleui.skija.TextLine;
+            make(p0: string, p1: io.github.humbleui.skija.Font, p2: io.github.humbleui.skija.shaper.ShapingOptions): io.github.humbleui.skija.TextLine;
+            _nGetFinalizer(): number;
+            _nGetAscent(p0: number): number;
+            _nGetCapHeight(p0: number): number;
+            _nGetXHeight(p0: number): number;
+            _nGetDescent(p0: number): number;
+            _nGetLeading(p0: number): number;
+            _nGetWidth(p0: number): number;
+            _nGetHeight(p0: number): number;
+            _nGetTextBlob(p0: number): number;
+            _nGetGlyphs(p0: number): Array<number>;
+            _nGetPositions(p0: number): kotlin.FloatArray;
+            _nGetRunPositions(p0: number): kotlin.FloatArray;
+            _nGetBreakPositions(p0: number): kotlin.FloatArray;
+            _nGetBreakOffsets(p0: number): Array<number>;
+            _nGetOffsetAtCoord(p0: number, p1: number): number;
+            _nGetLeftOffsetAtCoord(p0: number, p1: number): number;
+            _nGetCoordAtOffset(p0: number, p1: number): number;
+          }
+          interface TextLine extends io.github.humbleui.skija.impl.Managed { 
+            getAscent(): number;
+            getCapHeight(): number;
+            getXHeight(): number;
+            getDescent(): number;
+            getLeading(): number;
+            getWidth(): number;
+            getHeight(): number;
+            getTextBlob(): io.github.humbleui.skija.TextBlob | null | undefined;
+            getGlyphs(): Array<number>;
+            getPositions(): kotlin.FloatArray;
+            getOffsetAtCoord(p0: number): number;
+            getLeftOffsetAtCoord(p0: number): number;
+            getCoordAtOffset(p0: number): number;
+            getIntercepts(p0: number, p1: number): kotlin.FloatArray;
+            getIntercepts(p0: number, p1: number, p2: io.github.humbleui.skija.Paint | null | undefined): kotlin.FloatArray;
+          }
+          const FontMgr: {
+            _DefaultHolder: typeof io.github.humbleui.skija.FontMgr$_DefaultHolder;
+            new(p0: number): io.github.humbleui.skija.FontMgr;
+            new(p0: number, p1: boolean): io.github.humbleui.skija.FontMgr;
+            useSystemRenderingParams(p0: boolean): void;
+            getDefault(): io.github.humbleui.skija.FontMgr;
+            _nGetFamiliesCount(p0: number): number;
+            _nGetFamilyName(p0: number, p1: number): string;
+            _nMakeStyleSet(p0: number, p1: number): number;
+            _nMatchFamily(p0: number, p1: string): number;
+            _nMatchFamilyStyle(p0: number, p1: string, p2: number): number;
+            _nMatchFamilyStyleCharacter(p0: number, p1: string, p2: number, p3: Array<string>, p4: number): number;
+            _nMakeFromFile(p0: number, p1: string, p2: number): number;
+            _nMakeFromData(p0: number, p1: number, p2: number): number;
+            _nUseSystemRenderingParams(p0: number): void;
+            _nDefault(): number;
+          }
+          interface FontMgr extends io.github.humbleui.skija.impl.RefCnt { 
+            getFamiliesCount(): number;
+            getFamilyName(p0: number): string;
+            makeStyleSet(p0: number): io.github.humbleui.skija.FontStyleSet;
+            matchFamily(p0: string | null | undefined): io.github.humbleui.skija.FontStyleSet;
+            matchFamilyStyle(p0: string | null | undefined, p1: io.github.humbleui.skija.FontStyle): io.github.humbleui.skija.Typeface | null | undefined;
+            matchFamiliesStyle(p0: Array<string>, p1: io.github.humbleui.skija.FontStyle): io.github.humbleui.skija.Typeface | null | undefined;
+            matchFamilyStyleCharacter(p0: string | null | undefined, p1: io.github.humbleui.skija.FontStyle, p2: Array<string | null | undefined>, p3: number): io.github.humbleui.skija.Typeface;
+            matchFamiliesStyleCharacter(p0: Array<string>, p1: io.github.humbleui.skija.FontStyle, p2: Array<string | null | undefined>, p3: number): io.github.humbleui.skija.Typeface | null | undefined;
+            makeFromFile(p0: string): io.github.humbleui.skija.Typeface | null | undefined;
+            makeFromFile(p0: string, p1: number): io.github.humbleui.skija.Typeface | null | undefined;
+            makeFromData(p0: io.github.humbleui.skija.Data): io.github.humbleui.skija.Typeface | null | undefined;
+            makeFromData(p0: io.github.humbleui.skija.Data, p1: number): io.github.humbleui.skija.Typeface | null | undefined;
+          }
+          const FontStyleSet: {
+            new(p0: number): io.github.humbleui.skija.FontStyleSet;
+            makeEmpty(): io.github.humbleui.skija.FontStyleSet;
+            _nMakeEmpty(): number;
+            _nCount(p0: number): number;
+            _nGetStyle(p0: number, p1: number): number;
+            _nGetStyleName(p0: number, p1: number): string;
+            _nGetTypeface(p0: number, p1: number): number;
+            _nMatchStyle(p0: number, p1: number): number;
+          }
+          interface FontStyleSet extends io.github.humbleui.skija.impl.RefCnt { 
+            count(): number;
+            getStyle(p0: number): io.github.humbleui.skija.FontStyle;
+            getStyleName(p0: number): string;
+            getTypeface(p0: number): io.github.humbleui.skija.Typeface;
+            matchStyle(p0: io.github.humbleui.skija.FontStyle): io.github.humbleui.skija.Typeface;
+          }
+          const FontMgr$_DefaultHolder: {
+            INSTANCE: io.github.humbleui.skija.FontMgr;
+            new(): io.github.humbleui.skija.FontMgr$_DefaultHolder;
+          }
+          interface FontMgr$_DefaultHolder { 
+          }
+          const TextLine$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.TextLine$_FinalizerHolder;
+          }
+          interface TextLine$_FinalizerHolder { 
+          }
+          const Drawable: {
+            new(): io.github.humbleui.skija.Drawable;
+            _nMake(): number;
+            _nDraw(p0: number, p1: number, p2: kotlin.FloatArray): void;
+            _nMakePictureSnapshot(p0: number): number;
+            _nGetGenerationId(p0: number): number;
+            _nNotifyDrawingChanged(p0: number): void;
+          }
+          interface Drawable extends io.github.humbleui.skija.impl.RefCnt, io.github.humbleui.skija.Flattenable { 
+            _bounds: io.github.humbleui.types.Rect;
+            draw(p0: io.github.humbleui.skija.Canvas): io.github.humbleui.skija.Drawable;
+            draw(p0: io.github.humbleui.skija.Canvas, p1: number, p2: number): io.github.humbleui.skija.Drawable;
+            draw(p0: io.github.humbleui.skija.Canvas, p1: io.github.humbleui.skija.Matrix33 | null | undefined): io.github.humbleui.skija.Drawable;
+            makePictureSnapshot(): io.github.humbleui.skija.Picture;
+            getGenerationId(): number;
+            getBounds(): io.github.humbleui.types.Rect;
+            notifyDrawingChanged(): io.github.humbleui.skija.Drawable;
+            onDraw(p0: io.github.humbleui.skija.Canvas): void;
+            onGetBounds(): io.github.humbleui.types.Rect;
+            _onDraw(p0: number): void;
+            _nInit(p0: number): void;
+          }
+          const ClipMode: {
+            DIFFERENCE: io.github.humbleui.skija.ClipMode;
+            INTERSECT: io.github.humbleui.skija.ClipMode;
+            _values: Array<io.github.humbleui.skija.ClipMode>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.ClipMode>;
+            values(): Array<io.github.humbleui.skija.ClipMode>;
+            valueOf(value: string): io.github.humbleui.skija.ClipMode;
+          }
+          interface ClipMode extends kotlin.Enum<io.github.humbleui.skija.ClipMode> { 
+          }
+          const SaveLayerRec: {
+            new(): io.github.humbleui.skija.SaveLayerRec;
+            new(p0: io.github.humbleui.types.Rect | null | undefined, p1: io.github.humbleui.skija.Paint | null | undefined): io.github.humbleui.skija.SaveLayerRec;
+            new(p0: io.github.humbleui.types.Rect | null | undefined, p1: io.github.humbleui.skija.Paint | null | undefined, p2: io.github.humbleui.skija.SaveLayerRecFlag): io.github.humbleui.skija.SaveLayerRec;
+            new(p0: io.github.humbleui.types.Rect | null | undefined, p1: io.github.humbleui.skija.Paint | null | undefined, p2: io.github.humbleui.skija.ImageFilter | null | undefined): io.github.humbleui.skija.SaveLayerRec;
+            new(p0: io.github.humbleui.types.Rect | null | undefined, p1: io.github.humbleui.skija.Paint | null | undefined, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.skija.SaveLayerRecFlag): io.github.humbleui.skija.SaveLayerRec;
+            new(p0: io.github.humbleui.types.Rect | null | undefined, p1: io.github.humbleui.skija.Paint | null | undefined, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.skija.ColorSpace | null | undefined, p4: io.github.humbleui.skija.SaveLayerRecFlag): io.github.humbleui.skija.SaveLayerRec;
+            new(p0: io.github.humbleui.types.Rect | null | undefined, p1: io.github.humbleui.skija.Paint | null | undefined, p2: io.github.humbleui.skija.ImageFilter | null | undefined, p3: io.github.humbleui.skija.FilterTileMode, p4: io.github.humbleui.skija.ColorSpace | null | undefined, p5: io.github.humbleui.skija.SaveLayerRecFlag): io.github.humbleui.skija.SaveLayerRec;
+          }
+          interface SaveLayerRec { 
+            _bounds: io.github.humbleui.types.Rect | null | undefined;
+            _paint: io.github.humbleui.skija.Paint | null | undefined;
+            _backdrop: io.github.humbleui.skija.ImageFilter | null | undefined;
+            _tileMode: io.github.humbleui.skija.FilterTileMode;
+            _colorSpace: io.github.humbleui.skija.ColorSpace | null | undefined;
+            _flags: number;
+            getBounds(): io.github.humbleui.types.Rect | null | undefined;
+            getPaint(): io.github.humbleui.skija.Paint | null | undefined;
+            getBackdrop(): io.github.humbleui.skija.ImageFilter | null | undefined;
+            getTileMode(): io.github.humbleui.skija.FilterTileMode;
+            getColorSpace(): io.github.humbleui.skija.ColorSpace | null | undefined;
+            getFlags(): number;
+          }
+          const SaveLayerRecFlag: {
+            PRESERVE_LCD_TEXT: io.github.humbleui.skija.SaveLayerRecFlag;
+            INIT_WITH_PREVIOUS: io.github.humbleui.skija.SaveLayerRecFlag;
+            F16_COLOR_TYPE: io.github.humbleui.skija.SaveLayerRecFlag;
+            _values: Array<io.github.humbleui.skija.SaveLayerRecFlag>;
+            entries: kotlin.enums.EnumEntries<io.github.humbleui.skija.SaveLayerRecFlag>;
+            values(): Array<io.github.humbleui.skija.SaveLayerRecFlag>;
+            valueOf(value: string): io.github.humbleui.skija.SaveLayerRecFlag;
+          }
+          interface SaveLayerRecFlag extends kotlin.Enum<io.github.humbleui.skija.SaveLayerRecFlag> { 
+            _flag: number;
+          }
+          const Canvas$_FinalizerHolder: {
+            PTR: number;
+            new(): io.github.humbleui.skija.Canvas$_FinalizerHolder;
+          }
+          interface Canvas$_FinalizerHolder { 
+          }
+        }
+        namespace types {
+          const Point: {
+            ZERO: io.github.humbleui.types.Point;
+            new(p0: number, p1: number): io.github.humbleui.types.Point;
+            flattenArray(p0: Array<io.github.humbleui.types.Point | null | undefined>): kotlin.FloatArray;
+            fromArray(p0: kotlin.FloatArray): Array<io.github.humbleui.types.Point | null | undefined>;
+          }
+          interface Point { 
+            _x: number;
+            _y: number;
+            offset(p0: number, p1: number): io.github.humbleui.types.Point;
+            offset(p0: io.github.humbleui.types.Point): io.github.humbleui.types.Point;
+            scale(p0: number): io.github.humbleui.types.Point;
+            scale(p0: number, p1: number): io.github.humbleui.types.Point;
+            inverse(): io.github.humbleui.types.Point;
+            isEmpty(): boolean;
+            toIPoint(): io.github.humbleui.types.IPoint;
+            getX(): number;
+            getY(): number;
+            withX(p0: number): io.github.humbleui.types.Point;
+            withY(p0: number): io.github.humbleui.types.Point;
+          }
+          const IPoint: {
+            ZERO: io.github.humbleui.types.IPoint;
+            new(p0: number, p1: number): io.github.humbleui.types.IPoint;
+            _makeFromLong(p0: number): io.github.humbleui.types.IPoint;
+          }
+          interface IPoint { 
+            _x: number;
+            _y: number;
+            offset(p0: number, p1: number): io.github.humbleui.types.IPoint;
+            offset(p0: io.github.humbleui.types.IPoint): io.github.humbleui.types.IPoint;
+            scale(p0: number): io.github.humbleui.types.IPoint;
+            scale(p0: number, p1: number): io.github.humbleui.types.IPoint;
+            inverse(): io.github.humbleui.types.IPoint;
+            isEmpty(): boolean;
+            toPoint(): io.github.humbleui.types.Point;
+            getX(): number;
+            getY(): number;
+            withX(p0: number): io.github.humbleui.types.IPoint;
+            withY(p0: number): io.github.humbleui.types.IPoint;
+          }
+          const IRect: {
+            new(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.types.IRect;
+            makeLTRB(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.types.IRect;
+            makeXYWH(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.types.IRect;
+            makeWH(p0: number, p1: number): io.github.humbleui.types.IRect;
+          }
+          interface IRect { 
+            _left: number;
+            _top: number;
+            _right: number;
+            _bottom: number;
+            getWidth(): number;
+            getHeight(): number;
+            withWidth(p0: number): io.github.humbleui.types.IRect;
+            withHeight(p0: number): io.github.humbleui.types.IRect;
+            intersect(p0: io.github.humbleui.types.IRect): io.github.humbleui.types.IRect | null | undefined;
+            scale(p0: number): io.github.humbleui.types.IRect;
+            scale(p0: number, p1: number): io.github.humbleui.types.IRect;
+            offset(p0: number, p1: number): io.github.humbleui.types.IRect;
+            offset(p0: io.github.humbleui.types.IPoint): io.github.humbleui.types.IRect;
+            toRect(): io.github.humbleui.types.Rect;
+            isEmpty(): boolean;
+            contains(p0: number, p1: number): boolean;
+            contains(p0: io.github.humbleui.types.IPoint): boolean;
+            getLeft(): number;
+            getTop(): number;
+            getRight(): number;
+            getBottom(): number;
+            withLeft(p0: number): io.github.humbleui.types.IRect;
+            withTop(p0: number): io.github.humbleui.types.IRect;
+            withRight(p0: number): io.github.humbleui.types.IRect;
+            withBottom(p0: number): io.github.humbleui.types.IRect;
+          }
+          const Rect: {
+            new(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.types.Rect;
+            makeLTRB(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.types.Rect;
+            makeWH(p0: number, p1: number): io.github.humbleui.types.Rect;
+            makeWH(p0: io.github.humbleui.types.Point): io.github.humbleui.types.Rect;
+            makeXYWH(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.types.Rect;
+          }
+          interface Rect { 
+            _left: number;
+            _top: number;
+            _right: number;
+            _bottom: number;
+            getWidth(): number;
+            getHeight(): number;
+            withWidth(p0: number): io.github.humbleui.types.Rect;
+            withHeight(p0: number): io.github.humbleui.types.Rect;
+            intersect(p0: io.github.humbleui.types.Rect): io.github.humbleui.types.Rect | null | undefined;
+            scale(p0: number): io.github.humbleui.types.Rect;
+            scale(p0: number, p1: number): io.github.humbleui.types.Rect;
+            offset(p0: number, p1: number): io.github.humbleui.types.Rect;
+            offset(p0: io.github.humbleui.types.Point): io.github.humbleui.types.Rect;
+            toIRect(): io.github.humbleui.types.IRect;
+            withRadii(p0: number): io.github.humbleui.types.RRect;
+            withRadii(p0: number, p1: number): io.github.humbleui.types.RRect;
+            withRadii(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.types.RRect;
+            withRadii(p0: kotlin.FloatArray): io.github.humbleui.types.RRect;
+            inflate(p0: number): io.github.humbleui.types.Rect;
+            isEmpty(): boolean;
+            getLeft(): number;
+            getTop(): number;
+            getRight(): number;
+            getBottom(): number;
+            withLeft(p0: number): io.github.humbleui.types.Rect;
+            withTop(p0: number): io.github.humbleui.types.Rect;
+            withRight(p0: number): io.github.humbleui.types.Rect;
+            withBottom(p0: number): io.github.humbleui.types.Rect;
+          }
+          const RRect: {
+            new(p0: number, p1: number, p2: number, p3: number, p4: kotlin.FloatArray): io.github.humbleui.types.RRect;
+            makeLTRB(p0: number, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.types.RRect;
+            makeLTRB(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): io.github.humbleui.types.RRect;
+            makeLTRB(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): io.github.humbleui.types.RRect;
+            makeNinePatchLTRB(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): io.github.humbleui.types.RRect;
+            makeComplexLTRB(p0: number, p1: number, p2: number, p3: number, p4: kotlin.FloatArray): io.github.humbleui.types.RRect;
+            makeOvalLTRB(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.types.RRect;
+            makePillLTRB(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.types.RRect;
+            makeXYWH(p0: number, p1: number, p2: number, p3: number, p4: number): io.github.humbleui.types.RRect;
+            makeXYWH(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number): io.github.humbleui.types.RRect;
+            makeXYWH(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): io.github.humbleui.types.RRect;
+            makeNinePatchXYWH(p0: number, p1: number, p2: number, p3: number, p4: number, p5: number, p6: number, p7: number): io.github.humbleui.types.RRect;
+            makeComplexXYWH(p0: number, p1: number, p2: number, p3: number, p4: kotlin.FloatArray): io.github.humbleui.types.RRect;
+            makeOvalXYWH(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.types.RRect;
+            makePillXYWH(p0: number, p1: number, p2: number, p3: number): io.github.humbleui.types.RRect;
+          }
+          interface RRect extends io.github.humbleui.types.Rect { 
+            _radii: kotlin.FloatArray;
+          }
         }
       }
     }
