@@ -29,7 +29,7 @@ import kotlin.math.roundToInt
 open class GuiRendererBackend {
     private val callbacks = CopyOnWriteArrayList<Runnable>()
     private val preCallbacks = CopyOnWriteArrayList<Runnable>()
-    private val images = HashMap<String, CachedImage>()
+    private val images = ConcurrentHashMap<String, CachedImage>()
     private val gifs = HashMap<String, CachedGif>()
     private val urlImages = HashMap<String, SkijaImage>()
     private val pendingUrls = ConcurrentHashMap.newKeySet<String>()
@@ -265,12 +265,12 @@ open class GuiRendererBackend {
         images[path]?.let { if (--it.refs <= 0) { it.image.close(); images.remove(path) } }
     }
 
-    fun isImageLoaded(path: String) = synchronized(images) { path in images }
+    fun isImageLoaded(path: String) = images.containsKey(path)
 
     @JvmOverloads
     fun drawImage(path: String, x: Float, y: Float, width: Float, height: Float, radius: Float = 0f, imageAlpha: Float = 1f) {
         if (path.isUrl()) return drawImageFromUrl(path, x, y, width, height, radius, imageAlpha)
-        val image = synchronized(images) { images[path] } ?: runCatching { loadImage(path) }.getOrNull()?.let { synchronized(images) { images[it] } } ?: return
+        val image = images[path] ?: runCatching { loadImage(path) }.getOrNull()?.let(images::get) ?: return
         drawImage(image.image, x, y, width, height, radius, imageAlpha)
     }
 
