@@ -231,18 +231,22 @@ open class GuiRendererBackend {
     @JvmOverloads
     fun text(text: String, x: Float, y: Float, size: Float, color: Int, font: Font? = defaultFont, align: Int) {
         val skijaFont = skijaFont(font ?: defaultFont, size)
+        val metrics = skijaFont.metrics
+        val baseline = when {
+            align and 32 != 0 -> y - metrics.descent
+            align and 16 != 0 -> y - (metrics.ascent + metrics.descent) / 2f
+            align and 8 != 0 -> y - metrics.ascent
+            else -> y
+        }
+        if (align and 6 == 0) {
+            paint(color).use { canvas?.drawString(text, x, baseline, skijaFont, it) }
+            return
+        }
         TextLine.make(text, skijaFont).use { line ->
             val drawX = when {
                 align and 4 != 0 -> x - line.width
                 align and 2 != 0 -> x - line.width / 2f
                 else -> x
-            }
-            val metrics = skijaFont.metrics
-            val baseline = when {
-                align and 32 != 0 -> y - metrics.descent
-                align and 16 != 0 -> y - (metrics.ascent + metrics.descent) / 2f
-                align and 8 != 0 -> y - metrics.ascent
-                else -> y
             }
             paint(color).use { canvas?.drawTextLine(line, drawX, baseline, it) }
         }
@@ -250,7 +254,7 @@ open class GuiRendererBackend {
 
     @JvmOverloads
     fun textWidth(text: String, size: Float, font: Font? = defaultFont) =
-        TextLine.make(text, skijaFont(font ?: defaultFont, size)).use { it.width }
+        skijaFont(font ?: defaultFont, size).measureTextWidth(text)
 
     fun loadImage(path: String): String {
         if (path.isUrl()) return path
