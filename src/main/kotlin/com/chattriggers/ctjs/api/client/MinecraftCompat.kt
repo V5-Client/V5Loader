@@ -1,7 +1,7 @@
 package com.chattriggers.ctjs.api.client
 
 //? if >=26.2 {
-import com.chattriggers.ctjs.internal.mixins.GameRenderer262Accessor
+import com.chattriggers.ctjs.internal.mixins.GameRendererAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 //?}
 import com.mojang.blaze3d.pipeline.RenderTarget
@@ -53,7 +53,7 @@ internal object MinecraftCompat {
         minecraft.levelRenderer.invalidateCompiledGeometry(level, minecraft.options, mainCamera(minecraft.gameRenderer), minecraft.blockColors)
     }
     fun submitNodeStorage(renderer: GameRenderer): SubmitNodeStorage =
-        renderer.asMixin<GameRenderer262Accessor>().handAndScreenSubmitNodeStorage
+        renderer.asMixin<GameRendererAccessor>().handAndScreenSubmitNodeStorage
     fun gameRenderState(renderer: GameRenderer): GameRenderState = renderer.gameRenderState()
     fun isSingleplayer(minecraft: Minecraft): Boolean = minecraft.hasSingleplayerServer()
 }

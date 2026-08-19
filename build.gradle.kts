@@ -114,12 +114,16 @@ tasks {
             val versionMixins = if (minecraftVersion == "26.1.2") {
                 listOf("GuiMixin", "MinecraftScreenMixin", "LevelRendererMixin")
             } else {
-                listOf("GuiHudMixin", "GameRenderer262Accessor", "GuiScreenMixin", "LevelRenderer262Mixin")
+                listOf(
+                    "CommandEncoderMixin", "GpuDeviceMixin", "GuiHudMixin", "GameRendererAccessor",
+                    "GuiScreenMixin", "LevelRendererMixin", "VulkanCommandEncoderMixin", "VulkanDeviceMixin",
+                )
             }
             filter<ReplaceTokens>("tokens" to mapOf(
                 "version_mixins" to versionMixins.joinToString("\",\n      \"")
             ))
         }
+
     }
 
     withType<JavaCompile>().configureEach {

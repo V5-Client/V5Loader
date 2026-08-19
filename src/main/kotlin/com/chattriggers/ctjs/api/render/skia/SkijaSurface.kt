@@ -21,6 +21,9 @@ import org.lwjgl.opengl.GL31C
 import org.lwjgl.opengl.GL33C
 
 internal class SkijaSurface : AutoCloseable {
+    //? if >=26.2 {
+    private val vulkan = SkijaVulkanSurface()
+    //?}
     private var context: DirectContext? = null
     private var renderTarget: BackendRenderTarget? = null
     private var surface: Surface? = null
@@ -31,6 +34,9 @@ internal class SkijaSurface : AutoCloseable {
     private var textureId = 0
 
     fun render(width: Int, height: Int, texture: GpuTexture, draw: (io.github.humbleui.skija.Canvas) -> Unit) {
+        //? if >=26.2 {
+        if (vulkan.render(width, height, texture, draw)) return
+        //?}
         val colorTexture = texture as? GlTexture ?: return
         val state = GlState.capture()
         try {
@@ -79,6 +85,9 @@ internal class SkijaSurface : AutoCloseable {
     }
 
     override fun close() {
+        //? if >=26.2 {
+        vulkan.close()
+        //?}
         surface?.close()
         renderTarget?.close()
         if (depthStencil != 0) GL30C.glDeleteRenderbuffers(depthStencil)
