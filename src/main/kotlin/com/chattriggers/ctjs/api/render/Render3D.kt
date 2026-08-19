@@ -30,6 +30,22 @@ object Render3D {
 
     @JvmStatic
     @JvmOverloads
+    fun drawFilledBoxes(positions: Array<Vec3>, color: Color, depth: Boolean = false) {
+        val style = GizmoStyle.fill(color.packed)
+        positions.forEach { pos ->
+            Gizmos.cuboid(AABB(pos.x, pos.y, pos.z, pos.x + 1, pos.y + 1, pos.z + 1), style).depth(depth)
+        }
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun drawFilledAABBs(boxes: Array<AABB>, color: Color, depth: Boolean = false) {
+        val style = GizmoStyle.fill(color.packed)
+        boxes.forEach { box -> Gizmos.cuboid(box, style).depth(depth) }
+    }
+
+    @JvmStatic
+    @JvmOverloads
     fun drawWireFrameBox(pos: Vec3, color: Color, thickness: Float = 5f, depth: Boolean = false) =
         drawWireFrameBox(AABB(pos.x, pos.y, pos.z, pos.x + 1, pos.y + 1, pos.z + 1), color, thickness, depth)
 
@@ -41,8 +57,31 @@ object Render3D {
 
     @JvmStatic
     @JvmOverloads
+    fun drawWireFrameBoxes(positions: Array<Vec3>, color: Color, thickness: Float = 5f, depth: Boolean = false) {
+        val style = GizmoStyle.stroke(color.packed, thickness)
+        positions.forEach { pos ->
+            Gizmos.cuboid(AABB(pos.x, pos.y, pos.z, pos.x + 1, pos.y + 1, pos.z + 1), style).depth(depth)
+        }
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun drawWireFrameAABBs(boxes: Array<AABB>, color: Color, thickness: Float = 5f, depth: Boolean = false) {
+        val style = GizmoStyle.stroke(color.packed, thickness)
+        boxes.forEach { box -> Gizmos.cuboid(box, style).depth(depth) }
+    }
+
+    @JvmStatic
+    @JvmOverloads
     fun drawBox(box: AABB, color: Color, thickness: Float = 2f, depth: Boolean = false) {
         Gizmos.cuboid(box, GizmoStyle.strokeAndFill(color.packed, thickness, color.packed)).depth(depth)
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun drawBoxes(boxes: Array<AABB>, color: Color, thickness: Float = 2f, depth: Boolean = false) {
+        val style = GizmoStyle.strokeAndFill(color.packed, thickness, color.packed)
+        boxes.forEach { box -> Gizmos.cuboid(box, style).depth(depth) }
     }
 
     @JvmStatic
@@ -54,9 +93,28 @@ object Render3D {
 
     @JvmStatic
     @JvmOverloads
+    fun drawStyledBoxes(positions: Array<Vec3>, color1: Color, color2: Color, wireThickness: Float = 5f, depth: Boolean = false) {
+        val style = GizmoStyle.strokeAndFill(color2.packed, wireThickness, color1.packed)
+        positions.forEach { pos ->
+            Gizmos.cuboid(AABB(pos.x, pos.y, pos.z, pos.x + 1, pos.y + 1, pos.z + 1), style).depth(depth)
+        }
+    }
+
+    @JvmStatic
+    @JvmOverloads
     fun drawSizedBox(pos: Vec3, width: Double, height: Double, length: Double, color: Color, filled: Boolean = true, thickness: Float = 1f, depth: Boolean = false) {
         val box = AABB(pos.x - width / 2, pos.y, pos.z - length / 2, pos.x + width / 2, pos.y + height, pos.z + length / 2)
         Gizmos.cuboid(box, if (filled) GizmoStyle.fill(color.packed) else GizmoStyle.stroke(color.packed, thickness)).depth(depth)
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun drawSizedBoxes(positions: Array<Vec3>, width: Double, height: Double, length: Double, color: Color, filled: Boolean = true, thickness: Float = 1f, depth: Boolean = false) {
+        val style = if (filled) GizmoStyle.fill(color.packed) else GizmoStyle.stroke(color.packed, thickness)
+        positions.forEach { pos ->
+            val box = AABB(pos.x - width / 2, pos.y, pos.z - length / 2, pos.x + width / 2, pos.y + height, pos.z + length / 2)
+            Gizmos.cuboid(box, style).depth(depth)
+        }
     }
 
     @JvmStatic
@@ -73,8 +131,39 @@ object Render3D {
 
     @JvmStatic
     @JvmOverloads
+    fun drawHitboxes(entities: Array<Entity>, color: Color, thickness: Float = 2f, depth: Boolean = false) {
+        val partialTicks = client.deltaTracker.getGameTimeDeltaPartialTick(true)
+        val style = GizmoStyle.strokeAndFill(color.packed, thickness, color.packed)
+        entities.forEach { entity ->
+            val box = entity.boundingBox.move(
+                entity.xOld + (entity.x - entity.xOld) * partialTicks - entity.x,
+                entity.yOld + (entity.y - entity.yOld) * partialTicks - entity.y,
+                entity.zOld + (entity.z - entity.zOld) * partialTicks - entity.z,
+            )
+            Gizmos.cuboid(box, style).depth(depth)
+        }
+    }
+
+    @JvmStatic
+    @JvmOverloads
     fun drawLine(start: Vec3, end: Vec3, color: Color, thickness: Float = 3f, depth: Boolean = false) {
         Gizmos.line(start, end, color.packed, thickness).depth(depth)
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun drawLines(points: Array<Vec3>, color: Color, thickness: Float = 3f, depth: Boolean = false) {
+        for (i in 0 until points.lastIndex) {
+            Gizmos.line(points[i], points[i + 1], color.packed, thickness).depth(depth)
+        }
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun drawLines(points: Array<Vec3>, colors: Array<Color>, thickness: Float = 3f, depth: Boolean = false) {
+        for (i in 0 until minOf(points.lastIndex, colors.lastIndex + 1)) {
+            Gizmos.line(points[i], points[i + 1], colors[i].packed, thickness).depth(depth)
+        }
     }
 
     @JvmStatic
@@ -87,12 +176,34 @@ object Render3D {
 
     @JvmStatic
     @JvmOverloads
+    fun drawTracers(targetPositions: Array<Vec3>, color: Color, thickness: Float = 2f, depth: Boolean = false) {
+        val camera = MinecraftCompat.mainCamera(client.gameRenderer)
+        val start = camera.position().add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()).scale(0.1))
+        targetPositions.forEach { targetPos -> Gizmos.line(start, targetPos, color.packed, thickness).depth(depth) }
+    }
+
+    @JvmStatic
+    @JvmOverloads
     fun drawText(text: String, pos: Vec3, scale: Float = 1f, backgroundBox: Boolean = false, increase: Boolean = false, seeThrough: Boolean = false, translate: Boolean = true) {
         val camera = MinecraftCompat.mainCamera(client.gameRenderer)
         val distanceScale = if (increase) (pos.distanceTo(camera.position()).toFloat() / 120f).coerceAtLeast(0.01f) else 1f
         val style = TextGizmo.Style.whiteAndCentered().withScale(TextGizmo.Style.DEFAULT_SCALE * scale * distanceScale)
         Gizmos.billboardText(text, if (translate) pos else camera.position(), style).apply {
             if (seeThrough) setAlwaysOnTop()
+        }
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun drawTexts(texts: Array<String>, positions: Array<Vec3>, scale: Float = 1f, backgroundBox: Boolean = false, increase: Boolean = false, seeThrough: Boolean = false, translate: Boolean = true) {
+        val camera = MinecraftCompat.mainCamera(client.gameRenderer)
+        for (i in 0 until minOf(texts.size, positions.size)) {
+            val pos = positions[i]
+            val distanceScale = if (increase) (pos.distanceTo(camera.position()).toFloat() / 120f).coerceAtLeast(0.01f) else 1f
+            val style = TextGizmo.Style.whiteAndCentered().withScale(TextGizmo.Style.DEFAULT_SCALE * scale * distanceScale)
+            Gizmos.billboardText(texts[i], if (translate) pos else camera.position(), style).apply {
+                if (seeThrough) setAlwaysOnTop()
+            }
         }
     }
 
