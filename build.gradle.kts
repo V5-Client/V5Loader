@@ -89,6 +89,14 @@ tasks {
         val flkVersion = libs.versions.fabric.kotlin.get()
         val fapiVersion = fabricApiVersion
         val loaderVersion = libs.versions.loader.get()
+        val versionMixins = if (minecraftVersion == "26.1.2") {
+            listOf("GuiMixin", "MinecraftScreenMixin", "LevelRendererMixin")
+        } else {
+            listOf(
+                "CommandEncoderMixin", "GpuDeviceMixin", "GuiHudMixin", "GameRendererAccessor",
+                "GuiScreenMixin", "LevelRendererMixin", "VulkanCommandEncoderMixin", "VulkanDeviceMixin",
+            )
+        }
 
         from(rootProject.file("typing-generator/src/main/resources")) {
             include("provided-types.properties")
@@ -99,6 +107,7 @@ tasks {
         inputs.property("fabric_kotlin_version", flkVersion)
         inputs.property("fabric_api_version", fapiVersion)
         inputs.property("loader_version", loaderVersion)
+        inputs.property("version_mixins", versionMixins.joinToString(","))
 
         filesMatching("fabric.mod.json") {
             expand(
@@ -111,14 +120,6 @@ tasks {
         }
 
         filesMatching("ctjs.mixins.json") {
-            val versionMixins = if (minecraftVersion == "26.1.2") {
-                listOf("GuiMixin", "MinecraftScreenMixin", "LevelRendererMixin")
-            } else {
-                listOf(
-                    "CommandEncoderMixin", "GpuDeviceMixin", "GuiHudMixin", "GameRendererAccessor",
-                    "GuiScreenMixin", "LevelRendererMixin", "VulkanCommandEncoderMixin", "VulkanDeviceMixin",
-                )
-            }
             filter<ReplaceTokens>("tokens" to mapOf(
                 "version_mixins" to versionMixins.joinToString("\",\n      \"")
             ))
