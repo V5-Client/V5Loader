@@ -49,14 +49,13 @@ class CTJS : ClientModInitializer {
             autoOpenTriggered = true
             WelcomeScreen.open()
         }
-        ClientLifecycleEvents.CLIENT_STOPPING.register { _ -> Render2D.destroy() }
-
-        SecureLoader.onInitialize()
-
-        Runtime.getRuntime().addShutdownHook(Thread {
+        ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
+            Render2D.destroy()
             TriggerType.GAME_UNLOAD.triggerAll()
             Console.close()
-        })
+        }
+
+        SecureLoader.onInitialize()
     }
 
     companion object {
