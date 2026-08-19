@@ -7,11 +7,6 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.loom)
-    id("io.github.izhangzhihao.unmeta") version "1.0.3"
-}
-
-unmeta {
-    enable.set(true)
 }
 
 version = property("mod_version").toString()

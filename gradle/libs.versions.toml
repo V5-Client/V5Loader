@@ -18,7 +18,7 @@ hypixel-modrinth-api = "1.0.2+build.1+mc26.1"
 
 # Plugin Versions
 kotlin = "2.3.10"
-loom = "1.17-SNAPSHOT"
+loom = "1.18.0-alpha.16"
 ksp = "2.3.9"
 
 [libraries]

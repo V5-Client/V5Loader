@@ -3,9 +3,7 @@ plugins {
 }
 
 kotlin {
-    kotlin {
-        jvmToolchain(21)
-    }
+    jvmToolchain(21)
 }
 
 buildscript {
