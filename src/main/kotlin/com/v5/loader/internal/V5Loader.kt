@@ -21,7 +21,7 @@ import kotlin.io.path.writeText
 
 internal object V5Loader {
     private const val MOD_ID = "ctjs"
-    private const val DEVELOPER_JAR_NAME = "V5-Loader-DEV.jar"
+    private const val DEVELOPER_JAR_PREFIX = "V5-Loader-DEV-"
     private val secretLock = Any()
     private var initialized = false
     private var sessionToken = ""
@@ -66,7 +66,7 @@ internal object V5Loader {
 
     private fun checkSelfUpdate(token: String, minecraftVersion: String, gameDir: File) {
         val activeJar = resolveActiveJar()
-        if (activeJar.name == DEVELOPER_JAR_NAME) {
+        if (activeJar.name.startsWith(DEVELOPER_JAR_PREFIX) && activeJar.extension.equals("jar", ignoreCase = true)) {
             println("[V5] Developer jar detected; skipping integrity check.")
             return
         }

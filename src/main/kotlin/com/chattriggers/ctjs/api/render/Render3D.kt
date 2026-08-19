@@ -14,10 +14,6 @@ object Render3D {
     private val client = Minecraft.getInstance()
 
     data class Color(val r: Int, val g: Int, val b: Int, val a: Int) {
-        val rf = r / 255f
-        val gf = g / 255f
-        val bf = b / 255f
-        val af = a / 255f
         val packed = ARGB.color(a, r, g, b)
     }
 
