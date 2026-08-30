@@ -284,18 +284,45 @@ object CachedWorld {
   private fun syncAllCachedChunksToNative() {
     if (!NativePathfinderBridge.isAvailable()) return
 
-    for ((key, chunk) in chunks) {
-      if (!chunk.ready) continue
-      val chunkX = (key shr 32).toInt()
-      val chunkZ = key.toInt()
-      syncChunkToNative(chunkX, chunkZ, chunk)
+    val readyChunks = chunks.mapNotNull { (key, chunk) ->
+      if (chunk.ready) key to chunk else null
     }
+    if (readyChunks.isEmpty()) return
+
+    val metadata = IntArray(readyChunks.size * 4)
+    val sectionMasks = LongArray(readyChunks.size)
+    val sectionFlags = Array(readyChunks.size) { index ->
+      val (key, chunk) = readyChunks[index]
+      val offset = index * 4
+      metadata[offset] = (key shr 32).toInt()
+      metadata[offset + 1] = key.toInt()
+      metadata[offset + 2] = chunk.minY
+      metadata[offset + 3] = chunk.maxY
+
+      val encoded = encodeChunk(chunk)
+      sectionMasks[index] = encoded.first
+      encoded.second
+    }
+
+    NativePathfinderBridge.upsertChunks(metadata, sectionMasks, sectionFlags)
   }
 
   private fun syncChunkToNative(chunkX: Int, chunkZ: Int, chunk: CachedChunk) {
     if (!NativePathfinderBridge.isAvailable() || !chunk.ready) return
 
-    val sectionCount = (chunk.maxY - chunk.minY + 15) shr 4
+    val (sectionMask, sectionFlags) = encodeChunk(chunk)
+    NativePathfinderBridge.upsertChunk(
+      chunkX,
+      chunkZ,
+      chunk.minY,
+      chunk.maxY,
+      sectionMask,
+      sectionFlags
+    )
+  }
+
+  private fun encodeChunk(chunk: CachedChunk): Pair<Long, ShortArray> {
+    val sectionCount = minOf((chunk.maxY - chunk.minY + 15) shr 4, Long.SIZE_BITS)
     var sectionMask = 0L
     var totalValues = 0
     for (i in 0 until sectionCount) {
@@ -303,18 +330,6 @@ object CachedWorld {
         sectionMask = sectionMask or (1L shl i)
         totalValues += 4096
       }
-    }
-
-    if (totalValues == 0) {
-      NativePathfinderBridge.upsertChunk(
-        chunkX,
-        chunkZ,
-        chunk.minY,
-        chunk.maxY,
-        0L,
-        ShortArray(0)
-      )
-      return
     }
 
     val sectionFlags = ShortArray(totalValues)
@@ -325,14 +340,7 @@ object CachedWorld {
       offset += 4096
     }
 
-    NativePathfinderBridge.upsertChunk(
-      chunkX,
-      chunkZ,
-      chunk.minY,
-      chunk.maxY,
-      sectionMask,
-      sectionFlags
-    )
+    return sectionMask to sectionFlags
   }
 
   private fun flushPendingNativeUpdates() {

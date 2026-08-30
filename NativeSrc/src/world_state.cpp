@@ -197,55 +197,44 @@ void WorldState::clear() {
   data_ = std::move(next);
 }
 
-void WorldState::upsertChunk(
-  const int chunkX,
-  const int chunkZ,
-  const int minY,
-  const int maxY,
-  const uint64_t sectionMask,
-  const uint16_t* sectionFlags,
-  const size_t sectionFlagCount
-) {
-  if (!isValidWorldBounds(minY, maxY)) {
+void WorldState::upsertChunks(std::vector<ChunkUpdate> updates) {
+  if (updates.empty()) {
     return;
-  }
-
-  ChunkData chunk;
-  chunk.minY = minY;
-  chunk.maxY = maxY;
-  chunk.ensureLayout();
-
-  const int sectionCount = chunk.sectionCount();
-  size_t readOffset = 0;
-
-  const int maskedSectionCount = std::min(sectionCount, 64);
-  for (int i = 0; i < maskedSectionCount; i++) {
-    const bool hasSection = (sectionMask & (1ULL << i)) != 0ULL;
-    if (!hasSection) continue;
-
-    if (sectionFlags == nullptr || readOffset + 4096 > sectionFlagCount) {
-      break;
-    }
-
-    chunk.assignSection(i, sectionFlags + readOffset);
-    readOffset += 4096;
   }
 
   std::lock_guard lock(mutex_);
-  const auto key = chunkKey(chunkX, chunkZ);
-  const auto existing = data_->chunks.find(key);
-  if (data_->minY == minY && data_->maxY == maxY &&
-      existing != data_->chunks.end() && existing->second != nullptr &&
-      chunksEqual(*existing->second, chunk)) {
-    return;
+  auto next = std::make_shared<WorldData>(*data_);
+  std::unordered_set<uint64_t> changedChunks;
+  changedChunks.reserve(updates.size());
+
+  for (auto& update : updates) {
+    ChunkData& chunk = update.chunk;
+    if (!isValidWorldBounds(chunk.minY, chunk.maxY)) {
+      continue;
+    }
+
+    const auto key = chunkKey(update.chunkX, update.chunkZ);
+    const auto existing = next->chunks.find(key);
+    if (next->minY == chunk.minY && next->maxY == chunk.maxY &&
+        existing != next->chunks.end() && existing->second != nullptr &&
+        chunksEqual(*existing->second, chunk)) {
+      continue;
+    }
+
+    next->minY = chunk.minY;
+    next->maxY = chunk.maxY;
+    next->chunks[key] = std::make_shared<ChunkData>(std::move(chunk));
+    changedChunks.insert(key);
   }
 
-  auto next = std::make_shared<WorldData>(*data_);
-  next->minY = minY;
-  next->maxY = maxY;
-  next->chunks[key] = std::make_shared<ChunkData>(std::move(chunk));
+  if (changedChunks.empty()) return;
+
   const uint32_t generation = nextCacheGeneration(*next);
-  invalidateChunkNeighborhood(*next, chunkX, chunkZ, generation);
+  for (const uint64_t key : changedChunks) {
+    const int chunkX = static_cast<int>(static_cast<int32_t>(key >> 32));
+    const int chunkZ = static_cast<int>(static_cast<int32_t>(key));
+    invalidateChunkNeighborhood(*next, chunkX, chunkZ, generation);
+  }
   data_ = std::move(next);
 }
 

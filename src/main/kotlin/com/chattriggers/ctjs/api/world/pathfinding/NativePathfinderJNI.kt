@@ -134,6 +134,12 @@ internal object NativePathfinderJNI {
     sectionFlags: ShortArray
   )
 
+  @JvmStatic external fun upsertChunks(
+    metadata: IntArray,
+    sectionMasks: LongArray,
+    sectionFlags: Array<ShortArray>
+  )
+
   @JvmStatic external fun applyBlockUpdates(updates: IntArray)
 
   @JvmStatic external fun findPath(

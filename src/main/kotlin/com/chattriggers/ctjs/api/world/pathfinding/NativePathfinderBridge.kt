@@ -100,6 +100,15 @@ object NativePathfinderBridge {
   }
 
   @JvmStatic
+  fun upsertChunks(
+    metadata: IntArray,
+    sectionMasks: LongArray,
+    sectionFlags: Array<ShortArray>
+  ) = runNative {
+    NativePathfinderJNI.upsertChunks(metadata, sectionMasks, sectionFlags)
+  }
+
+  @JvmStatic
   fun applyBlockUpdates(updates: IntArray) {
     if (updates.isEmpty()) return
 

@@ -46,6 +46,12 @@ struct ChunkData {
   void setFlags(int localX, int y, int localZ, uint16_t flags);
 };
 
+struct ChunkUpdate {
+  int chunkX;
+  int chunkZ;
+  ChunkData chunk;
+};
+
 using SharedChunkData = std::shared_ptr<const ChunkData>;
 using ChunkMap = std::unordered_map<uint64_t, SharedChunkData>;
 
@@ -77,15 +83,7 @@ class WorldState {
   void setWorld(std::string worldKey, int minY, int maxY);
   void clear();
 
-  void upsertChunk(
-    int chunkX,
-    int chunkZ,
-    int minY,
-    int maxY,
-    uint64_t sectionMask,
-    const uint16_t* sectionFlags,
-    size_t sectionFlagCount
-  );
+  void upsertChunks(std::vector<ChunkUpdate> updates);
 
   void applyUpdates(const std::vector<BlockUpdate>& updates);
 
