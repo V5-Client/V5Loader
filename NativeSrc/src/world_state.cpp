@@ -238,6 +238,23 @@ void WorldState::upsertChunks(std::vector<ChunkUpdate> updates) {
   data_ = std::move(next);
 }
 
+void WorldState::removeChunks(const std::vector<uint64_t>& chunkKeys) {
+  if (chunkKeys.empty()) return;
+
+  std::lock_guard lock(mutex_);
+  auto next = std::make_shared<WorldData>(*data_);
+  bool changed = false;
+  for (const uint64_t key : chunkKeys) {
+    changed |= next->chunks.erase(key) != 0;
+  }
+  if (!changed) return;
+
+  next->identity = std::make_shared<WorldIdentity>();
+  next->latestCacheGeneration = 1;
+  next->chunkCacheGenerations.clear();
+  data_ = std::move(next);
+}
+
 void WorldState::applyUpdates(const std::vector<BlockUpdate>& updates) {
   if (updates.empty()) {
     return;

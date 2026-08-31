@@ -140,6 +140,8 @@ internal object NativePathfinderJNI {
     sectionFlags: Array<ShortArray>
   )
 
+  @JvmStatic external fun removeChunks(chunkKeys: LongArray)
+
   @JvmStatic external fun applyBlockUpdates(updates: IntArray)
 
   @JvmStatic external fun findPath(

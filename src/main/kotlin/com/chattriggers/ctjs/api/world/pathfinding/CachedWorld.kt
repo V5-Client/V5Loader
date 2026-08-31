@@ -165,7 +165,12 @@ object CachedWorld {
 
     if (!unlimitedChunkCache && chunks.size > Swift.MAXIMUM_CACHED_CHUNKS) {
       val toRemove = chunks.size - Swift.MAXIMUM_CACHED_CHUNKS
-      chunks.keys.take(toRemove).forEach { chunks.remove(it) }
+      val removed = chunks.keys.take(toRemove).filter { chunks.remove(it) != null }.toLongArray()
+      NativePathfinderBridge.removeChunks(removed)
+      if (cacheKey in removed) {
+        cacheKey = Long.MIN_VALUE
+        cacheChunk = null
+      }
     }
 
     syncDirtyChunksToNative()

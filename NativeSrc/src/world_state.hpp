@@ -84,6 +84,7 @@ class WorldState {
   void clear();
 
   void upsertChunks(std::vector<ChunkUpdate> updates);
+  void removeChunks(const std::vector<uint64_t>& chunkKeys);
 
   void applyUpdates(const std::vector<BlockUpdate>& updates);
 

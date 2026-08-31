@@ -365,6 +365,28 @@ JNIEXPORT void JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePa
   }
 }
 
+JNIEXPORT void JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_removeChunks(
+  JNIEnv* env,
+  jclass,
+  jlongArray chunkKeys
+) {
+  try {
+    const auto keys = toLongVector(env, chunkKeys);
+    if (hasPendingJavaException(env)) return;
+
+    std::vector<uint64_t> parsed;
+    parsed.reserve(keys.size());
+    for (const jlong key : keys) {
+      parsed.push_back(static_cast<uint64_t>(key));
+    }
+    g_worldState.removeChunks(parsed);
+  } catch (const std::exception& ex) {
+    throwRuntimeFromException(env, "removeChunks", ex);
+  } catch (...) {
+    throwRuntimeUnknown(env, "removeChunks");
+  }
+}
+
 JNIEXPORT void JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_applyBlockUpdates(
   JNIEnv* env,
   jclass,

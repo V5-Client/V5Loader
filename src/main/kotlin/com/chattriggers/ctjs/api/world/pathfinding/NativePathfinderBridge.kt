@@ -109,6 +109,13 @@ object NativePathfinderBridge {
   }
 
   @JvmStatic
+  internal fun removeChunks(chunkKeys: LongArray) {
+    if (chunkKeys.isEmpty()) return
+
+    runNative { NativePathfinderJNI.removeChunks(chunkKeys) }
+  }
+
+  @JvmStatic
   fun applyBlockUpdates(updates: IntArray) {
     if (updates.isEmpty()) return
 
