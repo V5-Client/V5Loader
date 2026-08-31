@@ -102,6 +102,9 @@ object Client {
     }
 
     @JvmStatic
+    fun hasNameProcessor(): Boolean = nameProcessor != null && CTJS.isLoaded
+
+    @JvmStatic
     fun processName(original: Component): Component {
         val processor = nameProcessor ?: return original
         if (!CTJS.isLoaded) return original

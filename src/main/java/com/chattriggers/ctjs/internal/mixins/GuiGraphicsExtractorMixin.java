@@ -18,6 +18,10 @@ public class GuiGraphicsExtractorMixin {
             ordinal = 0,
             argsOnly = true)
     private FormattedCharSequence v5$processText(FormattedCharSequence original) {
+        if (!Client.hasNameProcessor()) {
+            return original;
+        }
+
         MutableComponent component = Component.empty();
         StringBuilder text = new StringBuilder();
         Style[] currentStyle = {null};
