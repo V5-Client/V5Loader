@@ -145,7 +145,9 @@ class Image(var image: BufferedImage?) {
                 val buffer = MemoryUtil.memAlloc(it.size())
                 buffer.put(it.toByteArray())
                 buffer.rewind()
-                Texture(DynamicTexture( { "ct:${UUID.randomUUID()}" }, NativeImage.read(buffer)), buffer)
+                NativeImage.read(buffer).use {
+                    Texture(DynamicTexture({ "ct:${UUID.randomUUID()}" }, it), buffer)
+                }
             }
         }
     }
