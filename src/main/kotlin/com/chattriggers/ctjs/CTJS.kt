@@ -2,6 +2,7 @@ package com.chattriggers.ctjs
 
 import com.chattriggers.ctjs.api.Config
 import com.chattriggers.ctjs.api.client.Client
+import com.chattriggers.ctjs.api.client.DiscordRPC
 import com.chattriggers.ctjs.api.client.screenCompat
 import com.chattriggers.ctjs.api.client.KeyBind
 import com.chattriggers.ctjs.api.client.Sound
@@ -52,6 +53,7 @@ class CTJS : ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
             Render2D.destroy()
             TriggerType.GAME_UNLOAD.triggerAll()
+            DiscordRPC.turnOff()
             Console.close()
         }
 
