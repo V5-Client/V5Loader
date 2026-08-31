@@ -110,11 +110,8 @@ class CTJS : ClientModInitializer {
 
             Client.scheduleTask {
                 Render2D.destroy()
-                images.forEach(Image::destroy)
-                sounds.forEach(Sound::destroy)
-
-                images.clear()
-                sounds.clear()
+                images.toList().forEach(Image::destroy)
+                sounds.toList().forEach(Sound::destroy)
             }
 
             if (asCommand)

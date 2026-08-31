@@ -63,6 +63,7 @@ class Image(var image: BufferedImage?) {
         texture?.buffer?.let(MemoryUtil::memFree)
         texture = null
         image = null
+        CTJS.images.remove(this)
     }
 
     @JvmOverloads
