@@ -68,6 +68,7 @@ class CTJS : ClientModInitializer {
         val assetsDir = File(configLocation, "ChatTriggers/assets/").apply { mkdirs() }
 
         @JvmStatic
+        @Volatile
         var isLoaded = true
             private set
 
@@ -121,7 +122,10 @@ class CTJS : ClientModInitializer {
         }
 
         @JvmStatic
+        @Synchronized
         fun load(asCommand: Boolean = true) {
+            if (!isLoaded) return
+
             Client.getMinecraft().options.save()
             unload(asCommand = false)
 
