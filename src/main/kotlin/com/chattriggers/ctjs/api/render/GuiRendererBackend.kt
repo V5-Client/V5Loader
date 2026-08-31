@@ -265,8 +265,17 @@ open class GuiRendererBackend {
         return path
     }
 
-    fun unloadImage(path: String) = synchronized(images) {
-        images[path]?.let { if (--it.refs <= 0) { it.image.close(); images.remove(path) } }
+    fun unloadImage(path: String) {
+        if (path.isUrl()) {
+            urlImages.remove(path)?.close()
+            pendingUrls -= path
+            failedUrls -= path
+            downloadedUrls.removeIf { it.first == path }
+            return
+        }
+        synchronized(images) {
+            images[path]?.let { if (--it.refs <= 0) { it.image.close(); images.remove(path) } }
+        }
     }
 
     fun isImageLoaded(path: String) = images.containsKey(path)
@@ -361,9 +370,9 @@ open class GuiRendererBackend {
     private fun processDownloads() {
         repeat(5) {
             val (url, bytes) = downloadedUrls.poll() ?: return
+            if (!pendingUrls.remove(url)) return@repeat
             if (bytes == null) failedUrls += url else runCatching { createImage(bytes, url) }
                 .onSuccess { urlImages[url] = it }.onFailure { failedUrls += url }
-            pendingUrls -= url
         }
     }
 
