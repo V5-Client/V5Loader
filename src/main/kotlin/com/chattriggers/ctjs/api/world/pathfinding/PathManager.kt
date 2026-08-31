@@ -341,7 +341,8 @@ object PathManager {
     heuristicWeight: Double = 1.0,
     rayLength: Double = 61.0,
     rewireEpsilon: Double = 1.0,
-    eyeHeight: Double = Double.NaN
+    eyeHeight: Double = Double.NaN,
+    callback: Runnable? = null
   ): Boolean {
     cancelSearch()
 
@@ -473,6 +474,7 @@ object PathManager {
           if (searchId.get() == currentId) {
             isSearching = false
             currentTask = null
+            callback?.let(Minecraft.getInstance()::submit)
           }
         }
       }
