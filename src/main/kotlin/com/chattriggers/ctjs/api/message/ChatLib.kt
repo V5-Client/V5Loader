@@ -20,6 +20,9 @@ import java.util.regex.Pattern
 import kotlin.math.roundToInt
 
 object ChatLib {
+    private val ADD_COLOR_REGEX = "(?<!\\\\)&(?![^0-9a-fk-or]|$)".toRegex()
+    private val REMOVE_FORMATTING_REGEX = "[\u00a7&][0-9a-fk-or]".toRegex()
+    private val REPLACE_FORMATTING_REGEX = "\u00a7(?![^0-9a-fk-or]|$)".toRegex()
     private val chatLineIds = mutableMapOf<GuiMessage, Int>()
     private val chatHudAccessor get() = Client.getChatGui()?.asMixin<ChatComponentAccessor>()
 
@@ -65,7 +68,7 @@ object ChatLib {
      */
     @JvmStatic
     fun addColor(message: String?): String {
-        return message.toString().replace("(?<!\\\\)&(?![^0-9a-fk-or]|$)".toRegex(), "\u00a7")
+        return message.toString().replace(ADD_COLOR_REGEX, "\u00a7")
     }
 
     /**
@@ -140,7 +143,7 @@ object ChatLib {
      */
     @JvmStatic
     fun removeFormatting(text: String): String {
-        return text.replace("[\u00a7&][0-9a-fk-or]".toRegex(), "")
+        return text.replace(REMOVE_FORMATTING_REGEX, "")
     }
 
     /**
@@ -151,7 +154,7 @@ object ChatLib {
      */
     @JvmStatic
     fun replaceFormatting(text: String): String {
-        return text.replace("\u00a7(?![^0-9a-fk-or]|$)".toRegex(), "&")
+        return text.replace(REPLACE_FORMATTING_REGEX, "&")
     }
 
     /**
