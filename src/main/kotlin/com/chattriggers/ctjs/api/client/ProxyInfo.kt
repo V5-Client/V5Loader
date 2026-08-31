@@ -34,6 +34,9 @@ object ProxyInfo {
     }
 
     private fun saveProxies() {
+        val normalized = normalizeProxies(cachedProxies)
+        cachedProxies.clear()
+        cachedProxies.addAll(normalized)
         getProxyConfigFile().writeText(gson.toJson(cachedProxies))
     }
 
