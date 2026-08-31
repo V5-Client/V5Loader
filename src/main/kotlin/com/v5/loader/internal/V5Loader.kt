@@ -22,6 +22,11 @@ import kotlin.io.path.writeText
 internal object V5Loader {
     private const val MOD_ID = "ctjs"
     private const val DEVELOPER_JAR_PREFIX = "V5-Loader-DEV-"
+    private const val GITHUB_API_HOST = "api.github.com"
+    private const val GITHUB_HOST = "github.com"
+    private const val GITHUB_REPOSITORY = "V5-Client/V5Loader"
+    private val SHA_256_REGEX = Regex("[a-f0-9]{64}")
+    private val RELEASE_TAG_REGEX = Regex("[A-Za-z0-9._-]+")
     private val secretLock = Any()
     private var initialized = false
     private var sessionToken = ""
@@ -79,25 +84,41 @@ internal object V5Loader {
 
         when (integrity) {
             "valid" -> println("[V5] V5-Loader integrity verified.")
-            "outdated" -> stageSelfUpdate(token, minecraftVersion, gameDir, activeJar)
+            "outdated" -> stageSelfUpdate(minecraftVersion, gameDir, activeJar)
             "invalid" -> throw IllegalStateException("[V5] V5-Loader integrity is invalid; refusing to run a modified jar.")
             else -> throw IllegalStateException("[V5] Unknown V5-Loader integrity state: $integrity")
         }
     }
 
     private fun stageSelfUpdate(
-        token: String,
         minecraftVersion: String,
         gameDir: File,
         activeJar: File
     ): Nothing {
+        val assetName = "V5-Loader-$minecraftVersion.jar"
+        val release = parseJsonObject(V5Http.httpsGet(GITHUB_API_HOST, "/repos/$GITHUB_REPOSITORY/releases/latest"))
+            ?: throw IllegalStateException("[V5] Failed to read the latest GitHub workflow release.")
+        val tag = release.getStringOrNull("tag_name")?.takeIf(RELEASE_TAG_REGEX::matches)
+            ?: throw IllegalStateException("[V5] Latest loader release has an invalid tag.")
+        val asset = release.getAsJsonArray("assets")
+            ?.mapNotNull { it.takeIf { element -> element.isJsonObject }?.asJsonObject }
+            ?.singleOrNull { it.getStringOrNull("name") == assetName }
+            ?: throw IllegalStateException("[V5] Latest GitHub workflow release does not contain $assetName.")
+        val expectedHash = asset.getStringOrNull("digest")
+            ?.removePrefix("sha256:")
+            ?.takeIf(SHA_256_REGEX::matches)
+            ?: throw IllegalStateException("[V5] GitHub did not provide a valid SHA-256 digest for $assetName.")
+        val expectedSize = asset.getLongOrNull("size")?.takeIf { it > 0 }
+            ?: throw IllegalStateException("[V5] GitHub did not provide a valid size for $assetName.")
         val bytes = V5Http.httpsGetBytes(
-            V5Http.BACKEND_HOST,
-            "/api/download/loader?minecraft_version=$minecraftVersion",
-            token,
-        ) ?: throw IllegalStateException("[V5] Failed to download updated V5-Loader.jar.")
+            GITHUB_HOST,
+            "/$GITHUB_REPOSITORY/releases/download/$tag/$assetName",
+        ) ?: throw IllegalStateException("[V5] Failed to download $assetName from GitHub.")
 
         try {
+            if (bytes.size.toLong() != expectedSize || V5Crypto.calculateSha256(bytes) != expectedHash) {
+                throw IllegalStateException("[V5] GitHub workflow download failed integrity verification; refusing to install it.")
+            }
             ModLoaderUpdater.stageUpdateAndRelaunch(gameDir, bytes, listOf(activeJar))
             println("[V5] V5-Loader update staged. Closing Minecraft now so the helper can swap jars.")
         } finally {
@@ -295,6 +316,9 @@ internal object V5Loader {
 
     private fun JsonObject.getBoolOrNull(key: String): Boolean? =
         get(key)?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean }?.asBoolean
+
+    private fun JsonObject.getLongOrNull(key: String): Long? =
+        runCatching { get(key)?.takeIf { it.isJsonPrimitive }?.asLong }.getOrNull()
 
     private fun JsonObject.getAsJsonObjectOrNull(key: String): JsonObject? =
         get(key)?.takeIf { it.isJsonObject }?.asJsonObject

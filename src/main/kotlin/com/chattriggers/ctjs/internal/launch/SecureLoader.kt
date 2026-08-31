@@ -2,10 +2,13 @@ package com.chattriggers.ctjs.internal.launch
 
 import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
+import com.v5.loader.internal.V5Crypto
+import com.v5.loader.internal.V5Http
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
@@ -36,6 +39,12 @@ internal object SecureLoader {
     private const val CTJS_ERROR_REPORT_INTERVAL_MS = 15 * 60 * 1000L
     private const val SESSION_DIR_NAME = ".v5"
     private const val SESSION_FILE_NAME = "session.json"
+    private const val GITHUB_API_HOST = "api.github.com"
+    private const val GITHUB_HOST = "github.com"
+    private const val GITHUB_REPOSITORY = "V5-Client/V5"
+    private const val MODULE_ASSET_NAME = "V5-Mojmap.zip"
+    private val SHA_256_REGEX = Regex("[a-f0-9]{64}")
+    private val RELEASE_TAG_REGEX = Regex("[A-Za-z0-9._-]+")
 
     private val jsonParser = Json {
         useAlternativeNames = true
@@ -308,7 +317,7 @@ internal object SecureLoader {
                 return
             }
 
-            val zipBytes = downloadZip(token)
+            val zipBytes = downloadZip()
             processZip(zipBytes)
             Arrays.fill(zipBytes, 0)
             isPluginLoaded = true
@@ -348,38 +357,22 @@ internal object SecureLoader {
         isLoaded = true
     }
 
-    private fun downloadZip(token: String): ByteArray {
-        return downloadAsset("/api/download/v5mojmap", token)
-    }
-
-    private fun downloadAsset(endpointPath: String, token: String): ByteArray {
-        val connection = openBackendConnection("$BACKEND_URL$endpointPath").apply {
-            setRequestProperty("Authorization", "Bearer $token")
-            setRequestProperty("User-Agent", LOADER_USER_AGENT)
-            connectTimeout = 10000
-            readTimeout = 30000
-        }
-
-        try {
-            val responseCode = connection.responseCode
-            if (responseCode !in 200..299) {
-                val responseText = try {
-                    connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-                } catch (_: Exception) {
-                    ""
-                }
-                val errorMessage = try {
-                    jsonParser.parseToJsonElement(responseText).jsonObject["error"]?.jsonPrimitive?.contentOrNull
-                } catch (_: Exception) {
-                    null
-                }
-                throw IOException("Download failed: ${errorMessage ?: "Unknown error"} (code: $responseCode)")
-            }
-
-            return connection.inputStream.use { it.readBytes() }
-        } finally {
-            connection.disconnect()
-        }
+    private fun downloadZip(): ByteArray {
+        val release = V5Http.httpsGet(GITHUB_API_HOST, "/repos/$GITHUB_REPOSITORY/releases/latest")
+            .takeIf { it.isNotBlank() }
+            ?.let { jsonParser.parseToJsonElement(it).jsonObject }
+            ?: throw IOException("Failed to read the latest V5 GitHub workflow release")
+        val tag = release["tag_name"]?.jsonPrimitive?.contentOrNull?.takeIf(RELEASE_TAG_REGEX::matches)
+            ?: throw IOException("Latest V5 release has an invalid tag")
+        val asset = release["assets"]?.jsonArray
+            ?.map { it.jsonObject }
+            ?.singleOrNull { it["name"]?.jsonPrimitive?.contentOrNull == MODULE_ASSET_NAME }
+            ?: throw IOException("Latest V5 release does not contain $MODULE_ASSET_NAME")
+        val bytes = V5Http.httpsGetBytes(
+            GITHUB_HOST,
+            "/$GITHUB_REPOSITORY/releases/download/$tag/$MODULE_ASSET_NAME",
+        ) ?: throw IOException("Failed to download $MODULE_ASSET_NAME from GitHub")
+        return bytes
     }
 
     private fun openBackendConnection(url: String): HttpsURLConnection =
