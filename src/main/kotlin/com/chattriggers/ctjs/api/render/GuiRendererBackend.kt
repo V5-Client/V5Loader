@@ -17,6 +17,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.net.URI
+import java.util.LinkedHashMap
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CopyOnWriteArrayList
@@ -37,6 +38,10 @@ open class GuiRendererBackend {
     private val downloadedUrls = ConcurrentLinkedQueue<Pair<String, ByteArray?>>()
     private val typefaces = HashMap<Font, Typeface>()
     private val fonts = HashMap<FontKey, io.github.humbleui.skija.Font>()
+    private val textLines = object : LinkedHashMap<TextKey, TextLine>(TEXT_CACHE_SIZE, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<TextKey, TextLine>) =
+            (size > TEXT_CACHE_SIZE).also { if (it) eldest.value.close() }
+    }
     private val alphaStack = ArrayDeque<Float>()
     private val scissorDepths = ArrayDeque<Int>()
     private var canvas: Canvas? = null
@@ -62,6 +67,7 @@ open class GuiRendererBackend {
     private data class CachedImage(val image: SkijaImage, var refs: Int = 1)
     private data class CachedGif(val frames: List<SkijaImage>, val delays: IntArray, val width: Int, val height: Int, var refs: Int = 1)
     private data class FontKey(val font: Font, val size: Float)
+    private data class TextKey(val text: String, val font: FontKey)
     private data class GradientKey(val x: Float, val y: Float, val width: Float, val height: Float, val color1: Int, val color2: Int, val direction: Gradient, val alpha: Float)
     private enum class Gradient { LEFT_TO_RIGHT, TOP_TO_BOTTOM, TL_TO_BR, BL_TO_TR }
 
@@ -230,7 +236,9 @@ open class GuiRendererBackend {
 
     @JvmOverloads
     fun text(text: String, x: Float, y: Float, size: Float, color: Int, font: Font? = defaultFont, align: Int) {
-        val skijaFont = skijaFont(font ?: defaultFont, size)
+        val fontKey = FontKey(font ?: defaultFont, size)
+        val skijaFont = skijaFont(fontKey)
+        val line = textLine(text, fontKey, skijaFont)
         val metrics = skijaFont.metrics
         val baseline = when {
             align and 32 != 0 -> y - metrics.descent
@@ -238,23 +246,17 @@ open class GuiRendererBackend {
             align and 8 != 0 -> y - metrics.ascent
             else -> y
         }
-        if (align and 6 == 0) {
-            paint(color).use { canvas?.drawString(text, x, baseline, skijaFont, it) }
-            return
+        val drawX = when {
+            align and 4 != 0 -> x - line.width
+            align and 2 != 0 -> x - line.width / 2f
+            else -> x
         }
-        TextLine.make(text, skijaFont).use { line ->
-            val drawX = when {
-                align and 4 != 0 -> x - line.width
-                align and 2 != 0 -> x - line.width / 2f
-                else -> x
-            }
-            paint(color).use { canvas?.drawTextLine(line, drawX, baseline, it) }
-        }
+        paint(color).use { canvas?.drawTextLine(line, drawX, baseline, it) }
     }
 
     @JvmOverloads
     fun textWidth(text: String, size: Float, font: Font? = defaultFont) =
-        skijaFont(font ?: defaultFont, size).measureTextWidth(text)
+        FontKey(font ?: defaultFont, size).let { textLine(text, it, skijaFont(it)).width }
 
     fun loadImage(path: String): String {
         if (path.isUrl()) return path
@@ -333,6 +335,7 @@ open class GuiRendererBackend {
         checkerImage?.close(); checkerImage = null
         checkerShaders.values.forEach(Shader::close); checkerShaders.clear()
         gradientShaders.values.forEach(Shader::close); gradientShaders.clear()
+        textLines.values.forEach(TextLine::close); textLines.clear()
         fonts.values.forEach(io.github.humbleui.skija.Font::close); fonts.clear()
         typefaces.values.forEach(Typeface::close); typefaces.clear()
     }
@@ -427,15 +430,18 @@ open class GuiRendererBackend {
         return SkijaImage.makeDeferredFromEncodedBytes(output.toByteArray())
     }
 
-    private fun skijaFont(font: Font, size: Float) = fonts.getOrPut(FontKey(font, size)) {
-        io.github.humbleui.skija.Font(typefaces.getOrPut(font) {
-            FontMgr.getDefault().makeFromData(Data.makeFromBytes(font.buffer().let { buffer -> ByteArray(buffer.remaining()).also(buffer::get) }))
-                ?: error("Failed to load font ${font.name}")
-        }, size)
+    private fun skijaFont(key: FontKey) = fonts.getOrPut(key) {
+        io.github.humbleui.skija.Font(typefaces.getOrPut(key.font) {
+            FontMgr.getDefault().makeFromData(Data.makeFromBytes(key.font.buffer().let { buffer -> ByteArray(buffer.remaining()).also(buffer::get) }))
+                ?: error("Failed to load font ${key.font.name}")
+        }, key.size)
             .setSubpixel(true)
             .setEdging(FontEdging.SUBPIXEL_ANTI_ALIAS)
             .setHinting(FontHinting.SLIGHT)
     }
+
+    private fun textLine(text: String, key: FontKey, font: io.github.humbleui.skija.Font) =
+        textLines.getOrPut(TextKey(text, key)) { TextLine.make(text, font) }
 
     private fun paint(color: Int, mode: PaintMode = PaintMode.FILL) = Paint()
         .setAntiAlias(true).setMode(mode).setColor(applyAlpha(color))
@@ -467,4 +473,6 @@ open class GuiRendererBackend {
         File(path).isFile -> FileInputStream(path)
         else -> GuiRendererBackend::class.java.getResourceAsStream(path) ?: throw FileNotFoundException(path)
     }.use { it.readBytes() }
+
+    private companion object { const val TEXT_CACHE_SIZE = 256 }
 }
