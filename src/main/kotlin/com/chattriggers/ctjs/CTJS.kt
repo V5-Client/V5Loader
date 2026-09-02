@@ -74,6 +74,9 @@ class CTJS : ClientModInitializer {
         var isLoaded = true
             private set
 
+        @Volatile
+        private var isReloading = false
+
         internal val images = mutableListOf<Image>()
         internal val sounds = mutableListOf<Sound>()
         internal val isDevelopment = FabricLoader.getInstance().isDevelopmentEnvironment
@@ -123,7 +126,8 @@ class CTJS : ClientModInitializer {
         @JvmStatic
         @Synchronized
         fun load(asCommand: Boolean = true) {
-            if (!isLoaded) return
+            if (isReloading) return
+            isReloading = true
 
             Client.getMinecraft().options.save()
             unload(asCommand = false)
@@ -132,22 +136,26 @@ class CTJS : ClientModInitializer {
                 ChatLib.chat("&cReloading ChatTriggers...")
 
             thread {
-                SecureLoader.reload()
-                ModuleManager.setup()
-                Client.getMinecraft().options.load()
+                try {
+                    SecureLoader.reload()
+                    ModuleManager.setup()
+                    Client.getMinecraft().options.load()
 
-                // Need to set isLoaded to true before running modules, otherwise custom triggers
-                // activated at the top level will not work
-                isLoaded = true
+                    // Need to set isLoaded to true before running modules, otherwise custom triggers
+                    // activated at the top level will not work
+                    isLoaded = true
 
-                ModuleManager.entryPass()
+                    ModuleManager.entryPass()
 
-                if (asCommand)
-                    ChatLib.chat("&aDone reloading!")
+                    if (asCommand)
+                        ChatLib.chat("&aDone reloading!")
 
-                TriggerType.GAME_LOAD.triggerAll()
-                if (World.isLoaded())
-                    TriggerType.WORLD_LOAD.triggerAll()
+                    TriggerType.GAME_LOAD.triggerAll()
+                    if (World.isLoaded())
+                        TriggerType.WORLD_LOAD.triggerAll()
+                } finally {
+                    isReloading = false
+                }
             }
         }
     }
