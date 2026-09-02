@@ -1,4 +1,3 @@
-//? if >=26.2 {
 package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.api.client.Client;
@@ -14,7 +13,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//? if <26.2 {
+/*@Mixin(targets = "net.minecraft.client.gui.Gui")
+*///?} else {
 @Mixin(targets = "net.minecraft.client.gui.Hud")
+//?}
 public class GuiHudMixin {
     @Inject(method = "extractRenderState", at = @At("HEAD"))
     private void captureContext(GuiGraphicsExtractor context, DeltaTracker tickCounter, CallbackInfo ci) {
@@ -43,4 +46,3 @@ public class GuiHudMixin {
         }
     }
 }
-//?}

@@ -2,7 +2,6 @@ package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.internal.utils.getOrDefault
-import com.chattriggers.ctjs.internal.utils.getOption
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Style
 import org.mozilla.javascript.NativeObject
@@ -37,10 +36,10 @@ class Text {
     constructor(string: String, config: NativeObject) {
         setString(string)
         setColor(config.getOrDefault<Number>("color", 0xffffffff).toLong())
-        setFormatted(config.getOption("formatted", true))
-        setShadow(config.getOption("shadow", false))
-        setAlign(config.getOption("align", Align.LEFT))
-        setBackground(config.getOption("background", false))
+        setFormatted(config.getOrDefault<Boolean>("formatted", true))
+        setShadow(config.getOrDefault<Boolean>("shadow", false))
+        setAlign(config.getOrDefault<Align>("align", Align.LEFT))
+        setBackground(config.getOrDefault<Boolean>("background", false))
         setBackgroundColor(config.getOrDefault<Number>("backgroundColor", 0x00000000).toLong())
         setX(config.getOrDefault<Number>("x", 0).toInt())
         setY(config.getOrDefault<Number>("y", 0).toInt())

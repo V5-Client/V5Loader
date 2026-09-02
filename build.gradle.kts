@@ -78,9 +78,6 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(25))
     }
-
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
 }
 
 tasks {
@@ -90,7 +87,7 @@ tasks {
         val fapiVersion = fabricApiVersion
         val loaderVersion = libs.versions.loader.get()
         val versionMixins = if (minecraftVersion == "26.1.2") {
-            listOf("GuiMixin", "MinecraftScreenMixin", "LevelRendererMixin")
+            listOf("GuiHudMixin", "GuiScreenMixin", "LevelRendererMixin")
         } else {
             listOf(
                 "CommandEncoderMixin", "GpuDeviceMixin", "GuiHudMixin", "GameRendererAccessor",

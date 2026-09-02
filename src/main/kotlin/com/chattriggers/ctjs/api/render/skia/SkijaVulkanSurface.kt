@@ -1,10 +1,10 @@
 //? if >=26.2 {
 package com.chattriggers.ctjs.api.render.skia
 
-import com.chattriggers.ctjs.internal.accessors.GpuDeviceAccessor
-import com.chattriggers.ctjs.internal.accessors.CommandEncoderAccessor
-import com.chattriggers.ctjs.internal.accessors.VulkanCommandEncoderAccessor
 import com.chattriggers.ctjs.internal.accessors.VulkanDeviceAccessor
+import com.chattriggers.ctjs.internal.mixins.CommandEncoderMixin
+import com.chattriggers.ctjs.internal.mixins.GpuDeviceMixin
+import com.chattriggers.ctjs.internal.mixins.VulkanCommandEncoderMixin
 import com.mojang.blaze3d.GpuFormat
 import com.mojang.blaze3d.systems.CommandEncoder
 import com.mojang.blaze3d.systems.GpuDevice
@@ -48,7 +48,7 @@ internal class SkijaVulkanSurface : AutoCloseable {
         }
 
         val gpuDevice = RenderSystem.tryGetDevice() ?: return true
-        val backend = (gpuDevice as GpuDeviceAccessor).`ctjs$getBackend`()
+        val backend = (gpuDevice as GpuDeviceMixin).`ctjs$getBackend`()
         val vulkanDevice = backend as? VulkanDevice ?: run {
             logger.warn("GpuTexture is Vulkan but RenderSystem device backend is {}", backend.javaClass.name)
             return true
@@ -105,9 +105,9 @@ internal class SkijaVulkanSurface : AutoCloseable {
 
     private fun transition(gpu: GpuDevice, image: Long, oldLayout: Int, newLayout: Int, srcStage: Int, dstStage: Int, srcAccess: Int, dstAccess: Int) {
         val encoder = gpu.createCommandEncoder()
-        val vkEncoder = ((encoder as CommandEncoderAccessor).`ctjs$getBackend`() as? VulkanCommandEncoder)
+        val vkEncoder = ((encoder as CommandEncoderMixin).`ctjs$getBackend`() as? VulkanCommandEncoder)
             ?: error("Minecraft did not provide a Vulkan command encoder")
-        val commandBuffer = (vkEncoder as VulkanCommandEncoderAccessor).`ctjs$getCommandBuffer`()
+        val commandBuffer = (vkEncoder as VulkanCommandEncoderMixin).`ctjs$getCommandBuffer`()
         MemoryStack.stackPush().use { stack ->
             val barrier = VkImageMemoryBarrier.calloc(1, stack)
                 .sType(VK10.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)

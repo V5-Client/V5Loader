@@ -6,12 +6,6 @@ kotlin {
     jvmToolchain(21)
 }
 
-buildscript {
-    dependencies {
-        classpath(libs.gradle.plugin)
-    }
-}
-
 repositories {
     mavenCentral()
 }

@@ -165,24 +165,6 @@ std::vector<jint> packPoints(const std::vector<v5pf::Int3>& points) {
   return packed;
 }
 
-std::vector<jint> toJIntVector(const std::vector<int>& values) {
-  std::vector<jint> out;
-  out.reserve(values.size());
-  for (const int value : values) {
-    out.push_back(static_cast<jint>(value));
-  }
-  return out;
-}
-
-std::vector<jfloat> toJFloatVector(const std::vector<float>& values) {
-  std::vector<jfloat> out;
-  out.reserve(values.size());
-  for (const float value : values) {
-    out.push_back(static_cast<jfloat>(value));
-  }
-  return out;
-}
-
 v5pf::ChunkUpdate makeChunkUpdate(
   const int chunkX,
   const int chunkZ,
@@ -493,9 +475,9 @@ JNIEXPORT jobject JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_Nativ
 
     const auto packedPath = packPoints(result->points);
     const auto packedKeyPath = packPoints(result->keyPoints);
-    const auto packedPathFlags = toJIntVector(result->pathFlags);
-    const auto packedKeyNodeFlags = toJIntVector(result->keyNodeFlags);
-    const auto packedKeyNodeMetrics = toJIntVector(result->keyNodeMetrics);
+    const std::vector<jint> packedPathFlags(result->pathFlags.begin(), result->pathFlags.end());
+    const std::vector<jint> packedKeyNodeFlags(result->keyNodeFlags.begin(), result->keyNodeFlags.end());
+    const std::vector<jint> packedKeyNodeMetrics(result->keyNodeMetrics.begin(), result->keyNodeMetrics.end());
 
     jintArray pathArray = env->NewIntArray(static_cast<jsize>(packedPath.size()));
     if (pathArray == nullptr) {
@@ -638,7 +620,7 @@ JNIEXPORT jobject JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_Nativ
     }
 
     const auto packedPath = packPoints(result->points);
-    const auto packedAngles = toJFloatVector(result->angles);
+    const std::vector<jfloat> packedAngles(result->angles.begin(), result->angles.end());
 
     jintArray pathArray = env->NewIntArray(static_cast<jsize>(packedPath.size()));
     if (pathArray == nullptr) {

@@ -133,7 +133,6 @@ object JSLoader {
         try {
             require.loadCTModule(module.name, entryURI)
         } catch (e: Throwable) {
-            println("Error loading module ${module.name}")
             "Error loading module ${module.name}".printToConsole(LogType.ERROR)
             e.printTraceToConsole()
         }

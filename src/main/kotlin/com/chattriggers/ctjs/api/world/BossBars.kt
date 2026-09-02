@@ -11,7 +11,6 @@ import com.chattriggers.ctjs.MCBossBarColor
 import com.chattriggers.ctjs.MCBossBarStyle
 import com.chattriggers.ctjs.internal.utils.asMixin
 import com.chattriggers.ctjs.internal.utils.getOrDefault
-import com.chattriggers.ctjs.internal.utils.getOption
 import net.minecraft.client.gui.components.LerpingBossEvent
 import org.mozilla.javascript.NativeObject
 import java.util.UUID
@@ -60,13 +59,13 @@ object BossBars {
      */
     @JvmStatic
     fun addBossBar(obj: NativeObject): BossBar {
-        val name = obj.getOption<String>("name", "")
+        val name = obj.getOrDefault<String>("name", "")
         val percent = obj.getOrDefault<Number>("percent", 1f).toFloat().coerceIn(0f..1f)
-        val color = Color.from(obj.getOption("color", Color.WHITE))
-        val style = Style.from(obj.getOption("sections", Style.ONE))
-        val shouldDarkenSky = obj.getOption<Boolean>("darkenSky", false)
-        val dragonMusic = obj.getOption<Boolean>("dragonMusic", false)
-        val shouldThickenFog = obj.getOption<Boolean>("thickenFog", false)
+        val color = Color.from(obj.getOrDefault<Any>("color", Color.WHITE))
+        val style = Style.from(obj.getOrDefault<Any>("sections", Style.ONE))
+        val shouldDarkenSky = obj.getOrDefault<Boolean>("darkenSky", false)
+        val dragonMusic = obj.getOrDefault<Boolean>("dragonMusic", false)
+        val shouldThickenFog = obj.getOrDefault<Boolean>("thickenFog", false)
 
         val uuid = UUID.randomUUID()
 

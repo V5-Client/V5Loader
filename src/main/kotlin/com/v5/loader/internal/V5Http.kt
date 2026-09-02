@@ -45,7 +45,6 @@ internal object V5Http {
         host: String,
         path: String,
         jwt: String = "",
-        extraHeaders: List<Pair<String, String>> = emptyList(),
     ): String {
         val url = "https://$host$path"
         val requestBuilder = HttpRequest.newBuilder()
@@ -57,10 +56,6 @@ internal object V5Http {
         if (jwt.isNotEmpty()) {
             requestBuilder.header("Authorization", "Bearer $jwt")
         }
-        for ((name, value) in extraHeaders) {
-            requestBuilder.header(name, value)
-        }
-
         return try {
             val response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
             if (response.statusCode() != 200) {
@@ -74,7 +69,7 @@ internal object V5Http {
         }
     }
 
-    fun httpsPost(host: String, path: String, jsonBody: String, jwt: String = ""): String {
+    fun httpsPost(host: String, path: String, jsonBody: String): String {
         val url = "https://$host$path"
         val requestBuilder = HttpRequest.newBuilder()
             .uri(URI.create(url))
@@ -82,10 +77,6 @@ internal object V5Http {
             .header("Content-Type", "application/json")
             .header("User-Agent", USER_AGENT)
             .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-
-        if (jwt.isNotEmpty()) {
-            requestBuilder.header("Authorization", "Bearer $jwt")
-        }
 
         return try {
             val response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())

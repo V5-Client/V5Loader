@@ -33,7 +33,6 @@ skija-types = { module = "io.github.humbleui:types", version = "0.1.1" }
 rhino = { module = "com.github.ChatTriggers:rhino", version.ref = "rhino" }
 koffee = { module = "com.github.ChatTriggers:koffee", version.ref = "koffee" }
 
-universalcraft = { module = "gg.essential:universalcraft-26.1-fabric", version.ref = "universalcraft" }
 elementa = { module = "gg.essential:elementa", version.ref = "elementa" }
 vigilance = { module = "gg.essential:vigilance", version.ref = "vigilance" }
 hypixel-mod-api = { module = "net.hypixel:mod-api", version.ref = "hypixel-mod-api" }

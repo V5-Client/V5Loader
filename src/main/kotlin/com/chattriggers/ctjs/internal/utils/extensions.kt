@@ -5,8 +5,6 @@ import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.Scriptable
-import java.net.URLEncoder
-import java.nio.charset.Charset
 import kotlin.reflect.KClass
 
 data class ModVersion(
@@ -27,17 +25,11 @@ fun String.toIdentifier(): Identifier {
     return Identifier.parse(if (':' in this) this else "minecraft:$this")
 }
 
-fun String.urlEncode() = URLEncoder.encode(this, Charset.defaultCharset())
-
 // A helper function that makes the intent explicit and reduces parens
 inline fun <reified T> Any.asMixin() = this as T
 
 inline fun <reified T> NativeObject?.get(key: String): T? {
     return this?.get(key) as? T
-}
-
-inline fun <reified T> NativeObject?.getOption(key: String, default: T): T {
-    return this?.get(key) as? T ?: default
 }
 
 // Note: getOrDefault<Number>(...).toInt/Double/Float() should be preferred
@@ -53,8 +45,6 @@ fun NativeObject?.getOrNull(key: String): Any? {
 
 fun Double.toRadians() = this * Mth.DEG_TO_RAD
 fun Float.toRadians() = this * Mth.DEG_TO_RAD
-fun Double.toDegrees() = this * Mth.RAD_TO_DEG
-fun Float.toDegrees() = this * Mth.RAD_TO_DEG
 
 fun KClass<*>.descriptorString(): String = java.descriptorString()
 fun KClass<*>.descriptor() = Descriptor.Object(descriptorString())
