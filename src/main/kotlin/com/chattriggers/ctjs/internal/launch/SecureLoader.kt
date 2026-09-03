@@ -2,6 +2,7 @@ package com.chattriggers.ctjs.internal.launch
 
 import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
+import com.v5.loader.internal.V5Loader
 import com.v5.loader.internal.V5Crypto
 import com.v5.loader.internal.V5Http
 import kotlinx.serialization.json.Json
@@ -55,28 +56,10 @@ internal object SecureLoader {
     @Volatile private var isPluginLoaded = false
     @Volatile private var isLoaded = false
     @Volatile private var internalToken: String? = null
-    @Volatile private var didConsumeInitialLoaderToken = false
     private var lastCtjsErrorReportAt = 0L
 
     @JvmStatic
-    fun getJwtToken(): String? {
-        val token = internalToken
-        if (!token.isNullOrBlank()) return token
-
-        if (!didConsumeInitialLoaderToken) {
-            synchronized(this) {
-                if (!didConsumeInitialLoaderToken) {
-                    val loaderToken = V5TokenSource.consumeToken()
-                    if (!loaderToken.isNullOrBlank()) {
-                        internalToken = loaderToken
-                    }
-                    didConsumeInitialLoaderToken = true
-                }
-            }
-        }
-
-        return internalToken
-    }
+    fun getJwtToken(): String? = internalToken
 
     @JvmStatic
     fun getFreshJwtToken(): String? {
@@ -91,6 +74,9 @@ internal object SecureLoader {
         if (token.isNullOrBlank()) return
         internalToken = token
     }
+
+    @Synchronized
+    fun authenticate(): String? = V5Loader.authenticate()?.also(::setJwtToken)
 
     fun reportCtjsJavascriptError(
         kind: String,
@@ -303,12 +289,6 @@ internal object SecureLoader {
         if (isPluginLoaded) return
         println("[V5] Stage: onMixinPlugin")
         try {
-            val token = getFreshJwtToken()
-            if (token.isNullOrBlank()) {
-                println("[V5] No loader auth token available.")
-                shutDownHard()
-            }
-
             val modulePath = getV5ModuleDir()
             if (modulePath.exists() && isLocalDeveloperModeEnabled()) {
                 isDevMode = true
@@ -347,11 +327,6 @@ internal object SecureLoader {
         if (isDevMode) {
             isLoaded = true
             return
-        }
-
-        if (getFreshJwtToken().isNullOrBlank()) {
-            println("[V5] Session expired or revoked. Exiting.")
-            shutDownHard()
         }
 
         isLoaded = true

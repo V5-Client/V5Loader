@@ -91,14 +91,6 @@ internal object V5Http {
         }
     }
 
-    fun fetchLoaderHash(token: String, hash: String, minecraftVersion: String): String {
-        return httpsGet(
-            BACKEND_HOST,
-            "/api/hash/loader?hash=$hash&minecraft_version=$minecraftVersion",
-            token,
-        )
-    }
-
     private fun logTransportFailure(method: String, url: String, error: Exception) {
         System.err.println(
             "[V5] Curl $method failed url=$url curl_error=${error.message ?: error.javaClass.simpleName}",
