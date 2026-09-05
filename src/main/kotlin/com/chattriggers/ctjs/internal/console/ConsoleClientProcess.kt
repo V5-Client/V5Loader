@@ -40,15 +40,6 @@ class ConsoleClientProcess(private val port: Int, private val hostPid: Long) {
                 val socketIn = BufferedReader(InputStreamReader(socket.inputStream, Charsets.UTF_8))
 
                 while (true) {
-                    if (socket.isClosed || !socket.isConnected) {
-                        return
-                    }
-
-                    if (!socketIn.ready()) {
-                        Thread.sleep(50)
-                        continue
-                    }
-
                     val messageText = socketIn.readLine() ?: break
                     when (val message = Json.decodeFromString<H2CMessage>(messageText)) {
                         is InitMessage -> {

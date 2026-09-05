@@ -7,7 +7,7 @@ import com.chattriggers.ctjs.api.entity.PlayerInteraction
 import com.chattriggers.ctjs.api.inventory.Item
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.render.DrawContextHolder
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.api.triggers.CancellableEvent
 import com.chattriggers.ctjs.api.triggers.ChatTrigger
 import com.chattriggers.ctjs.api.triggers.TriggerType
@@ -94,21 +94,21 @@ object ClientListener : Initializer {
         }
 
         ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
-            // TODO: Why does Renderer.drawString not work in here?
+            // TODO: Why does Render2D.drawString not work in here?
             ScreenEvents.beforeExtract(screen).register { _, stack, mouseX, mouseY, partialTicks ->
                 if (!JSLoader.hasTriggers(TriggerType.GUI_RENDER)) return@register
                 DrawContextHolder.withContext(stack) {
-                    Renderer.withMatrix(UMatrixStack(stack.pose()).toMC(), partialTicks) {
+                    Render2D.withMatrix(UMatrixStack(stack.pose()).toMC(), partialTicks) {
                         TriggerType.GUI_RENDER.triggerAll(mouseX, mouseY, screen)
                     }
                 }
             }
 
-            // TODO: Why does Renderer.drawString not work in here?
+            // TODO: Why does Render2D.drawString not work in here?
             ScreenEvents.afterExtract(screen).register { _, stack, mouseX, mouseY, partialTicks ->
                 if (!JSLoader.hasTriggers(TriggerType.POST_GUI_RENDER)) return@register
                 DrawContextHolder.withContext(stack) {
-                    Renderer.withMatrix(UMatrixStack(stack.pose()).toMC(), partialTicks) {
+                    Render2D.withMatrix(UMatrixStack(stack.pose()).toMC(), partialTicks) {
                         TriggerType.POST_GUI_RENDER.triggerAll(mouseX, mouseY, screen, partialTicks)
                     }
                 }
@@ -144,7 +144,7 @@ object ClientListener : Initializer {
         CTEvents.RENDER_OVERLAY.register { ctx, stack, partialTicks ->
             if (!JSLoader.hasTriggers(TriggerType.RENDER_OVERLAY)) return@register
             DrawContextHolder.withContext(ctx) {
-                Renderer.withMatrix(stack, partialTicks) {
+                Render2D.withMatrix(stack, partialTicks) {
                     TriggerType.RENDER_OVERLAY.triggerAll(ctx)
                 }
             }
@@ -152,14 +152,14 @@ object ClientListener : Initializer {
 
         CTEvents.RENDER_ENTITY.register { stack, entity, partialTicks, ci ->
             if (!JSLoader.hasTriggers(TriggerType.RENDER_ENTITY)) return@register
-            Renderer.withMatrix(stack, partialTicks) {
+            Render2D.withMatrix(stack, partialTicks) {
                 TriggerType.RENDER_ENTITY.triggerAll(Entity.fromMC(entity), partialTicks, ci)
             }
         }
 
         CTEvents.RENDER_BLOCK_ENTITY.register { stack, blockEntity, partialTicks, ci ->
             if (!JSLoader.hasTriggers(TriggerType.RENDER_BLOCK_ENTITY)) return@register
-            Renderer.withMatrix(stack, partialTicks) {
+            Render2D.withMatrix(stack, partialTicks) {
                 TriggerType.RENDER_BLOCK_ENTITY.triggerAll(BlockEntity(blockEntity), partialTicks, ci)
             }
         }

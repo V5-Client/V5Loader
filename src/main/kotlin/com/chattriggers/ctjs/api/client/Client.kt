@@ -1,8 +1,10 @@
 package com.chattriggers.ctjs.api.client
 
+import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.api.inventory.Slot
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.world.World
+import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.listeners.ClientListener
 import com.chattriggers.ctjs.internal.mixins.ChatScreenAccessor
 import com.chattriggers.ctjs.internal.mixins.AbstractSignEditScreenAccessor
@@ -12,6 +14,7 @@ import com.chattriggers.ctjs.internal.mixins.KeyMappingAccessor
 import com.chattriggers.ctjs.internal.mixins.MinecraftAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import com.mojang.blaze3d.platform.InputConstants
+import com.mojang.blaze3d.pipeline.RenderTarget
 import gg.essential.universal.UKeyboard
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.ChatComponent
@@ -32,10 +35,39 @@ import com.mojang.realmsclient.RealmsMainScreen
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ServerGamePacketListener
 import net.minecraft.network.chat.Component
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.phys.Vec3
+import org.mozilla.javascript.Callable
+import org.mozilla.javascript.Undefined
 
 object Client {
+    enum class RenderLimiter {
+        OFF,
+        LIMIT_CHUNKS,
+        NO_RENDER,
+    }
+
     internal var referenceSystemTime: Long = 0
     private val heldKeys = mutableSetOf<String>()
+
+    @JvmStatic @Volatile var isFreecam = false
+    @JvmStatic @Volatile var isFreelook = false
+    @JvmStatic @Volatile var isUngrabbed = false
+    @JvmStatic @Volatile var isInputLocked = false
+    @JvmStatic @Volatile var isMacroEnabled = false
+    @JvmStatic @Volatile var isForcePerspective = false
+    @JvmStatic @Volatile var limitFps = false
+    @JvmStatic @Volatile var muteGame = false
+    @JvmStatic @Volatile var renderLimiter = RenderLimiter.OFF
+    @Volatile private var cameraYaw: Float? = null
+    @Volatile private var cameraPitch: Float? = null
+    @JvmStatic @Volatile var cameraPosition: Vec3? = null
+    @JvmStatic @Volatile var freelookDistance = 4.0
+        set(value) {
+            field = value.coerceIn(1.0, 12.0)
+        }
+    @JvmStatic @Volatile var spectatedEntity: LivingEntity? = null
+    @Volatile private var nameProcessor: Callable? = null
 
     @JvmField
     internal var automatedAttackHeld = false
@@ -45,6 +77,45 @@ object Client {
 
     @JvmField
     val camera = CameraWrapper()
+
+    @JvmStatic
+    fun setCameraRotation(yaw: Float, pitch: Float) {
+        cameraYaw = yaw
+        cameraPitch = pitch
+    }
+
+    @JvmStatic
+    fun clearCameraRotation() {
+        cameraYaw = null
+        cameraPitch = null
+    }
+
+    @JvmStatic
+    fun getCameraYaw(): Float? = cameraYaw
+
+    @JvmStatic
+    fun getCameraPitch(): Float? = cameraPitch
+
+    @JvmStatic
+    fun setNameProcessor(processor: Callable?) {
+        nameProcessor = processor
+    }
+
+    @JvmStatic
+    fun hasNameProcessor(): Boolean = nameProcessor != null && CTJS.isLoaded
+
+    @JvmStatic
+    fun processName(original: Component): Component {
+        val processor = nameProcessor ?: return original
+        if (!CTJS.isLoaded) return original
+
+        return try {
+            val result = JSLoader.invokeMixin(processor, arrayOf(original))
+            if (result != null && result != Undefined.instance && result is Component) result else original
+        } catch (_: Throwable) {
+            original
+        }
+    }
 
     /**
      * Gets Minecraft's Minecraft object
@@ -83,13 +154,11 @@ object Client {
         scheduleTask {
             World.toMC()?.disconnect(Component.empty())
 
-            getMinecraft().setScreen(
-                when {
-                    getMinecraft().isLocalServer -> TitleScreen()
-                    getMinecraft().currentServer?.isRealm == true -> RealmsMainScreen(TitleScreen())
-                    else -> JoinMultiplayerScreen(TitleScreen())
-                }
-            )
+            getMinecraft().setScreenCompat(when {
+                getMinecraft().isLocalServer -> TitleScreen()
+                getMinecraft().currentServer?.isRealm == true -> RealmsMainScreen(TitleScreen())
+                else -> JoinMultiplayerScreen(TitleScreen())
+            })
         }
     }
 
@@ -112,19 +181,31 @@ object Client {
         }
     }
 
+    @JvmStatic
+    fun getCurrentScreen(): Screen? = getMinecraft().screenCompat
+
+    @JvmStatic
+    fun setCurrentScreen(screen: Screen?) = getMinecraft().setScreenCompat(screen)
+
+    @JvmStatic
+    fun getMainRenderTarget(): RenderTarget = MinecraftCompat.mainRenderTarget(getMinecraft())
+
+    @JvmStatic
+    fun reloadWorldRenderer() = MinecraftCompat.reloadLevelRenderer(getMinecraft())
+
     /**
      * Gets the Minecraft ChatHud object for the chat gui
      *
      * @return The GuiNewChat object for the chat gui
      */
     @JvmStatic
-    fun getChatGui(): ChatComponent? = getMinecraft().gui.chat
+    fun getChatGui(): ChatComponent? = getMinecraft().gui.chatCompat
 
     @JvmStatic
-    fun isInChat(): Boolean = getMinecraft().screen is ChatScreen
+    fun isInChat(): Boolean = getMinecraft().screenCompat is ChatScreen
 
     @JvmStatic
-    fun getTabGui(): PlayerTabOverlay? = getMinecraft().gui.tabList
+    fun getTabGui(): PlayerTabOverlay? = getMinecraft().gui.tabListCompat
 
     @JvmStatic
     fun isInTab(): Boolean = getMinecraft().options.keyPlayerList.isDown
@@ -179,7 +260,7 @@ object Client {
     @JvmStatic
     fun getCurrentChatMessage(): String {
         return if (isInChat()) {
-            val chatGui = getMinecraft().screen as ChatScreen
+            val chatGui = getMinecraft().screenCompat as ChatScreen
             chatGui.asMixin<ChatScreenAccessor>().input.value
         } else ""
     }
@@ -192,14 +273,14 @@ object Client {
     @JvmStatic
     fun setCurrentChatMessage(message: String) {
         if (isInChat()) {
-            val chatGui = getMinecraft().screen as ChatScreen
+            val chatGui = getMinecraft().screenCompat as ChatScreen
             chatGui.asMixin<ChatScreenAccessor>().input.value = message
         } else currentGui.set(ChatScreen(message, false))
     }
 
     @JvmStatic
     fun setSignLine(line: Int, text: String) {
-        val messages = (getMinecraft().screen as? AbstractSignEditScreen)
+        val messages = (getMinecraft().screenCompat as? AbstractSignEditScreen)
             ?.asMixin<AbstractSignEditScreenAccessor>()
             ?.messages ?: return
         if (line in messages.indices) messages[line] = text
@@ -221,8 +302,8 @@ object Client {
     private fun canAutomateInput(minecraft: Minecraft) =
         minecraft.level != null &&
             minecraft.player != null &&
-            minecraft.screen == null &&
-            minecraft.overlay == null
+            minecraft.screenCompat == null &&
+            minecraft.overlayCompat == null
 
     private fun mutateInput(action: (Minecraft) -> Unit) = getMinecraft().let { it.execute { action(it) } }
 
@@ -323,12 +404,10 @@ object Client {
      */
     @JvmStatic
     fun showTitle(title: String?, subtitle: String?, fadeIn: Int, time: Int, fadeOut: Int) {
-        getMinecraft().gui.apply {
-            setTimes(fadeIn, time, fadeOut)
-            if (title != null)
-                setTitle(TextComponent(title))
-            if (subtitle != null)
-                setSubtitle(TextComponent(subtitle))
+        getMinecraft().gui.let { gui ->
+            MinecraftCompat.setTimes(gui, fadeIn, time, fadeOut)
+            if (title != null) MinecraftCompat.setTitle(gui, TextComponent(title))
+            if (subtitle != null) MinecraftCompat.setSubtitle(gui, TextComponent(subtitle))
         }
     }
 
@@ -408,11 +487,11 @@ object Client {
          *
          * @return the Minecraft gui
          */
-        fun get(): Screen? = getMinecraft().screen
+        fun get(): Screen? = getMinecraft().screenCompat
 
         fun set(screen: Screen?) {
             scheduleTask {
-                getMinecraft().setScreen(screen)
+                getMinecraft().setScreenCompat(screen)
             }
         }
 
@@ -437,10 +516,10 @@ object Client {
     }
 
     class CameraWrapper {
-        fun getX(): Double = getMinecraft().gameRenderer.mainCamera.position().x
+        fun getX(): Double = MinecraftCompat.mainCamera(getMinecraft().gameRenderer).position().x
 
-        fun getY(): Double = getMinecraft().gameRenderer.mainCamera.position().y
+        fun getY(): Double = MinecraftCompat.mainCamera(getMinecraft().gameRenderer).position().y
 
-        fun getZ(): Double = getMinecraft().gameRenderer.mainCamera.position().z
+        fun getZ(): Double = MinecraftCompat.mainCamera(getMinecraft().gameRenderer).position().z
     }
 }

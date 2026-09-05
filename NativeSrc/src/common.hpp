@@ -50,40 +50,42 @@ inline uint64_t chunkKey(const int x, const int z) {
   return (px << 32) | pz;
 }
 
-struct ActionCosts {
-  static constexpr double INF_COST = 1e6;
-  static constexpr double FLY_ONE_BLOCK_TIME = 1.0 / 0.7;
-  static constexpr double SPRINT_ONE_BLOCK_TIME = 1.0 / 0.2806;
-  static constexpr double SPRINT_DIAGONAL_TIME = SPRINT_ONE_BLOCK_TIME * 1.4142135623730951;
-  static constexpr double MOMENTUM_LOSS_PENALTY = 6.0;
-  static constexpr double JUMP_PENALTY = 2.0;
-  static constexpr double GAP_JUMP_REWARD_OFFSET = 1.5;
-  static constexpr double SLAB_ASCENT_TIME = SPRINT_ONE_BLOCK_TIME * 1.1;
-  static constexpr double WALK_OFF_EDGE_TIME = SPRINT_ONE_BLOCK_TIME * 0.5;
-  static constexpr double LAND_RECOVERY_TIME = 2.0;
-  static constexpr double JUMP_UP_ONE_BLOCK_TIME = 28.0 + MOMENTUM_LOSS_PENALTY + SPRINT_ONE_BLOCK_TIME;
+constexpr std::array<float, 257> makeFallTimes() {
+  std::array<float, 257> fallTimes{};
+  float currentDistance = 0.0f;
+  int tick = 0;
+  float velocity = 0.0f;
 
-  std::array<double, 257> fallTimes{};
-
-  ActionCosts() {
-    double currentDistance = 0.0;
-    int tick = 0;
-    double velocity = 0.0;
-
-    for (int targetDistance = 1; targetDistance <= 256; targetDistance++) {
-      while (currentDistance < targetDistance) {
-        velocity = (velocity - 0.08) * 0.98;
-        currentDistance -= velocity;
-        tick++;
-      }
-      fallTimes[static_cast<size_t>(targetDistance)] = static_cast<double>(tick);
+  for (int targetDistance = 1; targetDistance <= 256; targetDistance++) {
+    while (currentDistance < targetDistance) {
+      velocity = (velocity - 0.08f) * 0.98f;
+      currentDistance -= velocity;
+      tick++;
     }
+    fallTimes[static_cast<size_t>(targetDistance)] = static_cast<float>(tick);
   }
+  return fallTimes;
+}
 
-  [[nodiscard]] double getFallTime(const int blocks) const {
-    if (blocks <= 0) return 0.0;
-    if (blocks >= static_cast<int>(fallTimes.size())) return INF_COST;
-    return fallTimes[static_cast<size_t>(blocks)] + LAND_RECOVERY_TIME;
+struct ActionCosts {
+  static constexpr float INF_COST = 1e6f;
+  static constexpr float FLY_ONE_BLOCK_TIME = 1.0f / 0.7f;
+  static constexpr float SPRINT_ONE_BLOCK_TIME = 1.0f / 0.2806f;
+  static constexpr float SPRINT_DIAGONAL_TIME = SPRINT_ONE_BLOCK_TIME * 1.41421356f;
+  static constexpr float MOMENTUM_LOSS_PENALTY = 6.0f;
+  static constexpr float JUMP_PENALTY = 2.0f;
+  static constexpr float GAP_JUMP_REWARD_OFFSET = 1.5f;
+  static constexpr float SLAB_ASCENT_TIME = SPRINT_ONE_BLOCK_TIME * 1.1f;
+  static constexpr float WALK_OFF_EDGE_TIME = SPRINT_ONE_BLOCK_TIME * 0.5f;
+  static constexpr float LAND_RECOVERY_TIME = 2.0f;
+  static constexpr float JUMP_UP_ONE_BLOCK_TIME = 28.0f + MOMENTUM_LOSS_PENALTY + SPRINT_ONE_BLOCK_TIME;
+
+  inline static constexpr auto FALL_TIMES = makeFallTimes();
+
+  [[nodiscard]] static float getFallTime(const int blocks) {
+    if (blocks <= 0) return 0.0f;
+    if (blocks >= static_cast<int>(FALL_TIMES.size())) return INF_COST;
+    return FALL_TIMES[static_cast<size_t>(blocks)] + LAND_RECOVERY_TIME;
   }
 };
 

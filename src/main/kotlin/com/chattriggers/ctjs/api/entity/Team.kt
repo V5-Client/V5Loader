@@ -81,22 +81,19 @@ class Team(override val mcValue: MCTeam) : CTWrapper<MCTeam> {
      */
     fun setSuffix(suffix: String) = setSuffix(TextComponent(suffix))
 
-    fun getColor() = mcValue.color.toString()
+    fun getColor() = /*? if >=26.2 {*/ mcValue.color.map { ChatFormatting.valueOf(it.name).toString() }.orElse(ChatFormatting.RESET.toString()) /*?} else {*/ /*mcValue.color.toString()*//*?}*/
 
-    /**
-     * Sets the team color
-     * @param color a string format of a [Formatting], or a hex value
-     * @return the team for method chaining
-     */
+    /** Sets the team color using the legacy ChatFormatting name or numeric id. */
     fun setColor(color: Any?) = apply {
-        mcValue.color = when (color) {
-            is Number -> ChatFormatting.getById(color.toInt()) ?: ChatFormatting.RESET
+        val formatting = when (color) {
+            is Number -> "0123456789abcdef".getOrNull(color.toInt())?.let(ChatFormatting::getByCode) ?: ChatFormatting.RESET
             is CharSequence -> ChatFormatting.entries.find {
                 it.toString() == ChatLib.addColor(color.toString())
             } ?: ChatFormatting.RESET
             null -> ChatFormatting.RESET
             else -> throw IllegalArgumentException("Could not convert type ${color::class.simpleName} to a Formatting")
         }
+        /*? if >=26.2 {*/ mcValue.setColor(java.util.Optional.ofNullable(net.minecraft.world.scores.TeamColor.byName(formatting.name.lowercase()))) /*?} else {*/ /*mcValue.color = formatting*//*?}*/
     }
 
     /**

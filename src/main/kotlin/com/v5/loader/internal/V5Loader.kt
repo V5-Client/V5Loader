@@ -21,11 +21,13 @@ import kotlin.io.path.writeText
 
 internal object V5Loader {
     private const val MOD_ID = "ctjs"
-    private const val DEVELOPER_JAR_NAME = "V5-Loader-DEV.jar"
-    private val legacyModLoaderName = Regex("V5ModLoader.*\\.jar", RegexOption.IGNORE_CASE)
-    private val secretLock = Any()
+    private const val DEVELOPER_JAR_PREFIX = "V5-Loader-DEV-"
+    private const val GITHUB_API_HOST = "api.github.com"
+    private const val GITHUB_HOST = "github.com"
+    private const val GITHUB_REPOSITORY = "V5-Client/V5Loader"
+    private val SHA_256_REGEX = Regex("[a-f0-9]{64}")
+    private val RELEASE_TAG_REGEX = Regex("[A-Za-z0-9._-]+")
     private var initialized = false
-    private var sessionToken = ""
 
     @JvmStatic
     @Synchronized
@@ -34,81 +36,65 @@ internal object V5Loader {
 
         val fabricLoader = FabricLoader.getInstance()
         val gameDirPath = fabricLoader.gameDir.toAbsolutePath().toString()
-        System.setProperty("v5.game_dir", gameDirPath)
         System.setProperty("v5.minecraft_version", fabricLoader.rawGameVersion)
-        val sessionFilePath = buildSessionFilePath(gameDirPath)
         val minecraftVersion = resolveMinecraftVersion()
 
         println("[V5] Using Minecraft version for loader: $minecraftVersion")
-        println("[V5] Authenticating...")
-
-        val authSession = authenticate(sessionFilePath)
-        if (authSession == null || !validateAuthStatus(authSession.accessToken)) {
-            throw IllegalStateException("[V5] Authentication failed, expired, or account is banned.")
-        }
-
-        synchronized(secretLock) { sessionToken = authSession.accessToken }
         if (FabricLoader.getInstance().isDevelopmentEnvironment) {
             println("[V5] Development environment detected; skipping self-update check.")
             initialized = true
             return
         }
-        checkSelfUpdate(authSession.accessToken, minecraftVersion, File(gameDirPath))
+        checkSelfUpdate(minecraftVersion, File(gameDirPath))
         initialized = true
     }
 
     @JvmStatic
-    fun consumeToken(): String {
-        return synchronized(secretLock) {
-            val current = sessionToken
-            sessionToken = ""
-            current
+    @Synchronized
+    fun authenticate(): String? {
+        println("[V5] Authenticating...")
+        val sessionFilePath = buildSessionFilePath(FabricLoader.getInstance().gameDir.toAbsolutePath().toString())
+        val authSession = authenticateSession(sessionFilePath)
+        if (authSession == null || !validateAuthStatus(authSession.accessToken)) {
+            System.err.println("[V5] Authentication failed, expired, or account is banned.")
+            return null
         }
+        return authSession.accessToken
     }
 
-    private fun checkSelfUpdate(token: String, minecraftVersion: String, gameDir: File) {
+    private fun checkSelfUpdate(minecraftVersion: String, gameDir: File) {
         val activeJar = resolveActiveJar()
-        if (activeJar.name == DEVELOPER_JAR_NAME) {
+        if (activeJar.name.startsWith(DEVELOPER_JAR_PREFIX) && activeJar.extension.equals("jar", ignoreCase = true)) {
             println("[V5] Developer jar detected; skipping integrity check.")
             return
         }
-        val legacyModLoaders = File(gameDir, "mods").listFiles()
-            ?.filter { it.isFile && legacyModLoaderName.matches(it.name) }
-            .orEmpty()
         val hash = V5Crypto.calculateFileSha256(activeJar.absolutePath)
         if (hash.isEmpty()) throw IllegalStateException("[V5] Failed to hash active loader jar: ${activeJar.absolutePath}")
 
-        val response = V5Http.fetchLoaderHash(token, hash, minecraftVersion)
-        val integrity = parseJsonObject(response)?.getStringOrNull("integrity")?.lowercase()
-            ?: throw IllegalStateException("[V5] Loader integrity check failed.")
-
-        when (integrity) {
-            "valid" -> if (legacyModLoaders.isEmpty()) {
-                println("[V5] V5-Loader integrity verified.")
-            } else {
-                stageSelfUpdate(token, minecraftVersion, gameDir, activeJar, legacyModLoaders)
-            }
-            "outdated" -> stageSelfUpdate(token, minecraftVersion, gameDir, activeJar, legacyModLoaders)
-            "invalid" -> throw IllegalStateException("[V5] V5-Loader integrity is invalid; refusing to run a modified jar.")
-            else -> throw IllegalStateException("[V5] Unknown V5-Loader integrity state: $integrity")
+        val release = getLatestReleaseAsset(minecraftVersion)
+        if (hash == release.expectedHash) {
+            println("[V5] V5-Loader integrity verified.")
+            return
         }
+
+        stageSelfUpdate(gameDir, activeJar, release)
     }
 
     private fun stageSelfUpdate(
-        token: String,
-        minecraftVersion: String,
         gameDir: File,
         activeJar: File,
-        legacyModLoaders: List<File>
+        release: ReleaseAsset,
     ): Nothing {
         val bytes = V5Http.httpsGetBytes(
-            V5Http.BACKEND_HOST,
-            "/api/download/loader?minecraft_version=$minecraftVersion",
-            token,
-        ) ?: throw IllegalStateException("[V5] Failed to download updated V5-Loader.jar.")
+            GITHUB_HOST,
+            "/$GITHUB_REPOSITORY/releases/download/${release.tag}/${release.assetName}",
+        ) ?: throw IllegalStateException("[V5] Failed to download ${release.assetName} from GitHub.")
 
         try {
-            ModLoaderUpdater.stageUpdateAndRelaunch(gameDir, bytes, listOf(activeJar) + legacyModLoaders)
+            if (bytes.size.toLong() != release.expectedSize || V5Crypto.calculateSha256(bytes) != release.expectedHash) {
+                throw IllegalStateException("[V5] GitHub workflow download failed integrity verification; refusing to install it.")
+            }
+            ModLoaderUpdater.stageUpdateAndRelaunch(gameDir, bytes, listOf(activeJar))
             println("[V5] V5-Loader update staged. Closing Minecraft now so the helper can swap jars.")
         } finally {
             bytes.fill(0)
@@ -116,6 +102,25 @@ internal object V5Loader {
 
         Runtime.getRuntime().halt(0)
         throw IllegalStateException("Failed to terminate process after staging V5-Loader update")
+    }
+
+    private fun getLatestReleaseAsset(minecraftVersion: String): ReleaseAsset {
+        val assetName = "V5-Loader-$minecraftVersion.jar"
+        val release = parseJsonObject(V5Http.httpsGet(GITHUB_API_HOST, "/repos/$GITHUB_REPOSITORY/releases/latest"))
+            ?: throw IllegalStateException("[V5] Failed to read the latest GitHub workflow release.")
+        val tag = release.getStringOrNull("tag_name")?.takeIf(RELEASE_TAG_REGEX::matches)
+            ?: throw IllegalStateException("[V5] Latest loader release has an invalid tag.")
+        val asset = release.getAsJsonArray("assets")
+            ?.mapNotNull { it.takeIf { element -> element.isJsonObject }?.asJsonObject }
+            ?.singleOrNull { it.getStringOrNull("name") == assetName }
+            ?: throw IllegalStateException("[V5] Latest GitHub workflow release does not contain $assetName.")
+        val expectedHash = asset.getStringOrNull("digest")
+            ?.removePrefix("sha256:")
+            ?.takeIf(SHA_256_REGEX::matches)
+            ?: throw IllegalStateException("[V5] GitHub did not provide a valid SHA-256 digest for $assetName.")
+        val expectedSize = asset.getLongOrNull("size")?.takeIf { it > 0 }
+            ?: throw IllegalStateException("[V5] GitHub did not provide a valid size for $assetName.")
+        return ReleaseAsset(assetName, tag, expectedHash, expectedSize)
     }
 
     private fun resolveActiveJar(): File {
@@ -141,7 +146,7 @@ internal object V5Loader {
             ?.takeIf { it.isFile && it.extension.equals("jar", ignoreCase = true) }
     }
 
-    private fun authenticate(sessionFilePath: String): AuthSession? {
+    private fun authenticateSession(sessionFilePath: String): AuthSession? {
         val storedRefreshToken = readRefreshTokenFromSessionFile(sessionFilePath)
         if (storedRefreshToken.isNotEmpty()) {
             exchangeRefreshToken(storedRefreshToken, sessionFilePath)?.let { return it }
@@ -306,10 +311,20 @@ internal object V5Loader {
     private fun JsonObject.getBoolOrNull(key: String): Boolean? =
         get(key)?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean }?.asBoolean
 
+    private fun JsonObject.getLongOrNull(key: String): Long? =
+        runCatching { get(key)?.takeIf { it.isJsonPrimitive }?.asLong }.getOrNull()
+
     private fun JsonObject.getAsJsonObjectOrNull(key: String): JsonObject? =
         get(key)?.takeIf { it.isJsonObject }?.asJsonObject
 
     private data class AuthSession(val accessToken: String)
+
+    private data class ReleaseAsset(
+        val assetName: String,
+        val tag: String,
+        val expectedHash: String,
+        val expectedSize: Long,
+    )
 
     private val REVOKED_REFRESH_ERRORS = setOf(
         "INVALID_REFRESH_TOKEN",

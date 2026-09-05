@@ -1,6 +1,5 @@
 package com.chattriggers.ctjs.api.render
 
-import com.chattriggers.ctjs.internal.utils.getOption
 import com.chattriggers.ctjs.internal.utils.getOrDefault
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.mozilla.javascript.NativeObject
@@ -25,9 +24,9 @@ class Display() {
     constructor(config: NativeObject?) : this() {
         setBackgroundColor(config.getOrDefault<Number>("backgroundColor", 0x50000000).toLong())
         setTextColor(config.getOrDefault<Number>("textColor", 0xffffffff).toLong())
-        setBackground(config.getOption("background", Background.NONE))
-        setAlign(config.getOption("align", Text.Align.LEFT))
-        setOrder(config.getOption("order", Order.NORMAL))
+        setBackground(config.getOrDefault<Background>("background", Background.NONE))
+        setAlign(config.getOrDefault<Text.Align>("align", Text.Align.LEFT))
+        setOrder(config.getOrDefault<Order>("order", Order.NORMAL))
         setX(config.getOrDefault<Number>("x", 0).toInt())
         setY(config.getOrDefault<Number>("y", 0).toInt())
         setMinWidth(config.getOrDefault<Number>("minWidth", 0).toInt())

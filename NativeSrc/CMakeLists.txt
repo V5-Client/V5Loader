@@ -32,5 +32,5 @@ set_target_properties(V5PathJNI PROPERTIES
 if (MSVC)
   target_compile_options(V5PathJNI PRIVATE /O2 /EHsc)
 else()
-  target_compile_options(V5PathJNI PRIVATE -O3 -fvisibility=hidden -fvisibility-inlines-hidden)
+  target_compile_options(V5PathJNI PRIVATE -O3)
 endif()

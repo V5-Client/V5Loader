@@ -3,7 +3,7 @@ package com.chattriggers.ctjs.api.inventory.nbt
 import com.chattriggers.ctjs.MCNbtBase
 import com.chattriggers.ctjs.MCNbtCompound
 import com.chattriggers.ctjs.MCNbtList
-import com.chattriggers.ctjs.internal.utils.getOption
+import com.chattriggers.ctjs.internal.utils.getOrDefault
 import net.minecraft.nbt.ByteArrayTag
 import net.minecraft.nbt.ByteTag
 import net.minecraft.nbt.DoubleTag
@@ -60,8 +60,8 @@ object NBT {
     fun toArray(nbt: NBTTagList): NativeArray = nbt.toArray()
 
     private fun Any.toNBT(options: NativeObject?): MCNbtBase {
-        val preferArraysOverLists = options.getOption<Boolean>("preferArraysOverLists", false)
-        val coerceNumericStrings = options.getOption<Boolean>("coerceNumericStrings", false)
+        val preferArraysOverLists = options.getOrDefault<Boolean>("preferArraysOverLists", false)
+        val coerceNumericStrings = options.getOrDefault<Boolean>("coerceNumericStrings", false)
 
         return when (this) {
             is NativeObject -> MCNbtCompound().apply {

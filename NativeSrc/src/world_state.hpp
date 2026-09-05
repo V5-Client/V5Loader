@@ -46,14 +46,25 @@ struct ChunkData {
   void setFlags(int localX, int y, int localZ, uint16_t flags);
 };
 
+struct ChunkUpdate {
+  int chunkX;
+  int chunkZ;
+  ChunkData chunk;
+};
+
 using SharedChunkData = std::shared_ptr<const ChunkData>;
 using ChunkMap = std::unordered_map<uint64_t, SharedChunkData>;
+
+struct WorldIdentity {};
 
 struct WorldData {
   std::string worldKey = "runtime_memory";
   int minY = -64;
   int maxY = 320; // exclusive
   ChunkMap chunks;
+  std::shared_ptr<const WorldIdentity> identity = std::make_shared<WorldIdentity>();
+  uint32_t latestCacheGeneration = 1;
+  std::unordered_map<uint64_t, uint32_t> chunkCacheGenerations;
 };
 
 struct WorldSnapshot {
@@ -64,6 +75,7 @@ struct WorldSnapshot {
 
   [[nodiscard]] const ChunkMap& chunks() const;
   [[nodiscard]] uint16_t getFlags(int x, int y, int z) const;
+  [[nodiscard]] uint32_t cacheGenerationForChunk(int chunkX, int chunkZ) const;
 };
 
 class WorldState {
@@ -71,15 +83,8 @@ class WorldState {
   void setWorld(std::string worldKey, int minY, int maxY);
   void clear();
 
-  void upsertChunk(
-    int chunkX,
-    int chunkZ,
-    int minY,
-    int maxY,
-    uint64_t sectionMask,
-    const uint16_t* sectionFlags,
-    size_t sectionFlagCount
-  );
+  void upsertChunks(std::vector<ChunkUpdate> updates);
+  void removeChunks(const std::vector<uint64_t>& chunkKeys);
 
   void applyUpdates(const std::vector<BlockUpdate>& updates);
 

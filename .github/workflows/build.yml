@@ -18,8 +18,11 @@ permissions:
 
 jobs:
   build:
-    name: Build
+    name: Build Minecraft ${{ matrix.minecraft }}
     runs-on: blacksmith-4vcpu-ubuntu-2404
+    strategy:
+      matrix:
+        minecraft: [26.1.2, 26.2]
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -29,7 +32,7 @@ jobs:
       - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
 
       - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
@@ -41,18 +44,18 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build
-        run: ./gradlew --no-daemon build -PreleaseBuild
+        run: ./gradlew --no-daemon :${{ matrix.minecraft }}:build -PreleaseBuild
 
       - name: Upload Loader
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: V5-Loader-26.1.2
-          path: build/libs/V5-Loader-26.1.2.jar
+          name: V5-Loader-${{ matrix.minecraft }}
+          path: versions/${{ matrix.minecraft }}/build/libs/V5-Loader-${{ matrix.minecraft }}.jar
           if-no-files-found: error
 
   publish:
     needs: build
-    if: ${{ github.ref == 'refs/heads/26.1.2' }}
+    if: ${{ github.ref == 'refs/heads/26.1.2' || github.ref == 'refs/heads/26.2' }}
     runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
       contents: write
@@ -65,8 +68,9 @@ jobs:
       - name: Download Loader
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: V5-Loader-26.1.2
+          pattern: V5-Loader-*
           path: build/libs
+          merge-multiple: true
 
       - name: Publish GitHub release
         env:
@@ -82,7 +86,7 @@ jobs:
             tag="${version}-r$(( ${revision:-0} + 1 ))"
             gh release create "$tag" --target "$SHA" --title "$tag" --generate-notes
           fi
-          gh release upload "$tag" build/libs/V5-Loader-26.1.2.jar --clobber
+          gh release upload "$tag" build/libs/V5-Loader-*.jar --clobber
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -97,6 +101,9 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          sha256sum build/libs/V5-Loader-26.1.2.jar | awk '{print $1}' > V5-Loader-26.1.2.jar.sha256
-          wrangler r2 object put v5-builds/V5-Loader-26.1.2.jar.sha256 --file V5-Loader-26.1.2.jar.sha256 --remote
-          wrangler r2 object put v5-builds/V5-Loader-26.1.2.jar --file build/libs/V5-Loader-26.1.2.jar --remote
+          for jar in build/libs/V5-Loader-*.jar; do
+            name=$(basename "$jar")
+            sha256sum "$jar" | awk '{print $1}' > "$name.sha256"
+            wrangler r2 object put "v5-builds/$name.sha256" --file "$name.sha256" --remote
+            wrangler r2 object put "v5-builds/$name" --file "$jar" --remote
+          done

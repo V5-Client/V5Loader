@@ -106,17 +106,10 @@ object ModuleUpdater : Initializer {
         }
 
         cachedModules.add(module)
-        return buildList {
-            add(module)
-            module.metadata.requires?.forEach {
-                addAll(importModule(it, module.name))
-            }
-        }
+        return listOf(module) + module.metadata.requires.orEmpty().flatMap { importModule(it, module.name) }
     }
 
-    data class DownloadResult(val name: String, val modVersion: String)
-
-    private fun downloadModule(name: String): DownloadResult? {
+    private fun downloadModule(name: String): Pair<String, String>? {
         val downloadZip = File(modulesFolder, "currDownload.zip")
 
         try {
@@ -141,7 +134,7 @@ object ModuleUpdater : Initializer {
                         }
                     }
                 }
-                return DownloadResult(realName, connection.getHeaderField("CT-Version"))
+                return realName to connection.getHeaderField("CT-Version")
             }
         } catch (exception: Exception) {
             exception.printTraceToConsole()

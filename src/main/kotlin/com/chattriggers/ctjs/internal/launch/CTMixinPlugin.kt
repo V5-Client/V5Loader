@@ -25,7 +25,7 @@ class CTMixinPlugin : IMixinConfigPlugin {
 
     override fun getRefMapperConfig(): String? = null
 
-    override fun shouldApplyMixin(targetClassName: String?, mixinClassName: String?): Boolean = true
+    override fun shouldApplyMixin(targetClassName: String?, mixinClassName: String?) = true
 
     override fun acceptTargets(myTargets: MutableSet<String>?, otherTargets: MutableSet<String>?) {}
 

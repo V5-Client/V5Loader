@@ -1,5 +1,7 @@
 package com.chattriggers.ctjs.api.render
 
+import com.chattriggers.ctjs.api.client.MinecraftCompat
+
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.engine.printTraceToConsole
@@ -94,7 +96,7 @@ class Toast(config: NativeObject) : MCToast {
 
     fun show() = apply {
         startTime = null
-        Client.getMinecraft().toastManager.addToast(this)
+        MinecraftCompat.toastManager(Client.getMinecraft()).addToast(this)
     }
 
     override fun getWantedVisibility(): MCToast.Visibility = visibility
@@ -110,7 +112,7 @@ class Toast(config: NativeObject) : MCToast {
         val render = customRenderFunction
         if (render != null) {
             DrawContextHolder.withContext(context) {
-                Renderer.withMatrix(UMatrixStack(context.pose()).toMC()) {
+                Render2D.withMatrix(UMatrixStack(context.pose()).toMC()) {
                     try {
                         JSLoader.invoke(render, emptyArray(), thisObj = requireNotNull(jsReceiver))
                     } catch (e: Throwable) {

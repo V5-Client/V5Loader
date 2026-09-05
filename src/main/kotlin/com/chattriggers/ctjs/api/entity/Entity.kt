@@ -2,7 +2,7 @@ package com.chattriggers.ctjs.api.entity
 
 import com.chattriggers.ctjs.api.CTWrapper
 import com.chattriggers.ctjs.api.message.TextComponent
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.api.world.Chunk
 import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.api.world.block.BlockPos
@@ -46,7 +46,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return the entity's pitch
      */
-    fun getPitch() = Mth.wrapDegrees(mcValue.getViewXRot(Renderer.partialTicks))
+    fun getPitch() = Mth.wrapDegrees(mcValue.getViewXRot(Render2D.partialTicks))
 
     /**
      * Gets the yaw, the vertical direction the entity is facing towards.
@@ -54,7 +54,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return the entity's yaw
      */
-    fun getYaw() = Mth.wrapDegrees(mcValue.getViewYRot(Renderer.partialTicks))
+    fun getYaw() = Mth.wrapDegrees(mcValue.getViewYRot(Render2D.partialTicks))
 
     /**
      * Gets the entity's x motion.
@@ -211,10 +211,10 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
     fun isInLava() = mcValue.isInLava
 
     @JvmOverloads
-    fun getLookVector(partialTicks: Float = Renderer.partialTicks) = mcValue.getViewVector(partialTicks)
+    fun getLookVector(partialTicks: Float = Render2D.partialTicks) = mcValue.getViewVector(partialTicks)
 
     @JvmOverloads
-    fun getEyePosition(partialTicks: Float = Renderer.partialTicks) = mcValue.getEyePosition(partialTicks)
+    fun getEyePosition(partialTicks: Float = Render2D.partialTicks) = mcValue.getEyePosition(partialTicks)
 
     fun canBeCollidedWith() = mcValue.canBeCollidedWith(null)
 
@@ -240,7 +240,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
     }
 
     private fun renderPosition(previous: Double, current: Double) =
-        previous + (current - previous) * Renderer.partialTicks
+        previous + (current - previous) * Render2D.partialTicks
 
     enum class DimensionType(
         override val mcValue: ResourceKey<MCDimensionType>,

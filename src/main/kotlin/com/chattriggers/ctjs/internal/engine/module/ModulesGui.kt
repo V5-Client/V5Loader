@@ -2,7 +2,7 @@ package com.chattriggers.ctjs.internal.engine.module
 
 import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.message.ChatLib
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.api.render.Text
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.gui.GuiGraphicsExtractor
@@ -19,20 +19,20 @@ object ModulesGui : Screen(net.minecraft.network.chat.Component.literal("Modules
     override fun extractRenderState(ctx: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, deltaTicks: Float) {
         ctx.pose().pushMatrix()
 
-        val middle = Renderer.screen.getWidth() / 2
-        val width = (Renderer.screen.getWidth() - 100).coerceAtMost(500)
+        val middle = Render2D.screen.getWidth() / 2
+        val width = (Render2D.screen.getWidth() - 100).coerceAtMost(500)
 
         ctx.fill(0, 0, ctx.guiWidth(), ctx.guiHeight(), 0x50000000)
 
-        if (-window.scroll > window.height - Renderer.screen.getHeight() + 20)
-            window.scroll = -window.height + Renderer.screen.getHeight() - 20
+        if (-window.scroll > window.height - Render2D.screen.getHeight() + 20)
+            window.scroll = -window.height + Render2D.screen.getHeight() - 20
         if (-window.scroll < 0) window.scroll = 0f
 
         if (-window.scroll > 0) {
-            val rx = Renderer.screen.getWidth() - 20
-            val ry = Renderer.screen.getHeight() - 20
+            val rx = Render2D.screen.getWidth() - 20
+            val ry = Render2D.screen.getHeight() - 20
             ctx.fill(rx, ry, rx + 20, ry + 20, 0xaa000000.toInt())
-            ctx.text(Renderer.getFontRenderer(), "^", Renderer.screen.getWidth() - 12, Renderer.screen.getHeight() - 12, -1, false)
+            ctx.text(Render2D.getFontRenderer(), "^", Render2D.screen.getWidth() - 12, Render2D.screen.getHeight() - 12, -1, false)
         }
 
         val ox = middle - width / 2
@@ -57,10 +57,10 @@ object ModulesGui : Screen(net.minecraft.network.chat.Component.literal("Modules
         val mouseX = click.x
         val mouseY = click.y
 
-        val width = (Renderer.screen.getWidth() - 100f).coerceAtMost(500f)
-        val right = Renderer.screen.getWidth() / 2f + width / 2f
+        val width = (Render2D.screen.getWidth() - 100f).coerceAtMost(500f)
+        val right = Render2D.screen.getWidth() / 2f + width / 2f
 
-        if (mouseX > Renderer.screen.getWidth() - 20 && mouseY > Renderer.screen.getHeight() - 20) {
+        if (mouseX > Render2D.screen.getWidth() - 20 && mouseY > Render2D.screen.getHeight() - 20) {
             window.scroll = 0f
             return false
         }

@@ -1,18 +1,28 @@
 #pragma once
 
+#include <algorithm>
 #include <vector>
 
 namespace v5pf::detail {
 
+template<typename Cost>
 class Heap {
  public:
-  explicit Heap(std::vector<double>& fCost, std::vector<int>& heapPos)
-    : fCost_(fCost), heapPos_(heapPos) {
+  explicit Heap(
+    const std::vector<Cost>& fCost,
+    const std::vector<Cost>& hCost,
+    const std::vector<Cost>& gCost,
+    std::vector<int>& heapPos
+  ) : fCost_(fCost), hCost_(hCost), gCost_(gCost), heapPos_(heapPos) {
     items_.resize(1);
   }
 
   [[nodiscard]] bool empty() const {
     return size_ == 0;
+  }
+
+  void clear() {
+    size_ = 0;
   }
 
   void reserve(const int capacity) {
@@ -65,18 +75,27 @@ class Heap {
   std::vector<int> items_;
   int size_ = 0;
 
-  std::vector<double>& fCost_;
+  const std::vector<Cost>& fCost_;
+  const std::vector<Cost>& hCost_;
+  const std::vector<Cost>& gCost_;
   std::vector<int>& heapPos_;
+
+  [[nodiscard]] bool less(const int left, const int right) const {
+    const size_t lhs = static_cast<size_t>(left);
+    const size_t rhs = static_cast<size_t>(right);
+    if (fCost_[lhs] != fCost_[rhs]) return fCost_[lhs] < fCost_[rhs];
+    if (hCost_[lhs] != hCost_[rhs]) return hCost_[lhs] < hCost_[rhs];
+    if (gCost_[lhs] != gCost_[rhs]) return gCost_[lhs] > gCost_[rhs];
+    return left < right;
+  }
 
   void siftUp(int pos) {
     const int node = items_[static_cast<size_t>(pos)];
-    const double cost = fCost_[static_cast<size_t>(node)];
 
     while (pos > 1) {
-      const int parent = pos >> 1;
+      const int parent = (pos - 2) / 4 + 1;
       const int parentNode = items_[static_cast<size_t>(parent)];
-      const double parentCost = fCost_[static_cast<size_t>(parentNode)];
-      if (cost >= parentCost) break;
+      if (!less(node, parentNode)) break;
 
       items_[static_cast<size_t>(pos)] = parentNode;
       heapPos_[static_cast<size_t>(parentNode)] = pos;
@@ -89,26 +108,21 @@ class Heap {
 
   void siftDown(int pos) {
     const int node = items_[static_cast<size_t>(pos)];
-    const double cost = fCost_[static_cast<size_t>(node)];
-    const int half = size_ >> 1;
 
-    while (pos <= half) {
-      int child = pos << 1;
-      int childNode = items_[static_cast<size_t>(child)];
-      double childCost = fCost_[static_cast<size_t>(childNode)];
+    while (true) {
+      const int firstChild = (pos - 1) * 4 + 2;
+      if (firstChild > size_) break;
 
-      const int right = child + 1;
-      if (right <= size_) {
-        const int rightNode = items_[static_cast<size_t>(right)];
-        const double rightCost = fCost_[static_cast<size_t>(rightNode)];
-        if (rightCost < childCost) {
-          child = right;
-          childNode = rightNode;
-          childCost = rightCost;
+      int child = firstChild;
+      const int lastChild = std::min(firstChild + 3, size_);
+      for (int candidate = firstChild + 1; candidate <= lastChild; candidate++) {
+        if (less(items_[static_cast<size_t>(candidate)], items_[static_cast<size_t>(child)])) {
+          child = candidate;
         }
       }
 
-      if (cost <= childCost) break;
+      const int childNode = items_[static_cast<size_t>(child)];
+      if (!less(childNode, node)) break;
 
       items_[static_cast<size_t>(pos)] = childNode;
       heapPos_[static_cast<size_t>(childNode)] = pos;

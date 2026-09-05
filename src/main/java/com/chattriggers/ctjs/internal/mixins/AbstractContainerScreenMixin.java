@@ -3,6 +3,7 @@ package com.chattriggers.ctjs.internal.mixins;
 import com.chattriggers.ctjs.api.inventory.Item;
 import com.chattriggers.ctjs.api.message.TextComponent;
 import com.chattriggers.ctjs.api.triggers.TriggerType;
+import com.chattriggers.ctjs.internal.engine.JSLoader;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -40,6 +41,8 @@ public class AbstractContainerScreenMixin extends Screen {
         cancellable = true
     )
     private void injectDrawMouseoverTooltip(GuiGraphicsExtractor context, int x, int y, CallbackInfo ci) {
+        if (!JSLoader.INSTANCE.hasTriggers(TriggerType.ITEM_TOOLTIP)) return;
+
         ItemStack stack = hoveredSlot.getItem();
         TriggerType.ITEM_TOOLTIP.triggerAll(
             getTooltipFromItem(minecraft, stack)

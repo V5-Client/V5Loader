@@ -1,7 +1,10 @@
 package com.chattriggers.ctjs.api.message
 
+import com.chattriggers.ctjs.api.client.MinecraftCompat
+import com.chattriggers.ctjs.api.client.chatCompat
+
 import com.chattriggers.ctjs.api.client.Client
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.internal.listeners.ClientListener
 import com.chattriggers.ctjs.internal.mixins.ChatComponentAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
@@ -17,6 +20,9 @@ import java.util.regex.Pattern
 import kotlin.math.roundToInt
 
 object ChatLib {
+    private val ADD_COLOR_REGEX = "(?<!\\\\)&(?![^0-9a-fk-or]|$)".toRegex()
+    private val REMOVE_FORMATTING_REGEX = "[\u00a7&][0-9a-fk-or]".toRegex()
+    private val REPLACE_FORMATTING_REGEX = "\u00a7(?![^0-9a-fk-or]|$)".toRegex()
     private val chatLineIds = mutableMapOf<GuiMessage, Int>()
     private val chatHudAccessor get() = Client.getChatGui()?.asMixin<ChatComponentAccessor>()
 
@@ -62,7 +68,7 @@ object ChatLib {
      */
     @JvmStatic
     fun addColor(message: String?): String {
-        return message.toString().replace("(?<!\\\\)&(?![^0-9a-fk-or]|$)".toRegex(), "\u00a7")
+        return message.toString().replace(ADD_COLOR_REGEX, "\u00a7")
     }
 
     /**
@@ -85,7 +91,11 @@ object ChatLib {
     @JvmStatic
     @JvmOverloads
     fun command(text: String, clientSide: Boolean = false) {
-        if (clientSide) ClientCommandInternals.executeCommand(text)
+        if (clientSide) {
+            val method = ClientCommandInternals::class.java.methods.first { it.name == "executeCommand" }
+            if (method.parameterCount == 1) method.invoke(null, text)
+            else method.invoke(null, text, Client.getMinecraft().connection?.suggestionsProvider ?: return, null)
+        }
         else Client.scheduleTask { Client.getMinecraft().connection?.sendCommand(text) }
     }
 
@@ -110,7 +120,7 @@ object ChatLib {
     @JvmOverloads
     fun getChatBreak(separator: String = "-"): String {
         if (separator.isEmpty()) return ""
-        val len = Renderer.getStringWidth(separator)
+        val len = Render2D.getStringWidth(separator)
         val times = getChatWidth() / len
         return separator.repeat(times)
     }
@@ -133,7 +143,7 @@ object ChatLib {
      */
     @JvmStatic
     fun removeFormatting(text: String): String {
-        return text.replace("[\u00a7&][0-9a-fk-or]".toRegex(), "")
+        return text.replace(REMOVE_FORMATTING_REGEX, "")
     }
 
     /**
@@ -144,7 +154,7 @@ object ChatLib {
      */
     @JvmStatic
     fun replaceFormatting(text: String): String {
-        return text.replace("\u00a7(?![^0-9a-fk-or]|$)".toRegex(), "&")
+        return text.replace(REPLACE_FORMATTING_REGEX, "&")
     }
 
     /**
@@ -155,14 +165,14 @@ object ChatLib {
      */
     @JvmStatic
     fun getCenteredText(text: String): String {
-        val textWidth = Renderer.getStringWidth(addColor(text))
+        val textWidth = Render2D.getStringWidth(addColor(text))
         val chatWidth = getChatWidth()
 
         if (textWidth >= chatWidth)
             return text
 
         val spaceWidth = (chatWidth - textWidth) / 2f
-        return " ".repeat((spaceWidth / Renderer.getStringWidth(" ")).roundToInt()) + text
+        return " ".repeat((spaceWidth / Render2D.getStringWidth(" ")).roundToInt()) + text
     }
 
     /**
@@ -245,7 +255,7 @@ object ChatLib {
 
     private fun editLines(replacements: Array<out Any>, matcher: (GuiMessage) -> Boolean) {
         val mc = Client.getMinecraft()
-        val indicator = if (mc.isSingleplayer) GuiMessageTag.systemSinglePlayer() else GuiMessageTag.system()
+        val indicator = if (MinecraftCompat.isSingleplayer(mc)) GuiMessageTag.systemSinglePlayer() else GuiMessageTag.system()
         var edited = false
         val accessor = chatHudAccessor ?: return
         val it = accessor.allMessages.listIterator()
@@ -371,9 +381,9 @@ object ChatLib {
     @JvmOverloads
     fun addToSentMessageHistory(index: Int = -1, message: String) {
         if (index == -1) {
-            Client.getMinecraft().gui.chat.addRecentChat(message)
+            Client.getMinecraft().gui.chatCompat.addRecentChat(message)
         } else {
-            Client.getMinecraft().gui.chat.recentChat.add(index, message)
+            Client.getMinecraft().gui.chatCompat.recentChat.add(index, message)
         }
     }
 

@@ -13,7 +13,7 @@ struct AvoidZone {
   int z;
   int radiusSq;
   int maxYDiff;
-  double penalty;
+  float penalty;
 };
 
 struct SearchParams {
@@ -21,8 +21,8 @@ struct SearchParams {
   std::vector<Int3> goals;
   bool isFly = false;
   int maxIterations = 500000;
-  double heuristicWeight = 1.05;
-  double nonPrimaryStartPenalty = 0.0;
+  float heuristicWeight = 1.05f;
+  float nonPrimaryStartPenalty = 0.0f;
   int moveOrderOffset = 0;
   std::vector<AvoidZone> avoidZones;
 };

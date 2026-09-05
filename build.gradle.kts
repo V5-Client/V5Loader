@@ -1,16 +1,12 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.loom)
-    id("io.github.izhangzhihao.unmeta") version "1.0.3"
-}
-
-unmeta {
-    enable.set(true)
 }
 
 version = property("mod_version").toString()
@@ -25,16 +21,19 @@ repositories {
     maven("https://repo.hypixel.net/repository/Hypixel/")
     maven("https://api.modrinth.com/maven")
 }
+val minecraftVersion = sc.current.version
+val fabricApiVersion: String = sc.properties["deps.fabric_api"]
+val universalcraftMinecraftVersion = if (minecraftVersion == "26.1.2") "26.1" else minecraftVersion
 
 dependencies {
-    // To change the versions see the gradle/libs.versions.toml
-    minecraft(libs.minecraft)
+    // Minecraft-specific versions live in stonecutter.properties.toml.
+    minecraft("com.mojang:minecraft:$minecraftVersion")
     implementation(libs.fabric.loader)
-    implementation(libs.fabric.api)
+    implementation("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
     implementation(libs.fabric.kotlin)
 
     implementation(libs.bundles.included) { include(this) }
-    implementation(libs.universalcraft) {
+    implementation("gg.essential:universalcraft-$universalcraftMinecraftVersion-fabric:${libs.versions.universalcraft.get()}") {
         include(this)
         exclude("gg.essential", "universalcraft-1.18.1-fabric")
     }
@@ -50,13 +49,8 @@ dependencies {
     implementation("meteordevelopment:discord-ipc:1.1")
     include("meteordevelopment:discord-ipc:1.1")
 
-    // NanoVG (with natives)
-    implementation(libs.lwjgl.nanovg) { include(this) }
-    listOf("windows", "linux", "macos", "macos-arm64").forEach {
-        implementation(variantOf(libs.lwjgl.nanovg) { classifier("natives-$it") }) {
-            include(this)
-        }
-    }
+    implementation(libs.skija.shared) { include(this) }
+    implementation(libs.skija.types) { include(this) }
 
     // Mixin Extras
     implementation(libs.mixinextras) { include(this) }
@@ -72,7 +66,7 @@ dependencies {
 }
 
 loom {
-    accessWidenerPath.set(file("src/main/resources/ctjs.accesswidener"))
+    accessWidenerPath.set(rootProject.file("src/main/resources/ctjs.accesswidener"))
 }
 
 base {
@@ -84,19 +78,24 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(25))
     }
-
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
 }
 
 tasks {
     processResources {
-        val mcVersion = libs.versions.minecraft.get()
+        val mcVersion = minecraftVersion
         val flkVersion = libs.versions.fabric.kotlin.get()
-        val fapiVersion = libs.versions.fabric.api.get()
+        val fapiVersion = fabricApiVersion
         val loaderVersion = libs.versions.loader.get()
+        val versionMixins = if (minecraftVersion == "26.1.2") {
+            listOf("GuiHudMixin", "GuiScreenMixin", "LevelRendererMixin")
+        } else {
+            listOf(
+                "CommandEncoderMixin", "GpuDeviceMixin", "GuiHudMixin", "GameRendererAccessor",
+                "GuiScreenMixin", "LevelRendererMixin", "VulkanCommandEncoderMixin", "VulkanDeviceMixin",
+            )
+        }
 
-        from("typing-generator/src/main/resources") {
+        from(rootProject.file("typing-generator/src/main/resources")) {
             include("provided-types.properties")
         }
 
@@ -105,6 +104,7 @@ tasks {
         inputs.property("fabric_kotlin_version", flkVersion)
         inputs.property("fabric_api_version", fapiVersion)
         inputs.property("loader_version", loaderVersion)
+        inputs.property("version_mixins", versionMixins.joinToString(","))
 
         filesMatching("fabric.mod.json") {
             expand(
@@ -115,6 +115,13 @@ tasks {
                 "loader_version" to loaderVersion
             )
         }
+
+        filesMatching("ctjs.mixins.json") {
+            filter<ReplaceTokens>("tokens" to mapOf(
+                "version_mixins" to versionMixins.joinToString("\",\n      \"")
+            ))
+        }
+
     }
 
     withType<JavaCompile>().configureEach {
@@ -130,7 +137,7 @@ tasks {
     }
 
     jar {
-        archiveFileName.set(if (providers.gradleProperty("releaseBuild").isPresent) "V5-Loader-26.1.2.jar" else "V5-Loader-DEV.jar")
+        archiveFileName.set(if (providers.gradleProperty("releaseBuild").isPresent) "V5-Loader-$minecraftVersion.jar" else "V5-Loader-DEV-$minecraftVersion.jar")
         exclude("typings.d.ts")
     }
 
@@ -141,6 +148,6 @@ tasks {
         from(layout.buildDirectory.dir("generated/ksp/main/resources")) {
             include("typings.d.ts")
         }
-        into(layout.projectDirectory.dir("typing-generator/src/main/resources"))
+        into(rootProject.layout.projectDirectory.dir("typing-generator/src/main/resources"))
     }
 }
