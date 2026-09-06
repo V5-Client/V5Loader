@@ -28,6 +28,7 @@
         "EntityRenderDispatcherMixin",
         "EntityRenderStateMixin",
       "FirmamentModAnnouncerMixin",
+      "FontMixin",
       "FramerateLimitTrackerMixin",
       "FrustumMixin",
       "OptionsAccessor",

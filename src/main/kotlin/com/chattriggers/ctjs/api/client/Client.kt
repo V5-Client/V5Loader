@@ -13,6 +13,7 @@ import com.chattriggers.ctjs.internal.mixins.AbstractContainerScreenAccessor
 import com.chattriggers.ctjs.internal.mixins.KeyMappingAccessor
 import com.chattriggers.ctjs.internal.mixins.MinecraftAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
+import com.chattriggers.ctjs.internal.utils.NameReplacement
 import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.blaze3d.pipeline.RenderTarget
 import gg.essential.universal.UKeyboard
@@ -102,18 +103,24 @@ object Client {
     }
 
     @JvmStatic
+    fun setNameReplacement(username: String?, replacement: String?) {
+        NameReplacement.configure(username, replacement)
+    }
+
+    @JvmStatic
     fun hasNameProcessor(): Boolean = nameProcessor != null && CTJS.isLoaded
 
     @JvmStatic
     fun processName(original: Component): Component {
-        val processor = nameProcessor ?: return original
         if (!CTJS.isLoaded) return original
+        val renamed = NameReplacement.process(original)
+        val processor = nameProcessor ?: return renamed
 
         return try {
-            val result = JSLoader.invokeMixin(processor, arrayOf(original))
-            if (result != null && result != Undefined.instance && result is Component) result else original
+            val result = JSLoader.invokeMixin(processor, arrayOf(renamed))
+            if (result != null && result != Undefined.instance && result is Component) result else renamed
         } catch (_: Throwable) {
-            original
+            renamed
         }
     }
 
