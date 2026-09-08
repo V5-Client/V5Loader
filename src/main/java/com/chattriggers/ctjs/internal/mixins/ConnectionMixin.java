@@ -1,6 +1,8 @@
 package com.chattriggers.ctjs.internal.mixins;
 
+import com.chattriggers.ctjs.api.V5Irc;
 import com.chattriggers.ctjs.api.triggers.PacketEvent;
+import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import com.chattriggers.ctjs.internal.engine.CTEvents;
 import com.chattriggers.ctjs.api.triggers.TriggerType;
 import io.netty.channel.ChannelFutureListener;
@@ -50,6 +52,11 @@ public abstract class ConnectionMixin {
         cancellable = true
     )
     private void injectSendPacket(Packet<?> packet, ChannelFutureListener channelFutureListener, CallbackInfo ci) {
+        if (packet instanceof ServerboundChatPacket chat && chat.message().startsWith("#")) {
+            V5Irc.send(chat.message().substring(1));
+            ci.cancel();
+            return;
+        }
         TriggerType.PACKET_SENT.triggerAll(packet, ci);
     }
 }

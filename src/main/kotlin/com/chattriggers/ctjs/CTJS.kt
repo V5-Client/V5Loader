@@ -1,5 +1,6 @@
 package com.chattriggers.ctjs
 
+import com.chattriggers.ctjs.api.V5Irc
 import com.chattriggers.ctjs.api.Config
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.DiscordRPC
@@ -51,6 +52,7 @@ class CTJS : ClientModInitializer {
             WelcomeScreen.open()
         }
         ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
+            V5Irc.stop()
             Render2D.destroy()
             TriggerType.GAME_UNLOAD.triggerAll()
             DiscordRPC.turnOff()
@@ -58,6 +60,7 @@ class CTJS : ClientModInitializer {
         }
 
         SecureLoader.onInitialize()
+        V5Irc.reconnect()
     }
 
     companion object {
