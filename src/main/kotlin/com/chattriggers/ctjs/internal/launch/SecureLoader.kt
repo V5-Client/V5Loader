@@ -5,6 +5,8 @@ import com.chattriggers.ctjs.internal.engine.module.ModuleManager
 import com.v5.loader.internal.V5Loader
 import com.v5.loader.internal.V5Crypto
 import com.v5.loader.internal.V5Http
+import com.v5.loader.internal.refreshSession
+import com.v5.loader.internal.sessionFile
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
@@ -38,8 +40,6 @@ internal object SecureLoader {
     private const val LOADER_USER_AGENT = "V5Loader/1.1"
     private const val TOKEN_EXPIRY_SKEW_SECONDS = 60L
     private const val CTJS_ERROR_REPORT_INTERVAL_MS = 15 * 60 * 1000L
-    private const val SESSION_DIR_NAME = ".v5"
-    private const val SESSION_FILE_NAME = "session.json"
     private const val GITHUB_API_HOST = "api.github.com"
     private const val GITHUB_HOST = "github.com"
     private const val GITHUB_REPOSITORY = "V5-Client/V5"
@@ -146,7 +146,7 @@ internal object SecureLoader {
         internalToken?.let { latest ->
             if (!isNearExpiry(latest)) return latest
         }
-        val refreshed = refreshWithStoredRefreshToken()
+        val refreshed = refreshSession(sessionFile(FabricLoader.getInstance().gameDir))
         if (!refreshed.isNullOrBlank()) {
             internalToken = refreshed
             return refreshed
@@ -177,106 +177,6 @@ internal object SecureLoader {
             payload["exp"]?.jsonPrimitive?.longOrNull
         } catch (_: Exception) {
             null
-        }
-    }
-
-    private fun refreshWithStoredRefreshToken(): String? {
-        val refreshToken = readRefreshTokenFromSessionFile() ?: return null
-        val requestBody = buildJsonObject { put("refresh_token", refreshToken) }.toString()
-            .toByteArray(StandardCharsets.UTF_8)
-
-        val connection = try {
-            openBackendConnection("$BACKEND_URL/api/auth/refresh").apply {
-                requestMethod = "POST"
-                setRequestProperty("Content-Type", "application/json")
-                setRequestProperty("Accept", "application/json")
-                setRequestProperty("User-Agent", LOADER_USER_AGENT)
-                connectTimeout = 10000
-                readTimeout = 10000
-                doOutput = true
-            }
-        } catch (_: Exception) {
-            return null
-        }
-
-        return try {
-            connection.outputStream.use { it.write(requestBody) }
-            val responseCode = connection.responseCode
-            val responseText = (if (responseCode in 200..299) connection.inputStream else connection.errorStream)
-                ?.bufferedReader()
-                ?.use { it.readText() }
-                ?: ""
-            if (responseText.isBlank()) return null
-
-            val obj = jsonParser.parseToJsonElement(responseText).jsonObject
-            if (responseCode != 200) {
-                val errorCode = obj["error"]?.jsonPrimitive?.contentOrNull.orEmpty()
-                if (
-                    errorCode == "INVALID_REFRESH_TOKEN" ||
-                    errorCode == "REFRESH_TOKEN_EXPIRED" ||
-                    errorCode == "REFRESH_TOKEN_REUSED" ||
-                    errorCode == "SESSION_REVOKED"
-                ) {
-                    clearSessionFile()
-                }
-                return null
-            }
-
-            val accessToken = obj["access_token"]?.jsonPrimitive?.contentOrNull
-                ?: obj["token"]?.jsonPrimitive?.contentOrNull
-            val rotatedRefresh = obj["refresh_token"]?.jsonPrimitive?.contentOrNull
-            if (accessToken.isNullOrBlank() || rotatedRefresh.isNullOrBlank()) {
-                return null
-            }
-            persistRefreshToken(rotatedRefresh)
-            accessToken
-        } catch (_: Exception) {
-            null
-        } finally {
-            connection.disconnect()
-        }
-    }
-
-    private fun getSessionFile(): File {
-        return File(File(getGameDir(), SESSION_DIR_NAME), SESSION_FILE_NAME)
-    }
-
-    private fun readRefreshTokenFromSessionFile(): String? {
-        val file = getSessionFile()
-        if (!file.exists() || !file.isFile) return null
-        return try {
-            val content = file.readText(Charsets.UTF_8)
-            val obj = jsonParser.parseToJsonElement(content).jsonObject
-            obj["refresh_token"]?.jsonPrimitive?.contentOrNull?.trim()?.ifBlank { null }
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    private fun persistRefreshToken(refreshToken: String) {
-        if (refreshToken.isBlank()) return
-        val file = getSessionFile()
-        try {
-            file.parentFile?.mkdirs()
-            val json = buildJsonObject {
-                put("refresh_token", refreshToken)
-                put("updated_at", System.currentTimeMillis() / 1000L)
-            }
-            file.writeText(json.toString(), Charsets.UTF_8)
-            file.setReadable(false, false)
-            file.setWritable(false, false)
-            file.setExecutable(false, false)
-            file.setReadable(true, true)
-            file.setWritable(true, true)
-        } catch (_: Exception) {
-        }
-    }
-
-    private fun clearSessionFile() {
-        try {
-            val file = getSessionFile()
-            if (file.exists()) file.delete()
-        } catch (_: Exception) {
         }
     }
 
@@ -451,10 +351,6 @@ internal object SecureLoader {
     }
 
     fun isLoaded(): Boolean = isLoaded
-
-    private fun getGameDir(): File {
-        return FabricLoader.getInstance().gameDir.toFile()
-    }
 
     private fun getV5ModuleDir(): File {
         return File(File(CTJS.MODULES_FOLDER), DISK_MODULE_NAME)

@@ -69,7 +69,7 @@ internal object V5Http {
         }
     }
 
-    fun httpsPost(host: String, path: String, jsonBody: String): String {
+    fun httpsPost(host: String, path: String, jsonBody: String): Pair<Int, String>? {
         val url = "https://$host$path"
         val requestBuilder = HttpRequest.newBuilder()
             .uri(URI.create(url))
@@ -82,12 +82,11 @@ internal object V5Http {
             val response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
             if (response.statusCode() != 200) {
                 logHttpFailure("POST", url, response.statusCode(), response.body().length)
-                return ""
             }
-            response.body()
+            response.statusCode() to response.body()
         } catch (e: Exception) {
             logTransportFailure("POST", url, e)
-            ""
+            null
         }
     }
 

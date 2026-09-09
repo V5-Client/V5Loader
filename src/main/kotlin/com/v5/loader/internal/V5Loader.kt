@@ -12,12 +12,7 @@ import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.URI
 import java.nio.charset.StandardCharsets
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.attribute.PosixFilePermission
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
 
 internal object V5Loader {
     private const val MOD_ID = "ctjs"
@@ -53,13 +48,13 @@ internal object V5Loader {
     @Synchronized
     fun authenticate(): String? {
         println("[V5] Authenticating...")
-        val sessionFilePath = buildSessionFilePath(FabricLoader.getInstance().gameDir.toAbsolutePath().toString())
-        val authSession = authenticateSession(sessionFilePath)
-        if (authSession == null || !validateAuthStatus(authSession.accessToken)) {
+        val sessionPath = sessionFile(FabricLoader.getInstance().gameDir)
+        val authSession = authenticateSession(sessionPath)
+        if (authSession == null || !validateAuthStatus(authSession)) {
             System.err.println("[V5] Authentication failed, expired, or account is banned.")
             return null
         }
-        return authSession.accessToken
+        return authSession
     }
 
     private fun checkSelfUpdate(minecraftVersion: String, gameDir: File) {
@@ -146,15 +141,12 @@ internal object V5Loader {
             ?.takeIf { it.isFile && it.extension.equals("jar", ignoreCase = true) }
     }
 
-    private fun authenticateSession(sessionFilePath: String): AuthSession? {
-        val storedRefreshToken = readRefreshTokenFromSessionFile(sessionFilePath)
-        if (storedRefreshToken.isNotEmpty()) {
-            exchangeRefreshToken(storedRefreshToken, sessionFilePath)?.let { return it }
-        }
+    private fun authenticateSession(sessionFilePath: Path): String? {
+        refreshSession(sessionFilePath)?.let { return it }
         return runBrowserLogin(sessionFilePath)
     }
 
-    private fun runBrowserLogin(sessionFilePath: String): AuthSession? {
+    private fun runBrowserLogin(sessionFilePath: Path): String? {
         val serverSocket = ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))
         serverSocket.soTimeout = 240_000
 
@@ -184,10 +176,10 @@ internal object V5Loader {
 
                 val callbackRefreshToken = extractQueryParam(requestLine, "refresh_token=")
                 if (callbackRefreshToken.isEmpty()) return null
-                if (!writeRefreshTokenToSessionFile(sessionFilePath, callbackRefreshToken)) {
+                if (!persistRefreshToken(sessionFilePath, callbackRefreshToken)) {
                     System.err.println("[V5] Warning: failed to persist browser refresh token.")
                 }
-                return exchangeRefreshToken(callbackRefreshToken, sessionFilePath)
+                return refreshSession(sessionFilePath, callbackRefreshToken)
             }
         } catch (e: Exception) {
             System.err.println("[V5] Authentication callback failed: ${e.message ?: e.javaClass.simpleName}")
@@ -195,25 +187,6 @@ internal object V5Loader {
         } finally {
             serverSocket.close()
         }
-    }
-
-    private fun exchangeRefreshToken(refreshToken: String, sessionFilePath: String): AuthSession? {
-        val response = V5Http.httpsPost(
-            V5Http.BACKEND_HOST,
-            "/api/auth/refresh",
-            """{"refresh_token":"${jsonEscape(refreshToken)}"}""",
-        )
-        if (response.isEmpty()) return null
-        val json = parseJsonObject(response) ?: return null
-        val accessToken = json.getStringOrNull("access_token").orEmpty()
-        val rotatedRefresh = json.getStringOrNull("refresh_token").orEmpty()
-        val error = json.getStringOrNull("error").orEmpty()
-        if (accessToken.isEmpty() || rotatedRefresh.isEmpty()) {
-            if (error in REVOKED_REFRESH_ERRORS) secureDeleteFile(sessionFilePath)
-            return null
-        }
-        writeRefreshTokenToSessionFile(sessionFilePath, rotatedRefresh)
-        return AuthSession(accessToken)
     }
 
     private fun validateAuthStatus(token: String): Boolean {
@@ -225,38 +198,6 @@ internal object V5Loader {
     }
 
     private fun resolveMinecraftVersion(): String = System.getProperty("v5.minecraft_version").orEmpty().trim()
-
-    private fun buildSessionFilePath(gameDir: String): String =
-        if (gameDir.isEmpty()) "" else Path.of(gameDir, ".v5", "session.json").toString()
-
-    private fun readRefreshTokenFromSessionFile(sessionFilePath: String): String {
-        if (sessionFilePath.isEmpty()) return ""
-        val path = Path.of(sessionFilePath)
-        if (!path.isRegularFile()) return ""
-        return runCatching {
-            parseJsonObject(path.readText())?.getStringOrNull("refresh_token").orEmpty().trim()
-        }.getOrDefault("")
-    }
-
-    private fun writeRefreshTokenToSessionFile(sessionFilePath: String, refreshToken: String): Boolean {
-        if (sessionFilePath.isEmpty() || refreshToken.isEmpty()) return false
-        val filePath = Path.of(sessionFilePath)
-        runCatching { Files.createDirectories(filePath.parent) }
-        val content = """{"refresh_token":"${jsonEscape(refreshToken)}","updated_at":${System.currentTimeMillis() / 1000}}"""
-        return try {
-            filePath.writeText(content)
-            if (!System.getProperty("os.name", "").lowercase().contains("win")) {
-                Files.setPosixFilePermissions(filePath, setOf(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE))
-            }
-            true
-        } catch (_: Exception) {
-            false
-        }
-    }
-
-    private fun secureDeleteFile(path: String) {
-        if (path.isNotEmpty()) runCatching { Files.deleteIfExists(Path.of(path)) }
-    }
 
     private fun openBrowser(url: String) {
         runCatching {
@@ -288,21 +229,6 @@ internal object V5Loader {
         return java.net.URLDecoder.decode(requestLine.substring(valueStart, end), StandardCharsets.UTF_8)
     }
 
-    private fun jsonEscape(input: String): String = buildString(input.length + 8) {
-        input.forEach { ch ->
-            when (ch) {
-                '"' -> append("\\\"")
-                '\\' -> append("\\\\")
-                '\b' -> append("\\b")
-                '\u000C' -> append("\\f")
-                '\n' -> append("\\n")
-                '\r' -> append("\\r")
-                '\t' -> append("\\t")
-                else -> if (ch.code < 0x20) append(String.format("\\u%04x", ch.code)) else append(ch)
-            }
-        }
-    }
-
     private fun parseJsonObject(json: String): JsonObject? = runCatching { JsonParser.parseString(json).asJsonObject }.getOrNull()
 
     private fun JsonObject.getStringOrNull(key: String): String? =
@@ -317,19 +243,10 @@ internal object V5Loader {
     private fun JsonObject.getAsJsonObjectOrNull(key: String): JsonObject? =
         get(key)?.takeIf { it.isJsonObject }?.asJsonObject
 
-    private data class AuthSession(val accessToken: String)
-
     private data class ReleaseAsset(
         val assetName: String,
         val tag: String,
         val expectedHash: String,
         val expectedSize: Long,
-    )
-
-    private val REVOKED_REFRESH_ERRORS = setOf(
-        "INVALID_REFRESH_TOKEN",
-        "REFRESH_TOKEN_EXPIRED",
-        "REFRESH_TOKEN_REUSED",
-        "SESSION_REVOKED",
     )
 }
