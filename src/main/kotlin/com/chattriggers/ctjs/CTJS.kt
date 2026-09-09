@@ -4,10 +4,8 @@ import com.chattriggers.ctjs.api.V5Irc
 import com.chattriggers.ctjs.api.Config
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.DiscordRPC
-import com.chattriggers.ctjs.api.client.screenCompat
 import com.chattriggers.ctjs.api.client.KeyBind
 import com.chattriggers.ctjs.api.client.Sound
-import com.chattriggers.ctjs.api.client.WelcomeScreen
 import com.chattriggers.ctjs.api.commands.DynamicCommands
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Image
@@ -24,11 +22,9 @@ import com.chattriggers.ctjs.internal.launch.SecureLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
 import kotlinx.serialization.json.Json
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.client.gui.screens.TitleScreen
 import java.io.File
 import java.net.URI
 import java.net.URLConnection
@@ -42,15 +38,6 @@ class CTJS : ClientModInitializer {
         Initializer.initializers.forEach(Initializer::init)
         Config.loadData()
 
-        var autoOpenTriggered = false
-        ClientTickEvents.END_CLIENT_TICK.register { client ->
-            val currentScreen = client.screenCompat ?: return@register
-            val isMenuScreen = currentScreen is TitleScreen
-
-            if (autoOpenTriggered || Config.wasWelcomeShown() || !isMenuScreen) return@register
-            autoOpenTriggered = true
-            WelcomeScreen.open()
-        }
         ClientLifecycleEvents.CLIENT_STOPPING.register { _ ->
             V5Irc.stop()
             Render2D.destroy()
