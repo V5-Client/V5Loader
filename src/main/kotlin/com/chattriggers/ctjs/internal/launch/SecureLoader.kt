@@ -53,8 +53,6 @@ internal object SecureLoader {
     }
 
     @Volatile private var isDevMode = false
-    @Volatile private var isPluginLoaded = false
-    @Volatile private var isLoaded = false
     @Volatile private var internalToken: String? = null
     private var lastCtjsErrorReportAt = 0L
 
@@ -180,27 +178,19 @@ internal object SecureLoader {
         }
     }
 
-    fun run() {
-        onMixinPlugin()
-        onInitialize()
-    }
-
     fun onMixinPlugin() {
-        if (isPluginLoaded) return
         println("[V5] Stage: onMixinPlugin")
         try {
             val modulePath = getV5ModuleDir()
             if (modulePath.exists() && isLocalDeveloperModeEnabled()) {
                 isDevMode = true
                 println("[V5] Developer mode is active. Skipping V5 module download.")
-                isPluginLoaded = true
                 return
             }
 
             val zipBytes = downloadZip()
             processZip(zipBytes)
             Arrays.fill(zipBytes, 0)
-            isPluginLoaded = true
         } catch (e: Exception) {
             e.printStackTrace()
             shutDownHard()
@@ -218,18 +208,6 @@ internal object SecureLoader {
         } catch (_: Exception) {
             false
         }
-    }
-
-    fun onInitialize() {
-        if (isLoaded) return
-        println("[V5] Stage: onInitialize")
-
-        if (isDevMode) {
-            isLoaded = true
-            return
-        }
-
-        isLoaded = true
     }
 
     private fun downloadZip(): ByteArray {
@@ -339,18 +317,14 @@ internal object SecureLoader {
     }
 
     fun reload() {
-        isLoaded = false
-        isPluginLoaded = false
         isDevMode = false
-        run()
+        onMixinPlugin()
     }
 
     private fun shutDownHard(): Nothing {
         Runtime.getRuntime().halt(0)
         throw IllegalStateException("V5 loader aborted due to unrecoverable error")
     }
-
-    fun isLoaded(): Boolean = isLoaded
 
     private fun getV5ModuleDir(): File {
         return File(File(CTJS.MODULES_FOLDER), DISK_MODULE_NAME)

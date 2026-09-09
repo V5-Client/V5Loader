@@ -81,6 +81,10 @@ java {
 }
 
 tasks {
+    register("printVersion") {
+        doLast { println(project.version) }
+    }
+
     processResources {
         val mcVersion = minecraftVersion
         val flkVersion = libs.versions.fabric.kotlin.get()

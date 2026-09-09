@@ -46,14 +46,13 @@ class CTJS : ClientModInitializer {
             Console.close()
         }
 
-        SecureLoader.onInitialize()
         V5Irc.reconnect()
     }
 
     companion object {
         const val MOD_ID = "ctjs"
         const val WEBSITE_ROOT = "https://www.chattriggers.com"
-        const val MOD_VERSION = "5.2.0"
+        val MOD_VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().metadata.version.friendlyString
         const val MODULES_FOLDER = "./config/ChatTriggers/modules"
 
         val configLocation = File("./config")

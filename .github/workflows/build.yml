@@ -77,8 +77,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ inputs.sha || github.sha }}
         run: |
-          version=$(sed -nE 's/^[[:space:]]*const val MOD_VERSION = "([^"]+)".*/\1/p' src/main/kotlin/com/chattriggers/ctjs/CTJS.kt)
-          test -n "$version"
+          version=$(./gradlew -q :26.2:printVersion)
           prefix="${version//./\\.}-r"
           tag=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.target_commitish == \"$SHA\") | .tag_name" | sed -nE "s/^${prefix}[0-9]+$/&/p" | head -n1)
           if [ -z "$tag" ]; then
