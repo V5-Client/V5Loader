@@ -1,7 +1,7 @@
 package com.chattriggers.ctjs.api.entity
 
 import com.chattriggers.ctjs.api.CTWrapper
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.internal.mixins.ParticleAccessor
 import com.chattriggers.ctjs.MCParticle
 import com.chattriggers.ctjs.internal.utils.asMixin
@@ -45,9 +45,9 @@ class Particle(override val mcValue: MCParticle) : CTWrapper<MCParticle> {
             mixed.zo = value
         }
 
-    val renderX get() = lastX + (x - lastX) * Renderer.partialTicks
-    val renderY get() = lastY + (y - lastY) * Renderer.partialTicks
-    val renderZ get() = lastZ + (z - lastZ) * Renderer.partialTicks
+    val renderX get() = lastX + (x - lastX) * Render2D.partialTicks
+    val renderY get() = lastY + (y - lastY) * Render2D.partialTicks
+    val renderZ get() = lastZ + (z - lastZ) * Render2D.partialTicks
 
     var motionX
         get() = mixed.xd

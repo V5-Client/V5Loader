@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
+#include <unordered_set>
 
 namespace v5pf {
 
@@ -17,6 +18,35 @@ constexpr int64_t kMaxAllowedWorldSpan = 4096;
     minY >= kMinAllowedWorldY &&
     maxY <= kMaxAllowedWorldY &&
     static_cast<int64_t>(maxY) - static_cast<int64_t>(minY) <= kMaxAllowedWorldSpan;
+}
+
+[[nodiscard]] bool chunksEqual(const ChunkData& left, const ChunkData& right) {
+  return left.minY == right.minY &&
+    left.maxY == right.maxY &&
+    left.sectionOffsets == right.sectionOffsets &&
+    left.voxels == right.voxels;
+}
+
+void invalidateChunkNeighborhood(
+  WorldData& world,
+  const int chunkX,
+  const int chunkZ,
+  const uint32_t generation
+) {
+  for (int dx = -1; dx <= 1; dx++) {
+    for (int dz = -1; dz <= 1; dz++) {
+      world.chunkCacheGenerations[chunkKey(chunkX + dx, chunkZ + dz)] = generation;
+    }
+  }
+}
+
+uint32_t nextCacheGeneration(WorldData& world) {
+  if (++world.latestCacheGeneration == 0) {
+    world.identity = std::make_shared<WorldIdentity>();
+    world.latestCacheGeneration = 1;
+    world.chunkCacheGenerations.clear();
+  }
+  return world.latestCacheGeneration;
 }
 
 } // namespace
@@ -138,6 +168,12 @@ uint16_t WorldSnapshot::getFlags(const int x, const int y, const int z) const {
   return it->second->getFlags(x & 15, y, z & 15);
 }
 
+uint32_t WorldSnapshot::cacheGenerationForChunk(const int chunkX, const int chunkZ) const {
+  if (data == nullptr) return 1;
+  const auto it = data->chunkCacheGenerations.find(chunkKey(chunkX, chunkZ));
+  return it == data->chunkCacheGenerations.end() ? 1 : it->second;
+}
+
 void WorldState::setWorld(std::string worldKey, const int minY, const int maxY) {
   if (!isValidWorldBounds(minY, maxY)) {
     return;
@@ -155,48 +191,67 @@ void WorldState::clear() {
   std::lock_guard lock(mutex_);
   auto next = std::make_shared<WorldData>(*data_);
   next->chunks.clear();
+  next->identity = std::make_shared<WorldIdentity>();
+  next->latestCacheGeneration = 1;
+  next->chunkCacheGenerations.clear();
   data_ = std::move(next);
 }
 
-void WorldState::upsertChunk(
-  const int chunkX,
-  const int chunkZ,
-  const int minY,
-  const int maxY,
-  const uint64_t sectionMask,
-  const uint16_t* sectionFlags,
-  const size_t sectionFlagCount
-) {
-  if (!isValidWorldBounds(minY, maxY)) {
+void WorldState::upsertChunks(std::vector<ChunkUpdate> updates) {
+  if (updates.empty()) {
     return;
-  }
-
-  ChunkData chunk;
-  chunk.minY = minY;
-  chunk.maxY = maxY;
-  chunk.ensureLayout();
-
-  const int sectionCount = chunk.sectionCount();
-  size_t readOffset = 0;
-
-  const int maskedSectionCount = std::min(sectionCount, 64);
-  for (int i = 0; i < maskedSectionCount; i++) {
-    const bool hasSection = (sectionMask & (1ULL << i)) != 0ULL;
-    if (!hasSection) continue;
-
-    if (sectionFlags == nullptr || readOffset + 4096 > sectionFlagCount) {
-      break;
-    }
-
-    chunk.assignSection(i, sectionFlags + readOffset);
-    readOffset += 4096;
   }
 
   std::lock_guard lock(mutex_);
   auto next = std::make_shared<WorldData>(*data_);
-  next->minY = minY;
-  next->maxY = maxY;
-  next->chunks[chunkKey(chunkX, chunkZ)] = std::make_shared<ChunkData>(std::move(chunk));
+  std::unordered_set<uint64_t> changedChunks;
+  changedChunks.reserve(updates.size());
+
+  for (auto& update : updates) {
+    ChunkData& chunk = update.chunk;
+    if (!isValidWorldBounds(chunk.minY, chunk.maxY)) {
+      continue;
+    }
+
+    const auto key = chunkKey(update.chunkX, update.chunkZ);
+    const auto existing = next->chunks.find(key);
+    if (next->minY == chunk.minY && next->maxY == chunk.maxY &&
+        existing != next->chunks.end() && existing->second != nullptr &&
+        chunksEqual(*existing->second, chunk)) {
+      continue;
+    }
+
+    next->minY = chunk.minY;
+    next->maxY = chunk.maxY;
+    next->chunks[key] = std::make_shared<ChunkData>(std::move(chunk));
+    changedChunks.insert(key);
+  }
+
+  if (changedChunks.empty()) return;
+
+  const uint32_t generation = nextCacheGeneration(*next);
+  for (const uint64_t key : changedChunks) {
+    const int chunkX = static_cast<int>(static_cast<int32_t>(key >> 32));
+    const int chunkZ = static_cast<int>(static_cast<int32_t>(key));
+    invalidateChunkNeighborhood(*next, chunkX, chunkZ, generation);
+  }
+  data_ = std::move(next);
+}
+
+void WorldState::removeChunks(const std::vector<uint64_t>& chunkKeys) {
+  if (chunkKeys.empty()) return;
+
+  std::lock_guard lock(mutex_);
+  auto next = std::make_shared<WorldData>(*data_);
+  bool changed = false;
+  for (const uint64_t key : chunkKeys) {
+    changed |= next->chunks.erase(key) != 0;
+  }
+  if (!changed) return;
+
+  next->identity = std::make_shared<WorldIdentity>();
+  next->latestCacheGeneration = 1;
+  next->chunkCacheGenerations.clear();
   data_ = std::move(next);
 }
 
@@ -208,7 +263,9 @@ void WorldState::applyUpdates(const std::vector<BlockUpdate>& updates) {
   std::lock_guard lock(mutex_);
   auto next = std::make_shared<WorldData>(*data_);
   std::unordered_map<uint64_t, std::shared_ptr<ChunkData>> mutableChunks;
+  std::unordered_set<uint64_t> changedChunks;
   mutableChunks.reserve(updates.size());
+  changedChunks.reserve(updates.size());
 
   for (const auto& update : updates) {
     const int chunkX = update.x >> 4;
@@ -216,6 +273,10 @@ void WorldState::applyUpdates(const std::vector<BlockUpdate>& updates) {
     const auto key = chunkKey(chunkX, chunkZ);
     const auto it = next->chunks.find(key);
     if (it == next->chunks.end() || it->second == nullptr) {
+      continue;
+    }
+    if (update.y < it->second->minY || update.y >= it->second->maxY ||
+        it->second->getFlags(update.x & 15, update.y, update.z & 15) == update.flags) {
       continue;
     }
 
@@ -230,8 +291,17 @@ void WorldState::applyUpdates(const std::vector<BlockUpdate>& updates) {
     }
 
     chunk->setFlags(update.x & 15, update.y, update.z & 15, update.flags);
+    changedChunks.insert(key);
   }
 
+  if (changedChunks.empty()) return;
+
+  const uint32_t generation = nextCacheGeneration(*next);
+  for (const uint64_t key : changedChunks) {
+    const int chunkX = static_cast<int>(static_cast<int32_t>(key >> 32));
+    const int chunkZ = static_cast<int>(static_cast<int32_t>(key));
+    invalidateChunkNeighborhood(*next, chunkX, chunkZ, generation);
+  }
   data_ = std::move(next);
 }
 

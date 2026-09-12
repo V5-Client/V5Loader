@@ -63,6 +63,7 @@ class Image(var image: BufferedImage?) {
         texture?.buffer?.let(MemoryUtil::memFree)
         texture = null
         image = null
+        CTJS.images.remove(this)
     }
 
     @JvmOverloads
@@ -80,7 +81,7 @@ class Image(var image: BufferedImage?) {
         }
 
         if (texture != null)
-            Renderer.drawImage(this, x, y, drawWidth, drawHeight)
+            Render2D.drawImage(this, x, y, drawWidth, drawHeight)
     }
 
     private data class Texture(val texture: DynamicTexture, val buffer: ByteBuffer)
@@ -145,7 +146,9 @@ class Image(var image: BufferedImage?) {
                 val buffer = MemoryUtil.memAlloc(it.size())
                 buffer.put(it.toByteArray())
                 buffer.rewind()
-                Texture(DynamicTexture( { "ct:${UUID.randomUUID()}" }, NativeImage.read(buffer)), buffer)
+                NativeImage.read(buffer).use {
+                    Texture(DynamicTexture({ "ct:${UUID.randomUUID()}" }, it), buffer)
+                }
             }
         }
     }

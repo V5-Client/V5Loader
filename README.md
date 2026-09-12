@@ -48,7 +48,7 @@ For production release commits, CI builds all platforms in parallel and commits 
 
 ### Quick dev commands
 
-Each command compiles required native C++ code, then builds the final Kotlin mod. The output can be found at `build/libs/V5-Loader-DEV.jar`.
+Each command compiles required native C++ code, then builds the final Kotlin mod. The output can be found at `versions/<version>/build/libs/V5-Loader-DEV-<version>.jar`.
 
 - **Linux:**
 
@@ -76,4 +76,4 @@ cmake -S NativeSrc -B NativeSrc/build -DCMAKE_BUILD_TYPE=Release; cmake --build 
 
 ### Install built mod
 
-After building, copy `build/libs/V5-Loader-DEV.jar` into `.minecraft/mods/`.
+After building, copy the relevant `versions/<version>/build/libs/V5-Loader-DEV-<version>.jar` into `.minecraft/mods/`.

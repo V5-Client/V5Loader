@@ -1,7 +1,7 @@
 package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.api.client.Client;
-import com.chattriggers.ctjs.api.render.Renderer;
+import com.chattriggers.ctjs.api.render.Render2D;
 import com.chattriggers.ctjs.internal.IRenderState;
 import com.chattriggers.ctjs.internal.engine.CTEvents;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -21,7 +21,7 @@ public abstract class EntityRenderDispatcherMixin {
 
     @Inject(method = "onResourceManagerReload", at = @At("TAIL"))
     private void injectReload(net.minecraft.server.packs.resources.ResourceManager manager, CallbackInfo ci, @com.llamalad7.mixinextras.sugar.Local net.minecraft.client.renderer.entity.EntityRendererProvider.Context context) {
-        Renderer.initializePlayerRenderers$ctjs(context);
+        Render2D.initializePlayerRenderers$ctjs(context);
     }
 
     @ModifyExpressionValue(

@@ -2,7 +2,7 @@ package com.chattriggers.ctjs.api.entity
 
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.message.TextComponent
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.internal.NameTagOverridable
 import com.chattriggers.ctjs.MCTeam
 import com.chattriggers.ctjs.internal.utils.asMixin
@@ -44,14 +44,14 @@ class PlayerMP(override val mcValue: Player) : LivingEntity(mcValue) {
     }
 
     /**
-     * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]
+     * Draws the player in the GUI. Takes the same parameters as [Render2D.drawPlayer]
      * minus `player`.
      *
-     * @see Renderer.drawPlayer
+     * @see Render2D.drawPlayer
      */
     fun draw(obj: NativeObject) = apply {
         obj["player"] = this
-        Renderer.drawPlayer(obj)
+        Render2D.drawPlayer(obj)
     }
 
     private fun getPlayerName(playerListEntry: PlayerInfo?): TextComponent {

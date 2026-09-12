@@ -14,7 +14,7 @@ class PotionEffectType(val type: MobEffect) {
     /**
      * Whether this effect is instant (e.g. instant health)
      */
-    val isInstant get() = type.isInstantenous
+    val isInstant get() = type./*? if >=26.2 {*/isInstantaneous/*?} else {*//*isInstantenous*//*?}*/
 
     /**
      * The raw key used for this effect type

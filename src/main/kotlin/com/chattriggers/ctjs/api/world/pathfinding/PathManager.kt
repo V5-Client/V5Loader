@@ -251,6 +251,7 @@ object PathManager {
     try {
       currentTask = searchExecutor.submit {
         try {
+          val hasLoadedEndGoal = endPoints.any { CachedWorld.getChunk(it[0] shr 4, it[2] shr 4) != null }
           val result = NativePathfinderBridge.findPath(
             NativePathfinderBridge.NativePathSearchRequest(
               startFlat,
@@ -292,7 +293,11 @@ object PathManager {
           } else {
             currentPath = null
             currentAnnotations = null
-            lastError = NativePathfinderBridge.getLastError() ?: "No path found to destination"
+            lastError = if (hasLoadedEndGoal) {
+              NativePathfinderBridge.getLastError() ?: "No path found to destination"
+            } else {
+              "End goal is in an unloaded chunk"
+            }
           }
         } catch (e: InterruptedException) {
           if (searchId.get() == currentId) {
@@ -336,7 +341,8 @@ object PathManager {
     heuristicWeight: Double = 1.0,
     rayLength: Double = 61.0,
     rewireEpsilon: Double = 1.0,
-    eyeHeight: Double = Double.NaN
+    eyeHeight: Double = Double.NaN,
+    callback: Runnable? = null
   ): Boolean {
     cancelSearch()
 
@@ -468,6 +474,7 @@ object PathManager {
           if (searchId.get() == currentId) {
             isSearching = false
             currentTask = null
+            callback?.let(Minecraft.getInstance()::submit)
           }
         }
       }

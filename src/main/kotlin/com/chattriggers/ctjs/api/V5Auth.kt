@@ -1,8 +1,12 @@
 package com.chattriggers.ctjs.api
 
 import com.chattriggers.ctjs.internal.launch.SecureLoader
+import java.util.concurrent.CompletableFuture
 
 object V5Auth {
+    @JvmStatic
+    fun authenticate(): CompletableFuture<String?> = CompletableFuture.supplyAsync(SecureLoader::authenticate)
+
     @JvmStatic
     fun getJwtToken(): String? = SecureLoader.getJwtToken()
 

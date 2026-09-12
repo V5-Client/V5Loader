@@ -37,12 +37,10 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
     }
 
     private fun collectRoots(resolver: Resolver): Set<KSClassDeclaration> {
-        val manualRootDeclarations = manualRoots
+        return manualRoots
             .map(resolver::getKSNameFromString)
             .mapNotNull(resolver::getClassDeclarationByName)
-            .toSet()
-
-        return manualRootDeclarations + resolver.getAllFiles().flatMap {
+            .toSet() + resolver.getAllFiles().flatMap {
             dependentFiles.add(it)
 
             it.declarations.filter { decl ->
@@ -107,7 +105,7 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
             return pkg.split(".").fold(root) { p, name ->
                 if (name in typescriptReservedWords)
                     return null
-                p.getPackage(name)
+                p.subpackages.getOrPut(name) { Package(p, name) }
             }
         }
 
@@ -255,7 +253,7 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
 
             // If this is a functional interface, output a call method
             if (clazz.isAnnotationPresent(FunctionalInterface::class)) {
-                val functionalMethod = getFunctionalInterfaceMethod(clazz)
+                val functionalMethod = clazz.getDeclaredFunctions().firstOrNull { it.isPublic() && it.isAbstract }
                 if (functionalMethod != null) {
                     buildFunction(functionalMethod, resolver, omitName = true)
                 }
@@ -461,10 +459,6 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
             .write(builder.toString().toByteArray())
     }
 
-    private fun getFunctionalInterfaceMethod(clazz: KSClassDeclaration): KSFunctionDeclaration? {
-        return clazz.getDeclaredFunctions().firstOrNull { it.isPublic() && it.isAbstract }
-    }
-
     private val classNameCache = mutableMapOf<KSClassDeclaration, String>()
     private val KSClassDeclaration.name: String
         get() = classNameCache.getOrPut(this) {
@@ -500,17 +494,11 @@ class Processor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
         val subpackages = mutableMapOf<String, Package>()
         val classes = mutableMapOf<String, KSClassDeclaration>()
 
-        fun getPackage(name: String): Package {
-            return subpackages.getOrPut(name) { Package(this, name) }
-        }
-
         fun path() = generateSequence(this, Package::parent)
             .toList()
             .asReversed()
             .drop(1) // Ignore the root package
             .joinToString(".", transform = Package::name)
-
-        override fun toString() = "Package(${path()})"
     }
 
     companion object {

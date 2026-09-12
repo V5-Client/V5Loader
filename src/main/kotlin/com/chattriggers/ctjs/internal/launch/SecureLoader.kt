@@ -2,10 +2,16 @@ package com.chattriggers.ctjs.internal.launch
 
 import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.internal.engine.module.ModuleManager
+import com.v5.loader.internal.V5Loader
+import com.v5.loader.internal.V5Crypto
+import com.v5.loader.internal.V5Http
+import com.v5.loader.internal.refreshSession
+import com.v5.loader.internal.sessionFile
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
@@ -34,8 +40,12 @@ internal object SecureLoader {
     private const val LOADER_USER_AGENT = "V5Loader/1.1"
     private const val TOKEN_EXPIRY_SKEW_SECONDS = 60L
     private const val CTJS_ERROR_REPORT_INTERVAL_MS = 15 * 60 * 1000L
-    private const val SESSION_DIR_NAME = ".v5"
-    private const val SESSION_FILE_NAME = "session.json"
+    private const val GITHUB_API_HOST = "api.github.com"
+    private const val GITHUB_HOST = "github.com"
+    private const val GITHUB_REPOSITORY = "V5-Client/V5"
+    private const val MODULE_ASSET_NAME = "V5-Mojmap.zip"
+    private val SHA_256_REGEX = Regex("[a-f0-9]{64}")
+    private val RELEASE_TAG_REGEX = Regex("[A-Za-z0-9._-]+")
 
     private val jsonParser = Json {
         useAlternativeNames = true
@@ -43,31 +53,11 @@ internal object SecureLoader {
     }
 
     @Volatile private var isDevMode = false
-    @Volatile private var isPluginLoaded = false
-    @Volatile private var isLoaded = false
     @Volatile private var internalToken: String? = null
-    @Volatile private var didConsumeInitialLoaderToken = false
     private var lastCtjsErrorReportAt = 0L
 
     @JvmStatic
-    fun getJwtToken(): String? {
-        val token = internalToken
-        if (!token.isNullOrBlank()) return token
-
-        if (!didConsumeInitialLoaderToken) {
-            synchronized(this) {
-                if (!didConsumeInitialLoaderToken) {
-                    val loaderToken = V5TokenSource.consumeToken()
-                    if (!loaderToken.isNullOrBlank()) {
-                        internalToken = loaderToken
-                    }
-                    didConsumeInitialLoaderToken = true
-                }
-            }
-        }
-
-        return internalToken
-    }
+    fun getJwtToken(): String? = internalToken
 
     @JvmStatic
     fun getFreshJwtToken(): String? {
@@ -82,6 +72,9 @@ internal object SecureLoader {
         if (token.isNullOrBlank()) return
         internalToken = token
     }
+
+    @Synchronized
+    fun authenticate(): String? = V5Loader.authenticate()?.also(::setJwtToken)
 
     fun reportCtjsJavascriptError(
         kind: String,
@@ -116,11 +109,11 @@ internal object SecureLoader {
         }.toString().toByteArray(StandardCharsets.UTF_8)
 
         Util.backgroundExecutor().execute {
-            val token = getFreshJwtToken() ?: return@execute
+            val token = getFreshJwtToken()
             val connection = try {
                 openBackendConnection("$BACKEND_URL/api/logs/ctjs-errors").apply {
                     requestMethod = "POST"
-                    setRequestProperty("Authorization", "Bearer $token")
+                    if (token != null) setRequestProperty("Authorization", "Bearer $token")
                     setRequestProperty("Content-Type", "application/json")
                     setRequestProperty("Accept", "application/json")
                     setRequestProperty("User-Agent", LOADER_USER_AGENT)
@@ -151,7 +144,7 @@ internal object SecureLoader {
         internalToken?.let { latest ->
             if (!isNearExpiry(latest)) return latest
         }
-        val refreshed = refreshWithStoredRefreshToken()
+        val refreshed = refreshSession(sessionFile(FabricLoader.getInstance().gameDir))
         if (!refreshed.isNullOrBlank()) {
             internalToken = refreshed
             return refreshed
@@ -185,133 +178,19 @@ internal object SecureLoader {
         }
     }
 
-    private fun refreshWithStoredRefreshToken(): String? {
-        val refreshToken = readRefreshTokenFromSessionFile() ?: return null
-        val requestBody = buildJsonObject { put("refresh_token", refreshToken) }.toString()
-            .toByteArray(StandardCharsets.UTF_8)
-
-        val connection = try {
-            openBackendConnection("$BACKEND_URL/api/auth/refresh").apply {
-                requestMethod = "POST"
-                setRequestProperty("Content-Type", "application/json")
-                setRequestProperty("Accept", "application/json")
-                setRequestProperty("User-Agent", LOADER_USER_AGENT)
-                connectTimeout = 10000
-                readTimeout = 10000
-                doOutput = true
-            }
-        } catch (_: Exception) {
-            return null
-        }
-
-        return try {
-            connection.outputStream.use { it.write(requestBody) }
-            val responseCode = connection.responseCode
-            val responseText = (if (responseCode in 200..299) connection.inputStream else connection.errorStream)
-                ?.bufferedReader()
-                ?.use { it.readText() }
-                ?: ""
-            if (responseText.isBlank()) return null
-
-            val obj = jsonParser.parseToJsonElement(responseText).jsonObject
-            if (responseCode != 200) {
-                val errorCode = obj["error"]?.jsonPrimitive?.contentOrNull.orEmpty()
-                if (
-                    errorCode == "INVALID_REFRESH_TOKEN" ||
-                    errorCode == "REFRESH_TOKEN_EXPIRED" ||
-                    errorCode == "REFRESH_TOKEN_REUSED" ||
-                    errorCode == "SESSION_REVOKED"
-                ) {
-                    clearSessionFile()
-                }
-                return null
-            }
-
-            val accessToken = obj["access_token"]?.jsonPrimitive?.contentOrNull
-                ?: obj["token"]?.jsonPrimitive?.contentOrNull
-            val rotatedRefresh = obj["refresh_token"]?.jsonPrimitive?.contentOrNull
-            if (accessToken.isNullOrBlank() || rotatedRefresh.isNullOrBlank()) {
-                return null
-            }
-            persistRefreshToken(rotatedRefresh)
-            accessToken
-        } catch (_: Exception) {
-            null
-        } finally {
-            connection.disconnect()
-        }
-    }
-
-    private fun getSessionFile(): File {
-        return File(File(getGameDir(), SESSION_DIR_NAME), SESSION_FILE_NAME)
-    }
-
-    private fun readRefreshTokenFromSessionFile(): String? {
-        val file = getSessionFile()
-        if (!file.exists() || !file.isFile) return null
-        return try {
-            val content = file.readText(Charsets.UTF_8)
-            val obj = jsonParser.parseToJsonElement(content).jsonObject
-            obj["refresh_token"]?.jsonPrimitive?.contentOrNull?.trim()?.ifBlank { null }
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    private fun persistRefreshToken(refreshToken: String) {
-        if (refreshToken.isBlank()) return
-        val file = getSessionFile()
-        try {
-            file.parentFile?.mkdirs()
-            val json = buildJsonObject {
-                put("refresh_token", refreshToken)
-                put("updated_at", System.currentTimeMillis() / 1000L)
-            }
-            file.writeText(json.toString(), Charsets.UTF_8)
-            file.setReadable(false, false)
-            file.setWritable(false, false)
-            file.setExecutable(false, false)
-            file.setReadable(true, true)
-            file.setWritable(true, true)
-        } catch (_: Exception) {
-        }
-    }
-
-    private fun clearSessionFile() {
-        try {
-            val file = getSessionFile()
-            if (file.exists()) file.delete()
-        } catch (_: Exception) {
-        }
-    }
-
-    fun run() {
-        onMixinPlugin()
-        onInitialize()
-    }
-
     fun onMixinPlugin() {
-        if (isPluginLoaded) return
         println("[V5] Stage: onMixinPlugin")
         try {
-            val token = getFreshJwtToken()
-            if (token.isNullOrBlank()) {
-                println("[V5] No loader auth token available.")
-                shutDownHard()
-            }
-
             val modulePath = getV5ModuleDir()
             if (modulePath.exists() && isLocalDeveloperModeEnabled()) {
                 isDevMode = true
                 println("[V5] Developer mode is active. Skipping V5 module download.")
-                isPluginLoaded = true
                 return
             }
 
-            val zipBytes = downloadZip(token)
+            val zipBytes = downloadZip()
             processZip(zipBytes)
             Arrays.fill(zipBytes, 0)
-            isPluginLoaded = true
         } catch (e: Exception) {
             e.printStackTrace()
             shutDownHard()
@@ -331,55 +210,22 @@ internal object SecureLoader {
         }
     }
 
-    fun onInitialize() {
-        if (isLoaded) return
-        println("[V5] Stage: onInitialize")
-
-        if (isDevMode) {
-            isLoaded = true
-            return
-        }
-
-        if (getFreshJwtToken().isNullOrBlank()) {
-            println("[V5] Session expired or revoked. Exiting.")
-            shutDownHard()
-        }
-
-        isLoaded = true
-    }
-
-    private fun downloadZip(token: String): ByteArray {
-        return downloadAsset("/api/download/v5mojmap", token)
-    }
-
-    private fun downloadAsset(endpointPath: String, token: String): ByteArray {
-        val connection = openBackendConnection("$BACKEND_URL$endpointPath").apply {
-            setRequestProperty("Authorization", "Bearer $token")
-            setRequestProperty("User-Agent", LOADER_USER_AGENT)
-            connectTimeout = 10000
-            readTimeout = 30000
-        }
-
-        try {
-            val responseCode = connection.responseCode
-            if (responseCode !in 200..299) {
-                val responseText = try {
-                    connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-                } catch (_: Exception) {
-                    ""
-                }
-                val errorMessage = try {
-                    jsonParser.parseToJsonElement(responseText).jsonObject["error"]?.jsonPrimitive?.contentOrNull
-                } catch (_: Exception) {
-                    null
-                }
-                throw IOException("Download failed: ${errorMessage ?: "Unknown error"} (code: $responseCode)")
-            }
-
-            return connection.inputStream.use { it.readBytes() }
-        } finally {
-            connection.disconnect()
-        }
+    private fun downloadZip(): ByteArray {
+        val release = V5Http.httpsGet(GITHUB_API_HOST, "/repos/$GITHUB_REPOSITORY/releases/latest")
+            .takeIf { it.isNotBlank() }
+            ?.let { jsonParser.parseToJsonElement(it).jsonObject }
+            ?: throw IOException("Failed to read the latest V5 GitHub workflow release")
+        val tag = release["tag_name"]?.jsonPrimitive?.contentOrNull?.takeIf(RELEASE_TAG_REGEX::matches)
+            ?: throw IOException("Latest V5 release has an invalid tag")
+        val asset = release["assets"]?.jsonArray
+            ?.map { it.jsonObject }
+            ?.singleOrNull { it["name"]?.jsonPrimitive?.contentOrNull == MODULE_ASSET_NAME }
+            ?: throw IOException("Latest V5 release does not contain $MODULE_ASSET_NAME")
+        val bytes = V5Http.httpsGetBytes(
+            GITHUB_HOST,
+            "/$GITHUB_REPOSITORY/releases/download/$tag/$MODULE_ASSET_NAME",
+        ) ?: throw IOException("Failed to download $MODULE_ASSET_NAME from GitHub")
+        return bytes
     }
 
     private fun openBackendConnection(url: String): HttpsURLConnection =
@@ -471,21 +317,13 @@ internal object SecureLoader {
     }
 
     fun reload() {
-        isLoaded = false
-        isPluginLoaded = false
         isDevMode = false
-        run()
+        onMixinPlugin()
     }
 
     private fun shutDownHard(): Nothing {
         Runtime.getRuntime().halt(0)
         throw IllegalStateException("V5 loader aborted due to unrecoverable error")
-    }
-
-    fun isLoaded(): Boolean = isLoaded
-
-    private fun getGameDir(): File {
-        return FabricLoader.getInstance().gameDir.toFile()
     }
 
     private fun getV5ModuleDir(): File {

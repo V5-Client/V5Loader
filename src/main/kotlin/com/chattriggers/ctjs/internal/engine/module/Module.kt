@@ -1,7 +1,7 @@
 package com.chattriggers.ctjs.internal.engine.module
 
 import com.chattriggers.ctjs.api.message.ChatLib
-import com.chattriggers.ctjs.api.render.Renderer
+import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.api.render.Text
 import com.chattriggers.ctjs.internal.utils.ModVersion
 import net.minecraft.client.gui.GuiGraphicsExtractor
@@ -26,7 +26,7 @@ class Module(val name: String, var metadata: ModuleMetadata, val folder: File) {
 
         ctx.fill(x, y, x + width, y + 13, 0xaa000000.toInt())
         ctx.text(
-            Renderer.getFontRenderer(),
+            Render2D.getFontRenderer(),
             metadata.name ?: name,
             x + 3, y + 3, -1
         )
@@ -35,7 +35,7 @@ class Module(val name: String, var metadata: ModuleMetadata, val folder: File) {
             ctx.pose().pushMatrix()
             ctx.pose().translate(x + width - 5f, y + 8f)
             ctx.pose().rotate(Math.PI.toFloat())
-            ctx.text(Renderer.getFontRenderer(), "^", 0, 0, -1, false)
+            ctx.text(Render2D.getFontRenderer(), "^", 0, 0, -1, false)
             ctx.pose().popMatrix()
             16
         } else {
@@ -43,23 +43,23 @@ class Module(val name: String, var metadata: ModuleMetadata, val folder: File) {
             val descriptionHeight = gui.description.getHeight().toInt()
 
             ctx.fill(x, y + 13, x + width, y + descriptionHeight + 25, 0x50000000)
-            ctx.text(Renderer.getFontRenderer(), "^", x + width - 10, y + 5, -1, false)
+            ctx.text(Render2D.getFontRenderer(), "^", x + width - 10, y + 5, -1, false)
 
             gui.description.draw(ctx, x + 3, y + 15)
 
             if (metadata.version != null) {
                 val versionText = ChatLib.addColor("&8v${metadata.version}")
                 ctx.text(
-                    Renderer.getFontRenderer(),
+                    Render2D.getFontRenderer(),
                     versionText,
-                    x + width - Renderer.getStringWidth(versionText),
+                    x + width - Render2D.getStringWidth(versionText),
                     y + descriptionHeight + 15,
                     -1
                 )
             }
 
             ctx.text(
-                Renderer.getFontRenderer(),
+                Render2D.getFontRenderer(),
                 ChatLib.addColor(
                     if (metadata.isRequired && requiredBy.isNotEmpty()) {
                         "&8required by $requiredBy"

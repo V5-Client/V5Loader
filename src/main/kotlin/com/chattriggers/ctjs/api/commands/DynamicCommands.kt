@@ -20,12 +20,10 @@ import com.chattriggers.ctjs.api.world.block.BlockPos
 import com.chattriggers.ctjs.internal.commands.CommandCollection
 import com.chattriggers.ctjs.internal.commands.DynamicCommand
 import com.chattriggers.ctjs.internal.engine.JSLoader
-import com.chattriggers.ctjs.internal.mixins.commands.EntitySelectorAccessor
 import com.chattriggers.ctjs.MCEntity
 import com.chattriggers.ctjs.MCNbtCompound
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.message.ChatLib
-import com.chattriggers.ctjs.internal.utils.asMixin
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.ImmutableStringReader
 import com.mojang.brigadier.StringReader
@@ -46,7 +44,6 @@ import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.commands.SharedSuggestionProvider
 import net.minecraft.commands.arguments.AngleArgument
-import net.minecraft.commands.arguments.ColorArgument
 import net.minecraft.commands.arguments.CompoundTagArgument
 import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.commands.arguments.GameModeArgument
@@ -73,6 +70,8 @@ import net.minecraft.commands.arguments.item.ItemArgument
 import net.minecraft.commands.arguments.item.ItemInput
 import net.minecraft.commands.arguments.item.ItemPredicateArgument
 import net.minecraft.commands.arguments.selector.EntitySelector
+import net.minecraft.ChatFormatting
+import net.minecraft.world.level.entity.EntityTypeTest
 import net.minecraft.data.registries.VanillaRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.server.permissions.PermissionSet
@@ -86,6 +85,7 @@ import org.mozilla.javascript.Function
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.WrappedException
 import java.util.concurrent.CompletableFuture
+import java.util.UUID
 import java.util.function.Predicate
 import kotlin.math.min
 
@@ -373,7 +373,7 @@ object DynamicCommands : CommandCollection() {
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:color">minecraft:color</a>
      */
     @JvmStatic
-    fun color() = ColorArgument.color()
+    fun color(): ArgumentType<ChatFormatting> = ColorArgumentCompat
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:column_pos">minecraft:column_pos</a>
@@ -771,8 +771,27 @@ object DynamicCommands : CommandCollection() {
         override fun toString() = "BlockStateArgument"
     }
 
+    private class EntitySelectorAccess(private val impl: EntitySelector) {
+        private fun field(name: String): Any? = impl.javaClass.getDeclaredField(name).apply { trySetAccessible() }.get(impl)
+        val maxResults get() = field("maxResults") as Int
+        val includesEntities get() = field("includesEntities") as Boolean
+        @Suppress("UNCHECKED_CAST")
+        val contextFreePredicates get() = field("contextFreePredicates") as List<Predicate<MCEntity>>
+        val range get() = field("range")!!
+        @Suppress("UNCHECKED_CAST")
+        val position get() = field("position") as java.util.function.Function<Vec3, Vec3>
+        val aabb get() = field("aabb") as AABB?
+        @Suppress("UNCHECKED_CAST")
+        val order get() = field("order") as java.util.function.BiConsumer<Vec3, List<out MCEntity>>
+        val playerName get() = field("playerName") as String?
+        val entityUUID get() = field("entityUUID") as UUID?
+        @Suppress("UNCHECKED_CAST")
+        val type get() = field("type") as EntityTypeTest<MCEntity, *>
+        val currentEntity get() = field("currentEntity") as Boolean
+    }
+
     class EntitySelectorWrapper(private val impl: EntitySelector) {
-        private val mixed get() = impl.asMixin<EntitySelectorAccessor>()
+        private val mixed get() = EntitySelectorAccess(impl)
 
         fun getEntity(): Entity {
             val entities = getEntities()
@@ -876,8 +895,8 @@ object DynamicCommands : CommandCollection() {
                 val box = mixed.aabb!!.move(pos)
                 predicate = predicate.and { box.intersects(it.boundingBox) }
             }
-            if (!mixed.range.isAny)
-                predicate = predicate.and { mixed.range.matchesSqr(it.distanceToSqr(pos)) }
+            if (!(mixed.range.javaClass.getMethod("isAny").invoke(mixed.range) as Boolean))
+                predicate = predicate.and { mixed.range.javaClass.getMethod("matchesSqr", Double::class.javaPrimitiveType).invoke(mixed.range, it.distanceToSqr(pos)) as Boolean }
             return predicate
         }
     }

@@ -1,5 +1,6 @@
 package com.chattriggers.ctjs.api.message
 
+import com.chattriggers.ctjs.api.client.chatCompat
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Style
 import net.minecraft.network.chat.Component
@@ -35,6 +36,6 @@ object Chat {
             finalMessage.append(partText)
         }
 
-        mc.gui.chat.addClientSystemMessage(finalMessage)
+        mc.gui.chatCompat.addClientSystemMessage(finalMessage)
     }
 }

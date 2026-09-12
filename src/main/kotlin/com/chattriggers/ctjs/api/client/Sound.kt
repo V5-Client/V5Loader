@@ -131,6 +131,7 @@ class Sound(private val config: NativeObject) {
             soundManagerAccessor.registry.remove(identifier)
             soundManagerAccessor.soundCache.remove(identifier)
         }
+        CTJS.sounds.remove(this)
     }
 
     /**

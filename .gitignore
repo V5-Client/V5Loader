@@ -41,5 +41,6 @@ replay_*.log
 *.jfr
 
 versions/*/api/
+versions/*/logs/
 
 grunt-main.jar

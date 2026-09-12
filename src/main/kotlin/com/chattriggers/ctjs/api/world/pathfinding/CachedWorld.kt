@@ -18,6 +18,7 @@ object CachedWorld {
   @Volatile
   private var chunks = ConcurrentHashMap<Long, CachedChunk>(512)
   private val pendingChunks = ConcurrentLinkedQueue<Long>()
+  private val dirtyNativeChunks = ConcurrentHashMap.newKeySet<Long>()
   private val pendingNativeUpdates = ConcurrentHashMap<Long, Int>(256)
 
   private const val RUNTIME_WORLD_KEY = "runtime_memory"
@@ -25,8 +26,6 @@ object CachedWorld {
   private var worldKey: String = RUNTIME_WORLD_KEY
   @Volatile
   private var nativeWorldToken: String = ""
-  @Volatile
-  private var pendingNativeResync = true
 
   private var cacheKey: Long = Long.MIN_VALUE
   private var cacheChunk: CachedChunk? = null
@@ -101,6 +100,7 @@ object CachedWorld {
     val key = chunkKey(pos.x shr 4, pos.z shr 4)
     val chunk = chunks[key]?.takeIf { it.ready } ?: return
     val flags = NativeStateEncoder.flagsForState(state).toShort()
+    if (chunk.getFlags(pos.x and 15, pos.y, pos.z and 15) == flags) return
     chunk.setFlags(pos.x and 15, pos.y, pos.z and 15, flags)
     queueNativeUpdate(pos.x, pos.y, pos.z, flags.toInt() and 0xFFFF)
     if (cacheKey == key) {
@@ -160,29 +160,30 @@ object CachedWorld {
         cacheChunk = cached
       }
 
-      syncChunkToNative(chunkX, chunkZ, cached)
+      dirtyNativeChunks.add(key)
     }
 
     if (!unlimitedChunkCache && chunks.size > Swift.MAXIMUM_CACHED_CHUNKS) {
       val toRemove = chunks.size - Swift.MAXIMUM_CACHED_CHUNKS
-      chunks.keys.take(toRemove).forEach { chunks.remove(it) }
+      val removed = chunks.keys.take(toRemove).filter { chunks.remove(it) != null }.toLongArray()
+      NativePathfinderBridge.removeChunks(removed)
+      if (cacheKey in removed) {
+        cacheKey = Long.MIN_VALUE
+        cacheChunk = null
+      }
     }
 
-    if (pendingNativeResync) {
-      syncAllCachedChunksToNative()
-      pendingNativeResync = false
-    }
-
+    syncDirtyChunksToNative()
     flushPendingNativeUpdates()
   }
 
   private fun resetState() {
     chunks = ConcurrentHashMap(512)
     pendingChunks.clear()
+    dirtyNativeChunks.clear()
     pendingNativeUpdates.clear()
     cacheKey = Long.MIN_VALUE
     cacheChunk = null
-    pendingNativeResync = true
     nativeWorldToken = ""
     NativePathfinderBridge.clearWorld()
   }
@@ -213,7 +214,9 @@ object CachedWorld {
         val loaded = WorldSerializer.load(lobbyName)
         if (loaded != null && chunks === sessionMap) {
           for ((key, chunk) in loaded) {
-            sessionMap.putIfAbsent(key, chunk)
+            if (sessionMap.putIfAbsent(key, chunk) == null) {
+              dirtyNativeChunks.add(key)
+            }
           }
         }
       } catch (e: Exception) {
@@ -263,7 +266,6 @@ object CachedWorld {
 
     worldKey = normalized
     nativeWorldToken = ""
-    pendingNativeResync = true
     NativePathfinderBridge.clearWorld()
   }
 
@@ -276,25 +278,42 @@ object CachedWorld {
     NativePathfinderBridge.setWorld(worldKey, minY, maxY)
     if (NativePathfinderBridge.getLastError() == null) {
       nativeWorldToken = token
-      pendingNativeResync = true
+      dirtyNativeChunks.addAll(chunks.keys)
     }
   }
 
-  private fun syncAllCachedChunksToNative() {
-    if (!NativePathfinderBridge.isAvailable()) return
+  private fun syncDirtyChunksToNative() {
+    if (!NativePathfinderBridge.isAvailable() || dirtyNativeChunks.isEmpty()) return
 
-    for ((key, chunk) in chunks) {
-      if (!chunk.ready) continue
-      val chunkX = (key shr 32).toInt()
-      val chunkZ = key.toInt()
-      syncChunkToNative(chunkX, chunkZ, chunk)
+    val readyChunks = dirtyNativeChunks.mapNotNull { key ->
+      if (!dirtyNativeChunks.remove(key)) return@mapNotNull null
+      chunks[key]?.takeIf { it.ready }?.let { key to it }
+    }
+    if (readyChunks.isEmpty()) return
+
+    val metadata = IntArray(readyChunks.size * 4)
+    val sectionMasks = LongArray(readyChunks.size)
+    val sectionFlags = Array(readyChunks.size) { index ->
+      val (key, chunk) = readyChunks[index]
+      val offset = index * 4
+      metadata[offset] = (key shr 32).toInt()
+      metadata[offset + 1] = key.toInt()
+      metadata[offset + 2] = chunk.minY
+      metadata[offset + 3] = chunk.maxY
+
+      val encoded = encodeChunk(chunk)
+      sectionMasks[index] = encoded.first
+      encoded.second
+    }
+
+    NativePathfinderBridge.upsertChunks(metadata, sectionMasks, sectionFlags)
+    if (NativePathfinderBridge.getLastError() != null) {
+      dirtyNativeChunks.addAll(readyChunks.map { it.first })
     }
   }
 
-  private fun syncChunkToNative(chunkX: Int, chunkZ: Int, chunk: CachedChunk) {
-    if (!NativePathfinderBridge.isAvailable() || !chunk.ready) return
-
-    val sectionCount = (chunk.maxY - chunk.minY + 15) shr 4
+  private fun encodeChunk(chunk: CachedChunk): Pair<Long, ShortArray> {
+    val sectionCount = minOf((chunk.maxY - chunk.minY + 15) shr 4, Long.SIZE_BITS)
     var sectionMask = 0L
     var totalValues = 0
     for (i in 0 until sectionCount) {
@@ -302,18 +321,6 @@ object CachedWorld {
         sectionMask = sectionMask or (1L shl i)
         totalValues += 4096
       }
-    }
-
-    if (totalValues == 0) {
-      NativePathfinderBridge.upsertChunk(
-        chunkX,
-        chunkZ,
-        chunk.minY,
-        chunk.maxY,
-        0L,
-        ShortArray(0)
-      )
-      return
     }
 
     val sectionFlags = ShortArray(totalValues)
@@ -324,14 +331,7 @@ object CachedWorld {
       offset += 4096
     }
 
-    NativePathfinderBridge.upsertChunk(
-      chunkX,
-      chunkZ,
-      chunk.minY,
-      chunk.maxY,
-      sectionMask,
-      sectionFlags
-    )
+    return sectionMask to sectionFlags
   }
 
   private fun flushPendingNativeUpdates() {

@@ -4,10 +4,14 @@ import java.nio.file.Path
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Base64
+import java.util.HexFormat
 import kotlin.io.path.inputStream
 
 internal object V5Crypto {
     private val secureRandom = SecureRandom()
+
+    fun calculateSha256(bytes: ByteArray): String =
+        HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes))
 
     fun calculateFileSha256(path: String): String {
         repeat(10) { attempt ->
@@ -21,7 +25,7 @@ internal object V5Crypto {
                         digest.update(buffer, 0, read)
                     }
                 }
-                return digest.digest().joinToString("") { "%02x".format(it) }
+                return HexFormat.of().formatHex(digest.digest())
             } catch (_: Exception) {
                 if (attempt < 9) Thread.sleep(100)
             }

@@ -4,18 +4,19 @@
     "name": "V5",
     "version": "$version",
     "description": "A ChatTriggers fork that supports additional features.",
-    "authors": ["Zurviq, rdbt, EpsilonPhoenix"],
+    "authors": ["rdbt", "EpsilonPhoenix", "Zurviq"],
     "contributors": ["Oblongboot", "Nathan", "IcyHenryT"],
     "icon": "assets/v5/icon.png",
-    "license": ["GPL-3.0."],
+    "license": ["GPL-3.0"],
     "contact": {
         "homepage": "https://rdbt.top/",
-        "sources": "https://discord.gg/RvQJq7vE3a",
-        "issues": "https://discord.gg/RvQJq7vE3a"
+        "sources": "https://github.com/V5-Client/V5",
+        "issues": "https://github.com/V5-Client/V5/issues"
     },
     "environment": "client",
     "entrypoints": {
         "preLaunch": [
+            "com.chattriggers.ctjs.api.render.skia.SkijaBootstrap",
             {
                 "value": "com.v5.loader.V5PreLaunch",
                 "adapter": "kotlin"
@@ -27,24 +28,13 @@
             "com.chattriggers.ctjs.api.world.pathfinding.Swift"
         ]
     },
-    "mixins": ["ctjs.mixins.json", "v5.mixins.json"],
+    "mixins": ["ctjs.mixins.json"],
     "depends": {
         "minecraft": "=$minecraft_version",
         "fabricloader": ">=$loader_version",
         "fabric-api": ">=$fabric_api_version",
-        "fabric-language-kotlin": ">=$fabric_kotlin_version",
-        "hypixel-mod-api": ">=1.0.2"
+        "fabric-language-kotlin": ">=$fabric_kotlin_version"
     },
-    "breaks": {
-        "stfu": "*",
-        "nvidium": "*"
-    },
-    "custom": {
-        "modmenu": {
-            "links": {
-                "modmenu.discord": "https://discord.gg/RvQJq7vE3a"
-            }
-        }
-    },
+    "breaks": {},
     "accessWidener": "ctjs.accesswidener"
 }

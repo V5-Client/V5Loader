@@ -21,7 +21,7 @@ object ModuleManager {
         modulesFolder.mkdirs()
 
         // Get existing modules
-        val installedModules = getFoldersInDir(modulesFolder).map(::parseModule).distinctBy {
+        val installedModules = modulesFolder.listFiles()?.filter(File::isDirectory).orEmpty().map(::parseModule).distinctBy {
             it.name.lowercase(Locale.ROOT)
         }
 
@@ -77,9 +77,6 @@ object ModuleManager {
             completionListener(completed.toFloat() / total)
         }
     }
-
-    private fun getFoldersInDir(dir: File): List<File> =
-        if (dir.isDirectory) dir.listFiles()?.filter { it.isDirectory }.orEmpty() else emptyList()
 
     fun parseModule(directory: File): Module {
         val metadataFile = File(directory, "metadata.json")

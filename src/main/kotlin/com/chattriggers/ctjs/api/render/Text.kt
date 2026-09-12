@@ -2,7 +2,6 @@ package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.internal.utils.getOrDefault
-import com.chattriggers.ctjs.internal.utils.getOption
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Style
 import org.mozilla.javascript.NativeObject
@@ -37,10 +36,10 @@ class Text {
     constructor(string: String, config: NativeObject) {
         setString(string)
         setColor(config.getOrDefault<Number>("color", 0xffffffff).toLong())
-        setFormatted(config.getOption("formatted", true))
-        setShadow(config.getOption("shadow", false))
-        setAlign(config.getOption("align", Align.LEFT))
-        setBackground(config.getOption("background", false))
+        setFormatted(config.getOrDefault<Boolean>("formatted", true))
+        setShadow(config.getOrDefault<Boolean>("shadow", false))
+        setAlign(config.getOrDefault<Align>("align", Align.LEFT))
+        setBackground(config.getOrDefault<Boolean>("background", false))
         setBackgroundColor(config.getOrDefault<Number>("backgroundColor", 0x00000000).toLong())
         setX(config.getOrDefault<Number>("x", 0).toInt())
         setY(config.getOrDefault<Number>("y", 0).toInt())
@@ -58,7 +57,7 @@ class Text {
 
     fun getColor(): Long = color
 
-    fun setColor(color: Long) = apply { this.color = Renderer.fixAlpha(color) }
+    fun setColor(color: Long) = apply { this.color = Render2D.fixAlpha(color) }
 
     fun getFormatted(): Boolean = formatted
 
@@ -152,7 +151,7 @@ class Text {
             ctx.pose().pushMatrix()
             ctx.pose().scale(scale, scale)
 
-            var longestLine = lines.maxOf { Renderer.getStringWidth(it) * scale }
+            var longestLine = lines.maxOf { Render2D.getStringWidth(it) * scale }
             if (maxWidth != 0)
                 longestLine = longestLine.coerceAtMost(maxWidth.toFloat())
             width = longestLine.toInt()
@@ -178,7 +177,7 @@ class Text {
             }
 
             for (i in 0 until minOf(maxLines, lines.size)) {
-                ctx.text(Renderer.getFontRenderer(), lines[i], xHolder, yHolder, color.toInt(), shadow)
+                ctx.text(Render2D.getFontRenderer(), lines[i], xHolder, yHolder, color.toInt(), shadow)
                 yHolder += 10
             }
             ctx.pose().popMatrix()
@@ -194,7 +193,7 @@ class Text {
         string.split("\n").forEach { line ->
             if (maxWidth > 0) {
                 lines.addAll(
-                    Renderer.getFontRenderer().splitter.splitLines(line, maxWidth, Style.EMPTY).map { it.string }
+                    Render2D.getFontRenderer().splitter.splitLines(line, maxWidth, Style.EMPTY).map { it.string }
                 )
             } else {
                 lines.add(line)

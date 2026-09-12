@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.api.client.Client
+import com.chattriggers.ctjs.api.client.screenCompat
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.triggers.RegularTrigger
 import com.chattriggers.ctjs.api.triggers.TriggerType
@@ -42,7 +43,7 @@ class Gui @JvmOverloads constructor(
 
     }
 
-    fun isOpen(): Boolean = Client.getMinecraft().screen === this
+    fun isOpen(): Boolean = Client.getMinecraft().screenCompat === this
 
     /**
      * Registers a method to be run while gui is open.
@@ -277,15 +278,14 @@ class Gui @JvmOverloads constructor(
 
         @Suppress("UNCHECKED_CAST")
         val drawContexts = drawContextsField.get(this) as List<GuiGraphicsExtractor>
-        Renderer.pushMatrix(UMatrixStack(drawContexts.last().pose()))
-
-        Renderer.partialTicks = partialTicks
-
-        this.mouseX = mouseX
-        this.mouseY = mouseY
-        onDraw?.trigger(arrayOf<Any?>(mouseX, mouseY, partialTicks))
-
-        Renderer.popMatrix()
+        DrawContextHolder.withContext(drawContexts.last()) {
+            Render2D.pushMatrix(UMatrixStack(drawContexts.last().pose()))
+            Render2D.partialTicks = partialTicks
+            this.mouseX = mouseX
+            this.mouseY = mouseY
+            onDraw?.trigger(arrayOf<Any?>(mouseX, mouseY, partialTicks))
+            Render2D.popMatrix()
+        }
     }
 
     /**

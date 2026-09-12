@@ -106,14 +106,6 @@ std::vector<Int3> extractKeyPoints(
     if (canSimplify) {
       if (isFly) {
         canSimplify = canFlyDirectly(world, start, end);
-      } else {
-        for (int i = from + 1; i < to; i++) {
-          const Int3& p = points[static_cast<size_t>(i)];
-          if (!isWalkSafeVoxel(world, p.x, p.y, p.z)) {
-            canSimplify = false;
-            break;
-          }
-        }
       }
     }
 

@@ -36,14 +36,25 @@ std::vector<double> toDoubleVector(JNIEnv* env, jdoubleArray array) {
   return out;
 }
 
-std::vector<jshort> toShortVector(JNIEnv* env, jshortArray array) {
+std::vector<jlong> toLongVector(JNIEnv* env, jlongArray array) {
   if (array == nullptr) return {};
 
   const jsize len = env->GetArrayLength(array);
   if (len <= 0) return {};
 
-  std::vector<jshort> out(static_cast<size_t>(len));
-  env->GetShortArrayRegion(array, 0, len, out.data());
+  std::vector<jlong> out(static_cast<size_t>(len));
+  env->GetLongArrayRegion(array, 0, len, out.data());
+  return out;
+}
+
+std::vector<uint16_t> toShortVector(JNIEnv* env, jshortArray array) {
+  if (array == nullptr) return {};
+
+  const jsize len = env->GetArrayLength(array);
+  if (len <= 0) return {};
+
+  std::vector<uint16_t> out(static_cast<size_t>(len));
+  env->GetShortArrayRegion(array, 0, len, reinterpret_cast<jshort*>(out.data()));
   return out;
 }
 
@@ -154,22 +165,32 @@ std::vector<jint> packPoints(const std::vector<v5pf::Int3>& points) {
   return packed;
 }
 
-std::vector<jint> toJIntVector(const std::vector<int>& values) {
-  std::vector<jint> out;
-  out.reserve(values.size());
-  for (const int value : values) {
-    out.push_back(static_cast<jint>(value));
-  }
-  return out;
-}
+v5pf::ChunkUpdate makeChunkUpdate(
+  const int chunkX,
+  const int chunkZ,
+  const int minY,
+  const int maxY,
+  const uint64_t sectionMask,
+  const std::vector<uint16_t>& sectionFlags
+) {
+  v5pf::ChunkUpdate update;
+  update.chunkX = chunkX;
+  update.chunkZ = chunkZ;
+  update.chunk.minY = minY;
+  update.chunk.maxY = maxY;
+  update.chunk.ensureLayout();
 
-std::vector<jfloat> toJFloatVector(const std::vector<float>& values) {
-  std::vector<jfloat> out;
-  out.reserve(values.size());
-  for (const float value : values) {
-    out.push_back(static_cast<jfloat>(value));
+  size_t readOffset = 0;
+  const int maskedSectionCount = std::min(update.chunk.sectionCount(), 64);
+  for (int i = 0; i < maskedSectionCount; i++) {
+    if ((sectionMask & (1ULL << i)) == 0ULL) continue;
+    if (readOffset + 4096 > sectionFlags.size()) break;
+
+    update.chunk.assignSection(i, sectionFlags.data() + readOffset);
+    readOffset += 4096;
   }
-  return out;
+
+  return update;
 }
 
 } // namespace
@@ -247,20 +268,104 @@ JNIEXPORT void JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePa
       return;
     }
 
-    const auto* sectionData = flags.empty() ? nullptr : reinterpret_cast<const uint16_t*>(flags.data());
-    g_worldState.upsertChunk(
+    std::vector<v5pf::ChunkUpdate> updates;
+    updates.push_back(makeChunkUpdate(
       static_cast<int>(chunkX),
       static_cast<int>(chunkZ),
       static_cast<int>(minY),
       static_cast<int>(maxY),
       static_cast<uint64_t>(sectionMask),
-      sectionData,
-      flags.size()
-    );
+      flags
+    ));
+    g_worldState.upsertChunks(std::move(updates));
   } catch (const std::exception& ex) {
     throwRuntimeFromException(env, "upsertChunk", ex);
   } catch (...) {
     throwRuntimeUnknown(env, "upsertChunk");
+  }
+}
+
+JNIEXPORT void JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_upsertChunks(
+  JNIEnv* env,
+  jclass,
+  jintArray metadata,
+  jlongArray sectionMasks,
+  jobjectArray sectionFlags
+) {
+  try {
+    const auto flatMetadata = toIntVector(env, metadata);
+    const auto masks = toLongVector(env, sectionMasks);
+    if (hasPendingJavaException(env)) {
+      return;
+    }
+
+    const size_t chunkCount = masks.size();
+    if (sectionFlags == nullptr || flatMetadata.size() != chunkCount * 4 ||
+        static_cast<size_t>(env->GetArrayLength(sectionFlags)) != chunkCount) {
+      throwJavaException(env, "java/lang/IllegalArgumentException", "Invalid chunk batch arrays");
+      return;
+    }
+
+    std::vector<v5pf::ChunkUpdate> updates;
+    updates.reserve(chunkCount);
+    for (size_t i = 0; i < chunkCount; i++) {
+      const size_t offset = i * 4;
+      const jint minY = flatMetadata[offset + 2];
+      const jint maxY = flatMetadata[offset + 3];
+      if (!isValidHeightRange(minY, maxY)) {
+        throwJavaException(env, "java/lang/IllegalArgumentException", buildInvalidHeightMessage(minY, maxY));
+        return;
+      }
+
+      auto flagsArray = static_cast<jshortArray>(env->GetObjectArrayElement(sectionFlags, static_cast<jsize>(i)));
+      if (hasPendingJavaException(env)) {
+        return;
+      }
+      const auto flags = toShortVector(env, flagsArray);
+      if (flagsArray != nullptr) {
+        env->DeleteLocalRef(flagsArray);
+      }
+      if (hasPendingJavaException(env)) {
+        return;
+      }
+
+      updates.push_back(makeChunkUpdate(
+        flatMetadata[offset],
+        flatMetadata[offset + 1],
+        minY,
+        maxY,
+        static_cast<uint64_t>(masks[i]),
+        flags
+      ));
+    }
+
+    g_worldState.upsertChunks(std::move(updates));
+  } catch (const std::exception& ex) {
+    throwRuntimeFromException(env, "upsertChunks", ex);
+  } catch (...) {
+    throwRuntimeUnknown(env, "upsertChunks");
+  }
+}
+
+JNIEXPORT void JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_NativePathfinderJNI_removeChunks(
+  JNIEnv* env,
+  jclass,
+  jlongArray chunkKeys
+) {
+  try {
+    const auto keys = toLongVector(env, chunkKeys);
+    if (hasPendingJavaException(env)) return;
+
+    std::vector<uint64_t> parsed;
+    parsed.reserve(keys.size());
+    for (const jlong key : keys) {
+      parsed.push_back(static_cast<uint64_t>(key));
+    }
+    g_worldState.removeChunks(parsed);
+  } catch (const std::exception& ex) {
+    throwRuntimeFromException(env, "removeChunks", ex);
+  } catch (...) {
+    throwRuntimeUnknown(env, "removeChunks");
   }
 }
 
@@ -344,7 +449,7 @@ JNIEXPORT jobject JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_Nativ
             avoidMetaFlat[base + 2],
             avoidMetaFlat[base + 3],
             avoidMetaFlat[base + 4],
-            avoidPenaltyFlat[i],
+            static_cast<float>(avoidPenaltyFlat[i]),
           });
         }
       }
@@ -355,8 +460,8 @@ JNIEXPORT jobject JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_Nativ
     params.goals = goals;
     params.isFly = isFly == JNI_TRUE;
     params.maxIterations = static_cast<int>(maxIterations);
-    params.heuristicWeight = static_cast<double>(heuristicWeight);
-    params.nonPrimaryStartPenalty = static_cast<double>(nonPrimaryStartPenalty);
+    params.heuristicWeight = static_cast<float>(heuristicWeight);
+    params.nonPrimaryStartPenalty = static_cast<float>(nonPrimaryStartPenalty);
     params.moveOrderOffset = static_cast<int>(moveOrderOffset);
     params.avoidZones = std::move(avoidZones);
 
@@ -370,9 +475,9 @@ JNIEXPORT jobject JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_Nativ
 
     const auto packedPath = packPoints(result->points);
     const auto packedKeyPath = packPoints(result->keyPoints);
-    const auto packedPathFlags = toJIntVector(result->pathFlags);
-    const auto packedKeyNodeFlags = toJIntVector(result->keyNodeFlags);
-    const auto packedKeyNodeMetrics = toJIntVector(result->keyNodeMetrics);
+    const std::vector<jint> packedPathFlags(result->pathFlags.begin(), result->pathFlags.end());
+    const std::vector<jint> packedKeyNodeFlags(result->keyNodeFlags.begin(), result->keyNodeFlags.end());
+    const std::vector<jint> packedKeyNodeMetrics(result->keyNodeMetrics.begin(), result->keyNodeMetrics.end());
 
     jintArray pathArray = env->NewIntArray(static_cast<jsize>(packedPath.size()));
     if (pathArray == nullptr) {
@@ -515,7 +620,7 @@ JNIEXPORT jobject JNICALL Java_com_chattriggers_ctjs_api_world_pathfinding_Nativ
     }
 
     const auto packedPath = packPoints(result->points);
-    const auto packedAngles = toJFloatVector(result->angles);
+    const std::vector<jfloat> packedAngles(result->angles.begin(), result->angles.end());
 
     jintArray pathArray = env->NewIntArray(static_cast<jsize>(packedPath.size()));
     if (pathArray == nullptr) {
