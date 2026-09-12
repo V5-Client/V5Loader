@@ -77,7 +77,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ inputs.sha || github.sha }}
         run: |
-          version=$(./gradlew -q :26.2:printVersion)
+          version=$(sed -n 's/^mod_version *= *//p' gradle.properties)
           prefix="${version//./\\.}-r"
           tag=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.target_commitish == \"$SHA\") | .tag_name" | sed -nE "s/^${prefix}[0-9]+$/&/p" | head -n1)
           if [ -z "$tag" ]; then
