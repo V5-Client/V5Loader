@@ -188,9 +188,7 @@ object Render3D {
         val camera = MinecraftCompat.mainCamera(client.gameRenderer)
         val distanceScale = if (increase) (pos.distanceTo(camera.position()).toFloat() / 120f).coerceAtLeast(0.01f) else 1f
         val style = TextGizmo.Style.whiteAndCentered().withScale(TextGizmo.Style.DEFAULT_SCALE * scale * distanceScale)
-        Gizmos.billboardText(text, if (translate) pos else camera.position(), style).apply {
-            if (seeThrough) setAlwaysOnTop()
-        }
+        drawText(text, if (translate) pos else camera.position(), style, backgroundBox, seeThrough)
     }
 
     @JvmStatic
@@ -201,10 +199,28 @@ object Render3D {
             val pos = positions[i]
             val distanceScale = if (increase) (pos.distanceTo(camera.position()).toFloat() / 120f).coerceAtLeast(0.01f) else 1f
             val style = TextGizmo.Style.whiteAndCentered().withScale(TextGizmo.Style.DEFAULT_SCALE * scale * distanceScale)
-            Gizmos.billboardText(texts[i], if (translate) pos else camera.position(), style).apply {
-                if (seeThrough) setAlwaysOnTop()
-            }
+            drawText(texts[i], if (translate) pos else camera.position(), style, backgroundBox, seeThrough)
         }
+    }
+
+    private fun drawText(text: String, pos: Vec3, style: TextGizmo.Style, backgroundBox: Boolean, seeThrough: Boolean) {
+        if (backgroundBox) {
+            val pixelScale = style.scale() / 16
+            val halfWidth = (client.font.width(text) / 2f + 1) * pixelScale
+            val camera = MinecraftCompat.mainCamera(client.gameRenderer)
+            val left = Vec3(camera.leftVector()).scale(halfWidth.toDouble())
+            val up = Vec3(camera.upVector())
+            val top = up.scale(pixelScale.toDouble())
+            val bottom = up.scale(-(client.font.lineHeight + 1) * pixelScale.toDouble())
+            Gizmos.rect(
+                pos.add(left).add(top),
+                pos.subtract(left).add(top),
+                pos.subtract(left).add(bottom),
+                pos.add(left).add(bottom),
+                GizmoStyle.fill(client.options.getBackgroundColor(0.25f)),
+            ).apply { if (seeThrough) setAlwaysOnTop() }
+        }
+        Gizmos.billboardText(text, pos, style).apply { if (seeThrough) setAlwaysOnTop() }
     }
 
     private fun net.minecraft.gizmos.GizmoProperties.depth(depth: Boolean) = apply {
