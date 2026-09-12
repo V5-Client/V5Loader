@@ -5,6 +5,7 @@ on:
     branches:
       - "**"
     paths:
+      - ".github/workflows/**"
       - "NativeSrc/**"
       - "src/**"
       - "typing-generator/src/**"
