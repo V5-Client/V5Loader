@@ -109,11 +109,11 @@ internal object SecureLoader {
         }.toString().toByteArray(StandardCharsets.UTF_8)
 
         Util.backgroundExecutor().execute {
-            val token = getFreshJwtToken() ?: return@execute
+            val token = getFreshJwtToken()
             val connection = try {
                 openBackendConnection("$BACKEND_URL/api/logs/ctjs-errors").apply {
                     requestMethod = "POST"
-                    setRequestProperty("Authorization", "Bearer $token")
+                    if (token != null) setRequestProperty("Authorization", "Bearer $token")
                     setRequestProperty("Content-Type", "application/json")
                     setRequestProperty("Accept", "application/json")
                     setRequestProperty("User-Agent", LOADER_USER_AGENT)

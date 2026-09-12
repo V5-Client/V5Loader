@@ -47,10 +47,6 @@ object V5Irc {
     fun reconnect() {
         worker.execute {
             if (stopped) return@execute
-            if (active?.socket != null) {
-                chat("Already connected to irc!")
-                return@execute
-            }
             attempts = 0
             retry?.cancel(false)
             connect()
@@ -62,6 +58,10 @@ object V5Irc {
         worker.execute {
             val listener = active ?: return@execute
             val socket = listener.socket ?: return@execute
+            if (!listener.authenticated) {
+                chat("&cAuthenticate V5 with Discord before sending IRC messages.")
+                return@execute
+            }
             try {
                 socket.sendText(content, true).orTimeout(10, TimeUnit.SECONDS).join()
             } catch (e: Exception) {
@@ -74,19 +74,15 @@ object V5Irc {
     private fun connect() {
         if (stopped) return
         active?.socket?.abort()
-        val listener = SocketListener()
+        val token = SecureLoader.getFreshJwtToken()
+        val listener = SocketListener(!token.isNullOrBlank())
         active = listener
         try {
-            val token = SecureLoader.getFreshJwtToken()
-            if (token.isNullOrBlank()) {
-                chat("&cLoader has not authenticated. IRC is unavailable.")
-                listener.disconnect()
-                return
-            }
-            http.newWebSocketBuilder()
+            val builder = http.newWebSocketBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
-                .header("Authorization", "Bearer $token")
+                .header("Authorization", if (token.isNullOrBlank()) "Guest" else "Bearer $token")
                 .header("X-Connection-Key", connectionKey)
+            builder
                 .buildAsync(URI("wss://${V5Http.BACKEND_HOST}/api/chat"), listener)
                 .whenComplete { _, error ->
                     if (error != null) worker.execute { listener.disconnect(error = error) }
@@ -96,7 +92,7 @@ object V5Irc {
         }
     }
 
-    private class SocketListener : WebSocket.Listener {
+    private class SocketListener(val authenticated: Boolean) : WebSocket.Listener {
         var socket: WebSocket? = null
         private var connectedAt = 0L
         private val message = StringBuilder()
