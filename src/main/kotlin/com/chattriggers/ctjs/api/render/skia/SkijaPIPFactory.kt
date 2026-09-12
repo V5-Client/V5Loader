@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.api.render.skia
 
 import com.mojang.blaze3d.vertex.PoseStack
+import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry.Context
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer
 //? if <26.2 {
 /*import net.minecraft.client.renderer.MultiBufferSource
@@ -9,8 +10,8 @@ import net.minecraft.client.renderer.SubmitNodeCollector
 //?}
 
 //? if <26.2 {
-/*internal fun createSkijaPIP(factoryInput: Any?, pre: Boolean): PictureInPictureRenderer<*> {
-    val buffers = factoryInput!!.javaClass.getMethod("bufferSource").invoke(factoryInput) as MultiBufferSource.BufferSource
+/*internal fun createSkijaPIP(context: Context, pre: Boolean): PictureInPictureRenderer<*> {
+    val buffers = context.bufferSource()
     return if (pre) SkijaPrePIPRenderer(buffers) else SkijaPIPRenderer(buffers)
 }
 
@@ -34,7 +35,7 @@ private class SkijaPrePIPRenderer(buffers: MultiBufferSource.BufferSource) : Ski
     override fun getRenderStateClass() = SkijaPIP.PreState::class.java as Class<SkijaPIP.State>
 }
 *///?} else {
-internal fun createSkijaPIP(factoryInput: Any?, pre: Boolean): PictureInPictureRenderer<*> =
+internal fun createSkijaPIP(context: Context, pre: Boolean): PictureInPictureRenderer<*> =
     if (pre) SkijaPrePIPRenderer() else SkijaPIPRenderer()
 
 private open class SkijaPIPRenderer : PictureInPictureRenderer<SkijaPIP.State>() {
