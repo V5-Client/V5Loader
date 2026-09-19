@@ -23,5 +23,5 @@ typealias MCBossBarStyle = net.minecraft.world.BossEvent.BossBarOverlay
 typealias MCCloudRenderMode = net.minecraft.client.CloudStatus
 typealias MCParticlesMode = net.minecraft.server.level.ParticleStatus
 typealias MCDimensionType = net.minecraft.world.level.dimension.DimensionType
-typealias MCVertexFormat = com.mojang.blaze3d.vertex.VertexFormat
+typealias MCVertexFormat = /*? if >=26.3 {*//*com.mojang.renderpearl.api.vertex.VertexFormat*//*?} else {*/ com.mojang.blaze3d.vertex.VertexFormat /*?}*/
 typealias MCChatVisibility = net.minecraft.world.entity.player.ChatVisiblity

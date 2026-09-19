@@ -3,3 +3,6 @@ deps.fabric_api = "0.153.0+26.1.2"
 
 ["26.2"]
 deps.fabric_api = "0.153.0+26.2"
+
+["26.3"]
+deps.fabric_api = "0.160.7+26.3"

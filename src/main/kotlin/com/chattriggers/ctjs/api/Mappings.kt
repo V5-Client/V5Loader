@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets
  */
 object Mappings {
     // If this is changed, also change the Java.type function in mixinProvidedLibs.js
-    internal val mappedPackages = setOf("Lnet/minecraft/", "Lcom/mojang/blaze3d/")
+    internal val mappedPackages = setOf("Lnet/minecraft/", "Lcom/mojang/blaze3d/", "Lcom/mojang/renderpearl/")
 
     private val unmappedClasses = mutableMapOf<String, MappedClass>()
     private val mappedToUnmappedClassNames = mutableMapOf<String, String>()

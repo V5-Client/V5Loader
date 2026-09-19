@@ -11,6 +11,8 @@ on:
       - "typing-generator/src/**"
       - "**/*.gradle.kts"
       - "gradle/**"
+      - "gradle.properties"
+      - "stonecutter.properties.toml"
       - "gradlew"
       - "gradlew.bat"
   workflow_dispatch:

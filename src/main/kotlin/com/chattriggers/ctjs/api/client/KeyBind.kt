@@ -6,8 +6,11 @@ import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.internal.BoundKeyUpdater
 import com.chattriggers.ctjs.internal.mixins.OptionsAccessor
 import com.chattriggers.ctjs.internal.mixins.KeyMappingAccessor
+import com.chattriggers.ctjs.internal.utils.InputCompat
 import com.chattriggers.ctjs.internal.utils.Initializer
 import com.chattriggers.ctjs.internal.utils.asMixin
+import com.mojang.blaze3d.platform.InputConstants
+import gg.essential.universal.UKeyboard
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.resources.language.I18n
@@ -54,7 +57,12 @@ class KeyBind {
             val keyCategory = categoryList.firstOrNull { it.id == categoryId }
                 ?: KeyMapping.Category.register(categoryId)
             uniqueCategories[category] = uniqueCategories.getOrDefault(category, 0) + 1
-            keyBinding = KeyMapping(description, keyCode, keyCategory)
+            keyBinding = KeyMapping(
+                description,
+                /*? if >=26.3 {*//*com.mojang.blaze3d.platform.InputConstants.Type.KEYBOARD*//*?} else {*/ com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM /*?}*/,
+                InputCompat.toNativeKeyCode(keyCode),
+                keyCategory,
+            )
 
             // We need to update the bound key for the KeyBind we just made to the previous binding,
             // just in case it existed last time the game was opened. This will only matter for the first
@@ -136,6 +144,14 @@ class KeyBind {
     fun isKeyDown(): Boolean = keyBinding.isDown
 
     /**
+     * Returns the physical state of this key, even when a screen is open.
+     */
+    fun isPhysicalKeyDown(): Boolean {
+        val keyCode = keyBinding.asMixin<KeyMappingAccessor>().key.value
+        return /*? if >=26.3 {*//*InputConstants.isKeyDown(keyCode)*//*?} else {*/ InputConstants.isKeyDown(Client.getMinecraft().window, keyCode) /*?}*/
+    }
+
+    /**
      * Returns true on the initial key press. For continuous querying use [isKeyDown].
      *
      * @return whether the key has just been pressed
@@ -154,7 +170,14 @@ class KeyBind {
      *
      * @return the integer key code
      */
-    fun getKeyCode(): Int = keyBinding.asMixin<KeyMappingAccessor>().key.value
+    fun getKeyCode(): Int = InputCompat.fromNativeKeyCode(keyBinding.asMixin<KeyMappingAccessor>().key.value)
+
+    fun getKeyName(): String = UKeyboard.getKeyName(keyBinding) ?: ""
+
+    fun setKeyCode(keyCode: Int) = apply {
+        keyBinding.setKey(InputCompat.key(keyCode))
+        KeyMapping.resetMapping()
+    }
 
     /**
      * Gets the category of the key.

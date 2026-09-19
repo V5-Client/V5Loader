@@ -6,10 +6,18 @@ import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.triggers.RegularTrigger
 import com.chattriggers.ctjs.api.triggers.TriggerType
 import com.chattriggers.ctjs.internal.mixins.AbstractWidgetAccessor
+import com.chattriggers.ctjs.internal.utils.InputCompat
 import com.chattriggers.ctjs.internal.utils.asMixin
 import gg.essential.universal.UKeyboard
 import gg.essential.universal.UMatrixStack
 import gg.essential.universal.UScreen
+//? if >=26.3 {
+/*import com.chattriggers.ctjs.api.render.skia.SkijaSurface
+import gg.essential.universal.UGraphics
+import gg.essential.universal.render.UGpuFormat
+import gg.essential.universal.render.UGpuTexture
+import gg.essential.universal.render.UGpuTextureView
+*///?}
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Button
@@ -230,6 +238,7 @@ class Gui @JvmOverloads constructor(
      * Internal method to run trigger. Not meant for public use
      */
     override fun onScreenClose() {
+        UKeyboard.stopTextInput(this)
         super.onScreenClose()
         onClosed?.trigger(arrayOf(this))
     }
@@ -249,7 +258,7 @@ class Gui @JvmOverloads constructor(
      */
     override fun onMouseReleased(mouseX: Double, mouseY: Double, state: Int) {
         super.onMouseReleased(mouseX, mouseY, state)
-        onMouseReleased?.trigger(arrayOf<Any?>(mouseX, mouseY, state))
+        onMouseReleased?.trigger(arrayOf<Any?>(mouseX, mouseY, InputCompat.fromNativeMouseButton(state)))
     }
 
     /**
@@ -262,9 +271,10 @@ class Gui @JvmOverloads constructor(
         timeSinceLastClick: Long,
     ) {
         super.onMouseDragged(x, y, clickedButton, timeSinceLastClick)
-        onMouseDragged?.trigger(arrayOf(mouseX, mouseY, clickedButton))
+        onMouseDragged?.trigger(arrayOf(mouseX, mouseY, InputCompat.fromNativeMouseButton(clickedButton)))
     }
 
+    //? if <26.3 {
     /**
      * Internal method to run trigger. Not meant for public use
      */
@@ -287,6 +297,74 @@ class Gui @JvmOverloads constructor(
             Render2D.popMatrix()
         }
     }
+    //?} else {
+    /*override fun uCreateRenderer(): UScreen.Renderer = Renderer()
+
+    override fun uExtractRenderState(mouseX: Int, mouseY: Int, partialTicks: Float): UScreen.RenderState {
+        val scale = Client.getMinecraft().window.guiScale
+        return State(width * scale, height * scale, scale.toFloat(), mouseX, mouseY, partialTicks)
+    }
+
+    private data class State(
+        val width: Int,
+        val height: Int,
+        val guiScale: Float,
+        val mouseX: Int,
+        val mouseY: Int,
+        val partialTicks: Float,
+    ) : UScreen.RenderState {
+        override val background = false
+    }
+
+    private inner class Renderer : UScreen.Renderer {
+        private val surface = SkijaSurface()
+        private var texture: UGpuTexture? = null
+        private var view: UGpuTextureView? = null
+
+        override fun render(state: UScreen.RenderState): UGpuTextureView {
+            state as State
+            ensureTexture(state.width, state.height)
+            surface.render(state.width, state.height, UGraphics.getPlatformAdapter().texture(texture!!)) { canvas ->
+                canvas.clear(0)
+                canvas.resetMatrix()
+                canvas.scale(state.guiScale, state.guiScale)
+                Render2D.beginSkijaFrame(canvas)
+                Render2D.pushMatrix(UMatrixStack())
+                try {
+                    Render2D.partialTicks = state.partialTicks
+                    this@Gui.mouseX = state.mouseX
+                    this@Gui.mouseY = state.mouseY
+                    onDraw?.trigger(arrayOf<Any?>(state.mouseX, state.mouseY, state.partialTicks))
+                } finally {
+                    Render2D.popMatrix()
+                    Render2D.endSkijaFrame()
+                }
+            }
+            return view!!
+        }
+
+        private fun ensureTexture(width: Int, height: Int) {
+            if (texture?.let { !it.isClosed && it.width == width && it.height == height } == true) return
+            view?.close()
+            texture?.close()
+            val device = UGraphics.getDevice()
+            texture = device.createTexture(
+                "V5 Gui",
+                UGpuTexture.Usage.RENDER_ATTACHMENT + UGpuTexture.Usage.TEXTURE_BINDING,
+                UGpuFormat.DEFAULT_RGBA,
+                width,
+                height,
+            )
+            view = device.createTextureView(texture!!)
+        }
+
+        override fun close() {
+            surface.close()
+            view?.close()
+            texture?.close()
+        }
+    }
+    *///?}
 
     /**
      * Internal method to run trigger. Not meant for public use
@@ -294,12 +372,19 @@ class Gui @JvmOverloads constructor(
     override fun onKeyPressed(keyCode: Int, typedChar: Char, modifiers: UKeyboard.Modifiers?) {
         super.onKeyPressed(keyCode, typedChar, modifiers)
 
+        //? if >=26.3 {
+        /*when {
+            typedChar != '\u0000' -> onKeyTyped?.trigger(arrayOf<Any?>(typedChar, 0))
+            keyCode != 0 -> onKeyTyped?.trigger(arrayOf<Any?>('\u0000', InputCompat.normalizeKeyCode(keyCode)))
+        }
+        *///?} else {
         if (keyCode != 0) {
             var char = keyCode.toChar()
             if (modifiers?.isShift != true)
                 char = char.lowercaseChar()
             onKeyTyped?.trigger(arrayOf<Any?>(char, keyCode))
         }
+        //?}
     }
 
     /**
@@ -501,8 +586,10 @@ class Gui @JvmOverloads constructor(
     fun setTooltip(text: String) = setTooltip(TextComponent(text))
 
     private companion object {
+        //? if <26.3 {
         private val drawContextsField = UScreen::class.java.getDeclaredField("drawContexts").also {
             it.isAccessible = true
         }
+        //?}
     }
 }

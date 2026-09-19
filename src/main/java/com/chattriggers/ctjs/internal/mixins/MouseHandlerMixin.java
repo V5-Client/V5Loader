@@ -3,6 +3,7 @@ package com.chattriggers.ctjs.internal.mixins;
 import com.chattriggers.ctjs.api.client.Client;
 import com.chattriggers.ctjs.internal.engine.CTEvents;
 import com.chattriggers.ctjs.internal.listeners.MouseListener;
+import com.chattriggers.ctjs.internal.utils.InputCompat;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
@@ -18,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.lwjgl.glfw.GLFW;
 
 @Mixin(MouseHandler.class)
 public class MouseHandlerMixin {
@@ -34,20 +34,23 @@ public class MouseHandlerMixin {
     @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
     private void v5$cancelFreecamClick(long window, MouseButtonInfo button, int action, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
-        MouseListener.onRawMouseInput(button.button(), action);
-        if (action == GLFW.GLFW_PRESS && Client.getCurrentScreen() != null) {
+        MouseListener.onRawMouseInput(InputCompat.fromNativeMouseButton(button.button()), action);
+        if (action == InputConstants.PRESS && Client.getCurrentScreen() != null) {
             v5$guiMouseButton = button.button();
-        } else if (action == GLFW.GLFW_RELEASE) {
+        } else if (action == InputConstants.RELEASE) {
             if (button.button() == v5$guiMouseButton) {
                 v5$guiMouseButton = -1;
-            } else if (!v5$cameraLookEnabled() || (button.button() != 0 && button.button() != 1)) {
+            } else if (!v5$cameraLookEnabled()
+                    || (button.button() != InputConstants.MOUSE_BUTTON_LEFT
+                    && button.button() != InputConstants.MOUSE_BUTTON_RIGHT)) {
                 Client.releaseHeldKey(InputConstants.Type.MOUSE.getOrCreate(button.button()));
             }
         }
 
         if (v5$cameraLookEnabled()
             && Client.getCurrentScreen() == null
-            && (button.button() == 0 || button.button() == 1)) {
+            && (button.button() == InputConstants.MOUSE_BUTTON_LEFT
+            || button.button() == InputConstants.MOUSE_BUTTON_RIGHT)) {
             ci.cancel();
         }
     }
@@ -141,7 +144,9 @@ public class MouseHandlerMixin {
         @Local(ordinal = 3) double g)
     {
         if (screen != null) {
-            CTEvents.GUI_MOUSE_DRAG.invoker().process(f, g, d, e, activeButton.button(), screen, ci);
+            CTEvents.GUI_MOUSE_DRAG.invoker().process(
+                f, g, d, e, InputCompat.fromNativeMouseButton(activeButton.button()), screen, ci
+            );
         }
     }
 }

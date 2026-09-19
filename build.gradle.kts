@@ -24,6 +24,8 @@ repositories {
 val minecraftVersion = sc.current.version
 val fabricApiVersion: String = sc.properties["deps.fabric_api"]
 val universalcraftMinecraftVersion = if (minecraftVersion == "26.1.2") "26.1" else minecraftVersion
+val accessWidener = if (minecraftVersion == "26.3") "ctjs-26.3.accesswidener" else "ctjs.accesswidener"
+val nettyVersion = if (minecraftVersion == "26.3") "4.2.16.Final" else "4.2.7.Final"
 
 dependencies {
     // Minecraft-specific versions live in stonecutter.properties.toml.
@@ -56,17 +58,17 @@ dependencies {
     implementation(libs.mixinextras) { include(this) }
 
     // Proxy support
-    implementation("io.netty:netty-handler-proxy:4.2.7.Final")
-    include("io.netty:netty-handler-proxy:4.2.7.Final")
-    implementation("io.netty:netty-codec-socks:4.2.7.Final")
-    include("io.netty:netty-codec-socks:4.2.7.Final")
+    implementation("io.netty:netty-handler-proxy:$nettyVersion")
+    include("io.netty:netty-handler-proxy:$nettyVersion")
+    implementation("io.netty:netty-codec-socks:$nettyVersion")
+    include("io.netty:netty-codec-socks:$nettyVersion")
 
     compileOnly(libs.hypixel.mod.api)
     implementation(libs.hypixel.modrinth.api) { include(this) }
 }
 
 loom {
-    accessWidenerPath.set(rootProject.file("src/main/resources/ctjs.accesswidener"))
+    accessWidenerPath.set(rootProject.file("src/main/resources/$accessWidener"))
 }
 
 base {
@@ -90,12 +92,15 @@ tasks {
         val flkVersion = libs.versions.fabric.kotlin.get()
         val fapiVersion = fabricApiVersion
         val loaderVersion = libs.versions.loader.get()
-        val versionMixins = if (minecraftVersion == "26.1.2") {
-            listOf("GuiHudMixin", "GuiScreenMixin", "LevelRendererMixin")
-        } else {
-            listOf(
-                "CommandEncoderMixin", "GpuDeviceMixin", "GuiHudMixin", "GameRendererAccessor",
-                "GuiScreenMixin", "LevelRendererMixin", "VulkanCommandEncoderMixin", "VulkanDeviceMixin",
+        val versionMixins = when (minecraftVersion) {
+            "26.1.2" -> listOf("GuiHudMixin", "GuiScreenMixin", "LevelRendererMixin")
+            "26.3" -> listOf(
+                "GpuDeviceMixin", "GuiHudMixin", "GameRendererAccessor", "GuiScreenMixin", "LevelRendererMixin",
+                "PictureInPictureRendererAccessor", "LevelExtractorMixin", "VulkanCommandEncoderMixin", "VulkanDeviceMixin",
+            )
+            else -> listOf(
+                "CommandEncoderMixin", "GpuDeviceMixin", "GuiHudMixin", "GameRendererAccessor", "GuiScreenMixin",
+                "LevelRendererMixin", "VulkanCommandEncoderMixin", "VulkanDeviceMixin",
             )
         }
 
@@ -108,6 +113,7 @@ tasks {
         inputs.property("fabric_kotlin_version", flkVersion)
         inputs.property("fabric_api_version", fapiVersion)
         inputs.property("loader_version", loaderVersion)
+        inputs.property("access_widener", accessWidener)
         inputs.property("version_mixins", versionMixins.joinToString(","))
 
         filesMatching("fabric.mod.json") {
@@ -116,7 +122,8 @@ tasks {
                 "minecraft_version" to mcVersion,
                 "fabric_kotlin_version" to flkVersion,
                 "fabric_api_version" to fapiVersion,
-                "loader_version" to loaderVersion
+                "loader_version" to loaderVersion,
+                "access_widener" to accessWidener,
             )
         }
 

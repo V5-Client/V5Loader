@@ -22,7 +22,7 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     strategy:
       matrix:
-        minecraft: [26.1.2, 26.2]
+        minecraft: [26.1.2, 26.2, 26.3]
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -55,7 +55,7 @@ jobs:
 
   publish:
     needs: build
-    if: ${{ github.ref == 'refs/heads/26.1.2' || github.ref == 'refs/heads/26.2' }}
+    if: ${{ github.ref == 'refs/heads/26.1.2' || github.ref == 'refs/heads/26.2' || github.ref == 'refs/heads/26.3' }}
     runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
       contents: write

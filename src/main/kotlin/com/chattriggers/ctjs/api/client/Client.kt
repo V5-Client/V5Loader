@@ -12,6 +12,7 @@ import com.chattriggers.ctjs.internal.mixins.MultiPlayerGameModeAccessor
 import com.chattriggers.ctjs.internal.mixins.AbstractContainerScreenAccessor
 import com.chattriggers.ctjs.internal.mixins.KeyMappingAccessor
 import com.chattriggers.ctjs.internal.mixins.MinecraftAccessor
+import com.chattriggers.ctjs.internal.utils.InputCompat
 import com.chattriggers.ctjs.internal.utils.asMixin
 import com.chattriggers.ctjs.internal.utils.NameReplacement
 import com.mojang.blaze3d.platform.InputConstants
@@ -444,9 +445,10 @@ object Client {
      */
     @JvmStatic
     fun getKeyBindFromKey(keyCode: Int): KeyBind? {
-        return KeyBind.getKeyBinds().find { it.getKeyCode() == keyCode }
+        val scriptKeyCode = InputCompat.normalizeKeyCode(keyCode)
+        return KeyBind.getKeyBinds().find { it.getKeyCode() == scriptKeyCode }
             ?: getMinecraft().options.keyMappings
-                .find { it.asMixin<KeyMappingAccessor>().key.value == keyCode }
+                .find { InputCompat.fromNativeKeyCode(it.asMixin<KeyMappingAccessor>().key.value) == scriptKeyCode }
                 ?.let(::KeyBind)
     }
 

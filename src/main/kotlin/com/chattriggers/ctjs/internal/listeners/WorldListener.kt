@@ -17,7 +17,10 @@ object WorldListener {
         if (!JSLoader.hasTriggers(TriggerType.BLOCK_HIGHLIGHT)) return false
 
         val event = CancellableEvent()
-        TriggerType.BLOCK_HIGHLIGHT.triggerAll(BlockPos(bp), event)
+        TriggerType.BLOCK_HIGHLIGHT.triggerAll(
+            /*? if >=26.3 {*//*BlockPos(bp.x, bp.y, bp.z)*//*?} else {*/ BlockPos(bp) /*?}*/,
+            event,
+        )
         return event.isCanceled()
     }
 

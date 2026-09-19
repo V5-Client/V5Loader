@@ -1,7 +1,11 @@
 package com.chattriggers.ctjs.api.render.skia
 
 import com.chattriggers.ctjs.api.render.Render2D
+//? if <26.3 {
 import com.mojang.blaze3d.systems.RenderSystem
+//?} else {
+/*import com.mojang.renderpearl.api.textures.GpuTexture
+*///?}
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.navigation.ScreenRectangle
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState
@@ -25,9 +29,19 @@ internal object SkijaPIP {
     }
 
     @JvmStatic
-    fun render(surface: SkijaSurface, state: State) {
+    fun render(
+        surface: SkijaSurface,
+        state: State,
+        //? if >=26.3 {
+        /*color: GpuTexture,
+        *///?}
+    ) {
+        //? if <26.3 {
         val color = RenderSystem.outputColorTextureOverride ?: return
         surface.render(color.getWidth(0), color.getHeight(0), color.texture()) { canvas ->
+        //?} else {
+        /*surface.render(color.getWidth(0), color.getHeight(0), color) { canvas ->
+        *///?}
             canvas.resetMatrix()
             canvas.scale(state.guiScale, state.guiScale)
             Render2D.beginSkijaFrame(canvas)

@@ -102,5 +102,7 @@ object CTJavaObjectMappingProvider : JavaObjectMappingProvider {
     }
 
     private fun isMappedClassName(className: String) =
-        className.startsWith("net.minecraft.") || className.startsWith("com.mojang.blaze3d.")
+        className.startsWith("net.minecraft.") ||
+            className.startsWith("com.mojang.blaze3d.") ||
+            className.startsWith("com.mojang.renderpearl.")
 }

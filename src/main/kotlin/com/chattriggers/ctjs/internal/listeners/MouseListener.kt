@@ -6,10 +6,11 @@ import com.chattriggers.ctjs.api.triggers.TriggerType
 import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.internal.engine.CTEvents
 import com.chattriggers.ctjs.internal.engine.JSLoader
+import com.chattriggers.ctjs.internal.utils.InputCompat
 import com.chattriggers.ctjs.internal.utils.Initializer
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
-import org.lwjgl.glfw.GLFW
+import com.mojang.blaze3d.platform.InputConstants
 
 internal object MouseListener : Initializer {
     private const val TRACKED_BUTTONS = 5
@@ -57,7 +58,9 @@ internal object MouseListener : Initializer {
             ScreenMouseEvents.allowMouseClick(screen).register { _, click ->
                 if (!JSLoader.hasTriggers(TriggerType.GUI_MOUSE_CLICK)) return@register true
                 val event = CancellableEvent()
-                TriggerType.GUI_MOUSE_CLICK.triggerAll(click.x, click.y, click.button(), true, screen, event)
+                TriggerType.GUI_MOUSE_CLICK.triggerAll(
+                    click.x, click.y, InputCompat.fromNativeMouseButton(click.button()), true, screen, event
+                )
 
                 !event.isCanceled()
             }
@@ -65,7 +68,9 @@ internal object MouseListener : Initializer {
             ScreenMouseEvents.allowMouseRelease(screen).register { _, click ->
                 if (!JSLoader.hasTriggers(TriggerType.GUI_MOUSE_CLICK)) return@register true
                 val event = CancellableEvent()
-                TriggerType.GUI_MOUSE_CLICK.triggerAll(click.x, click.y, click.button(), false, screen, event)
+                TriggerType.GUI_MOUSE_CLICK.triggerAll(
+                    click.x, click.y, InputCompat.fromNativeMouseButton(click.button()), false, screen, event
+                )
 
                 !event.isCanceled()
             }
@@ -89,7 +94,7 @@ internal object MouseListener : Initializer {
         val x = Client.getMouseX()
         val y = Client.getMouseY()
 
-        CTEvents.MOUSE_CLICKED.invoker().process(x, y, button, action == GLFW.GLFW_PRESS)
+        CTEvents.MOUSE_CLICKED.invoker().process(x, y, button, action == InputConstants.PRESS)
 
         if (!trackedButton) {
             extraMouseState[button] = action
@@ -98,7 +103,7 @@ internal object MouseListener : Initializer {
 
         mouseState[button] = action
 
-        if (action == GLFW.GLFW_PRESS) {
+        if (action == InputConstants.PRESS) {
             draggedState[button] = State(x, y)
         } else {
             draggedState[button] = null

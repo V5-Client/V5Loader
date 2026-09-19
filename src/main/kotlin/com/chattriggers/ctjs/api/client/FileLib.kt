@@ -1,6 +1,7 @@
 package com.chattriggers.ctjs.api.client
 
 import com.chattriggers.ctjs.CTJS
+import com.v5.loader.internal.V5Loader
 import net.minecraft.util.Util
 import java.io.File
 import java.io.IOException
@@ -284,7 +285,7 @@ object FileLib {
      */
     @JvmStatic
     fun open(url: String) {
-        Util.getPlatform().openUri(url)
+        /*? if >=26.3 {*//*V5Loader.openBrowser(url)*//*?} else {*/ Util.getPlatform().openUri(url) /*?}*/
     }
 
     /**
@@ -294,6 +295,6 @@ object FileLib {
      */
     @JvmStatic
     fun open(path: File) {
-        Util.getPlatform().openFile(path)
+        /*? if >=26.3 {*//*V5Loader.openFile(path)*//*?} else {*/ Util.getPlatform().openFile(path) /*?}*/
     }
 }

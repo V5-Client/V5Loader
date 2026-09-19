@@ -199,18 +199,21 @@ internal object V5Loader {
 
     private fun resolveMinecraftVersion(): String = System.getProperty("v5.minecraft_version").orEmpty().trim()
 
-    private fun openBrowser(url: String) {
+    fun openBrowser(url: String) = openExternal(url, Desktop.Action.BROWSE) { browse(URI(url)) }
+
+    fun openFile(file: File) = openExternal(file.absolutePath, Desktop.Action.OPEN) { open(file) }
+
+    private fun openExternal(target: String, action: Desktop.Action, open: Desktop.() -> Unit) {
         runCatching {
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI(url))
-                return
-            }
+            val desktop = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null
+            if (desktop?.isSupported(action) == true) return desktop.open()
         }
+
         val os = System.getProperty("os.name", "").lowercase()
         val command = when {
-            os.contains("win") -> listOf("cmd", "/c", "start", "", url)
-            os.contains("mac") -> listOf("open", url)
-            else -> listOf("xdg-open", url)
+            os.contains("win") -> listOf("rundll32", "url.dll,FileProtocolHandler", target)
+            os.contains("mac") -> listOf("open", target)
+            else -> listOf("xdg-open", target)
         }
         ProcessBuilder(command).start()
     }

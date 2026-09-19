@@ -1,5 +1,8 @@
 package com.chattriggers.ctjs.api.render.skia
 
+//? if >=26.3 {
+/*import com.chattriggers.ctjs.internal.mixins.PictureInPictureRendererAccessor
+*///?}
 import com.mojang.blaze3d.vertex.PoseStack
 import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry.Context
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer
@@ -45,7 +48,13 @@ private open class SkijaPIPRenderer : PictureInPictureRenderer<SkijaPIP.State>()
     override fun getRenderStateClass() = SkijaPIP.State::class.java
     override fun getTextureLabel() = "V5 Skija"
     override fun renderToTexture(state: SkijaPIP.State, poseStack: PoseStack, collector: SubmitNodeCollector) =
-        SkijaPIP.render(surface, state)
+        SkijaPIP.render(
+            surface,
+            state,
+            //? if >=26.3 {
+            /*(this as PictureInPictureRendererAccessor).`ctjs$getTexture`(),
+            *///?}
+        )
 
     override fun close() {
         surface.close()

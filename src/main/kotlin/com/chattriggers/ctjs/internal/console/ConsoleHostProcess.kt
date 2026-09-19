@@ -13,7 +13,6 @@ import net.minecraft.client.KeyMapping
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
-import org.lwjgl.glfw.GLFW
 import java.awt.Color
 import java.io.BufferedReader
 import java.io.File
@@ -35,10 +34,10 @@ import kotlin.io.path.Path
  * (the main MC process) is referred to as the "Host". The semantics line up with the
  * naming scheme of the messages passed in the socket connection (H2C/C2H).
  *
- * Why a separate process? AWT is unfortunately incompatible with GLFW, which is an issue
+ * Why a separate process? AWT is unfortunately incompatible with the native window backend, which is an issue
  * on newer versions of MC that use LWJGL 3. So much so that [net.minecraft.client.main.Main]
  * sets the AWT headless property to prevent its use on the render thread. Spawning a
- * new process gives us a new main thread without GLFW.
+ * new process gives us a new main thread without the game's native window backend.
  *
  * Each console gets its own Host/Client pair running on their own port, so there will be
  * `<number of loaders> + 1` sockets (the extra 1 is for the generic console).
@@ -63,8 +62,8 @@ object ConsoleHostProcess : Initializer {
         val keybind = KeyMappingHelper.registerKeyMapping(
             KeyMapping(
                 "ctjs.key.binding.console",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_GRAVE_ACCENT,
+                /*? if >=26.3 {*//*InputConstants.Type.KEYBOARD*//*?} else {*/ InputConstants.Type.KEYSYM /*?}*/,
+                InputConstants.KEY_GRAVE,
                 KeyMapping.Category.register(Identifier.parse("ctjs.key.category")),
             )
         )

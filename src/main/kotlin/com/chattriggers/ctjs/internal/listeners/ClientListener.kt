@@ -20,6 +20,7 @@ import com.chattriggers.ctjs.internal.engine.CTEvents
 import com.chattriggers.ctjs.internal.engine.JSContextFactory
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
+import com.chattriggers.ctjs.internal.utils.InputCompat
 import gg.essential.universal.UMatrixStack
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
@@ -34,7 +35,6 @@ import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player as MCPlayer
-import org.lwjgl.glfw.GLFW
 import org.mozilla.javascript.Context
 
 object ClientListener : Initializer {
@@ -117,9 +117,21 @@ object ClientListener : Initializer {
             ScreenKeyboardEvents.allowKeyPress(screen).register { _, input ->
                 if (!JSLoader.hasTriggers(TriggerType.GUI_KEY)) return@register true
                 val event = CancellableEvent()
-                TriggerType.GUI_KEY.triggerAll(GLFW.glfwGetKeyName(input.key, input.scancode), input.key, screen, event)
+                val keyCode = /*? if >=26.3 {*//*InputCompat.fromNativeKeyCode(input.key)*//*?} else {*/ input.key /*?}*/
+                val character = /*? if >=26.3 {*//*"\u0000"*//*?} else {*/ org.lwjgl.glfw.GLFW.glfwGetKeyName(input.key, input.scancode) /*?}*/
+                TriggerType.GUI_KEY.triggerAll(character, keyCode, screen, event)
                 !event.isCancelled()
             }
+
+            //? if >=26.3 {
+            /*
+            ScreenKeyboardEvents.allowCharType(screen).register { _, input ->
+                if (!JSLoader.hasTriggers(TriggerType.GUI_KEY)) return@register true
+                val event = CancellableEvent()
+                TriggerType.GUI_KEY.triggerAll(input.codepointAsString(), 0, screen, event)
+                !event.isCancelled()
+            }
+            *///?}
         }
 
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->

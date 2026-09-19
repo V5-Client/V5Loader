@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.LadderBlock
 import net.minecraft.world.level.block.LeverBlock
 import net.minecraft.world.level.block.VegetationBlock
 import net.minecraft.world.level.block.PressurePlateBlock
-import net.minecraft.world.level.block.RedStoneWireBlock
+import net.minecraft.world.level.block./*? if >=26.3 {*//*RedstoneWireBlock*//*?} else {*/RedStoneWireBlock/*?}*/
 import net.minecraft.world.level.block.StandingSignBlock
 import net.minecraft.world.level.block.SlabBlock
 import net.minecraft.world.level.block.SnowLayerBlock
@@ -119,7 +119,7 @@ object NativeStateEncoder {
       block is SnowLayerBlock ||
       block is PressurePlateBlock ||
       block is ButtonBlock ||
-      block is RedStoneWireBlock ||
+      block is /*? if >=26.3 {*//*RedstoneWireBlock*//*?} else {*/RedStoneWireBlock/*?}*/ ||
       block is LeverBlock ||
       block is BannerBlock ||
       block is WallBannerBlock ||
@@ -138,7 +138,7 @@ object NativeStateEncoder {
       block is LeverBlock ||
       block is ButtonBlock ||
       block is TorchBlock ||
-      block is RedStoneWireBlock ||
+      block is /*? if >=26.3 {*//*RedstoneWireBlock*//*?} else {*/RedStoneWireBlock/*?}*/ ||
       block is PressurePlateBlock
 
     if (isFlyPassable) {

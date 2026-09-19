@@ -1,12 +1,14 @@
 package com.chattriggers.ctjs.internal.mixins;
 
-import com.mojang.authlib.yggdrasil.YggdrasilServicesKeyInfo;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(value = YggdrasilServicesKeyInfo.class, remap = false)
+@Mixin(
+    targets = /*? if >=26.3 {*//*"com.mojang.authlib.services.MinecraftServicesKeyInfo"*//*?} else {*/ "com.mojang.authlib.yggdrasil.YggdrasilServicesKeyInfo" /*?}*/,
+    remap = false
+)
 public class YggdrasilServicesKeyInfoMixin {
     @Redirect(
         method = "validateProperty(Lcom/mojang/authlib/properties/Property;)Z",

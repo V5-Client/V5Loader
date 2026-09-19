@@ -354,7 +354,7 @@ object DynamicCommands : CommandCollection() {
      */
     @JvmStatic
     fun blockPredicate(): ArgumentType<BlockPredicateWrapper> {
-        val registryAccess = Commands.createValidationContext(VanillaRegistries.createLookup())
+        val registryAccess = validationContext()
         val predicate = BlockPredicateArgument.blockPredicate(registryAccess)
         return wrapArgument(predicate, ::BlockPredicateWrapper)
     }
@@ -364,7 +364,7 @@ object DynamicCommands : CommandCollection() {
      */
     @JvmStatic
     fun blockState(): ArgumentType<BlockStateArgumentWrapper> {
-        val registryAccess = Commands.createValidationContext(VanillaRegistries.createLookup())
+        val registryAccess = validationContext()
         val predicate = BlockStateArgument.block(registryAccess)
         return wrapArgument(predicate, ::BlockStateArgumentWrapper)
     }
@@ -457,7 +457,7 @@ object DynamicCommands : CommandCollection() {
      */
     @JvmStatic
     fun itemPredicate(): ArgumentType<(Item) -> Boolean> {
-        val registryAccess = Commands.createValidationContext(VanillaRegistries.createLookup())
+        val registryAccess = validationContext()
         val predicate = ItemPredicateArgument.itemPredicate(registryAccess)
         return wrapArgument(predicate) { pred -> { pred.test(it.mcValue) } }
     }
@@ -473,7 +473,7 @@ object DynamicCommands : CommandCollection() {
      */
     @JvmStatic
     fun itemStack(): ArgumentType<ItemStackArgumentWrapper> {
-        val registryAccess = Commands.createValidationContext(VanillaRegistries.createLookup())
+        val registryAccess = validationContext()
         val arg = ItemArgument.item(registryAccess)
         return wrapArgument(arg, ::ItemStackArgumentWrapper)
     }
@@ -705,6 +705,25 @@ object DynamicCommands : CommandCollection() {
         val server = requireNotNull(Client.getMinecraft().singleplayerServer) {
             "This command argument requires an integrated server"
         }
+        //? if >=26.3 {
+        /*
+        return CommandSourceStack(
+            object : CommandSource {
+                override fun sendSystemMessage(message: Component) {
+                    ChatLib.chat(message)
+                }
+                override fun acceptsSuccess() = true
+                override fun acceptsFailure() = false
+                override fun shouldInformAdmins() = false
+            },
+            CTPlayer.getPos().toVec3d(),
+            CTPlayer.getRotation(),
+            server.overworld(),
+            PermissionSet.NO_PERMISSIONS,
+            server,
+            CTPlayer.toMC()!!,
+        )
+        *///?} else {
         return CommandSourceStack(
             object : CommandSource {
                 override fun sendSystemMessage(message: Component) {
@@ -723,7 +742,12 @@ object DynamicCommands : CommandCollection() {
             server,
             CTPlayer.toMC()!!,
         )
+        //?}
     }
+
+    private fun validationContext() = Commands.createValidationContext(
+        /*? if >=26.3 {*//*VanillaRegistries.createWorldLookup()*//*?} else {*/ VanillaRegistries.createLookup() /*?}*/
+    )
 
     private fun <T, U> wrapArgument(base: ArgumentType<T>, block: (T) -> U): ArgumentType<U> {
         return object : ArgumentType<U> {

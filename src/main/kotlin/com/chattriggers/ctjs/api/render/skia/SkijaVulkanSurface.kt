@@ -2,18 +2,30 @@
 package com.chattriggers.ctjs.api.render.skia
 
 import com.chattriggers.ctjs.internal.accessors.VulkanDeviceAccessor
-import com.chattriggers.ctjs.internal.mixins.CommandEncoderMixin
 import com.chattriggers.ctjs.internal.mixins.GpuDeviceMixin
 import com.chattriggers.ctjs.internal.mixins.VulkanCommandEncoderMixin
-import com.mojang.blaze3d.GpuFormat
-import com.mojang.blaze3d.systems.CommandEncoder
-import com.mojang.blaze3d.systems.GpuDevice
 import com.mojang.blaze3d.systems.RenderSystem
+//? if >=26.3 {
+/*import com.mojang.renderpearl.api.GpuFormat
+import com.mojang.renderpearl.api.device.GpuDevice
+import com.mojang.renderpearl.api.textures.GpuTexture
+import com.mojang.renderpearl.backend.vulkan.VulkanCommandEncoder
+import com.mojang.renderpearl.backend.vulkan.VulkanConst
+import com.mojang.renderpearl.backend.vulkan.VulkanDevice
+import com.mojang.renderpearl.backend.vulkan.VulkanGpuTexture
+import com.mojang.renderpearl.backend.vulkan.VulkanPhysicalDevice
+import com.mojang.renderpearl.frontend.FrontendCommandEncoder
+*///?} else {
+import com.chattriggers.ctjs.internal.mixins.CommandEncoderMixin
+import com.mojang.blaze3d.GpuFormat
+import com.mojang.blaze3d.systems.GpuDevice
 import com.mojang.blaze3d.textures.GpuTexture
 import com.mojang.blaze3d.vulkan.VulkanCommandEncoder
 import com.mojang.blaze3d.vulkan.VulkanConst
 import com.mojang.blaze3d.vulkan.VulkanDevice
 import com.mojang.blaze3d.vulkan.VulkanGpuTexture
+import com.mojang.blaze3d.vulkan.VulkanPhysicalDevice
+//?}
 import io.github.humbleui.skija.BackendRenderTarget
 import io.github.humbleui.skija.ColorSpace
 import io.github.humbleui.skija.ColorType
@@ -76,7 +88,7 @@ internal class SkijaVulkanSurface : AutoCloseable {
         return true
     }
 
-    private fun ensureResources(vk: VulkanDevice, physical: com.mojang.blaze3d.vulkan.VulkanPhysicalDevice,
+    private fun ensureResources(vk: VulkanDevice, physical: VulkanPhysicalDevice,
                                 texture: VulkanGpuTexture, width: Int, height: Int) {
         if (device !== vk) {
             closeResources()
@@ -105,7 +117,11 @@ internal class SkijaVulkanSurface : AutoCloseable {
 
     private fun transition(gpu: GpuDevice, image: Long, oldLayout: Int, newLayout: Int, srcStage: Int, dstStage: Int, srcAccess: Int, dstAccess: Int) {
         val encoder = gpu.createCommandEncoder()
+        //? if >=26.3 {
+        /*val vkEncoder = ((encoder as? FrontendCommandEncoder)?.backend() as? VulkanCommandEncoder)
+        *///?} else {
         val vkEncoder = ((encoder as CommandEncoderMixin).`ctjs$getBackend`() as? VulkanCommandEncoder)
+        //?}
             ?: error("Minecraft did not provide a Vulkan command encoder")
         val commandBuffer = (vkEncoder as VulkanCommandEncoderMixin).`ctjs$getCommandBuffer`()
         MemoryStack.stackPush().use { stack ->
@@ -126,7 +142,11 @@ internal class SkijaVulkanSurface : AutoCloseable {
                 .layerCount(1)
             VK12.vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, barrier)
         }
+        //? if >=26.3 {
+        /*encoder.submit()
+        *///?} else {
         vkEncoder.submit()
+        //?}
     }
 
     private fun closeTarget() {

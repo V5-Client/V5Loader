@@ -2,7 +2,7 @@
 # Library versions
 skija = "0.143.11"
 
-loader = "0.19.3"
+loader = "0.19.5"
 fabric-kotlin = "1.13.9+kotlin.2.3.10"
 sponge-mixin = "0.17.3+mixin.0.8.7"
 mixinextras = "0.5.4"
@@ -10,7 +10,7 @@ mixinextras = "0.5.4"
 rhino = "7c7c509668"
 koffee = "315bc11234"
 
-universalcraft = "505"
+universalcraft = "534"
 elementa = "745"
 vigilance = "314"
 hypixel-mod-api = "1.0.2"

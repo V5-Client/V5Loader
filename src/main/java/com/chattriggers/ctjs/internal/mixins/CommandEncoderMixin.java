@@ -1,4 +1,4 @@
-//? if >=26.2 {
+//? if >=26.2 && <26.3 {
 package com.chattriggers.ctjs.internal.mixins;
 
 import com.mojang.blaze3d.systems.CommandEncoder;

@@ -36,5 +36,5 @@
         "fabric-language-kotlin": ">=$fabric_kotlin_version"
     },
     "breaks": {},
-    "accessWidener": "ctjs.accesswidener"
+    "accessWidener": "${access_widener}"
 }

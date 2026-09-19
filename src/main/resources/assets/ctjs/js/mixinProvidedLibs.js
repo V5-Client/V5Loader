@@ -4,7 +4,7 @@
         type(arg) {
             if (typeof arg !== 'string')
                 throw new Error('Java.type expects a string as its only object');
-            if (arg.startsWith('net.minecraft') || arg.startsWith('com.mojang.blaze3d'))
+            if (arg.startsWith('net.minecraft') || arg.startsWith('com.mojang.blaze3d') || arg.startsWith('com.mojang.renderpearl'))
                 throw new Error(`Attempt to classload MC class ${arg} during Mixin application`);
             return Packages[arg]
         }

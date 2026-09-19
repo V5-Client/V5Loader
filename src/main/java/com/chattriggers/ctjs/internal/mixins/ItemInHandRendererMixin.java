@@ -1,3 +1,4 @@
+//? if <26.3 {
 package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.api.client.Client;
@@ -56,3 +57,38 @@ public class ItemInHandRendererMixin {
         return Client.getSpectatedEntity();
     }
 }
+//?} else {
+/*package com.chattriggers.ctjs.internal.mixins;
+
+import com.chattriggers.ctjs.api.client.Client;
+import net.minecraft.client.player.FirstPersonHandsAndItems;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
+
+@Mixin(FirstPersonHandsAndItems.class)
+public class ItemInHandRendererMixin {
+    @Redirect(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/player/LocalPlayer;getMainHandItem()Lnet/minecraft/world/item/ItemStack;"))
+    private ItemStack v5$getMainHandItem(LocalPlayer player) {
+        LivingEntity target = Client.getSpectatedEntity();
+        return target != null ? target.getMainHandItem() : player.getMainHandItem();
+    }
+
+    @Redirect(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/player/LocalPlayer;getOffhandItem()Lnet/minecraft/world/item/ItemStack;"))
+    private ItemStack v5$getOffhandItem(LocalPlayer player) {
+        LivingEntity target = Client.getSpectatedEntity();
+        return target != null ? target.getOffhandItem() : player.getOffhandItem();
+    }
+}
+*///?}

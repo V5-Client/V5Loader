@@ -1,8 +1,14 @@
 package com.chattriggers.ctjs.api.render.skia
 
+//? if >=26.3 {
+/*import com.mojang.renderpearl.api.textures.GpuTexture
+import com.mojang.renderpearl.backend.opengl.GlStateManager
+import com.mojang.renderpearl.backend.opengl.GlTexture
+*///?} else {
 import com.mojang.blaze3d.opengl.GlStateManager
 import com.mojang.blaze3d.opengl.GlTexture
 import com.mojang.blaze3d.textures.GpuTexture
+//?}
 import io.github.humbleui.skija.BackendRenderTarget
 import io.github.humbleui.skija.ColorSpace
 import io.github.humbleui.skija.ColorType

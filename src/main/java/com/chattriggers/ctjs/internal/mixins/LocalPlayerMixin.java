@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LocalPlayer.class)
 public class LocalPlayerMixin {
+    //? if <26.3 {
     @Inject(method = "drop", at = @At("HEAD"), cancellable = true)
     private void injectDropSelectedItem(boolean entireStack, CallbackInfoReturnable<Boolean> cir) {
         // dropping item while not in gui
@@ -19,4 +20,5 @@ public class LocalPlayerMixin {
             TriggerType.DROP_ITEM.triggerAll(stack, entireStack, cir);
         }
     }
+    //?}
 }
