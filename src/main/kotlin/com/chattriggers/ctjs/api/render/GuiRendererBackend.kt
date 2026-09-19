@@ -46,8 +46,6 @@ open class GuiRendererBackend {
     private val scissorDepths = ArrayDeque<Int>()
     private var canvas: Canvas? = null
     private var checkerImage: SkijaImage? = null
-    private val checkerShaders = HashMap<Float, Shader>()
-    private val gradientShaders = HashMap<GradientKey, Shader>()
     private val hueColors = IntArray(7) { 0xff000000.toInt() or (Color.HSBtoRGB(it / 6f, 1f, 1f) and 0xffffff) }
     private var alpha = 1f
     private var saveDepth = 0
@@ -68,7 +66,6 @@ open class GuiRendererBackend {
     private data class CachedGif(val frames: List<SkijaImage>, val delays: IntArray, val width: Int, val height: Int, var refs: Int = 1)
     private data class FontKey(val font: Font, val size: Float)
     private data class TextKey(val text: String, val font: FontKey)
-    private data class GradientKey(val x: Float, val y: Float, val width: Float, val height: Float, val color1: Int, val color2: Int, val direction: Gradient, val alpha: Float)
     private enum class Gradient { LEFT_TO_RIGHT, TOP_TO_BOTTOM, TL_TO_BR, BL_TO_TR }
 
     fun registerV5Render(callback: Runnable) = callback.also(callbacks::add)
@@ -191,7 +188,7 @@ open class GuiRendererBackend {
 
     @JvmOverloads
     fun drawGradientRect(x: Float, y: Float, width: Float, height: Float, color1: Int, color2: Int, direction: Any, radius: Float = 0f) =
-        gradientShader(x, y, width, height, color1, color2, direction).let { shader ->
+        gradientShader(x, y, width, height, color1, color2, direction).use { shader ->
             Paint().setAntiAlias(true).setShader(shader).use {
                 if (radius > 0f) canvas?.drawRRect(RRect.makeXYWH(x, y, width, height, radius), it)
                 else canvas?.drawRect(Rect.makeXYWH(x, y, width, height), it)
@@ -201,7 +198,7 @@ open class GuiRendererBackend {
 
     @JvmOverloads
     fun drawHollowGradientRect(x: Float, y: Float, width: Float, height: Float, thickness: Float, color1: Int, color2: Int, direction: Any, radius: Float = 0f) =
-        gradientShader(x, y, width, height, color1, color2, direction).let { shader ->
+        gradientShader(x, y, width, height, color1, color2, direction).use { shader ->
             Paint().setAntiAlias(true).setShader(shader).setMode(PaintMode.STROKE).setStrokeWidth(thickness).use {
                 if (radius > 0f) canvas?.drawRRect(RRect.makeXYWH(x, y, width, height, radius), it)
                 else canvas?.drawRect(Rect.makeXYWH(x, y, width, height), it)
@@ -215,7 +212,9 @@ open class GuiRendererBackend {
         val step = size.coerceAtLeast(0.1f)
         active.save()
         active.clipRRect(RRect.makeXYWH(x, y, width, height, radius), true)
-        checkerShader(step).let { shader ->
+        checkerImage().makeShader(
+            FilterTileMode.REPEAT, FilterTileMode.REPEAT, SamplingMode.DEFAULT, Matrix33.makeScale(step),
+        ).use { shader ->
             Paint().setShader(shader).setAlphaf(alpha).use {
                 active.drawRect(Rect.makeXYWH(x, y, width, height), it)
             }
@@ -333,8 +332,6 @@ open class GuiRendererBackend {
     fun destroy() {
         clearImageCache()
         checkerImage?.close(); checkerImage = null
-        checkerShaders.values.forEach(Shader::close); checkerShaders.clear()
-        gradientShaders.values.forEach(Shader::close); gradientShaders.clear()
         textLines.values.forEach(TextLine::close); textLines.clear()
         fonts.values.forEach(io.github.humbleui.skija.Font::close); fonts.clear()
         typefaces.values.forEach(Typeface::close); typefaces.clear()
@@ -364,10 +361,6 @@ open class GuiRendererBackend {
             surface.canvas.drawRect(Rect.makeXYWH(0f, 1f, 1f, 1f), it)
         }
         surface.makeImageSnapshot().also { checkerImage = it }
-    }
-
-    private fun checkerShader(size: Float) = checkerShaders.getOrPut(size) {
-        checkerImage().makeShader(FilterTileMode.REPEAT, FilterTileMode.REPEAT, SamplingMode.DEFAULT, Matrix33.makeScale(size))
     }
 
     private fun processDownloads() {
@@ -448,15 +441,13 @@ open class GuiRendererBackend {
 
     private fun gradientShader(x: Float, y: Float, width: Float, height: Float, color1: Int, color2: Int, direction: Any): Shader {
         val resolved = resolveGradient(direction)
-        val key = GradientKey(x, y, width, height, color1, color2, resolved, alpha)
-        gradientShaders[key]?.let { return it }
         val (endX, endY) = when (resolved) {
             Gradient.TOP_TO_BOTTOM -> x to y + height
             Gradient.TL_TO_BR -> x + width to y + height
             Gradient.BL_TO_TR -> x + width to y - height
             Gradient.LEFT_TO_RIGHT -> x + width to y
         }
-        return Shader.makeLinearGradient(x, y, endX, endY, intArrayOf(applyAlpha(color1), applyAlpha(color2))).also { gradientShaders[key] = it }
+        return Shader.makeLinearGradient(x, y, endX, endY, intArrayOf(applyAlpha(color1), applyAlpha(color2)))
     }
 
     private fun resolveGradient(direction: Any) = when {
