@@ -36,8 +36,14 @@ open class GuiRendererBackend {
     private val pendingUrls = ConcurrentHashMap.newKeySet<String>()
     private val failedUrls = ConcurrentHashMap.newKeySet<String>()
     private val downloadedUrls = ConcurrentLinkedQueue<Pair<String, ByteArray?>>()
-    private val typefaces = HashMap<Font, Typeface>()
-    private val fonts = HashMap<FontKey, io.github.humbleui.skija.Font>()
+    private val typefaces = object : LinkedHashMap<Font, Typeface>(TEXT_CACHE_SIZE, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Font, Typeface>) =
+            (size > TEXT_CACHE_SIZE).also { if (it) eldest.value.close() }
+    }
+    private val fonts = object : LinkedHashMap<FontKey, io.github.humbleui.skija.Font>(TEXT_CACHE_SIZE, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<FontKey, io.github.humbleui.skija.Font>) =
+            (size > TEXT_CACHE_SIZE).also { if (it) eldest.value.close() }
+    }
     private val textLines = object : LinkedHashMap<TextKey, TextLine>(TEXT_CACHE_SIZE, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<TextKey, TextLine>) =
             (size > TEXT_CACHE_SIZE).also { if (it) eldest.value.close() }
@@ -425,8 +431,9 @@ open class GuiRendererBackend {
 
     private fun skijaFont(key: FontKey) = fonts.getOrPut(key) {
         io.github.humbleui.skija.Font(typefaces.getOrPut(key.font) {
-            FontMgr.getDefault().makeFromData(Data.makeFromBytes(key.font.buffer().let { buffer -> ByteArray(buffer.remaining()).also(buffer::get) }))
-                ?: error("Failed to load font ${key.font.name}")
+            Data.makeFromBytes(key.font.buffer().let { buffer -> ByteArray(buffer.remaining()).also(buffer::get) }).use {
+                FontMgr.getDefault().makeFromData(it) ?: error("Failed to load font ${key.font.name}")
+            }
         }, key.size)
             .setSubpixel(true)
             .setEdging(FontEdging.SUBPIXEL_ANTI_ALIAS)
