@@ -11,6 +11,9 @@ import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Image
 import com.chattriggers.ctjs.api.render.Render2D
 import com.chattriggers.ctjs.api.render.skia.createSkijaPIP
+import com.chattriggers.ctjs.api.render.skia.createInventorySkijaPIP
+import com.chattriggers.ctjs.api.render.skia.createPanelsSkijaPIP
+import com.chattriggers.ctjs.api.render.skia.createStatsSkijaPIP
 import com.chattriggers.ctjs.api.triggers.TriggerType
 import com.chattriggers.ctjs.api.world.Scoreboard
 import com.chattriggers.ctjs.api.world.World
@@ -34,6 +37,9 @@ class CTJS : ClientModInitializer {
     override fun onInitializeClient() {
         PictureInPictureRendererRegistry.register { input -> createSkijaPIP(input, pre = false) }
         PictureInPictureRendererRegistry.register { input -> createSkijaPIP(input, pre = true) }
+        PictureInPictureRendererRegistry.register(::createInventorySkijaPIP)
+        PictureInPictureRendererRegistry.register(::createStatsSkijaPIP)
+        PictureInPictureRendererRegistry.register(::createPanelsSkijaPIP)
         Client.referenceSystemTime = System.nanoTime()
         Initializer.initializers.forEach(Initializer::init)
         Config.loadData()

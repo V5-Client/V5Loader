@@ -30,6 +30,7 @@ import kotlin.math.roundToInt
 open class GuiRendererBackend {
     private val callbacks = CopyOnWriteArrayList<Runnable>()
     private val preCallbacks = CopyOnWriteArrayList<Runnable>()
+    private val cachedCallbacks = ConcurrentHashMap.newKeySet<Runnable>()
     private val images = ConcurrentHashMap<String, CachedImage>()
     private val gifs = HashMap<String, CachedGif>()
     private val urlImages = HashMap<String, SkijaImage>()
@@ -75,10 +76,12 @@ open class GuiRendererBackend {
     private enum class Gradient { LEFT_TO_RIGHT, TOP_TO_BOTTOM, TL_TO_BR, BL_TO_TR }
 
     fun registerV5Render(callback: Runnable) = callback.also(callbacks::add)
-    fun unregisterV5Render(callback: Runnable) { callbacks -= callback }
+    fun unregisterV5Render(callback: Runnable) { callbacks -= callback; cachedCallbacks -= callback }
     fun registerV5PreRender(callback: Runnable) = callback.also(preCallbacks::add)
     fun unregisterV5PreRender(callback: Runnable) { preCallbacks -= callback }
-    fun clearCallbacks() { callbacks.clear(); preCallbacks.clear() }
+    fun clearCallbacks() { callbacks.clear(); preCallbacks.clear(); cachedCallbacks.clear() }
+
+    fun registerV5CachedRender(callback: Runnable) = callback.also { callbacks += it; cachedCallbacks += it }
 
     fun runPreDrawables(context: GuiGraphicsExtractor) {
         if (preCallbacks.isNotEmpty()) SkijaPIP.draw(context, Runnable { runCallbacks(preCallbacks) }, pre = true)
@@ -87,7 +90,25 @@ open class GuiRendererBackend {
     fun runDrawables(context: GuiGraphicsExtractor) {
         if (callbacks.isEmpty()) return
         if (Minecraft.getInstance().screenCompat is Gui) context.blurBeforeThisStratum()
-        SkijaPIP.draw(context, Runnable { runCallbacks(callbacks) })
+        if (callbacks.none { it in cachedCallbacks }) {
+            SkijaPIP.draw(context, Runnable { runCallbacks(callbacks) })
+            return
+        }
+        var batch = ArrayList<Runnable>()
+        fun flush() {
+            val pending = batch
+            if (pending.isNotEmpty()) SkijaPIP.draw(context, Runnable { runCallbacks(pending) })
+            batch = ArrayList()
+        }
+        callbacks.forEach {
+            if (it in cachedCallbacks) {
+                flush()
+                DrawContextHolder.withContext(context) {
+                    try { it.run() } catch (error: Exception) { error.printStackTrace() }
+                }
+            } else batch += it
+        }
+        flush()
     }
 
     private fun runCallbacks(list: List<Runnable>) = list.forEach {
@@ -198,6 +219,14 @@ open class GuiRendererBackend {
             Paint().setAntiAlias(true).setShader(shader).use {
                 if (radius > 0f) canvas?.drawRRect(RRect.makeXYWH(x, y, width, height, radius), it)
                 else canvas?.drawRect(Rect.makeXYWH(x, y, width, height), it)
+                Unit
+            }
+        }
+
+    fun drawHorizontalThreeStopGradient(x: Float, y: Float, width: Float, height: Float, edgeColor: Int, centerColor: Int) =
+        Shader.makeLinearGradient(x, y, x + width, y, intArrayOf(applyAlpha(edgeColor), applyAlpha(centerColor), applyAlpha(edgeColor))).use { shader ->
+            Paint().setAntiAlias(true).setShader(shader).use {
+                canvas?.drawRect(Rect.makeXYWH(x, y, width, height), it)
                 Unit
             }
         }
@@ -341,6 +370,7 @@ open class GuiRendererBackend {
         textLines.values.forEach(TextLine::close); textLines.clear()
         fonts.values.forEach(io.github.humbleui.skija.Font::close); fonts.clear()
         typefaces.values.forEach(Typeface::close); typefaces.clear()
+        SkijaPIP.cacheEpoch++
     }
 
     private fun drawImage(image: SkijaImage, x: Float, y: Float, width: Float, height: Float, radius: Float, imageAlpha: Float) {

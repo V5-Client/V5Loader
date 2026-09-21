@@ -56,36 +56,37 @@ internal class SkijaVulkanSurface : AutoCloseable {
             vulkanTexture.usage() and GpuTexture.USAGE_TEXTURE_BINDING == 0
         ) {
             logger.warn("Skipping Skija Vulkan target with unsupported format or usage: {}", texture.getLabel())
-            return true
+            return false
         }
 
-        val gpuDevice = RenderSystem.tryGetDevice() ?: return true
+        val gpuDevice = RenderSystem.tryGetDevice() ?: return false
         val backend = (gpuDevice as GpuDeviceMixin).`ctjs$getBackend`()
         val vulkanDevice = backend as? VulkanDevice ?: run {
             logger.warn("GpuTexture is Vulkan but RenderSystem device backend is {}", backend.javaClass.name)
-            return true
+            return false
         }
         val physical = (vulkanDevice as VulkanDeviceAccessor).`ctjs$getPhysicalDevice`()
         if (physical == null) {
             logger.error("Vulkan physical device accessor returned null")
-            return true
+            return false
         }
 
         try {
             ensureResources(vulkanDevice, physical, vulkanTexture, width, height)
             transition(gpuDevice, vulkanTexture.vkImage(), VK12.VK_IMAGE_LAYOUT_GENERAL, VK12.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                 VK10.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                VK10.VK_ACCESS_MEMORY_READ_BIT or VK10.VK_ACCESS_MEMORY_WRITE_BIT, VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+                VK10.VK_ACCESS_MEMORY_READ_BIT or VK10.VK_ACCESS_MEMORY_WRITE_BIT, VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, submit = true)
             draw(surface!!.canvas)
             context!!.flushAndSubmit(false)
             transition(gpuDevice, vulkanTexture.vkImage(), VK12.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK12.VK_IMAGE_LAYOUT_GENERAL,
                 VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK10.VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK10.VK_ACCESS_MEMORY_READ_BIT or VK10.VK_ACCESS_MEMORY_WRITE_BIT)
+                VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK10.VK_ACCESS_MEMORY_READ_BIT or VK10.VK_ACCESS_MEMORY_WRITE_BIT, submit = false)
+            return true
         } catch (exception: Throwable) {
             logger.error("Skija Vulkan rendering failed", exception)
             closeResources()
         }
-        return true
+        return false
     }
 
     private fun ensureResources(vk: VulkanDevice, physical: VulkanPhysicalDevice,
@@ -115,7 +116,7 @@ internal class SkijaVulkanSurface : AutoCloseable {
         format = texture.getFormat()
     }
 
-    private fun transition(gpu: GpuDevice, image: Long, oldLayout: Int, newLayout: Int, srcStage: Int, dstStage: Int, srcAccess: Int, dstAccess: Int) {
+    private fun transition(gpu: GpuDevice, image: Long, oldLayout: Int, newLayout: Int, srcStage: Int, dstStage: Int, srcAccess: Int, dstAccess: Int, submit: Boolean) {
         val encoder = gpu.createCommandEncoder()
         //? if >=26.3 {
         /*val vkEncoder = ((encoder as? FrontendCommandEncoder)?.backend() as? VulkanCommandEncoder)
@@ -143,9 +144,9 @@ internal class SkijaVulkanSurface : AutoCloseable {
             VK12.vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, barrier)
         }
         //? if >=26.3 {
-        /*encoder.submit()
+        /*if (submit) encoder.submit()
         *///?} else {
-        vkEncoder.submit()
+        if (submit) vkEncoder.submit() // The shared graphics queue submits the return barrier before the texture is sampled again.
         //?}
     }
 

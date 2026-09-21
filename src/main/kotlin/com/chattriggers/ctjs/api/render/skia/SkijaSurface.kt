@@ -39,11 +39,11 @@ internal class SkijaSurface : AutoCloseable {
     private var height = 0
     private var textureId = 0
 
-    fun render(width: Int, height: Int, texture: GpuTexture, draw: (io.github.humbleui.skija.Canvas) -> Unit) {
+    fun render(width: Int, height: Int, texture: GpuTexture, draw: (io.github.humbleui.skija.Canvas) -> Unit): Boolean {
         //? if >=26.2 {
-        if (vulkan.render(width, height, texture, draw)) return
+        if (vulkan.render(width, height, texture, draw)) return true
         //?}
-        val colorTexture = texture as? GlTexture ?: return
+        val colorTexture = texture as? GlTexture ?: return false
         val state = GlState.capture()
         try {
             bindTarget(colorTexture.glId(), width, height)
@@ -60,6 +60,7 @@ internal class SkijaSurface : AutoCloseable {
             val skijaSurface = surface(width, height, colorTexture.glId(), directContext)
             draw(skijaSurface.canvas)
             directContext.flushAndSubmit(skijaSurface, false)
+            return true
         } finally {
             context?.resetGLAll()
             state.restore()

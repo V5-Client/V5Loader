@@ -12,6 +12,7 @@ import com.chattriggers.ctjs.internal.utils.getOrDefault
 import com.chattriggers.ctjs.internal.utils.toRadians
 import gg.essential.universal.UMatrixStack
 import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.player.AbstractClientPlayer
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import com.mojang.blaze3d.vertex.PoseStack
@@ -122,6 +123,27 @@ object Render2D : GuiRendererBackend() {
 
     @JvmStatic
     fun getFontRenderer() = Client.getMinecraft().font
+
+    @JvmStatic
+    fun drawPlayerInventory(context: GuiGraphicsExtractor, x: Float, y: Float, scale: Float) {
+        val player = Client.getMinecraft().player ?: return
+        val pose = context.pose()
+        pose.pushMatrix()
+        pose.translate(x + 7 * scale, y + 7 * scale)
+        pose.scale(scale, scale)
+        try {
+            repeat(27) {
+                val stack = player.inventory.getItem(it + 9)
+                if (!stack.isEmpty()) context.item(stack, it % 9 * 18, it / 9 * 18)
+            }
+            repeat(9) {
+                val stack = player.inventory.getItem(it)
+                if (!stack.isEmpty()) context.item(stack, it * 18, 58)
+            }
+        } finally {
+            pose.popMatrix()
+        }
+    }
 
     @JvmStatic
     fun getRenderManager() = Client.getMinecraft().levelRenderer

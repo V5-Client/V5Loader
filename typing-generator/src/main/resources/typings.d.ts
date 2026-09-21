@@ -53052,6 +53052,7 @@ declare global {
               WHITE: number;
               color(color: number): number;
               getFontRenderer(): net.minecraft.client.gui.Font;
+              drawPlayerInventory(context: net.minecraft.client.gui.GuiGraphicsExtractor, x: number, y: number, scale: number): void;
               getRenderManager(): net.minecraft.client.renderer.LevelRenderer;
               getStringWidth(text: string): number;
               getColor(red: number, green: number, blue: number): number;
@@ -53136,6 +53137,7 @@ declare global {
               WHITE: number;
               color(color: number): number;
               getFontRenderer(): net.minecraft.client.gui.Font;
+              drawPlayerInventory(context: net.minecraft.client.gui.GuiGraphicsExtractor, x: number, y: number, scale: number): void;
               getRenderManager(): net.minecraft.client.renderer.LevelRenderer;
               getStringWidth(text: string): number;
               getColor(red: number, green: number, blue: number): number;
@@ -53215,6 +53217,7 @@ declare global {
               registerV5PreRender(callback: java.lang.Runnable): java.lang.Runnable;
               unregisterV5PreRender(callback: java.lang.Runnable): void;
               clearCallbacks(): void;
+              registerV5CachedRender(callback: java.lang.Runnable): java.lang.Runnable;
               runPreDrawables(context: net.minecraft.client.gui.GuiGraphicsExtractor): void;
               runDrawables(context: net.minecraft.client.gui.GuiGraphicsExtractor): void;
               blurBackground(): void;
@@ -53235,6 +53238,7 @@ declare global {
               drawDropShadow(x: number, y: number, width: number, height: number, radius: number, blur: number, spread: number, color: number): void;
               drawGradientRect(x: number, y: number, width: number, height: number, color1: number, color2: number, direction: any): void;
               drawGradientRect(x: number, y: number, width: number, height: number, color1: number, color2: number, direction: any, radius: number): void;
+              drawHorizontalThreeStopGradient(x: number, y: number, width: number, height: number, edgeColor: number, centerColor: number): void;
               drawHollowGradientRect(x: number, y: number, width: number, height: number, thickness: number, color1: number, color2: number, direction: any): void;
               drawHollowGradientRect(x: number, y: number, width: number, height: number, thickness: number, color1: number, color2: number, direction: any, radius: number): void;
               drawCheckerboard(x: number, y: number, width: number, height: number, radius: number): void;
