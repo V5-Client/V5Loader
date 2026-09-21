@@ -1,5 +1,6 @@
 package com.chattriggers.ctjs.api.render
 import com.chattriggers.ctjs.api.client.MinecraftCompat
+import com.chattriggers.ctjs.internal.listeners.WorldListener
 
 import net.minecraft.client.Minecraft
 import net.minecraft.gizmos.GizmoStyle
@@ -170,7 +171,7 @@ object Render3D {
     @JvmOverloads
     fun drawTracer(targetPos: Vec3, color: Color, thickness: Float = 2f, depth: Boolean = false) {
         val camera = MinecraftCompat.mainCamera(client.gameRenderer)
-        val start = camera.position().add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()).scale(0.1))
+        val start = tracerStart(camera.position(), camera.xRot(), camera.yRot())
         drawLine(start, targetPos, color, thickness, depth)
     }
 
@@ -178,8 +179,15 @@ object Render3D {
     @JvmOverloads
     fun drawTracers(targetPositions: Array<Vec3>, color: Color, thickness: Float = 2f, depth: Boolean = false) {
         val camera = MinecraftCompat.mainCamera(client.gameRenderer)
-        val start = camera.position().add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()).scale(0.1))
+        val start = tracerStart(camera.position(), camera.xRot(), camera.yRot())
         targetPositions.forEach { targetPos -> Gizmos.line(start, targetPos, color.packed, thickness).depth(depth) }
+    }
+
+    private fun tracerStart(fallbackPosition: Vec3, fallbackXRot: Float, fallbackYRot: Float): Vec3 {
+        val position = WorldListener.renderCameraPosition ?: fallbackPosition
+        val xRot = if (WorldListener.renderCameraPosition == null) fallbackXRot else WorldListener.renderCameraXRot
+        val yRot = if (WorldListener.renderCameraPosition == null) fallbackYRot else WorldListener.renderCameraYRot
+        return position.add(Vec3.directionFromRotation(xRot, yRot).scale(0.1))
     }
 
     @JvmStatic

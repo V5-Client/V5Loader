@@ -8,10 +8,24 @@ import com.chattriggers.ctjs.api.triggers.TriggerType
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.core.BlockPos
+import net.minecraft.client.renderer.state.level.CameraRenderState
+import net.minecraft.world.phys.Vec3
 
 object WorldListener {
     var matrixStack: PoseStack? = null
+    var renderCameraPosition: Vec3? = null
+        private set
+    var renderCameraXRot = 0f
+        private set
+    var renderCameraYRot = 0f
+        private set
     private var deltaTicks: Float = 1f
+
+    fun setRenderCamera(camera: CameraRenderState) {
+        renderCameraPosition = camera.pos
+        renderCameraXRot = camera.xRot
+        renderCameraYRot = camera.yRot
+    }
 
     fun triggerBlockOutline(bp: MCBlockPos): Boolean {
         if (!JSLoader.hasTriggers(TriggerType.BLOCK_HIGHLIGHT)) return false

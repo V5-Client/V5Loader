@@ -68,6 +68,7 @@ public abstract class LevelRendererMixin {
     @Inject(method = "renderLevel", at = @At("HEAD"))
     private void beforeRender(GraphicsResourceAllocator allocator, DeltaTracker tickCounter, boolean renderBlockOutline, CameraRenderState camera, Matrix4fc positionMatrix, GpuBufferSlice fogBuffer, Vector4f fogColor, boolean renderSky, ChunkSectionsToRender chunkSectionsToRender, CallbackInfo ci) {
         ctjs$tickDelta = tickCounter.getGameTimeDeltaTicks();
+        WorldListener.INSTANCE.setRenderCamera(camera);
     }
 
     @Inject(
@@ -139,6 +140,7 @@ public abstract class LevelRendererMixin {
         CallbackInfo ci
     ) {
         ctjs$tickDelta = tickCounter.getGameTimeDeltaTicks();
+        WorldListener.INSTANCE.setRenderCamera(camera);
     }
 
     @Inject(method = "submitEntities", at = @At("HEAD"))
@@ -147,8 +149,11 @@ public abstract class LevelRendererMixin {
         WorldListener.INSTANCE.triggerRenderStart(ctjs$tickDelta);
     }
 
-    @Inject(method = "lambda$addMainPass$0", at = @At("RETURN"))
-    private void afterMainPass(CallbackInfo ci) {
+    @Inject(
+        method = "submitFeatures",
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;finalizeGizmoCollection()V")
+    )
+    private void beforeGizmos(CallbackInfo ci) {
         WorldListener.INSTANCE.triggerRenderLast();
     }
 }
@@ -195,12 +200,16 @@ public abstract class LevelRendererMixin {
 
     @Inject(method = "submitEntities", at = @At("HEAD"))
     private void beforeEntities(PoseStack matrices, LevelRenderState state, SubmitNodeCollector collector, CallbackInfo ci) {
+        WorldListener.INSTANCE.setRenderCamera(state.cameraRenderState);
         WorldListener.INSTANCE.setMatrixStack(matrices);
         WorldListener.INSTANCE.triggerRenderStart(state.worldPartialTicks);
     }
 
-    @Inject(method = "lambda$addMainPass$0", at = @At("RETURN"))
-    private void afterMainPass(CallbackInfo ci) {
+    @Inject(
+        method = "submitFeatures",
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;finalizeGizmoCollection()V")
+    )
+    private void beforeGizmos(CallbackInfo ci) {
         WorldListener.INSTANCE.triggerRenderLast();
     }
 }
