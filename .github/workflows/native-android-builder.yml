@@ -25,7 +25,7 @@ jobs:
           ref: ${{ github.sha }}
 
       - name: Setup Android NDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
       - run: sdkmanager "ndk;27.2.12479018"
 
       - name: Build native library
