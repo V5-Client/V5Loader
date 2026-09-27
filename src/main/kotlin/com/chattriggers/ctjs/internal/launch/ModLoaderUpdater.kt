@@ -1,8 +1,11 @@
 package com.chattriggers.ctjs.internal.launch
 
+import com.chattriggers.ctjs.internal.utils.Platform
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 internal object ModLoaderUpdater {
     private const val MOD_LOADER_CANONICAL_FILE_NAME = "V5-Loader.jar"
@@ -19,6 +22,22 @@ internal object ModLoaderUpdater {
         val updatePaths = prepareUpdatePaths(gameDir, candidates)
 
         FileOutputStream(updatePaths.sourceJar).use { it.write(modLoaderBytes) }
+
+        if (Platform.isAndroid) {
+            val target = updatePaths.targetJar.toPath()
+            val backup = updatePaths.backupJar.toPath()
+            Files.deleteIfExists(backup)
+            if (Files.exists(target)) Files.copy(target, backup, REPLACE_EXISTING)
+            try {
+                Files.move(updatePaths.sourceJar.toPath(), target, REPLACE_EXISTING)
+            } catch (error: Exception) {
+                if (Files.exists(backup)) Files.move(backup, target, REPLACE_EXISTING)
+                throw error
+            }
+            updatePaths.staleTargets.forEach { runCatching { Files.deleteIfExists(it.toPath()) } }
+            runCatching { Files.deleteIfExists(backup) }
+            return
+        }
 
         val helperScript = if (isWindows()) {
             writeWindowsUpdateScript(updatePaths)

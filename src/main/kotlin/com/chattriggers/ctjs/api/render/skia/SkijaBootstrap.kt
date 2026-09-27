@@ -45,7 +45,7 @@ class SkijaBootstrap : PreLaunchEntrypoint {
             val nativeLibrary = nativeDir.resolve(System.mapLibraryName("skija"))
             if (!Files.exists(nativeLibrary)) {
                 Files.createDirectories(nativeDir)
-                val temporary = Files.createTempFile(cache, "skija-native-", ".tmp")
+                val temporary = Files.createTempFile(nativeDir, "skija-native-", ".tmp")
                 try {
                     JarFile(file.toFile()).use { jar ->
                         val entry = jar.getJarEntry("io/github/humbleui/skija/android/$androidArch/libskija.so")

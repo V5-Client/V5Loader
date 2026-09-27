@@ -90,7 +90,7 @@ internal object V5Loader {
                 throw IllegalStateException("[V5] GitHub workflow download failed integrity verification; refusing to install it.")
             }
             ModLoaderUpdater.stageUpdateAndRelaunch(gameDir, bytes, listOf(activeJar))
-            println("[V5] V5-Loader update staged. Closing Minecraft now so the helper can swap jars.")
+            println("[V5] Mod update complete. Launch Minecraft again! This is NOT a crash. Launch Minecraft again! If this error persists, manually update the V5.jar")
         } finally {
             bytes.fill(0)
         }

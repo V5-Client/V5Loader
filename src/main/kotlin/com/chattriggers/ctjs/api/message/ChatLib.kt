@@ -14,8 +14,6 @@ import net.minecraft.client.multiplayer.chat.GuiMessage
 import net.minecraft.client.multiplayer.chat.GuiMessageSource
 import net.minecraft.client.multiplayer.chat.GuiMessageTag
 import org.mozilla.javascript.regexp.NativeRegExp
-import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
 import java.util.regex.Pattern
 import kotlin.math.roundToInt
 
@@ -182,7 +180,7 @@ object ChatLib {
      */
     @JvmStatic
     fun copyToClipboard(text: String) {
-        Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(text), null)
+        Client.copy(text)
     }
 
 
