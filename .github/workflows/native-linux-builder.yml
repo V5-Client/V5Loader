@@ -9,7 +9,16 @@ permissions:
 
 jobs:
   linux-builder:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            runner: blacksmith-4vcpu-ubuntu-2404
+            java_arch: x64
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            java_arch: aarch64
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - name: Checkout
@@ -22,6 +31,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+          architecture: ${{ matrix.java_arch }}
 
       - name: Build native library
         run: |
@@ -30,12 +40,12 @@ jobs:
 
       - name: Stage artifact
         run: |
-          mkdir -p artifact/linux/x86_64
-          cp NativeSrc/build/V5PathJNI.so artifact/linux/x86_64/V5PathJNI.so
+          mkdir -p "artifact/linux/${{ matrix.arch }}"
+          cp NativeSrc/build/V5PathJNI.so "artifact/linux/${{ matrix.arch }}/V5PathJNI.so"
 
       - name: Upload Linux native
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: native-linux-x86_64
-          path: artifact/linux/x86_64/V5PathJNI.so
+          name: native-linux-${{ matrix.arch }}
+          path: artifact/linux/${{ matrix.arch }}/V5PathJNI.so
           if-no-files-found: error

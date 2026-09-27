@@ -7,6 +7,7 @@ import com.chattriggers.ctjs.engine.LogType
 import com.chattriggers.ctjs.internal.engine.CTEvents
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
+import com.chattriggers.ctjs.internal.utils.Platform
 import kotlinx.serialization.json.Json
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
@@ -59,6 +60,8 @@ object ConsoleHostProcess : Initializer {
     private val pendingMessages = mutableListOf<H2CMessage>()
 
     override fun init() {
+        if (Platform.isAndroid) return
+
         val keybind = KeyMappingHelper.registerKeyMapping(
             KeyMapping(
                 "ctjs.key.binding.console",
@@ -209,6 +212,8 @@ object ConsoleHostProcess : Initializer {
         trySendMessage(ConfigUpdateMessage.constructFromConfig(settings))
 
     private fun trySendMessage(message: H2CMessage, startIfNeeded: Boolean = true) {
+        if (Platform.isAndroid) return
+
         if (startIfNeeded)
             ensureStarted()
 

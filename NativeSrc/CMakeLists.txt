@@ -5,7 +5,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(JNI REQUIRED)
+if(NOT ANDROID)
+  find_package(JNI REQUIRED)
+endif()
 
 add_library(V5PathJNI SHARED
   src/jni_bridge.cpp
@@ -19,8 +21,11 @@ add_library(V5PathJNI SHARED
   src/path_signature.cpp
 )
 
-target_include_directories(V5PathJNI PRIVATE ${JNI_INCLUDE_DIRS} src)
-target_link_libraries(V5PathJNI PRIVATE ${JNI_LIBRARIES})
+target_include_directories(V5PathJNI PRIVATE src)
+if(NOT ANDROID)
+  target_include_directories(V5PathJNI PRIVATE ${JNI_INCLUDE_DIRS})
+  target_link_libraries(V5PathJNI PRIVATE ${JNI_LIBRARIES})
+endif()
 
 set_target_properties(V5PathJNI PROPERTIES
   OUTPUT_NAME "V5PathJNI"

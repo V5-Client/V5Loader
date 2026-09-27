@@ -68,7 +68,7 @@ jobs:
 
           CHANGED="$(git diff --name-only "$BEFORE" "$AFTER" --)"
 
-          if echo "$CHANGED" | grep -Eq '^NativeSrc/'; then
+          if echo "$CHANGED" | grep -Eq '^(NativeSrc/|\.github/workflows/(compile-all|native-.*-builder)\.yml$)'; then
             echo "native_changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "native_changed=false" >> "$GITHUB_OUTPUT"
@@ -97,19 +97,28 @@ jobs:
       contents: read
     uses: ./.github/workflows/native-windows-builder.yml
 
+  android:
+    needs: detect-native
+    if: ${{ needs['detect-native'].outputs.native_changed == 'true' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/native-android-builder.yml
+
   bundle-natives:
     needs:
       - detect-native
       - linux
       - macos
       - windows
+      - android
     if: >-
       ${{
         always() &&
         needs['detect-native'].outputs.native_changed == 'true' &&
         needs.linux.result == 'success' &&
         needs.macos.result == 'success' &&
-        needs.windows.result == 'success'
+        needs.windows.result == 'success' &&
+        needs.android.result == 'success'
       }}
     runs-on: blacksmith-2vcpu-ubuntu-2404
     permissions:
@@ -128,6 +137,12 @@ jobs:
           name: native-linux-x86_64
           path: artifact/linux/x86_64
 
+      - name: Download Linux ARM64 native
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: native-linux-arm64
+          path: artifact/linux/arm64
+
       - name: Download macOS natives
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
@@ -140,18 +155,40 @@ jobs:
           name: native-windows-x86_64
           path: artifact/windows/x86_64
 
+      - name: Download Windows ARM64 native
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: native-windows-arm64
+          path: artifact/windows/arm64
+
+      - name: Download Android ARM64 native
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: native-android-arm64
+          path: artifact/android/arm64
+
+      - name: Download Android x86_64 native
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: native-android-x86_64
+          path: artifact/android/x86_64
+
       - name: Install native libraries
         shell: bash
         run: |
           set -euo pipefail
 
           DEST=src/main/resources/assets/v5/natives
-          mkdir -p "$DEST/linux/x86_64" "$DEST/macos/arm64" "$DEST/macos/x86_64" "$DEST/windows/x86_64"
+          mkdir -p "$DEST/linux/x86_64" "$DEST/linux/arm64" "$DEST/macos/arm64" "$DEST/macos/x86_64" "$DEST/windows/x86_64" "$DEST/windows/arm64" "$DEST/android/arm64" "$DEST/android/x86_64"
 
           cp artifact/linux/x86_64/V5PathJNI.so "$DEST/linux/x86_64/V5PathJNI.so"
+          cp artifact/linux/arm64/V5PathJNI.so "$DEST/linux/arm64/V5PathJNI.so"
           cp artifact/macos/arm64/V5PathJNI.dylib "$DEST/macos/arm64/V5PathJNI.dylib"
           cp artifact/macos/x86_64/V5PathJNI.dylib "$DEST/macos/x86_64/V5PathJNI.dylib"
           cp artifact/windows/x86_64/V5PathJNI.dll "$DEST/windows/x86_64/V5PathJNI.dll"
+          cp artifact/windows/arm64/V5PathJNI.dll "$DEST/windows/arm64/V5PathJNI.dll"
+          cp artifact/android/arm64/V5PathJNI.so "$DEST/android/arm64/V5PathJNI.so"
+          cp artifact/android/x86_64/V5PathJNI.so "$DEST/android/x86_64/V5PathJNI.so"
 
           rm -f src/main/resources/assets/v5/V5PathJNI.so
           rm -f src/main/resources/assets/v5/V5PathJNI.dylib

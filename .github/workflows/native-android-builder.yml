@@ -1,0 +1,49 @@
+name: Build Android Native Pathfinder JNI
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android-builder:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - abi: arm64-v8a
+            arch: arm64
+          - abi: x86_64
+            arch: x86_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Setup Android NDK
+        uses: android-actions/setup-android@v3
+      - run: sdkmanager "ndk;27.2.12479018"
+
+      - name: Build native library
+        run: |
+          cmake -S NativeSrc -B "NativeSrc/build-${{ matrix.arch }}" \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/27.2.12479018/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=${{ matrix.abi }} -DANDROID_PLATFORM=android-24 \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build "NativeSrc/build-${{ matrix.arch }}" --config Release --parallel
+
+      - name: Stage artifact
+        run: |
+          mkdir -p "artifact/android/${{ matrix.arch }}"
+          cp "NativeSrc/build-${{ matrix.arch }}/V5PathJNI.so" "artifact/android/${{ matrix.arch }}/V5PathJNI.so"
+
+      - name: Upload Android native
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-android-${{ matrix.arch }}
+          path: artifact/android/${{ matrix.arch }}/V5PathJNI.so
+          if-no-files-found: error
