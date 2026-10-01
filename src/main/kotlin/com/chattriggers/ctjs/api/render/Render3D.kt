@@ -196,28 +196,33 @@ object Render3D {
         val camera = MinecraftCompat.mainCamera(client.gameRenderer)
         val distanceScale = if (increase) (pos.distanceTo(camera.position()).toFloat() / 120f).coerceAtLeast(0.01f) else 1f
         val style = TextGizmo.Style.whiteAndCentered().withScale(TextGizmo.Style.DEFAULT_SCALE * scale * distanceScale)
-        drawText(text, if (translate) pos else camera.position(), style, backgroundBox, seeThrough)
+        val left = if (backgroundBox) Vec3(camera.leftVector()) else null
+        val up = if (backgroundBox) Vec3(camera.upVector()) else null
+        drawText(text, if (translate) pos else camera.position(), style, left, up, seeThrough)
     }
 
     @JvmStatic
     @JvmOverloads
     fun drawTexts(texts: Array<String>, positions: Array<Vec3>, scale: Float = 1f, backgroundBox: Boolean = false, increase: Boolean = false, seeThrough: Boolean = false, translate: Boolean = true) {
         val camera = MinecraftCompat.mainCamera(client.gameRenderer)
+        val baseStyle = TextGizmo.Style.whiteAndCentered()
+        val fixedStyle = if (!increase) baseStyle.withScale(TextGizmo.Style.DEFAULT_SCALE * scale) else null
+        val left = if (backgroundBox) Vec3(camera.leftVector()) else null
+        val up = if (backgroundBox) Vec3(camera.upVector()) else null
         for (i in 0 until minOf(texts.size, positions.size)) {
             val pos = positions[i]
-            val distanceScale = if (increase) (pos.distanceTo(camera.position()).toFloat() / 120f).coerceAtLeast(0.01f) else 1f
-            val style = TextGizmo.Style.whiteAndCentered().withScale(TextGizmo.Style.DEFAULT_SCALE * scale * distanceScale)
-            drawText(texts[i], if (translate) pos else camera.position(), style, backgroundBox, seeThrough)
+            val style = fixedStyle ?: baseStyle.withScale(
+                TextGizmo.Style.DEFAULT_SCALE * scale * (pos.distanceTo(camera.position()).toFloat() / 120f).coerceAtLeast(0.01f),
+            )
+            drawText(texts[i], if (translate) pos else camera.position(), style, left, up, seeThrough)
         }
     }
 
-    private fun drawText(text: String, pos: Vec3, style: TextGizmo.Style, backgroundBox: Boolean, seeThrough: Boolean) {
-        if (backgroundBox) {
+    private fun drawText(text: String, pos: Vec3, style: TextGizmo.Style, cameraLeft: Vec3?, up: Vec3?, seeThrough: Boolean) {
+        if (cameraLeft != null && up != null) {
             val pixelScale = style.scale() / 16
             val halfWidth = (client.font.width(text) / 2f + 1) * pixelScale
-            val camera = MinecraftCompat.mainCamera(client.gameRenderer)
-            val left = Vec3(camera.leftVector()).scale(halfWidth.toDouble())
-            val up = Vec3(camera.upVector())
+            val left = cameraLeft.scale(halfWidth.toDouble())
             val top = up.scale(pixelScale.toDouble())
             val bottom = up.scale(-(client.font.lineHeight + 1) * pixelScale.toDouble())
             Gizmos.rect(

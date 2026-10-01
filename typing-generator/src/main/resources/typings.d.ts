@@ -49591,22 +49591,33 @@ declare global {
               getSize(): number;
             }
             const StructureFinder: {
-              submitChunkScan(chunkX: number, chunkZ: number): void;
-              submitBlockUpdate(blockX: number, blockY: number, blockZ: number): void;
-              getRenderBlocksArray(): Array<number>;
-              getRenderLabelsArray(): Array<string>;
+              FoundStructure: typeof com.chattriggers.ctjs.api.world.StructureFinder$FoundStructure;
+              setActive(enabled: boolean): void;
+              getRenderStructures(): Array<com.chattriggers.ctjs.api.world.StructureFinder$FoundStructure>;
               clear(): void;
-              shutdown(): void;
               new(): com.chattriggers.ctjs.api.world.StructureFinder;
             }
             interface StructureFinder { 
-              submitChunkScan(chunkX: number, chunkZ: number): void;
-              submitBlockUpdate(blockX: number, blockY: number, blockZ: number): void;
-              getRenderBlocksArray(): Array<number>;
-              getRenderLabelsArray(): Array<string>;
+              setActive(enabled: boolean): void;
+              getRenderStructures(): Array<com.chattriggers.ctjs.api.world.StructureFinder$FoundStructure>;
               clear(): void;
-              shutdown(): void;
               new(): com.chattriggers.ctjs.api.world.StructureFinder;
+            }
+            const StructureFinder$FoundStructure: {
+              new(name: string, x: number, y: number, z: number, count: number): com.chattriggers.ctjs.api.world.StructureFinder$FoundStructure;
+            }
+            interface StructureFinder$FoundStructure { 
+              getName(): string;
+              getX(): number;
+              getY(): number;
+              getZ(): number;
+              getCount(): number;
+              component1(): string;
+              component2(): number;
+              component3(): number;
+              component4(): number;
+              component5(): number;
+              copy(name: string, x: number, y: number, z: number, count: number): com.chattriggers.ctjs.api.world.StructureFinder$FoundStructure;
             }
             const TabList: {
               Name: typeof com.chattriggers.ctjs.api.world.TabList$Name;

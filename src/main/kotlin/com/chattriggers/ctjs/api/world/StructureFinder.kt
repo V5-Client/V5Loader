@@ -1,15 +1,26 @@
 package com.chattriggers.ctjs.api.world
 
+import com.chattriggers.ctjs.api.triggers.PacketEvent
+import com.chattriggers.ctjs.internal.mixins.ClientChunkCacheAccessor
+import com.chattriggers.ctjs.internal.mixins.ClientChunkMapAccessor
+import com.chattriggers.ctjs.internal.mixins.ClientLevelAccessor
+import com.chattriggers.ctjs.internal.utils.asMixin
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import kotlin.math.roundToInt
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket
+import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.block.AbstractSkullBlock
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.SlabBlock
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.properties.SlabType
@@ -28,12 +39,32 @@ object StructureFinder {
     private val pendingLock = Any()
     private val chunkResults = Long2ObjectOpenHashMap<List<FoundStructure>>(256)
     private val pendingScans = LongOpenHashSet(256)
+    private val packetScans = LongOpenHashSet(256)
 
     @Volatile
-    private var cachedRenderArray = IntArray(0)
+    private var active = false
+
+    init {
+        PacketEvent.RECEIVE.register { packet ->
+            if (!active) return@register
+            when (packet) {
+                is ClientboundLevelChunkWithLightPacket -> queueChunk(packet.x, packet.z)
+                is ClientboundSectionBlocksUpdatePacket -> packet.runUpdates { pos, _ ->
+                    queueChunk(pos.x shr 4, pos.z shr 4)
+                }
+            }
+        }
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            if (!active || client.level == null) return@register
+            val chunks = synchronized(pendingLock) {
+                packetScans.toLongArray().also { packetScans.clear() }
+            }
+            chunks.forEach { submitChunkScan(ChunkPos.getX(it), ChunkPos.getZ(it)) }
+        }
+    }
 
     @Volatile
-    private var cachedLabelsArray = emptyArray<String>()
+    private var cachedRenderStructures = emptyArray<FoundStructure>()
 
     @Volatile
     private var dirty = false
@@ -42,7 +73,31 @@ object StructureFinder {
     private var generation = 0
 
     @JvmStatic
-    fun submitChunkScan(chunkX: Int, chunkZ: Int) {
+    fun setActive(enabled: Boolean) {
+        if (active == enabled) return
+        active = false
+        clear()
+        active = enabled
+        if (!enabled) return
+
+        val chunks = Minecraft.getInstance().level
+            ?.asMixin<ClientLevelAccessor>()
+            ?.chunkSource?.asMixin<ClientChunkCacheAccessor>()
+            ?.storage?.asMixin<ClientChunkMapAccessor>()
+            ?.chunks ?: return
+        for (index in 0 until chunks.length()) {
+            chunks.getPlain(index)?.pos?.let { submitChunkScan(it.x, it.z) }
+        }
+    }
+
+    private fun queueChunk(chunkX: Int, chunkZ: Int) {
+        synchronized(pendingLock) {
+            if (active) packetScans.add(ChunkPos.pack(chunkX, chunkZ))
+        }
+    }
+
+    private fun submitChunkScan(chunkX: Int, chunkZ: Int) {
+        if (!Region.ANY.intersects(chunkX, chunkZ)) return
         val key = ChunkPos.pack(chunkX, chunkZ)
         synchronized(pendingLock) {
             if (!pendingScans.add(key)) return
@@ -52,40 +107,26 @@ object StructureFinder {
     }
 
     @JvmStatic
-    fun submitBlockUpdate(blockX: Int, blockY: Int, blockZ: Int) {
-        submitChunkScan(blockX shr 4, blockZ shr 4)
-    }
-
-    @JvmStatic
-    fun getRenderBlocksArray(): IntArray {
-        if (!dirty) return cachedRenderArray
+    fun getRenderStructures(): Array<FoundStructure> {
+        if (!dirty) return cachedRenderStructures
         synchronized(stateLock) {
             rebuildRenderCacheLocked()
-            return cachedRenderArray
+            return cachedRenderStructures
         }
     }
-
-    @JvmStatic
-    fun getRenderLabelsArray(): Array<String> = cachedLabelsArray
 
     @JvmStatic
     fun clear() {
         generation++
         synchronized(stateLock) {
             chunkResults.clear()
-            cachedRenderArray = IntArray(0)
-            cachedLabelsArray = emptyArray()
+            cachedRenderStructures = emptyArray()
             dirty = false
         }
         synchronized(pendingLock) {
             pendingScans.clear()
+            packetScans.clear()
         }
-    }
-
-    @JvmStatic
-    fun shutdown() {
-        worker.shutdownNow()
-        clear()
     }
 
     private fun scanChunk(
@@ -116,8 +157,10 @@ object StructureFinder {
 
             synchronized(stateLock) {
                 if (scanGeneration != generation) return
-                if (results.isEmpty()) chunkResults.remove(key) else chunkResults.put(key, results)
-                dirty = true
+                if (results != (chunkResults.get(key) ?: emptyList<FoundStructure>())) {
+                    if (results.isEmpty()) chunkResults.remove(key) else chunkResults.put(key, results)
+                    dirty = true
+                }
             }
         } finally {
             if (finished) {
@@ -147,6 +190,11 @@ object StructureFinder {
             val section = sections[sectionIndex]
             if (section.hasOnlyAir()) continue
 
+            val candidates = structures.indices.filter { index ->
+                !found[index] && section.maybeHas { structures[index].blocks[0]!!.matches(it) }
+            }
+            if (candidates.isEmpty()) continue
+
             val baseY = minY + (sectionIndex shl 4)
             for (localY in 0..15) {
                 val y = baseY + localY
@@ -157,7 +205,7 @@ object StructureFinder {
                         val state = section.getBlockState(localX, localY, localZ)
                         if (state.isAir) continue
 
-                        for (index in structures.indices) {
+                        for (index in candidates) {
                             if (found[index]) continue
                             val structure = structures[index]
                             if (!structure.region.contains(x, y, z) || !structure.blocks[0]!!.matches(state)) continue
@@ -207,8 +255,7 @@ object StructureFinder {
     private fun rebuildRenderCacheLocked() {
         if (!dirty) return
         if (chunkResults.isEmpty()) {
-            cachedRenderArray = IntArray(0)
-            cachedLabelsArray = emptyArray()
+            cachedRenderStructures = emptyArray()
             dirty = false
             return
         }
@@ -218,6 +265,7 @@ object StructureFinder {
         var fairyY = 0L
         var fairyZ = 0L
         var fairyCount = 0
+        // 32 block proximity to merge nearby strucutres as some contain multiple detections. value has no specific meaning
         val iterator = chunkResults.values.iterator()
         while (iterator.hasNext()) {
             for (result in iterator.next()) {
@@ -226,7 +274,12 @@ object StructureFinder {
                     fairyY += result.y
                     fairyZ += result.z
                     fairyCount += result.count
-                } else {
+                } else if (out.none {
+                    it.name == result.name &&
+                        abs(it.x - result.x) <= 32 &&
+                        abs(it.y - result.y) <= 32 &&
+                        abs(it.z - result.z) <= 32
+                }) {
                     out.add(result)
                 }
             }
@@ -242,19 +295,13 @@ object StructureFinder {
                 ),
             )
         }
-        cachedRenderArray = IntArray(out.size * 3)
-        cachedLabelsArray = Array(out.size) { out[it].name }
-        out.forEachIndexed { index, result ->
-            cachedRenderArray[index * 3] = result.x
-            cachedRenderArray[index * 3 + 1] = result.y
-            cachedRenderArray[index * 3 + 2] = result.z
-        }
+        cachedRenderStructures = out.toTypedArray()
         dirty = false
     }
 
     private enum class Region(
-        private val xRange: IntRange? = null,
-        private val zRange: IntRange? = null,
+        private val xRange: IntRange,
+        private val zRange: IntRange,
         private val maxY: Int? = null,
     ) {
         GOBLIN_HIDEOUT(202..512, 513..823),
@@ -266,13 +313,13 @@ object StructureFinder {
         ANY(202..823, 202..823);
 
         fun contains(x: Int, y: Int, z: Int): Boolean =
-            (xRange == null || x in xRange) && (zRange == null || z in zRange) && (maxY == null || y <= maxY)
+            x in xRange && z in zRange && (maxY == null || y <= maxY)
 
         fun intersects(chunkX: Int, chunkZ: Int): Boolean {
             val minX = chunkX shl 4
             val minZ = chunkZ shl 4
-            return (xRange == null || minX <= xRange.last && minX + 15 >= xRange.first) &&
-                    (zRange == null || minZ <= zRange.last && minZ + 15 >= zRange.first)
+            return minX <= xRange.last && minX + 15 >= xRange.first &&
+                    minZ <= zRange.last && minZ + 15 >= zRange.first
         }
     }
 
@@ -286,34 +333,35 @@ object StructureFinder {
     )
 
     private class BlockMatcher(token: String) {
-        private val blockIds: List<String>
+        private val blocks: Set<Block>
         private val slabType: SlabType?
 
         init {
             val parts = token.split(':', limit = 2)
-            blockIds = parts[0].split('|')
+            val blockIds = parts[0].split('|')
             slabType = parts.getOrNull(1)?.let { SlabType.valueOf(it.uppercase()) }
-        }
-
-        fun matches(state: BlockState): Boolean {
-            if (slabType != null && (state.block !is SlabBlock || state.getValue(SlabBlock.TYPE) != slabType)) return false
-
-            val id = state.block.descriptionId.substringAfterLast('.')
-            return blockIds.any {
-                when (it) {
-                    "#carpet" -> id.endsWith("_carpet")
-                    "#leaves" -> id.endsWith("_leaves")
-                    "#planks" -> id.endsWith("_planks")
-                    "#skull" -> state.block is AbstractSkullBlock
-                    "#stone_slab" -> id in STONE_SLABS
-                    "#terracotta" -> id != "terracotta" && id.endsWith("_terracotta")
-                    "#wall_sign" -> id.endsWith("_wall_sign")
-                    "#wooden_slab" -> id.removeSuffix("_slab") in WOOD_TYPES
-                    "#wool" -> id.endsWith("_wool")
-                    else -> id == it
+            blocks = BuiltInRegistries.BLOCK.filter { block ->
+                val id = block.descriptionId.substringAfterLast('.')
+                blockIds.any {
+                    when (it) {
+                        "#carpet" -> id.endsWith("_carpet")
+                        "#leaves" -> id.endsWith("_leaves")
+                        "#planks" -> id.endsWith("_planks")
+                        "#skull" -> block is AbstractSkullBlock
+                        "#stone_slab" -> id in STONE_SLABS
+                        "#terracotta" -> id != "terracotta" && id.endsWith("_terracotta")
+                        "#wall_sign" -> id.endsWith("_wall_sign")
+                        "#wooden_slab" -> id.removeSuffix("_slab") in WOOD_TYPES
+                        "#wool" -> id.endsWith("_wool")
+                        else -> id == it
+                    }
                 }
-            }
+            }.toSet()
         }
+
+        fun matches(state: BlockState): Boolean =
+            state.block in blocks &&
+                (slabType == null || (state.block is SlabBlock && state.getValue(SlabBlock.TYPE) == slabType))
     }
 
     private fun structure(
@@ -378,7 +426,7 @@ object StructureFinder {
             2
         ),
         structure(
-            "Bal (Magma Fields)",
+            "Bal",
             Region.MAGMA_FIELDS,
             "lava,barrier,barrier,barrier,barrier,barrier,barrier,barrier,barrier,barrier,barrier",
             offsetY = 1
@@ -487,5 +535,5 @@ object StructureFinder {
         check(STRUCTURES.all { it.blocks.isNotEmpty() && it.blocks[0] != null })
     }
 
-    private data class FoundStructure(val name: String, val x: Int, val y: Int, val z: Int, val count: Int = 1)
+    data class FoundStructure(val name: String, val x: Int, val y: Int, val z: Int, val count: Int = 1)
 }
