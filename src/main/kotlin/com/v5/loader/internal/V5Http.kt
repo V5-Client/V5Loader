@@ -16,7 +16,22 @@ internal object V5Http {
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build()
 
-    fun httpsGetBytes(host: String, path: String, jwt: String = ""): ByteArray? {
+    fun httpsGetBytes(host: String, path: String, jwt: String = ""): ByteArray? =
+        get(host, path, jwt, HttpResponse.BodyHandlers.ofByteArray()) { it.size }
+
+    fun httpsGet(
+        host: String,
+        path: String,
+        jwt: String = "",
+    ): String = get(host, path, jwt, HttpResponse.BodyHandlers.ofString()) { it.length }.orEmpty()
+
+    private fun <T> get(
+        host: String,
+        path: String,
+        jwt: String,
+        bodyHandler: HttpResponse.BodyHandler<T>,
+        bodySize: (T) -> Int,
+    ): T? {
         val url = "https://$host$path"
         val requestBuilder = HttpRequest.newBuilder()
             .uri(URI.create(url))
@@ -27,45 +42,16 @@ internal object V5Http {
         if (jwt.isNotEmpty()) {
             requestBuilder.header("Authorization", "Bearer $jwt")
         }
-
         return try {
-            val response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray())
+            val response = httpClient.send(requestBuilder.build(), bodyHandler)
             if (response.statusCode() != 200) {
-                logHttpFailure("GET", url, response.statusCode(), response.body().size)
+                logHttpFailure("GET", url, response.statusCode(), bodySize(response.body()))
                 return null
             }
             response.body()
         } catch (e: Exception) {
             logTransportFailure("GET", url, e)
             null
-        }
-    }
-
-    fun httpsGet(
-        host: String,
-        path: String,
-        jwt: String = "",
-    ): String {
-        val url = "https://$host$path"
-        val requestBuilder = HttpRequest.newBuilder()
-            .uri(URI.create(url))
-            .timeout(Duration.ofSeconds(HTTP_TIMEOUT_SECONDS))
-            .header("User-Agent", USER_AGENT)
-            .GET()
-
-        if (jwt.isNotEmpty()) {
-            requestBuilder.header("Authorization", "Bearer $jwt")
-        }
-        return try {
-            val response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-            if (response.statusCode() != 200) {
-                logHttpFailure("GET", url, response.statusCode(), response.body().length)
-                return ""
-            }
-            response.body()
-        } catch (e: Exception) {
-            logTransportFailure("GET", url, e)
-            ""
         }
     }
 
