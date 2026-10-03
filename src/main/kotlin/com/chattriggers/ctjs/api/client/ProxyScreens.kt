@@ -33,12 +33,17 @@ class ProxyManagerScreen(private val parent: Screen) : Screen(Component.literal(
         addButton = addRenderableWidget(
             Button.builder(Component.literal("Add Proxy")) {
                 minecraft.setScreenCompat(ProxyEditScreen(this, null))
-            }.bounds(width / 2 - 102, buttonY, 100, 20).build()
+            }.bounds(width / 2 - 154, buttonY, 100, 20).build()
+        )
+        addRenderableWidget(
+            Button.builder(Component.literal("Get Proxies")) {
+                FileLib.open("https://rdbt.top/docs/proxies")
+            }.bounds(width / 2 - 50, buttonY, 100, 20).build()
         )
         backButton = addRenderableWidget(
             Button.builder(Component.literal("Back")) {
                 minecraft.setScreenCompat(parent)
-            }.bounds(width / 2 + 2, buttonY, 100, 20).build()
+            }.bounds(width / 2 + 54, buttonY, 100, 20).build()
         )
         syncRowButtons()
     }
