@@ -14,15 +14,26 @@ internal object ModLoaderUpdater {
     private const val UPDATE_POPUP_TITLE = "V5-Loader"
     private const val UPDATE_POPUP_MESSAGE = "V5-Loader updated. Start Minecraft again."
 
-    fun stageUpdateAndRelaunch(
+    fun stageUpdate(
         gameDir: File,
         modLoaderBytes: ByteArray,
-        candidates: List<File>
+        candidates: List<File>,
+        restartRequired: Boolean,
     ) {
         val updatePaths = prepareUpdatePaths(gameDir, candidates)
 
         FileOutputStream(updatePaths.sourceJar).use { it.write(modLoaderBytes) }
 
+        if (restartRequired) {
+            installUpdate(updatePaths, showRestartPopup = true)
+        } else {
+            Runtime.getRuntime().addShutdownHook(Thread({
+                installUpdate(updatePaths, showRestartPopup = false)
+            }, "V5-Loader-update"))
+        }
+    }
+
+    private fun installUpdate(updatePaths: UpdatePaths, showRestartPopup: Boolean) {
         if (Platform.isAndroid) {
             val target = updatePaths.targetJar.toPath()
             val backup = updatePaths.backupJar.toPath()
@@ -40,7 +51,7 @@ internal object ModLoaderUpdater {
         }
 
         val helperScript = if (isWindows()) {
-            writeWindowsUpdateScript(updatePaths)
+            writeWindowsUpdateScript(updatePaths, showRestartPopup)
         } else {
             writeUnixUpdateScript(updatePaths)
         }
@@ -131,7 +142,7 @@ internal object ModLoaderUpdater {
         return script
     }
 
-    private fun writeWindowsUpdateScript(updatePaths: UpdatePaths): File {
+    private fun writeWindowsUpdateScript(updatePaths: UpdatePaths, showRestartPopup: Boolean): File {
         val script = File(updatePaths.sourceJar.parentFile, "v5-loader-update-${updatePaths.pid}.cmd").canonicalFile
         val lines = mutableListOf<String>()
         lines += "@echo off"
@@ -163,7 +174,9 @@ internal object ModLoaderUpdater {
             lines += "del /f /q ${cmdQuote(target.absolutePath)} >nul 2>nul"
         }
         lines += "del /f /q ${cmdQuote(updatePaths.backupJar.absolutePath)} >nul 2>nul"
-        lines += "powershell -NoProfile -Command ${cmdQuote(buildPowerShellPopupCommand())}"
+        if (showRestartPopup) {
+            lines += "powershell -NoProfile -Command ${cmdQuote(buildPowerShellPopupCommand())}"
+        }
         lines += "del /f /q \"%~f0\" >nul 2>nul"
         lines += "exit /b 0"
         script.writeLines(lines, "\r\n")

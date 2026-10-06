@@ -79,7 +79,9 @@ internal object V5Loader {
         gameDir: File,
         activeJar: File,
         release: ReleaseAsset,
-    ): Nothing {
+    ) {
+        val currentVersion = FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().metadata.version.friendlyString
+        val restartRequired = currentVersion != release.tag.substringBeforeLast("-r")
         val bytes = V5Http.httpsGetBytes(
             GITHUB_HOST,
             "/$GITHUB_REPOSITORY/releases/download/${release.tag}/${release.assetName}",
@@ -89,12 +91,17 @@ internal object V5Loader {
             if (bytes.size.toLong() != release.expectedSize || V5Crypto.calculateSha256(bytes) != release.expectedHash) {
                 throw IllegalStateException("[V5] GitHub workflow download failed integrity verification; refusing to install it.")
             }
-            ModLoaderUpdater.stageUpdateAndRelaunch(gameDir, bytes, listOf(activeJar))
-            println("[V5] Mod update complete. Launch Minecraft again! This is NOT a crash. Launch Minecraft again! If this error persists, manually update the V5.jar")
+            ModLoaderUpdater.stageUpdate(gameDir, bytes, listOf(activeJar), restartRequired)
         } finally {
             bytes.fill(0)
         }
 
+        if (!restartRequired) {
+            println("[V5] Loader update staged for version $currentVersion; it will be installed when Minecraft closes.")
+            return
+        }
+
+        println("[V5] Mod update complete. Launch Minecraft again! This is NOT a crash. Launch Minecraft again! If this error persists, manually update the V5.jar")
         Runtime.getRuntime().halt(0)
         throw IllegalStateException("Failed to terminate process after staging V5-Loader update")
     }
