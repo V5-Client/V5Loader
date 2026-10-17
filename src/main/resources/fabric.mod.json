@@ -35,6 +35,8 @@
         "fabric-api": ">=$fabric_api_version",
         "fabric-language-kotlin": ">=$fabric_kotlin_version"
     },
-    "breaks": {},
+    "breaks": {
+        "betterblockentities": "*"
+    },
     "accessWidener": "${access_widener}"
 }
